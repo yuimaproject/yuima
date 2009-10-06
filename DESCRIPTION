@@ -1,0 +1,10 @@
+Package: yuima
+Type: Package
+Title: The YUIMA Project package
+Version: 0.0.64
+Date: 2009-09-13
+Depends: methods, zoo
+Author: Yuima project team.
+Maintainer: Who to complain to <yourfault@somewhere.net>
+Description: package for the YUIMA Project. The YUIMA Project Team is: Yoshida, N., Iacus, S.M., Hino, H., 
+License: Do not redistribute. For internal use only.

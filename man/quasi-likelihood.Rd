@@ -1,0 +1,61 @@
+\name{ql}
+\alias{ql}
+\alias{ml.ql}
+\alias{ml.ql2}
+\alias{rql}
+\alias{ql,ANY-method} 
+\alias{ml.ql,ANY-method} 
+\alias{ml.ql2,ANY-method} 
+\alias{rql,ANY-method} 
+\title{Calculate quasi-likelihood and ML estimator}
+\description{Calculate the quasi-likelihood and estimate of the parameters of the
+  stochastic differential equation by the maximum likelihood method.}
+\usage{
+ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE)
+ql(yuima,theta2,theta1,h,print=FALSE)
+rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE)
+}
+\arguments{
+  \item{yuima}{a yuima object.}
+  \item{theta2,theta1}{parameters of the sdeModel.}
+  \item{h}{ time span of observations.}
+  \item{theta2.lim, theta1.lim}{matrixes to specify the domains of the
+    parameters. Vector can be available only if theta is a scalar.}
+  \item{ptheta2,ptheta1}{}
+  \item{print}{you can see a progress of the estimation when print is TRUE.}
+}
+\details{
+  A function ql calculate the quasi-likelihood of a time series data X with any
+  parameters. A function ml.pl estimates parameters of the sdeModel by
+  maximizing the quasi-likelihood.
+}
+\value{
+  \item{QL}{a real value.}
+  \item{opt}{a list with components the same as 'optim' function.}
+}
+\author{YUIMA Project Team}
+\note{
+The function ml.ql uses the function optim internally.
+}
+\examples{
+#dXt^e = -theta2 * Xt^e * dt + theta1 * dWt
+diff.matrix <- matrix(c("theta1"),1,1)
+ymodel <- setModel(drift=c("(-1)*theta2*x"),diffusion=diff.matrix,time.variable="t",state.variable="x",solve.variable="x")
+division <- 100
+
+ysamp <- setSampling(Terminal = (division)^(1/3), division = division) 
+yuima <- setYuima(model = ymodel,sampling = ysamp)
+set.seed(123)
+yuima <- simulate(yuima,xinit=1,true.parameter=c(0.3,0.1))
+QL <- ql(yuima,0.8,0.7,h=1/((division)^(2/3)))
+QL
+opt <- ml.ql(yuima,0.8,0.7,h=1/((division)^(2/3)),c(0,1),c(0,1))
+print("True param")
+print("theta2 = .3, theta1 = .1")
+print("ML estimator")
+opt$par
+}
+
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{ts}

@@ -1,0 +1,61 @@
+import("methods")
+
+##importFrom("stats", "end", "time", "start")
+importFrom("graphics", "plot")
+importFrom("zoo")
+
+exportClasses("yuima",
+              "yuima.data",
+              "yuima.sampling",
+              "yuima.characteristic",
+              "yuima.model",
+              "model.parameter"
+              )
+
+exportMethods(
+              "dim",
+              "length",
+             # "start",
+              "plot",
+             # "time",
+             # "end",
+                            
+              "simulate",
+              "cce",
+              "poisson.random.sampling",
+              
+              "get.zoo.data",
+              
+              "initialize",
+			  
+			  "ql",
+			  "rql",
+			  "ml.ql",
+              "adaBayes"
+              )
+
+## function which we want to expose to the user
+## all other functions are used internally by the
+## package
+export(setYuima)
+export(setModel) ## builds sde model
+export(setData)
+export(setSampling)
+export(setCharacteristic)
+
+export(dim)
+export(length)
+#export(start)
+export(plot)
+#export(time)
+#export(end)
+
+export(simulate) # simulates couple of processes
+export(cce)
+export(poisson.random.sampling)
+
+export(get.zoo.data)
+
+export(ql,rql,ml.ql)
+export(adaBayes)
+export(rIG, rNIG, rbgamma, rngamma, rstable) ##:: random number generator for Inverse Gaussian
