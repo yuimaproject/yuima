@@ -83,10 +83,10 @@ setModel <- function(drift=NULL,
     if( !length(jump.coeff) || !length(measure) ){
       cat("\nmeasure type isn't matched with jump term.\n")
       return(NULL)
-    }#else if(length(jump.coeff)!=1){
-    #  cat("\nmulti dimentional jump term is not supported yet.\n")
-    #  return(NULL)
-    #}
+    }else if(length(jump.coeff)!=1){
+      cat("\nmulti dimentional jump term is not supported yet.\n")
+      return(NULL)
+    }
     
     if(measure.type=="CP"){ ##::CP
       if(length(measure)!=2){

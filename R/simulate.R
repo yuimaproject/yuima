@@ -42,7 +42,7 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
   ##   readline()
   
   if(missing(true.parameter)){
-    true.parameter <- as.list(numeric(length(sdeModel@parameter@all)))
+    true.parameter <- numeric(length(sdeModel@parameter@all))
   }
   
   r.size <- sdeModel@noise.number
@@ -109,15 +109,15 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
   modeltime <- sdeModel@time.variable
   V0 <- sdeModel@drift
   V <- sdeModel@diffusion
- 
+  
   par.len <- length(sdeModel@parameter@all)
   if(par.len>0){
     for(i in 1:par.len){
       pars <- sdeModel@parameter@all[i]
-      assign(pars, true.parameter[[i]])
+      assign(pars, true.parameter[i])
     }
   }
- 
+  
   ##:: Initialization
   ##:: set time step
   delta <- Terminal/division
@@ -351,28 +351,24 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
     }else if(sdeModel@measure.type=="code"){  ##:: code type
       ##:: Jump terms
       code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
-      args <- eval(parse(text=paste("list(",suppressWarnings(sub("^.+?\\(.+?,(.+)", "\\1", sdeModel@measure$df$expr, perl=TRUE)))))
-	  
-      # args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
-      #print(args);readline()
+      args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
+      print(args);readline()
       dZ <- switch(code,
-                   #rNIG=paste("rNIG(division, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
-                   rNIG=rNIG(division, args[[1]], args[[2]], args[[3]]*delta, args[[4]]*delta,args[[5]]*delta),
-                   rIG=rIG(division,args[[1]]*delta, args[[2]]),
-                   rgamma=rgamma(division,args[[1]]*delta, args[[2]]),
-                   rbgamma=rbgamma(division, args[[1]]*delta, args[[2]], args[[3]]*delta, args[[4]]),
+                   rNIG=paste("rNIG(division, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
+                   rIG=paste("rIG(division,", args[2], "*delta, ", args[3], ")"),
+                   rgamma=paste("rgamma(division, ", args[2], "*delta, ", args[3], ")"),
+                   rbgamma=paste("rbgamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], "*delta, ", args[5], ")"),
 ##                   rngamma=paste("rngamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
-                   rngamma=rngamma(division, args[[1]]*delta, args[[2]], args[[3]], args[[4]]*delta),
+                   rngamma=paste("rngamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta)"),
 ##                   rstable=paste("rstable(division, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
-                   rstable=rstable(division, args[[1]], args[[2]], args[[3]]*delta^(1/args[[1]]), args[[4]]*delta)
+                   rstable=paste("rstable(division, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)")
                    )
       
       if(is.null(dZ)){  ##:: "otherwise"
         cat(paste("Code \"", code, "\" not supported yet.\n", sep=""))
         return(NULL)
       }
-	  #print(parse(text=dZ))
-      #dZ <- eval(parse(text=dZ))
+      dZ <- eval(parse(text=dZ))
       ##:: calcurate difference eq.
       
       for(i in 1:division){
