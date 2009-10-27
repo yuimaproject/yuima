@@ -8,7 +8,7 @@
   modelstate <- yuima@model@state.variable
   modelpara <- yuima@model@parameter@diffusion
   DIFFUSION <- yuima@model@diffusion
-  division <- length(yuima)
+  division <- length(yuima)[1]
   diff <- array(0,dim=c(d.size,r.size,division))
   X <- as.matrix(onezoo(yuima))
   for(i in 1:length(modelpara)){
@@ -36,7 +36,7 @@
   modelstate <- yuima@model@state.variable
   modelpara <- yuima@model@parameter@drift
   DRIFT <- yuima@model@drift
-  division <- length(yuima)
+  division <- length(yuima)[1]
   drift <- matrix(0,division,d.size)
   X <- as.matrix(onezoo(yuima))
   for(i in 1:length(modelpara)){
@@ -99,7 +99,7 @@ setMethod("ql", "ANY",
   
   
   d.size <- yuima@model@equation.number
-  division <- length(yuima)
+  division <- length(yuima)[1]
   X <- as.matrix(onezoo(yuima))
   deltaX <- matrix(0,division-1,d.size)
   for(t in 1:(division-1)){
@@ -118,12 +118,20 @@ setMethod("ql", "ANY",
     if(det(as.matrix(B[,,t]))==0){
       pn[t] <- log(1)
     }else{
-      pn[t] <- log(1/((2*pi*h)^(d.size/2)*det(as.matrix(B[,,t]))^(1/2)) * exp((-1/(2*h))*t(deltaX[t,]-h*drift[t,])%*%solve(as.matrix(B[,,t]))%*%(deltaX[t,]-h*drift[t,])))
+      pn[t] <- log(1/((2*pi*h)^(d.size/2)*det(as.matrix(B[,,t]))^(1/2)) *
+                   exp((-1/(2*h))*t(deltaX[t,]-h*drift[t,])%*%solve(as.matrix(B[,,t]))%*%(deltaX[t,]-h*drift[t,])))
       QL <- QL+pn[t]
+      if(pn[t]==-Inf && FALSE){
+        cat("t:",t, "\n")
+        cat("B[,,t]:",B[,,t], "\n")
+        cat("det(B):",det(as.matrix(B[,,t])),"\n")
+        cat("deltaX[t,]", deltaX[t,], "\n")
+        cat("drift[t,]", drift[t,], "\n")
+      }
     }
   }
   if(QL==-Inf){
-    warning("quasi likelihood is to small to calculate.")
+    warning("quasi likelihood is too small too calculate.")
   }
   if(print==TRUE){
     print(paste("QL:",QL,"  theta2:",theta2,"  theta1:",theta1))
@@ -168,7 +176,7 @@ setMethod("rql", "ANY" ,
   
   
   d.size <- yuima@model@equation.number
-  division <- length(yuima)
+  division <- length(yuima)[1]
   X <- as.matrix(onezoo(yuima))
   deltaX <- matrix(0,division-1,d.size)
   for(t in 1:(division-1)){
@@ -261,7 +269,7 @@ setMethod("ml.ql", "ANY" ,
   ql.opt <- function(theta=c(theta2,theta1)){
     return(ql(yuima,theta2=theta[1:length(theta2)],theta1=theta[(length(theta2)+1):length(theta)],h=h,print=print))
   }
-
+  
   opt <- constrOptim(c(theta2,theta1),ql.opt,NULL,ui=ui,ci=ci,control=list(fnscale=-1),outer.iterations=500)
   if( opt$convergence != 0){
   	print("WARNING:optimization did not converge.")

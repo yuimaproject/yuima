@@ -23,7 +23,7 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
 }
 \author{YUIMA Project Team}
 \note{
-This routine is not stable and accurate. Dr.Kamatani is now working for improvements.
+  This routine is not stable and accurate. Dr.Kamatani is now working for improvements.
 }
 \examples{
   set.seed(1)
@@ -37,6 +37,9 @@ This routine is not stable and accurate. Dr.Kamatani is now working for improvem
                xinit=1,
                true.parameter=c(0.6,0.3)
                )
+  
+  ## TBC: sample the path later
+
   domain <- c(0,1)
   ## prior distribution of theta1
   prior1 <- function(theta1,domain){
@@ -49,7 +52,7 @@ This routine is not stable and accurate. Dr.Kamatani is now working for improvem
     return( tmp )
   }
   
-  rand <- matrix(runif(10,0,1),10,2)
+  rand <- matrix(runif(20,0,1),10,2) ## initial points for MLE
   QL <- 0
   param <- numeric(2)
   for( i in 1:5){

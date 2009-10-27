@@ -23,7 +23,7 @@ setMethod("adaBayes",signature("yuima"),function(yuima,h,prior2,prior1,domain2 ,
     tmp <- ((n.size*d.size/2) * log( (2*pi*h) ) + ql(yuima,theta2=theta2,theta1=theta1,h=h))
     return(tmp)
   }
-
+  
   ## rHn function
   rHn <- function(yuima,h,theta1,theta2,theta2.offset,theta1.offset){
     d.size <- yuima@model@equation.number
@@ -31,7 +31,7 @@ setMethod("adaBayes",signature("yuima"),function(yuima,h,prior2,prior1,domain2 ,
     tmp <- ((n.size*d.size/2) * log( (2*pi*h) ) + rql(yuima,theta2=theta2,theta1=theta1,theta2.offset,theta1.offset,h=h))
     return(tmp)
   }
-
+  
   ## Bayes estimator for theta1
   bayes.theta1.tilda <- function(yuima,prior1=prior1){
     rHn.tmp <- function(yuima,h,theta1,theta2,theta2.offset,theta1.offset){
@@ -70,11 +70,11 @@ setMethod("adaBayes",signature("yuima"),function(yuima,h,prior2,prior1,domain2 ,
     }
     return( numerator$value/denominator$value )
   }
-
+  
   ##Bayes estimator for theta2
   bayes.theta2.tilda <- function(yuima,prior2=prior2){
     Hn.tmp <- function(yuima,h,theta1,theta2){
-      tmp <- numeric( length(theta2) )
+      tmp <- numeric(length(theta2))
       for(i in 1:length(theta2)){
         Hn1 <- Hn( yuima , h , theta1 , theta2[i] )
         tmp[i] <- exp( Hn1 -Hn2 )      

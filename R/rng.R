@@ -6,7 +6,7 @@ rIG <- function(x,delta,gamma){
   if( gamma <= 0 )
     stop("deltat must be positive value.")
   V <- rchisq(x,df=1);
-
+  
   z1 <- ( delta/gamma + V/(2*gamma^2) ) - sqrt( V*delta/(gamma^3) + ( V/(2*gamma^2) )^2 )  
   U <- runif(x,min=0,max=1)
   idx <- which( U < (delta/(delta+gamma*z1)) )
@@ -14,24 +14,64 @@ rIG <- function(x,delta,gamma){
   ret <- numeric(x)
   ret[idx] <- z1[idx]
   ret[-idx] <- z2
-
+  
   return(ret)
 }
 
 
-rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0){
-  gamma <- sqrt(alpha^2 - beta^2)
-  if (gamma == 0) {
-    V = rnorm(x)^2
-    Z = delta * delta/V
-    X = sqrt(Z) * rnorm(x)
-  }else{ 
-    Z <- rIG(x,delta,gamma)
-    N <- rnorm(x,0,1)
-    X <- mu + beta*Z + sqrt(Z)*N
+## multi-variate normal inverse Gaussian
+rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
+  
+  ## Error check
+  if(length(mu)!=length(beta)){
+    stop("Error: wrong input dimension.")
   }
+  if(missing(Lambda)){
+    ## univariate case
+    gamma <- sqrt(as.numeric(alpha^2 - beta^2))
+  }else{
+    if( det(Lambda) < 10^(-15)){
+      stop("Determinant of Lambda must be one.")
+    }
+    gamma <- sqrt(as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta))
+  }
+  
+  if (gamma == 0) 
+    stop("alpha^2 - beta^2*mu must be positive value.")
+    
+  tau <- rIG(x,delta,gamma)
+  eta <- rnorm(length(beta))
+  if(missing(Lambda)){    ## uni-variate
+    X <- mu + beta*tau + sqrt(tau)*eta
+  }else{   ## multi-variate
+    sqrt.L <- svd(Lambda)
+    sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
+    
+    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)
+    + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% eta,x),length(beta),x)
+    
+    X <- z
+  }
+  
   return(X)
 }
+
+
+## rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0){
+##   gamma <- sqrt(alpha^2 - beta^2)
+##   if (gamma == 0) {
+##     V = rnorm(x)^2
+##     Z = delta * delta/V
+##     X = sqrt(Z) * rnorm(x)
+##   }else{ 
+##     Z <- rIG(x,delta,gamma)
+##     N <- rnorm(x,0,1)
+##     X <- mu + beta*Z + sqrt(Z)*N
+##   }
+##   return(X)
+## }
+
+
 
 rbgamma <- function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
  if( delta.plus <= 0 )
@@ -47,31 +87,92 @@ rbgamma <- function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
 }
 
 
-## temporaly, desined only for univariate. 
+## temporaly, desined only for univariate.
 rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
-  tmp <- alpha^2 - t(beta) %*% Lambda %*% beta
+  ## Error check
+  if(length(mu)!=length(beta)){
+    stop("Error: wrong input dimension.")
+  }
+  if(missing(Lambda)){
+    ## univariate case
+    tmp <- as.numeric(alpha^2 - beta^2)
+  }else{
+    if( det(Lambda) < 10^(-15)){
+      stop("Determinant of Lambda must be one.")
+    }
+    tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
+  }
+  
   if( lambda <= 0 )
     stop("lambda must be positive value.")
   if( alpha <= 0 )
     stop("alpha must be positive value.")
-  if( tmp <= 0 )
+  if( tmp <=0)
     stop("alpha^2 - beta^2*mu must be positive value.")
-#  if( det(Lambda) != 1)
-  if( Lambda !=1)
-    stop("Determinant of Lambda must be one.")
-
+  
   tau <- rgamma(x,lambda,tmp/2)
-  eta <- rnorm(x)
-  z <- mu + beta * tau * Lambda + sqrt(tau * Lambda) * eta
-  X <- z
+  eta <- rnorm(length(beta))
+  if(missing(Lambda)){
+    z <- mu + beta * tau + sqrt(tau) * eta
+    X <- z
+  }else{
+    sqrt.L <- svd(Lambda)
+    sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
+    
+    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)
+    + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% eta,x),length(beta),x)
+    
+    X <- z
+  }
   return(X)
 }
 
 
-rstable <- function(x,alpha,beta,sigma, gamma, eps){
+## ## temporaly, desined only for univariate.
+## rngamma <- function(x,lambda,alpha,beta,mu){
+##   tmp <- alpha^2 - beta^2
+##   if( lambda <= 0 )
+##     stop("lambda must be positive value.")
+##   if( alpha <= 0 )
+##     stop("alpha must be positive value.")
+##   if( tmp <= 0 )
+##     stop("alpha^2 - beta^2*mu must be positive value.")
+## #  if( det(Lambda) != 1)
+## ##  if( Lambda !=1)
+## ##    stop("Determinant of Lambda must be one.")
+  
+##   tau <- rgamma(x,lambda,tmp/2)
+##   eta <- rnorm(x)
+## ##  z <- mu + beta * tau * Lambda + sqrt(tau * Lambda) * eta
+##   z <- mu + beta * tau + sqrt(tau) * eta
+##   X <- z
+##   return(X)
+## }
+
+## rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
+##   tmp <- alpha^2 - t(beta) %*% Lambda %*% beta
+##   if( lambda <= 0 )
+##     stop("lambda must be positive value.")
+##   if( alpha <= 0 )
+##     stop("alpha must be positive value.")
+##   if( tmp <= 0 )
+##     stop("alpha^2 - beta^2*mu must be positive value.")
+## #  if( det(Lambda) != 1)
+##   if( Lambda !=1)
+##     stop("Determinant of Lambda must be one.")
+  
+##   tau <- rgamma(x,lambda,tmp/2)
+##   eta <- rnorm(x)
+##   z <- mu + beta * tau * Lambda + sqrt(tau * Lambda) * eta
+##   X <- z
+##   return(X)
+## }
+
+
+rstable <- function(x,alpha,beta,sigma, gamma){
   a <- (1 + (beta*tan(alpha*pi/2))^2)^(1/(2*alpha))
   b <- atan(beta*tan(alpha*pi/2))/alpha
-
+  
   u <- runif(x,-pi/2,pi/2)
   v <- rexp(x,1)
   
@@ -81,6 +182,24 @@ rstable <- function(x,alpha,beta,sigma, gamma, eps){
     s <- (2/pi) * ((pi/2 +beta*u)*tan(u) - beta * log(v*cos(u)/(beta*u + pi/2)))
   }
   
-  X <- (eps^(1/alpha)) * sigma * s + gamma * eps * rep(1,x)
+##  X <- (eps^(1/alpha)) * sigma * s + gamma * eps * rep(1,x)
+  X <- sigma * s + gamma * rep(1,x)
   return(X)
 }
+
+## rstable <- function(x,alpha,beta,sigma, gamma, eps){
+##   a <- (1 + (beta*tan(alpha*pi/2))^2)^(1/(2*alpha))
+##   b <- atan(beta*tan(alpha*pi/2))/alpha
+
+##   u <- runif(x,-pi/2,pi/2)
+##   v <- rexp(x,1)
+  
+##   if(alpha!=1){
+##     s <- a * (sin(alpha*(u+b))/cos(u)^(1/alpha)) * (cos(u-alpha*(u+b))/v)^((1-alpha)/alpha)
+##   }else{
+##     s <- (2/pi) * ((pi/2 +beta*u)*tan(u) - beta * log(v*cos(u)/(beta*u + pi/2)))
+##   }
+  
+##   X <- (eps^(1/alpha)) * sigma * s + gamma * eps * rep(1,x)
+##   return(X)
+## }

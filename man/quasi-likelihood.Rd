@@ -54,6 +54,40 @@ print("True param")
 print("theta2 = .3, theta1 = .1")
 print("ML estimator")
 opt$par
+
+
+##multidimension case
+##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
+diff.matrix <- matrix(c("theta1.1","theta1.2", "1", "1"), 2, 2)
+
+drift.c <- c("-theta2.1*x1", "-theta2.2*x2", "-theta2.2", "-theta2.1")
+drift.matrix <- matrix(drift.c, 2, 2)
+
+ymodel <- setModel(drift=drift.matrix, diffusion=diff.matrix, time.variable="t",
+                   state.variable=c("x1", "x2"), solve.variable=c("x1", "x2"))
+division <- 100
+ysamp <- setSampling(Terminal=(division)^(1/3), division=division) 
+yuima <- setYuima(model=ymodel, sampling=ysamp)
+set.seed(123)
+
+##xinit=c(x1,x2) #true.parameter=c(theta2.1, theta2.2, theta1.1, theta1.2)
+yuima <- simulate(yuima, xinit=c(1, 1), true.parameter=c(0.3, 0.1, 0.2, 0.1))
+
+theta2 <- c(0.8, 0.2) #c(theta2.1, theta2.2)
+theta1 <- c(0.7, 0.1) #c(theta1.1, theta1.2)
+QL <- ql(yuima, theta2, theta1, h=1/((division)^(2/3)))
+QL
+
+theta2.1.lim <- c(0, 1)
+theta2.2.lim <- c(0, 1)
+theta1.1.lim <- c(0, 1)
+theta1.2.lim <- c(0, 1)
+theta2.lim <- t( matrix( c(theta2.1.lim, theta2.2.lim), 2, 2) ) 
+theta1.lim <- t( matrix( c(theta1.1.lim, theta1.2.lim), 2, 2) ) 
+
+opt <- ml.ql(yuima, theta2, theta1, h=1/((division)^(2/3)), theta2.lim, theta1.lim)
+matrix(opt$par,2,2)
+
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

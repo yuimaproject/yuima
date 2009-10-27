@@ -69,7 +69,7 @@ setModel <- function(drift=NULL,
   
   ##::make type function list ####
   CPlist <- c("dnorm", "dgamma", "dexp")
-  codelist <- c("rIG", "rNIG", "rG", "rVG", "rS", "rTS", "rGH", "rgamma", "rbgamma", "rngamma", "rstable")
+  codelist <- c("rIG", "rNIG", "rgamma", "rbgamma", "rngamma", "rstable")
   ##::end make type function list ####
   
   if(!length(measure.type)){
@@ -83,10 +83,10 @@ setModel <- function(drift=NULL,
     if( !length(jump.coeff) || !length(measure) ){
       cat("\nmeasure type isn't matched with jump term.\n")
       return(NULL)
-    }else if(length(jump.coeff)!=1){
-      cat("\nmulti dimentional jump term is not supported yet.\n")
-      return(NULL)
-    }
+    }#else if(length(jump.coeff)!=1){
+    #  cat("\nmulti dimentional jump term is not supported yet.\n")
+    #  return(NULL)
+    #}
     
     if(measure.type=="CP"){ ##::CP
       if(length(measure)!=2){
@@ -262,9 +262,14 @@ setModel <- function(drift=NULL,
     n.eqn2 <- n.eqn1
     n.noise <- 1
   }
+
+  ## TBC
+  n.eqn3 <- n.eqn1
+  
   if(!length(measure)){
     n.eqn3 <- n.eqn1
   }
+
   if(n.eqn1 != n.eqn2 || n.eqn1 != n.eqn3){
     cat("\nMalformed model, number of equations in the drift and diffusion do not match\n")
     return(NULL)

@@ -3,15 +3,16 @@
 \title{Simulator function for multi-dimensional stochastic processes}
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
-simulate(yuima, xinit, true.parameter, space.discretized, increment)
+simulate(yuima, xinit, true.parameter, space.discretized, increment.W, increment.L)
 }
 \arguments{
   \item{yuima}{an \code{yuima} object.}
   \item{xinit}{initial value vector of state variables.}
-  \item{true.parameter}{initial value vector of parameters.}
+  \item{true.parameter}{LIST of initial values of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
 	Maruyama method.}
-  \item{increment}{to specify increment for each time tics in advance.}
+  \item{increment.W}{to specify Wiener increment for each time tics in advance.}
+  \item{increment.L}{to specify Levy increment for each time tics in advance.}
 }
 \details{
 \code{simulate} is a function to solve SDE using the Euler-Maruyama
@@ -42,6 +43,7 @@ ou <- setYuima(model=mod, sampling=samp)
 
 # Solve SDEs using Euler-Maruyama method. 
 ou <- simulate(yuima=ou, xinit=1)
+x11()
 plot(ou)
 
 # A multi-dimensional (correlated) diffusion process. 
@@ -119,9 +121,8 @@ my.dW <- t(matrix(my.dW, nrow=division, ncol=yuima.mod@model@noise.number))
 yuima.mod <- simulate(yuima=yuima.mod,
                       xinit=1,
                       space.discretized=FALSE,
-                      increment=my.dW)
+                      increment.W=my.dW)
 if( !is.null(yuima.mod) ){
-  x11()
   plot(yuima.mod)
 }
 
@@ -163,9 +164,8 @@ my.dW <- rnorm(division * yuima.obj@model@noise.number, 0, sqrt(delta))
 my.dW <- t(matrix(my.dW, nrow=division, ncol=yuima.obj@model@noise.number))
 
 ## Solve SDEs using Euler-Maruyama method.
-yuima.obj.path <- simulate(yuima=yuima.obj, space.discretized=FALSE, increment=my.dW)
+yuima.obj.path <- simulate(yuima=yuima.obj, space.discretized=FALSE, increment.W=my.dW)
 if( !is.null(yuima.obj.path) ){
-  x11()
   plot(yuima.obj.path)
 }
 
@@ -188,18 +188,30 @@ T <- n*h
 
 obj.sampling <- setSampling(Terminal=T, division=division)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
-X <- simulate(yuima=obj.yuima, xinit=xinit, true.parameter=c(theta, sigma))
+X <- simulate(yuima=obj.yuima, xinit=xinit, true.parameter=list(theta, sigma))
 plot(X)
 
 
 ##:: sample for Levy process ("code" type)
-## X_{t}= (sqrt(x+1) ) dt+ dw_t+ dZ_t
-obj.model <- setModel(drift="sqrt(x+1)", jump.coeff="1", measure.type="code", measure=list(df="rIG(z, 1, 0.1)"))
-obj.sampling <- setSampling(Terminal=1, division=5000)
+## dX_{t} = -x dt + dZ_t
+obj.model <- setModel(drift="-x", xinit=1, jump.coeff="1", measure.type="code", measure=list(df="rIG(z, 1, 0.1)"))
+obj.sampling <- setSampling(Terminal=10, division=10000)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 result <- simulate(yuima=obj.yuima)
 plot(result)
 
+##:: sample for multidimensional Levy process ("code" type)
+## dX = (theta - A X)dt + dZ,
+##    theta=(theta_1, theta_2) = c(1,.5)
+##    A=[a_ij], a_11 = 2, a_12 = 1, a_21 = 1, a_22=2
+  xinit <- c(1,1)
+  beta <- c(.1,.1)
+  Lambda <- matrix(c(1,0,0,1),2,2)
+  obj.model <- setModel(drift=c("1 - 2*x1-x2",".5-x1-2*x2"), xinit=c(1,1), solve.variable=c("x1","x2"), jump.coeff=c("1","1"), measure.type="code", measure=list(df="rNIG(z, alpha=1, beta=beta, delta=1,mu=c(0,0), Lambda=Lambda)"))
+  obj.sampling <- setSampling(Terminal=10, division=10000)
+  obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
+  result <- simulate(yuima=obj.yuima,true.param=list(0,0,beta,Lambda))	   
+ plot(result)
 
 }
 

@@ -22,10 +22,10 @@ gfunc <- function(x){
 ##:: simulate
 ##:: solves SDE and returns result
 setGeneric("simulate",
-           function(yuima, xinit, true.parameter, space.discretized=FALSE, increment)
+           function(yuima, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL)
            standardGeneric("simulate")
            )
-setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.discretized=FALSE, increment){
+setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL){
   ##:: error checks
   if(missing(yuima)){
     cat("\nyuima object is missing.\n")
@@ -42,7 +42,7 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
   ##   readline()
   
   if(missing(true.parameter)){
-    true.parameter <- numeric(length(sdeModel@parameter@all))
+    true.parameter <- as.list(numeric(length(sdeModel@parameter@all)))
   }
   
   r.size <- sdeModel@noise.number
@@ -72,19 +72,33 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
   }
 
   ##:: Error check for increment specified version.
-  if(!missing(increment)){
+  if(!missing(increment.W)){
     if(space.discretized == TRUE){
       cat("\nParameter increment must be invalid if space.discretized=TRUE.\n")
       return(NULL)
-    }else if(dim(increment)[1] != r.size){
+    }else if(dim(increment.W)[1] != r.size){
       cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
       return(NULL)
-    }else if(dim(increment)[2] != division){
+    }else if(dim(increment.W)[2] != division){
       cat("\nLength of increment's column must be same as yuima@sampling@division[1].\n")
       return(NULL)
     }
   }
 
+    ##:: Error check for increment specified version.
+  if(!missing(increment.L)){
+    if(space.discretized == TRUE){
+      cat("\nParameter increment must be invalid if space.discretized=TRUE.\n")
+      return(NULL)
+    }else if(dim(increment.L)[1] != r.size){
+      cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
+      return(NULL)
+    }else if(dim(increment.L)[2] != division){
+      cat("\nLength of increment's column must be same as yuima@sampling@division[1].\n")
+      return(NULL)
+    }
+  }
+  
   
   ##:: check if DRIFT and/or DIFFUSION has values
   has.drift <- sum(as.character(sdeModel@drift) != "(0)")
@@ -95,15 +109,15 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
   modeltime <- sdeModel@time.variable
   V0 <- sdeModel@drift
   V <- sdeModel@diffusion
-  
+ 
   par.len <- length(sdeModel@parameter@all)
   if(par.len>0){
     for(i in 1:par.len){
       pars <- sdeModel@parameter@all[i]
-      assign(pars, true.parameter[i])
+      assign(pars, true.parameter[[i]])
     }
   }
-  
+ 
   ##:: Initialization
   ##:: set time step
   delta <- Terminal/division
@@ -207,12 +221,15 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
   ##:: using Euler-Maruyama method
   
   ##:: Diffusion terms
-  if( missing(increment)){
+  if( missing(increment.W)){
     dW <- rnorm(division * r.size, 0, sqrt(delta))
     dW <- t(matrix(dW, nrow=division, ncol=r.size))
   }else{
-    dW <- increment
+    dW <- increment.W
   }
+  
+  ## [TBC] Levy incrementが指定された場合にも, シミュレーションをincrementを用いて行うように.
+  
   if(has.drift){  ##:: consider drift term to be one of the diffusion term(dW=1) 
     dW <- rbind( rep(1, division)*delta , dW)
   }
@@ -308,7 +325,7 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
       ##:: make expression to create iid rand J
       if(grep("^[dexp|dnorm|dgamma]", sdeModel@measure$df$expr)) {
         ##:: e.g. dnorm(z,1,1) -> rnorm(mu.size*N_sharp,1,1)
-        F <- parse(text=gsub("^d(.+?)\\(.+?,", "r\\1(mu.size*N_sharp,", sdeModel@measure$df$expr, perl=TRUE))
+        F <- suppressWarnings(parse(text=gsub("^d(.+?)\\(.+?,", "r\\1(mu.size*N_sharp,", sdeModel@measure$df$expr, perl=TRUE)))
       }else{
         stop("Sorry. CP only supports dexp, dnorm and dgamma yet.")
       }
@@ -333,23 +350,29 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
       
     }else if(sdeModel@measure.type=="code"){  ##:: code type
       ##:: Jump terms
-      code <- sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE)
-      args <- unlist(strsplit(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE), ","))
-      
+      code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
+      args <- eval(parse(text=paste("list(",suppressWarnings(sub("^.+?\\(.+?,(.+)", "\\1", sdeModel@measure$df$expr, perl=TRUE)))))
+	  
+      # args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
+      #print(args);readline()
       dZ <- switch(code,
-                   rNIG=paste("rNIG(division, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
-                   rIG=paste("rIG(division,", args[2], "*delta, ", args[3], ")"),
-                   rgamma=paste("rgamma(division, ", args[2], "*delta, ", args[3], ")"),
-                   rbgamma=paste("rbgamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], "*delta, ", args[5], ")"),
-                   rngamma=paste("rngamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
-                   rstable=paste("rstable(division, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
+                   #rNIG=paste("rNIG(division, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
+                   rNIG=rNIG(division, args[[1]], args[[2]], args[[3]]*delta, args[[4]]*delta,args[[5]]*delta),
+                   rIG=rIG(division,args[[1]]*delta, args[[2]]),
+                   rgamma=rgamma(division,args[[1]]*delta, args[[2]]),
+                   rbgamma=rbgamma(division, args[[1]]*delta, args[[2]], args[[3]]*delta, args[[4]]),
+##                   rngamma=paste("rngamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
+                   rngamma=rngamma(division, args[[1]]*delta, args[[2]], args[[3]], args[[4]]*delta),
+##                   rstable=paste("rstable(division, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
+                   rstable=rstable(division, args[[1]], args[[2]], args[[3]]*delta^(1/args[[1]]), args[[4]]*delta)
                    )
       
       if(is.null(dZ)){  ##:: "otherwise"
         cat(paste("Code \"", code, "\" not supported yet.\n", sep=""))
         return(NULL)
       }
-      dZ <- eval(parse(text=dZ))
+	  #print(parse(text=dZ))
+      #dZ <- eval(parse(text=dZ))
       ##:: calcurate difference eq.
       
       for(i in 1:division){
