@@ -3,6 +3,7 @@
 \alias{yuima.model-class}
 \alias{initialize,yuima.model-method}
 \alias{initialize,model.parameter-method}
+\alias{limiting.gamma,yuima.model-method}
 %%\alias{setSampling,yuima.model-method}
 
 \title{Classes for the mathematical description of stochastic differential equations}

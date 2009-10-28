@@ -14,6 +14,10 @@
 %\alias{setSampling,yuima-method}
 \alias{simulate,yuima-method}
 \alias{poisson.random.sampling,yuima-method}
+\alias{ql,yuima-method}
+\alias{rql,yuima-method}
+\alias{ml.ql,yuima-method}
+\alias{limiting.gamma,yuima-method}
 
 \title{Class for stochastic differential equations}
 \description{

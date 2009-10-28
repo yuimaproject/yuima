@@ -15,10 +15,10 @@ exportClasses("yuima",
 exportMethods(
               "dim",
               "length",
-             # "start",
+              ## "start",
               "plot",
-             # "time",
-             # "end",
+              ## "time",
+              ## "end",
                             
               "simulate",
               "cce",
@@ -28,10 +28,11 @@ exportMethods(
               
               "initialize",
 			  
-			  "ql",
-			  "rql",
-			  "ml.ql",
-              "adaBayes"
+              "ql",
+              "rql",
+              "ml.ql",
+              "adaBayes",
+              "limiting.gamma"
               )
 
 ## function which we want to expose to the user
@@ -59,3 +60,4 @@ export(get.zoo.data)
 export(ql,rql,ml.ql)
 export(adaBayes)
 export(rIG, rNIG, rbgamma, rngamma, rstable) ##:: random number generator for Inverse Gaussian
+export(limiting.gamma)
