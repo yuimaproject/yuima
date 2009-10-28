@@ -6,13 +6,13 @@
 \alias{rngamma}
 \alias{rstable}
 \title{Random Number Generators for yuima package}
-\description{\code{simulate} function uses specific random number generators to generate Levy pathes.}
+\description{\code{simulate} function uses specific random number generators to generate Levy paths.}
 \usage{
 rIG(x,delta,gamma)
-rNIG(x,alpha=1,beta=0,delta=1,mu=0)
+rNIG(x,alpha=1,beta=0,delta=1,mu=0,Lambda)
 rbgamma(x,delta.plus,gamma.plus,delta.minus,gamma.minus)
 rngamma(x,lambda,alpha,beta,mu,Lambda)
-rstable(x,alpha,beta,sigma,gamma,eps)
+rstable(x,alpha,beta,sigma,gamma)
 }
 \arguments{
   \item{x}{Number of R.Ns to be geneated.}
@@ -29,6 +29,7 @@ rstable(x,alpha,beta,sigma,gamma,eps)
   \item{Lambda}{param}
   \item{sigma}{param}
   \item{eps}{param}
+  \item{Lambda}{param}
 }
 \details{
   to be written
