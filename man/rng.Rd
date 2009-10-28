@@ -28,8 +28,6 @@ rstable(x,alpha,beta,sigma,gamma)
   \item{lambda}{param}
   \item{Lambda}{param}
   \item{sigma}{param}
-  \item{eps}{param}
-  \item{Lambda}{param}
 }
 \details{
   to be written
