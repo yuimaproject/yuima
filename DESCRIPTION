@@ -1,8 +1,8 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package
-Version: 0.0.66
-Date: 2009-10-25
+Version: 0.0.67
+Date: 2009-10-28
 Depends: methods, zoo
 Author: Yuima project team.
 Maintainer: Who to complain to <yourfault@somewhere.net>
