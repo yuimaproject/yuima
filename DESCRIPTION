@@ -7,4 +7,4 @@ Depends: methods, zoo
 Author: Yuima project team.
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: package for the YUIMA Project. The YUIMA Project Team is: Yoshida, N., Iacus, S.M., Hino, H., 
-License: Do not redistribute. For internal use only.
+License: GPL (>= 2)
