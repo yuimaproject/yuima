@@ -352,7 +352,6 @@ setMethod("simulate", "yuima", function(yuima, xinit, true.parameter, space.disc
       ##:: Jump terms
       code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
       args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
-      print(args);readline()
       dZ <- switch(code,
                    rNIG=paste("rNIG(division, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
                    rIG=paste("rIG(division,", args[2], "*delta, ", args[3], ")"),
