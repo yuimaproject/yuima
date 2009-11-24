@@ -89,17 +89,7 @@ setMethod("simulate", "yuima",
     }
   }
   
-  
-  ##:: check if DRIFT and/or DIFFUSION has values
-  has.drift <- sum(as.character(sdeModel@drift) != "(0)")
-  var.in.diff <- is.logical(any(match(unlist(lapply(sdeModel@diffusion, all.vars)), sdeModel@state.variable)))
-  
-  ##:: set variables
-  modelstate <- sdeModel@solve.variable
-  modeltime <- sdeModel@time.variable
-  V0 <- sdeModel@drift
-  V <- sdeModel@diffusion
-  
+    
   par.len <- length(sdeModel@parameter@all)
   if(par.len>0){
     for(i in 1:par.len){
@@ -109,14 +99,8 @@ setMethod("simulate", "yuima",
   }
 
 				
-  ##:: Initialization
-  ##:: set time step
-  delta <- Terminal/division
-  ##:: initialize state variables
-  dX <- xinit
   
-  if(space.discretized){   
-	  
+  if(space.discretized){   	  
 	  ##:: using Space-discretized Euler-Maruyama method	  
 	  yuima@data <- space.discretized(xinit, yuima)
 	  return(yuima)  
@@ -124,7 +108,6 @@ setMethod("simulate", "yuima",
 	
 	
     
- 
   ##:: using Euler-Maruyama method
   
   ##:: Diffusion terms
@@ -136,9 +119,6 @@ setMethod("simulate", "yuima",
     dW <- increment.W
   }
     
-
-  
-  
   yuima@data <- euler(xinit,yuima,dW)
   return(yuima)
 })
