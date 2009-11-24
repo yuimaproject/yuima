@@ -33,7 +33,7 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   Terminal <- (division)^(1/3)
   mod.sampling <- setSampling(Terminal=Terminal, division=division)
   yuima.mod <- setYuima(model=mod, sampling=mod.sampling)
-  yuima.mod <- simulate(yuima=yuima.mod,
+  yuima.mod <- simulate(yuima.mod,
                xinit=1,
                true.parameter=c(0.6,0.3)
                )
