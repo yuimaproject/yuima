@@ -1,7 +1,7 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package
-Version: 0.0.70
+Version: 0.0.71
 Date: 2009-11-24
 Depends: methods, zoo
 Author: Yuima project team.
