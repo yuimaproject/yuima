@@ -3,16 +3,18 @@
 \title{Simulator function for multi-dimensional stochastic processes}
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
-simulate(yuima, xinit, true.parameter, space.discretized, increment.W, increment.L)
+simulate(yuima, nsim, seed, xinit, true.parameter, space.discretized, increment.W, increment.L)
 }
 \arguments{
-  \item{yuima}{an \code{yuima} object.}
+  \item{object}{an \code{yuima} object.}
   \item{xinit}{initial value vector of state variables.}
   \item{true.parameter}{initial value vector of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
 	Maruyama method.}
   \item{increment.W}{to specify Wiener increment for each time tics in advance.}
   \item{increment.L}{to specify Levy increment for each time tics in advance.}
+  \item{nsim}{Not used yet. Included only to match the standard genenirc in package \code{stats}.}
+  \item{seed}{Not used yet. Included only to match the standard genenirc in package \code{stats}.}
 }
 \details{
 \code{simulate} is a function to solve SDE using the Euler-Maruyama

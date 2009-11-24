@@ -1,17 +1,19 @@
 ##:: function simulate
 ##:: solves SDE and returns result
 setGeneric("simulate",
-			function(yuima, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL)
+			function(object, nsim, seed, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL)
 			standardGeneric("simulate")
            )
 
 setMethod("simulate", "yuima",
-			function(yuima, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL){
+			function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL){
 
 
 ##:: errors checks
 
 ##:1: error on yuima model
+  yuima <- object
+				
   if(missing(yuima)){
     cat("\nyuima object is missing.\n")
     return(NULL)
