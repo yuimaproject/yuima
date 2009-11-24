@@ -16,6 +16,7 @@ setClass("model.parameter",representation(all="character",
 # Class 'yuima.model'
 setClass("yuima.model",representation(drift="expression",
                                       diffusion="list",
+                                      hurst="numeric",
                                       jump.coeff="expression",
                                       measure="list",
                                       measure.type="character",

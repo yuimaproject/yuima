@@ -14,6 +14,7 @@
   \describe{
     \item{\code{drift}:}{add explanation}
     \item{\code{diffusion}:}{add explanation}
+    \item{\code{hurst}:}{add explanation}
     \item{\code{jump.coeff}:}{add explanation}
     \item{\code{measure}:}{add explanation}
     \item{\code{measure.type}:}{add explanation}
