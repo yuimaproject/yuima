@@ -8,7 +8,7 @@ simulate(yuima, nsim, seed, xinit, true.parameter, space.discretized, increment.
 \arguments{
   \item{object}{an \code{yuima} object.}
   \item{xinit}{initial value vector of state variables.}
-  \item{true.parameter}{initial value vector of parameters.}
+  \item{true.parameter}{named list of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
 	Maruyama method.}
   \item{increment.W}{to specify Wiener increment for each time tics in advance.}
@@ -46,6 +46,20 @@ ou <- setYuima(model=mod, sampling=samp)
 # Solve SDEs using Euler-Maruyama method. 
 ou <- simulate(ou, xinit=1)
 plot(ou)
+
+
+
+# Path-simulation for 1-dim diffusion process. 
+# dXt = theta*Xt*dt + dWt
+mod1 <- setModel(drift="theta*y", diffusion=1, solve.variable=c("y"))
+str(mod1)
+ou1 <- setYuima(model=mod1, sampling=samp)
+
+# Solve SDEs using Euler-Maruyama method. 
+ou1 <- simulate(ou, xinit=1, true.p = list(theta=-1))
+plot(ou1)
+
+
 
 # A multi-dimensional (correlated) diffusion process. 
 # To describe the following model: 

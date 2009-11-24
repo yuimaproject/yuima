@@ -16,7 +16,7 @@ space.discretized<-function(xinit,yuima, env){
 	
 ##:: set time step	
 	delta <- Terminal/division 
-	
+
 	
 	
 	
@@ -79,14 +79,14 @@ gfunc <- function(x){
     p.b <- function(t, X=numeric(d.size)){
       ##:: assign names of variables
       for(i in 1:length(modelstate)){
-        assign(modelstate[i], X[i])
+        assign(modelstate[i], X[i], env)
       }
-      assign(modeltime,t)
+      assign(modeltime, t, env)
       tmp <- matrix(0, d.size, r.size+1)
       for(i in 1:d.size){
-        tmp[i,1] <- eval(V0[i])
+        tmp[i,1] <- eval(V0[i],env)
         for(j in 1:r.size){
-          tmp[i,j+1] <- eval(V[[i]][j])
+          tmp[i,j+1] <- eval(V[[i]][j], env)
         }
       }
       return(tmp)

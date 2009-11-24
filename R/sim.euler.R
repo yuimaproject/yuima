@@ -26,23 +26,23 @@ euler<-function(xinit,yuima,dW,env){
   p.b <- function(t, X=numeric(d.size)){
     ##:: assign names of variables
     for(i in 1:length(modelstate)){
-      assign(modelstate[i], X[i])
+      assign(modelstate[i], X[i], env)
     }
-    assign(modeltime, t)
+    assign(modeltime, t, env)
     ##:: solve diffusion term
     if(has.drift){
       tmp <- matrix(0, d.size, r.size+1)
       for(i in 1:d.size){
-        tmp[i,1] <- eval(V0[i])
+        tmp[i,1] <- eval(V0[i], env)
         for(j in 1:r.size){
-          tmp[i,j+1] <- eval(V[[i]][j])
+          tmp[i,j+1] <- eval(V[[i]][j],env)
         }
       }
     }else{  ##:: no drift term (faster)
       tmp <- matrix(0, d.size, r.size)
       for(i in 1:d.size){
         for(j in 1:r.size){
-          tmp[i,j] <- eval(V[[i]][j])
+          tmp[i,j] <- eval(V[[i]][j],env)
         }
       }
     }
@@ -83,9 +83,9 @@ euler<-function(xinit,yuima,dW,env){
       if(has.drift){
         pbdata <- matrix(0, d.size*(r.size+1), t.size)
         for(i in 1:d.size){
-          pbdata[(i-1)*(r.size+1)+1, ] <- eval(V0[i])
+          pbdata[(i-1)*(r.size+1)+1, ] <- eval(V0[i], env)
           for(j in 1:r.size){
-            pbdata[(i-1)*(r.size+1)+j+1, ] <- eval(V[[i]][j])
+            pbdata[(i-1)*(r.size+1)+j+1, ] <- eval(V[[i]][j], env)
           }
         }
         dim(pbdata)<-(c(r.size+1, d.size*t.size))
@@ -93,7 +93,7 @@ euler<-function(xinit,yuima,dW,env){
         pbdata <- matrix(0, d.size*r.size, t.size)
         for(i in 1:d.size){
           for(j in 1:r.size){
-            pbdata[(i-1)*r.size+j, ] <- eval(V[[i]][j])
+            pbdata[(i-1)*r.size+j, ] <- eval(V[[i]][j], env)
           }
         }
         dim(pbdata)<-(c(r.size, d.size*t.size))
@@ -116,12 +116,12 @@ euler<-function(xinit,yuima,dW,env){
     ##:: function to solve c(x,z)
     p.b.j <- function(t, X=numeric(d.size)){
       for(i in 1:length(modelstate)){
-        assign(modelstate[i], X[i])
+        assign(modelstate[i], X[i], env)
       }
-      assign(modeltime, t)
+      assign(modeltime, t, env)
       tmp <- numeric(d.size)
       for(i in 1:d.size){
-        tmp[i] <-  eval(JP[i])
+        tmp[i] <-  eval(JP[i], env)
       }
       return(tmp)
     }

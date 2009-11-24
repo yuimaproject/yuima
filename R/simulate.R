@@ -67,7 +67,7 @@ setMethod("simulate", "yuima",
   if(par.len>0){
 	for(i in 1:par.len){
 	 pars <- sdeModel@parameter@all[i]
-	 assign(sdeModel@parameter@all[i], true.parameter[i], yuimaEnv)
+	 assign(sdeModel@parameter@all[i], true.parameter[[i]], yuimaEnv)
 	}
   }
 
