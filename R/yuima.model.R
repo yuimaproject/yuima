@@ -329,27 +329,27 @@ setModel <- function(drift=NULL,
   
   ##:: get parameters in drift expression
   drift.par <- unique(all.vars(DRIFT))
-  drift.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable), drift.par)))
+  drift.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable, solve.variable), drift.par)))
   if(length(drift.idx)>0){
     drift.par <- drift.par[-drift.idx]
   }
   
   ##:: get parameters in diffusion expression
   diff.par <- unique(unlist(lapply(DIFFUSION, all.vars)))
-  diff.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable), diff.par)))
+  diff.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable, solve.variable), diff.par)))
   if(length(diff.idx)>0){
     diff.par <- diff.par[-diff.idx]
   }
 
   ##:: get parameters in jump expression
   jump.par <- unique(all.vars(JUMP))
-  jump.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable), jump.par)))
+  jump.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable, solve.variable), jump.par)))
   if(length(jump.idx)>0){
     jump.par <- jump.par[-jump.idx]
   }
 
   ##:: get parameters in measure expression
-  measure.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable), measure.par)))
+  measure.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable, solve.variable), measure.par)))
   if(length(measure.idx)>0){
     measure.par <- measure.par[-measure.idx]
   }
