@@ -35,7 +35,7 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   yuima.mod <- setYuima(model=mod, sampling=mod.sampling)
   yuima.mod <- simulate(yuima.mod,
                xinit=1,
-               true.parameter=c(0.6,0.3)
+               true.parameter=list(theta1=0.6,theta2=0.3)
                )
   
   ## TBC: sample the path later

@@ -41,9 +41,7 @@ rstable(x,alpha,beta,sigma,gamma)
 \note{
   Random number generators may be rewritten with C language to speed up.
 }
-\examples{
 
-}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

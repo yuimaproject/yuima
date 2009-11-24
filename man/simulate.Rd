@@ -205,7 +205,7 @@ T <- n*h
 
 obj.sampling <- setSampling(Terminal=T, division=division)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
-X <- simulate(obj.yuima, xinit=xinit, true.parameter=c(theta, sigma))
+X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
 plot(X)
 
 
