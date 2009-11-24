@@ -1,7 +1,5 @@
-euler<-function(xinit,yuima,dW){
-	
-  
-##:: initialize state variable
+euler<-function(xinit,yuima,dW,env){
+
 	
 	sdeModel<-yuima@model
 	

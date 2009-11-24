@@ -53,14 +53,25 @@ setMethod("simulate", "yuima",
   ##   print(yuima@sampling@division)
   ##   readline()
   
-  if(missing(true.parameter)){
-    true.parameter <- numeric(length(sdeModel@parameter@all))
+  par.len <- length(sdeModel@parameter@all)
+				
+  if(missing(true.parameter) & par.len>0){
+	true.parameter <- vector(par.len, mode="list")
+	for(i in 1:par.len)
+     true.parameter[[i]] <- 0
+	names(true.parameter) <-   sdeModel@parameter@all
   }
-  
- 
-  
-  
-  
+    
+  yuimaEnv <- new.env()
+				
+  if(par.len>0){
+	for(i in 1:par.len){
+	 pars <- sdeModel@parameter@all[i]
+	 assign(sdeModel@parameter@all[i], true.parameter[i], yuimaEnv)
+	}
+  }
+
+				
   if(space.discretized){
     if(r.size>1){
       warning("Space-discretized EM cannot be used for multi-dimentional models. Use standard method.")
@@ -101,26 +112,20 @@ setMethod("simulate", "yuima",
   }
   
     
-  par.len <- length(sdeModel@parameter@all)
-  if(par.len>0){
-    for(i in 1:par.len){
-      pars <- sdeModel@parameter@all[i]
-      assign(pars, true.parameter[i])
-    }
-  }
 
 				
   
   if(space.discretized){   	  
 	  ##:: using Space-discretized Euler-Maruyama method	  
-	  yuima@data <- space.discretized(xinit, yuima)
+	  yuima@data <- space.discretized(xinit, yuima, yuimaEnv)
 	  return(yuima)  
   }
 	
 	
     
   ##:: using Euler-Maruyama method
-  
+  delta <- Terminal/division 
+				
   ##:: Diffusion terms
   if( missing(increment.W)){
   	
@@ -130,6 +135,6 @@ setMethod("simulate", "yuima",
     dW <- increment.W
   }
     
-  yuima@data <- euler(xinit,yuima,dW)
+  yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
   return(yuima)
 })

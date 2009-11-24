@@ -1,4 +1,4 @@
-space.discretized<-function(xinit,yuima){
+space.discretized<-function(xinit,yuima, env){
 
 
 ##:: initialize state variable
