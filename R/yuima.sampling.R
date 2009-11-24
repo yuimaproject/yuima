@@ -5,17 +5,26 @@
 
  
 setMethod("initialize", "yuima.sampling",
-           function(.Object, Terminal, division){
+           function(.Object, Terminal, division, Initial, grid, random){  
              eqn <- length(Terminal)
              if(length(Terminal)==length(division)){
                .Object@Terminal <- Terminal
                .Object@division <- division
-             }else if(length(Termianl)==1){
+			   .Object@Initial  <- Initial
+			   .Object@grid     <- grid
+			   .Object@random   <- random 
+             }else if(length(Terminal)==1){
                .Object@division <- division
                .Object@Terminal <- rep(Terminal, length(division))
+			   .Object@Initial  <- Initial
+			   .Object@grid     <- grid
+			   .Object@random   <- random 
              }else if(length(division)==1){
                .Object@Terminal <- Terminal
                .Object@division <- rep(division, length(Terminal))
+			   .Object@Initial  <- Initial
+			   .Object@grid     <- grid
+			   .Object@random   <- random 
              }else{
                cat("\nDimension missmatch.\n")
                return(NULL)
@@ -23,8 +32,8 @@ setMethod("initialize", "yuima.sampling",
              return(.Object)
            })
 
-setSampling <- function(Terminal, division){
-  return(new("yuima.sampling", Terminal=Terminal, division=division))
+setSampling <- function(Terminal, division, Initial=0, grid=as.numeric(NULL), random=FALSE){
+  return(new("yuima.sampling", Terminal=Terminal, division=division, Initial=Initial, grid=grid, random=random))
 }
 
 # accessors

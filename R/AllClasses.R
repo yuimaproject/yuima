@@ -52,7 +52,10 @@ setClass("yuima.data", representation(original.data = "ANY",
 # type, rate, deltas, etc.
 
 setClass("yuima.sampling", representation(Terminal = "numeric",
-                                          division = "numeric"
+                                          division = "numeric",
+										  Initial  = "numeric",
+										  grid     = "numeric",
+										  random   = "logical"
                                           )
          )
 

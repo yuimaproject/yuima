@@ -19,6 +19,7 @@ setMethod("initialize", "yuima.model",
           function(.Object,
                    drift,
                    diffusion,
+				   hurst,
                    jump.coeff,
                    measure,
                    measure.type,
@@ -33,6 +34,7 @@ setMethod("initialize", "yuima.model",
                    xinit){
             .Object@drift <- drift
             .Object@diffusion <- diffusion
+			.Object@hurst <- hurst		   
             .Object@jump.coeff <- jump.coeff
             .Object@measure <- measure
             .Object@measure.type <- measure.type
@@ -53,6 +55,7 @@ setMethod("initialize", "yuima.model",
 ## set yuima model from SDE
 setModel <- function(drift=NULL,
                      diffusion=NULL,
+					 hurst=as.numeric(NULL),
                      jump.coeff=character(),
                      measure=list(),
                      measure.type=character(),
@@ -379,6 +382,7 @@ setModel <- function(drift=NULL,
   tmp <- new("yuima.model",
              drift= DRIFT,
              diffusion= DIFFUSION,
+			 hurst=as.numeric(hurst),
              jump.coeff=JUMP,
              measure= MEASURE,
              measure.type= measure.type,
