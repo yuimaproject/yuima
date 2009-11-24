@@ -44,7 +44,7 @@ samp <- setSampling(Terminal=T, division=division)
 ou <- setYuima(model=mod, sampling=samp)
 
 # Solve SDEs using Euler-Maruyama method. 
-ou <- simulate(yuima=ou, xinit=1)
+ou <- simulate(ou, xinit=1)
 plot(ou)
 
 # A multi-dimensional (correlated) diffusion process. 
@@ -83,7 +83,7 @@ cor <- setYuima(model=cor.mod, sampling=cor.samp)
 
 # Solve SDEs using Euler-Maruyama method. 
 set.seed(123)
-cor <- simulate(yuima=cor)
+cor <- simulate(cor)
 plot(cor)
 
 # solve SDEs using Space-discretized Euler-Maruyama method
@@ -96,7 +96,7 @@ mod_sd <- setModel(drift = c("0.1*x1", "0.2*x2"),
                      )
 samp_sd <- setSampling(Terminal=T, division=division)
 sd <- setYuima(model=mod_sd, sampling=samp_sd)
-sd <- simulate(yuima=sd, xinit=c(1,1), space.discretized=TRUE)
+sd <- simulate(sd, xinit=c(1,1), space.discretized=TRUE)
 plot(sd)
 
 
@@ -119,7 +119,7 @@ my.dW <- rnorm(division * yuima.mod@model@noise.number, 0, sqrt(delta))
 my.dW <- t(matrix(my.dW, nrow=division, ncol=yuima.mod@model@noise.number))
 
 ## Solve SDEs using Euler-Maruyama method.
-yuima.mod <- simulate(yuima=yuima.mod,
+yuima.mod <- simulate(yuima.mod,
                       xinit=1,
                       space.discretized=FALSE,
                       increment.W=my.dW)
@@ -166,7 +166,7 @@ my.dW <- rnorm(division * yuima.obj@model@noise.number, 0, sqrt(delta))
 my.dW <- t(matrix(my.dW, nrow=division, ncol=yuima.obj@model@noise.number))
 
 ## Solve SDEs using Euler-Maruyama method.
-yuima.obj.path <- simulate(yuima=yuima.obj, space.discretized=FALSE, increment.W=my.dW)
+yuima.obj.path <- simulate(yuima.obj, space.discretized=FALSE, increment.W=my.dW)
 if( !is.null(yuima.obj.path) ){
   x11()
   plot(yuima.obj.path)
@@ -191,7 +191,7 @@ T <- n*h
 
 obj.sampling <- setSampling(Terminal=T, division=division)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
-X <- simulate(yuima=obj.yuima, xinit=xinit, true.parameter=c(theta, sigma))
+X <- simulate(obj.yuima, xinit=xinit, true.parameter=c(theta, sigma))
 plot(X)
 
 
@@ -200,7 +200,7 @@ plot(X)
 obj.model <- setModel(drift="-x", xinit=1, jump.coeff="1", measure.type="code", measure=list(df="rIG(z, 1, 0.1)"))
 obj.sampling <- setSampling(Terminal=10, division=10000)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
-result <- simulate(yuima=obj.yuima)
+result <- simulate(obj.yuima)
 plot(result)
 
 ##:: sample for multidimensional Levy process ("code" type)
@@ -214,7 +214,7 @@ plot(result)
 ##  obj.model <- setModel(drift=c("1 - 2*x1-x2",".5-x1-2*x2"), xinit=c(1,1), solve.variable=c("x1","x2"), jump.coeff="1", measure.type="code", measure=list(df="rIG(z, alpha=1, beta=beta, mu=mu, Lambda=Lambda)"))
 ##  obj.sampling <- setSampling(Terminal=10, division=10000)
 ##  obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
-##  result <- simulate(yuima=obj.yuima)	   
+##  result <- simulate(obj.yuima)	   
 ## plot(result)
 
 }
