@@ -55,7 +55,7 @@ setMethod("initialize", "yuima.model",
 ## set yuima model from SDE
 setModel <- function(drift=NULL,
                      diffusion=NULL,
-					 hurst=as.numeric(NULL),
+hurst=0.5, # as.numeric(NULL),
                      jump.coeff=character(),
                      measure=list(),
                      measure.type=character(),

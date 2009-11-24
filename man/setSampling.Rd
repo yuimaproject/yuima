@@ -8,12 +8,15 @@ Set sampling information and create a `sampling' object.
   \code{setSampling} is a constructor for \code{sampling} class.
 }
 \usage{
-  setSampling(Terminal,division)
+  setSampling(Terminal, division, Initial=0, grid=as.numeric(NULL), random=FALSE)
 }
 \arguments{  
   %%\item{x}{an object of class \code{yuima}, \code{yuima.model} or \code{yuima.data}}
   \item{Terminal}{Terminal}
   \item{division}{division}
+  \item{Initial}{Initial}
+  \item{grid}{a grid of times for the simulation, possibly empty}
+  \item{random}{specify if it is erandom sampling}
 }
 \details{
   class \code{sampling} has two slots,

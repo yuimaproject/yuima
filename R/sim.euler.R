@@ -152,7 +152,7 @@ euler<-function(xinit,yuima,dW,env){
       }else{
         stop("Sorry. CP only supports dexp, dnorm and dgamma yet.")
       }
-      randJ <- eval(F)
+		randJ <- eval(F)  ## this expression is evaluated locally not in the yuimaEnv
       j <- 1
       for(i in 1:division){
         if(JAMP==FALSE || sum(i==ij)==0){
@@ -162,7 +162,7 @@ euler<-function(xinit,yuima,dW,env){
           j <- j+1
           ##cat(paste(J,"\n"))
           ##Pi <- zeta(dX,J)
-          assign(sdeModel@jump.variable, J)
+          assign(sdeModel@jump.variable, J, env)
           ##Pi <- p.b.j(t=i*delta,X=dX) %*% J
           Pi <- p.b.j(t=i*delta, X=dX)
         }

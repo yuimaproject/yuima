@@ -10,6 +10,9 @@
   \describe{
     \item{\code{Terminal}:}{Horizon of the stochastic processes.}
     \item{\code{division}:}{Time division for the data and/or model.}
+    \item{\code{Initial}:}{Initial time of the data and/or model.}
+    \item{\code{grid}:}{a grid of time points on which data are simulated.}
+    \item{\code{random}:}{whether simulation consists of random times.}
   }
 }
 \author{YUIMA Project}

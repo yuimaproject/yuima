@@ -3,7 +3,7 @@
 \title{Simulator function for multi-dimensional stochastic processes}
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
-simulate(yuima, nsim, seed, xinit, true.parameter, space.discretized, increment.W, increment.L)
+simulate(object, nsim, seed, xinit, true.parameter, space.discretized, increment.W, increment.L)
 }
 \arguments{
   \item{object}{an \code{yuima} object.}

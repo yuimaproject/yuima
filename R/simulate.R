@@ -122,22 +122,22 @@ setMethod("simulate", "yuima",
   }
 	
 	
-    
-  ##:: using Euler-Maruyama method
+##:: using Euler-Maruyama method
   delta <- Terminal/division 
 				
-				if (missing(increment.W)){
-					if (sdeModel@hurst!=1/2){ 
+
+				
+				if(missing(increment.W)){
+					if( sdeModel@hurst!=0.5 ){ 
 						grid<-sampling2grid(yuima@sampling)	
-						dW<-CholeskyfGn(grid,sdeModel@hurst)
-						dW <- t(matrix(dW, nrow=division, ncol=r.size))  
-					}else{
+						dW<-CholeskyfGn(grid, sdeModel@hurst)
+						dW <- t(matrix(dW, nrow=division, ncol=r.size))
+					} else {
 						delta<-Terminal/division
 						dW <- rnorm(division * r.size, 0, sqrt(delta))
 						dW <- t(matrix(dW, nrow=division, ncol=r.size))  
 					}
-					
-				}else{
+				} else {
 					dW <- increment.W
 				}
 				

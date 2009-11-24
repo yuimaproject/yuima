@@ -16,7 +16,7 @@
 }
 
 \usage{
-setModel(drift=NULL, diffusion=NULL, jump.coeff=character(),
+setModel(drift=NULL, diffusion=NULL, hurst = 0.5, jump.coeff=character(),
 measure=list(), measure.type=character(), state.variable="x",
 jump.variable="z", time.variable="t", solve.variable, xinit)
 }
@@ -24,6 +24,9 @@ jump.variable="z", time.variable="t", solve.variable, xinit)
 \arguments{
   \item{drift}{a vector of \code{expression}s (the default value is 0).}
   \item{diffusion}{a matrix of \code{expression}s (the default value is 1).}
+  \item{hurst}{the hurst parameter of the gaussian noise. If \code{h=0.5}, the default,
+  the process is Wiener otherwise it is fractional Brownian motion with that precise value
+   of the hurst index.}
   \item{jump.coeff}{a matrix of \code{expression}x.}
   \item{measure}{Levy measure for jump variables.}
   \item{measure.type}{Type specification for Levy measures.}
