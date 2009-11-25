@@ -8,15 +8,16 @@ Set sampling information and create a `sampling' object.
   \code{setSampling} is a constructor for \code{sampling} class.
 }
 \usage{
-  setSampling(Terminal, division, Initial=0, grid=as.numeric(NULL), random=FALSE)
+  setSampling(Initial = 0, Terminal = 1, division = 100, delta =
+                 0.1, grid = as.numeric(NULL), random = FALSE)
 }
 \arguments{  
-  %%\item{x}{an object of class \code{yuima}, \code{yuima.model} or \code{yuima.data}}
+  \item{Initial}{Initial}
   \item{Terminal}{Terminal}
   \item{division}{division}
-  \item{Initial}{Initial}
+  \item{delta}{mesh size in case of regular grid}
   \item{grid}{a grid of times for the simulation, possibly empty}
-  \item{random}{specify if it is erandom sampling}
+  \item{random}{specify if it is random sampling}
 }
 \details{
   class \code{sampling} has two slots,

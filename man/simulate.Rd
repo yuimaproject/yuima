@@ -3,7 +3,8 @@
 \title{Simulator function for multi-dimensional stochastic processes}
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
-simulate(object, nsim, seed, xinit, true.parameter, space.discretized, increment.W, increment.L)
+simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE, 
+ increment.W = NULL, increment.L = NULL, methodfGn = "Cholesky")
 }
 \arguments{
   \item{object}{an \code{yuima} object.}
@@ -15,6 +16,7 @@ simulate(object, nsim, seed, xinit, true.parameter, space.discretized, increment
   \item{increment.L}{to specify Levy increment for each time tics in advance.}
   \item{nsim}{Not used yet. Included only to match the standard genenirc in package \code{stats}.}
   \item{seed}{Not used yet. Included only to match the standard genenirc in package \code{stats}.}
+  \item{methodfGn}{simulation methods for fractional Gaussian noise.}
 }
 \details{
 \code{simulate} is a function to solve SDE using the Euler-Maruyama
