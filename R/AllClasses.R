@@ -51,11 +51,13 @@ setClass("yuima.data", representation(original.data = "ANY",
 # sampling is now empty, but should give informations on the sampling
 # type, rate, deltas, etc.
 
-setClass("yuima.sampling", representation(Terminal = "numeric",
+setClass("yuima.sampling", representation(Initial  = "numeric",
+										  Terminal = "numeric",
                                           division = "numeric",
-										  Initial  = "numeric",
+										  delta    = "numeric",
 										  grid     = "numeric",
-										  random   = "logical"
+										  random   = "ANY",
+										  regular  = "logical"
                                           )
          )
 

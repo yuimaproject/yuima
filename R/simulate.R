@@ -10,12 +10,12 @@
 ##:: function simulate
 ##:: solves SDE and returns result
 setGeneric("simulate",
-			function(object, nsim, seed, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL)
+			function(object, nsim, seed, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL, methodfGn="Cholesky")
 			standardGeneric("simulate")
            )
 
 setMethod("simulate", "yuima",
-			function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL){
+			function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL,methodfGn="Cholesky"){
 
 
 ##:: errors checks
@@ -130,12 +130,18 @@ setMethod("simulate", "yuima",
 				if(missing(increment.W)){
 					if( sdeModel@hurst!=0.5 ){ 
 						grid<-sampling2grid(yuima@sampling)	
-						dW<-CholeskyfGn(grid, sdeModel@hurst)
-						dW <- t(matrix(dW, nrow=division, ncol=r.size))
+						
+						if(methodfGn=="Cholesky"){
+						dW<-CholeskyfGn(grid, sdeModel@hurst,r.size)
+						}else{
+						cat("\nNot done presently\n")
+						return(NULL)	
+						}
+						
 					} else {
 						delta<-Terminal/division
 						dW <- rnorm(division * r.size, 0, sqrt(delta))
-						dW <- t(matrix(dW, nrow=division, ncol=r.size))  
+						dW <- matrix(dW, ncol=division, nrow=r.size,byrow=TRUE)  
 					}
 				} else {
 					dW <- increment.W
