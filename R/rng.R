@@ -21,38 +21,44 @@ rIG <- function(x,delta,gamma){
 
 ## multi-variate normal inverse Gaussian
 rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
-  
   ## Error check
   if(length(mu)!=length(beta)){
     stop("Error: wrong input dimension.")
   }
+  
   if(missing(Lambda)){
     ## univariate case
-    gamma <- sqrt(as.numeric(alpha^2 - beta^2))
-  }else{
+    gamma <- sqrt(alpha^2 - beta^2)
+    
+    if (gamma == 0) {
+      V = rnorm(x)^2
+      Z = delta * delta/V
+      X = sqrt(Z) * rnorm(x)
+    }else{ 
+      Z <- rIG(x,delta,gamma)
+      N <- rnorm(x,0,1)
+      X <- mu + beta*Z + sqrt(Z)*N
+    }
+    return(X)
+    
+  }else{  ## multivariate case
     if( det(Lambda) < 10^(-15)){
       stop("Determinant of Lambda must be one.")
     }
-    gamma <- sqrt(as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta))
+    tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
+    if(tmp <0){
+      stop("gamma must be positive.")
+    }
+    gamma <- sqrt(tmp)
   }
   
-  if (gamma == 0) 
-    stop("alpha^2 - beta^2*mu must be positive value.")
-    
   tau <- rIG(x,delta,gamma)
-  eta <- rnorm(length(beta))
-  if(missing(Lambda)){    ## uni-variate
-    X <- mu + beta*tau + sqrt(tau)*eta
-  }else{   ## multi-variate
-    sqrt.L <- svd(Lambda)
-    sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
-    
-    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)
-    + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% eta,x),length(beta),x)
-    
-    X <- z
-  }
-  
+  eta <- rnorm(x*length(beta))
+  sqrt.L <- svd(Lambda)
+  sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
+  z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(tau,length(beta)),x,length(beta))) * (Lambda %*% t(matrix(eta,x,length(beta))))
+
+  X <- z
   return(X)
 }
 
@@ -95,36 +101,49 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
   }
   if(missing(Lambda)){
     ## univariate case
+    if(length(mu)!=1 || length(beta)!=1){
+      stop("Error: wrong input dimension.")
+    }
     tmp <- as.numeric(alpha^2 - beta^2)
-  }else{
+    if( lambda <= 0 ){
+      stop("lambda must be positive value.")
+    }
+    if( alpha <= 0 ){
+      stop("alpha must be positive value.")
+    }
+    if( tmp <= 0 ){
+      stop("alpha^2 - beta^2*mu must be positive value.")
+    }
+  
+    tau <- rgamma(x,lambda,tmp/2)
+    eta <- rnorm(x)
+    ##  z <- mu + beta * tau * Lambda + sqrt(tau * Lambda) * eta
+    z <- mu + beta * tau + sqrt(tau) * eta
+    X <- z
+    return(X)
+    
+  }else{ ## multivariate case
     if( det(Lambda) < 10^(-15)){
       stop("Determinant of Lambda must be one.")
     }
     tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
-  }
   
-  if( lambda <= 0 )
-    stop("lambda must be positive value.")
-  if( alpha <= 0 )
-    stop("alpha must be positive value.")
-  if( tmp <=0)
-    stop("alpha^2 - beta^2*mu must be positive value.")
+    if( lambda <= 0 )
+      stop("lambda must be positive value.")
+    if( alpha <= 0 )
+      stop("alpha must be positive value.")
+    if( tmp <=0)
+      stop("alpha^2 - beta^2*mu must be positive value.")
   
-  tau <- rgamma(x,lambda,tmp/2)
-  eta <- rnorm(length(beta))
-  if(missing(Lambda)){
-    z <- mu + beta * tau + sqrt(tau) * eta
-    X <- z
-  }else{
+    tau <- rgamma(x,lambda,tmp/2)
+    eta <- rnorm(x*length(beta))
     sqrt.L <- svd(Lambda)
     sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
     
-    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)
-    + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% eta,x),length(beta),x)
-    
+    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(tau,length(beta)),x,length(beta))) * (Lambda %*% t(matrix(eta,x,length(beta))))
     X <- z
+    return(X)
   }
-  return(X)
 }
 
 
