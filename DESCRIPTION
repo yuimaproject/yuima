@@ -1,10 +1,13 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package
-Version: 0.0.73
-Date: 2009-11-24
+Version: 0.0.74
+Date: 2009-12-09
 Depends: methods, zoo
-Author: Yuima project team.
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: package for the YUIMA Project. The YUIMA Project Team is: Yoshida, N., Iacus, S.M., Hino, H., 
-License: GPL (>= 2)
+Author: YUIMA Project Team.
+Maintainer: stefano.iacus@R-project.org
+Description: The YUIMA Project for Simulation and Inference of 
+ Multidimensional Stochastic Differential Equations driven by
+ with Abstract Noise. 
+License: GPL-2
+URL: http://R-Forge.R-project.org/projects/yuima/
