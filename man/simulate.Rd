@@ -7,15 +7,17 @@ simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE,
  increment.W = NULL, increment.L = NULL, methodfGn = "Cholesky")
 }
 \arguments{
-  \item{object}{an \code{yuima} object.}
+  \item{object}{an \code{\link{yuima-class}} object.}
   \item{xinit}{initial value vector of state variables.}
   \item{true.parameter}{named list of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
 	Maruyama method.}
   \item{increment.W}{to specify Wiener increment for each time tics in advance.}
   \item{increment.L}{to specify Levy increment for each time tics in advance.}
-  \item{nsim}{Not used yet. Included only to match the standard genenirc in package \code{stats}.}
-  \item{seed}{Not used yet. Included only to match the standard genenirc in package \code{stats}.}
+  \item{nsim}{Not used yet. Included only to match the standard genenirc in 
+	package \code{stats}.}
+  \item{seed}{Not used yet. Included only to match the standard genenirc in 
+	package \code{stats}.}
   \item{methodfGn}{simulation methods for fractional Gaussian noise.}
 }
 \details{
@@ -23,6 +25,9 @@ simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE,
 method. This function supports usual Euler-Maruyama method for
 multidimensional SDE, and space
 discretized Euler-Maruyama method for one dimensional SDE.
+
+It simulates solutions of stochastic differential equations with Gaussian noise,
+fractional Gaussian noise awith/without jumps.
 }
 \value{
   \item{yuima}{A multi-dimensional \code{yuima} object(time series object).}
