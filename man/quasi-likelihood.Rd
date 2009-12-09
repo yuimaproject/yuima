@@ -34,7 +34,7 @@ rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE)
   \item{QL}{a real value.}
   \item{opt}{a list with components the same as 'optim' function.}
 }
-\author{YUIMA Project Team}
+\author{The YUIMA Project Team}
 \note{
 The function ml.ql uses the function optim internally.
 }

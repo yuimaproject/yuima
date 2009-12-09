@@ -17,5 +17,5 @@
 	\item{regular}{whether the ampling is regular. For internal use only.}
   }
 }
-\author{YUIMA Project}
+\author{The YUIMA Project Team}
 \keyword{classes}

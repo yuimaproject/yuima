@@ -16,7 +16,7 @@
 
 \title{Classes for stochastic differential equations data object}
 \description{
-  The \code{yuima.data} class is a class of the \pkg{yuima} package.  
+  The \code{yuima.data-class} is a class of the \pkg{yuima} package.  
 }
 \section{Slots}{
   \describe{
@@ -24,18 +24,30 @@
 	\item{\code{zoo.data}:}{A list of \code{zoo} format data.}
   }
 }
+\details{
+This object is one of the slots of the \code{\link{yuima.data-class}}.
+The object contains two slots. 
+
+The slot \code{original.data} contains, as the name suggests,
+a copy of the original data passed by the user to the \code{initialize} method 
+and/or the \code{\link{setData}} function. It is intended for backup purposes.
+
+Internally, the \pkg{yuima} package stores and operates on  
+\code{\link{zoo}}-type objects.
+The \code{\link{zoo}}-fied data are contained in the slot \code{zoo.data}.
+
+If data are obtained by simulation, the \code{original.data} slot 
+is usually empty.
+}
 \section{Methods}{
   \describe{
-    \item{initialize}{\code{signature(x = "yuima.data")}: sets both slot of \code{yuima.data} class.}
+    \item{initialize}{\code{signature(x = "yuima.data")}: sets both slot of \code{\link{yuima.data-class}}.}
     \item{get.zoo.data}{\code{signature(x = "yuima.data")}: returns slot \code{zoo.data}.}
-    \item{plot}{\code{signature(x = "yuima.data")}: same as \code{zoo} or \code{ts}.}
-   % \item{start}{\code{signature(x = "yuima.data")}: same as \code{zoo} or \code{ts}.}
-   % \item{end}{\code{signature(x = "yuima.data")}: same as \code{zoo} or \code{ts}.}
-   % \item{time}{\code{signature(x = "yuima.data")}: same as \code{zoo} or \code{ts}.}
-    \item{dim}{\code{signature(x = "yuima.data")}: same as \code{zoo} or \code{ts}.}
-    \item{length}{\code{signature(x = "yuima.data")}: same as \code{zoo} or \code{ts}.}
+    \item{plot}{\code{signature(x = "yuima.data")}: same as \code{\link{zoo}}.}
+    \item{dim}{\code{signature(x = "yuima.data")}: same as \code{\link{zoo}}.}
+    \item{length}{\code{signature(x = "yuima.data")}: same as \code{\link{zoo}}.}
     \item{cce}{\code{signature(x = "yuima.data")}: Cumulative Covariance Estimator.}
   }
 }
-\author{YUIMA Project}
+\author{The YUIMA Project Team}
 \keyword{classes}

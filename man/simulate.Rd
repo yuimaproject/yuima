@@ -27,7 +27,7 @@ discretized Euler-Maruyama method for one dimensional SDE.
 \value{
   \item{yuima}{A multi-dimensional \code{yuima} object(time series object).}
 }
-\author{YUIMA Project Team}
+\author{The YUIMA Project Team}
 \note{There may be missing information in the simulate description.
 Please contribute with suggestions and fixings.
 }

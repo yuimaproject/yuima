@@ -5,39 +5,56 @@
 \alias{length}
 
 \title{
-Set and access data of an `yuima' or `yuima.data' object.
+Set and access data of an 'yuima-class' or 
+'yuima.data-class' object.
 }
 \description{
-\code{setData} is a constructor for \code{yuima.data} class.
-\code{get.zoo.data} returns the \code{zoo.data} field of an \code{yuima.data} object.(warning: value is LIST of zoo's)
-\code{plot} plots the \code{yuima.data} object.
-\code{dim} returns \code{dim} of the \code{zoo.data} field.
-\code{length} returns the \code{length} of the time series in \code{zoo.data} field.
+\code{setData} is a constructor for \code{\link{yuima.data-class}}.
+
+\code{get.zoo.data} returns the \code{zoo.data} slot of a
+\code{\link{yuima.data-class}} object. (Note: value is a \code{list} of 
+\code{\link{zoo}} objects).
+
+\code{plot} plots the \code{\link{yuima.data-class}} or 
+\code{\link{yuima-class}} objects.
+
+\code{dim} returns the \code{\link{dim}} of the \code{zoo.data} field.
+
+\code{length} returns the \code{\link{length}} of the time series in 
+\code{zoo.data} field.
 }
 \usage{
   setData(original.data)
   get.zoo.data(x)
 }
 \arguments{  
-  \item{original.data}{Some type of data.}
-  \item{x}{An object of class \code{yuima.data} or \code{yuima}.}
+  \item{original.data}{Some type of data, usually some sort of time series. 
+  The function always tries to convert to the input data into an object of
+   \code{\link{zoo}}-type.}
+  \item{x}{An object of type \code{\link{yuima.data-class}} or 
+  \code{\link{yuima-class}}.}
 }
 \details{
-    class \code{yuima.data} has two slots,
-    \code{zoo.data} is a list of \code{zoo} version of data, and
-    \code{original.data} is a copy of the original data
+The \code{\link{yuima.data-class}} contains two slots. 
+
+The slot \code{original.data} contains, as the name suggests,
+a copy of the original data passed by the user and it is intended for backup 
+purposes.
+
+Internally, the \pkg{yuima} package stores and operates on  
+\code{\link{zoo}}-type objects.
+The \code{\link{zoo}}-fied data are contained in the slot \code{zoo.data}.
 }
 \value{
-   \item{value}{A list of object(s) of class \code{yuima.data} for \code{setData}. 
+   \item{value}{A list of object(s) of class \code{\link{yuima.data-class}} for 
+   \code{setData}. 
    The \code{zoo.data} field for \code{get.zoo.data}}
 }
-\author{YUIMA Project Team}
+\author{The YUIMA Project Team}
 \examples{
-library(zoo)
 X <- ts(matrix(rnorm(200),100,2))
 mydata <- setData(X)
 str(get.zoo.data(mydata))
-#plot(get.zoo.data(mydata))
 dim(mydata)
 length(mydata)
 plot(mydata)
@@ -49,6 +66,4 @@ plot(mysde)
 dim(mysde)
 length(mysde)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
 \keyword{ts}

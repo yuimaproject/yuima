@@ -21,7 +21,7 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
 \value{
   \item{vector}{a vector of the paramter estimate}
 }
-\author{YUIMA Project Team}
+\author{The YUIMA Project Team}
 \note{
   This routine is not stable and accurate. Dr.Kamatani is now working for improvements.
 }

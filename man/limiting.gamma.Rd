@@ -20,7 +20,7 @@ limiting.gamma(obj,theta,verbose=FALSE)
   \item{gamma1}{a theoretical figure for variance of theta1 estimator}
   \item{gamma2}{a theoretical figure for variance of theta2 estimator}
 }
-\author{YUIMA Project Team}
+\author{The YUIMA Project Team}
 \note{
   we need to fix this routine.
 }

@@ -14,5 +14,5 @@
 	  object.}
   }
 }
-\author{YUIMA Project}
+\author{The YUIMA Project Team}
 \keyword{classes}

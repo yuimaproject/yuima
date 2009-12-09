@@ -37,7 +37,7 @@ rstable(x,alpha,beta,sigma,gamma)
   \item{rNIG}{A vector of random numbers.}
   \item{rbgamma}{A vector of random numbers.} 
 }
-\author{YUIMA Project Team}
+\author{The YUIMA Project Team}
 \note{
   Random number generators may be rewritten with C language to speed up.
 }

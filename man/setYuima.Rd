@@ -1,30 +1,39 @@
 \name{setYuima}
 \alias{setYuima}
 \title{
-Create a 'yuima' object by combining 'model', 'data', 'sampling' and 'characteristic' object.
+Create a 'yuima' object by combining 'model', 'data', 'sampling' and 
+'characteristic' slots.
 }
 \description{
-  \code{setYuima} is a constructor for \code{yuima} class.
+  \code{setYuima} is a constructor for \code{\link{yuima-class}}.
 }
 \usage{
-setYuima(data,model,sampling,characteristic)
+setYuima(data, model, sampling, characteristic)
 }
 \arguments{
-  \item{data}{an object of class \code{data}}
-  \item{model}{an object of class \code{model}}
-  \item{sampling}{an object of class \code{sampling}}
-  \item{characteristic}{an object of class \code{characteristic}}
+  \item{data}{an object of class \code{\link{yuima.data-class}}.}
+  \item{model}{an object of class \code{\link{yuima.model-class}}.}
+  \item{sampling}{an object of class \code{\link{yuima.sampling-class}}.}
+  \item{characteristic}{an object of class \code{\link{yuima.characteristic-class}}.}
 }
 \details{
-  class \code{yuima} has four slots,
-  \code{data} is an object of class \code{data},
-  \code{model} is an object of class \code{model},
-  \code{sampling} is an object of class \code{sampling}, and
-  \code{characteristic} is an object of class \code{characteristic}.
+The \code{yuima-class} object is the main object of the \pkg{yuima} package.
+Some of the slots may be missing. 
+
+The \code{data} slot contain the data, either empirical or simulated. 
+
+The \code{model} contains the description of the 
+(statistical) model which is used to generate the \code{data} via different 
+simulation schemes, to draw inference from the \code{data} or both.
+
+The \code{sampling} slot contains information on how the \code{data} have been
+collected or how they should be generated.
+
+The slot \code{characteristic} contains information on \code{PLEASE FINISH THIS}.
 }
 \value{
-  An object of class \code{yuima} for \code{setYuima}.
+  An object of type \code{\link{yuima-class}}.
 }
-\author{YUIMA Project Team}
+\author{The YUIMA Project Team}
 
 \keyword{ts}

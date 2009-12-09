@@ -5,7 +5,7 @@ Version: 0.0.74
 Date: 2009-12-09
 Depends: methods, zoo
 Author: YUIMA Project Team.
-Maintainer: stefano.iacus@R-project.org
+Maintainer: Stefano M. Iacus <stefano.iacus@R-project.org>
 Description: The YUIMA Project for Simulation and Inference of 
  Multidimensional Stochastic Differential Equations driven by
  with Abstract Noise. 
