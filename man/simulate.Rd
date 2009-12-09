@@ -28,6 +28,10 @@ discretized Euler-Maruyama method for one dimensional SDE.
 
 It simulates solutions of stochastic differential equations with Gaussian noise,
 fractional Gaussian noise awith/without jumps.
+
+By default, \code{methodfGn = "Cholesky"} uses the exact method based on the
+Cholesky decomposition. This method may not work, i.e. the computation is 
+stopped, for too long grids due to memory constraints.
 }
 \value{
   \item{yuima}{A multi-dimensional \code{yuima} object(time series object).}
@@ -63,8 +67,19 @@ str(mod1)
 ou1 <- setYuima(model=mod1, sampling=samp)
 
 # Solve SDEs using Euler-Maruyama method. 
-ou1 <- simulate(ou, xinit=1, true.p = list(theta=-1))
+ou1 <- simulate(ou1, xinit=1, true.p = list(theta=-1))
 plot(ou1)
+
+
+# Path-simulation for 1-dim diffusion process with fractional noise. 
+# dXt = theta*Xt*dt + dWt^h
+mod2 <- setModel(drift="theta*y", diffusion=1, solve.variable=c("y"), hurst=0.3)
+str(mod2)
+ou2 <- setYuima(model=mod2, sampling=samp)
+
+# Solve SDEs using Euler-Maruyama method. 
+ou2 <- simulate(ou2, xinit=1, true.p = list(theta=-1))
+plot(ou2)
 
 
 
