@@ -5,8 +5,9 @@
 
  
 setMethod("initialize", "yuima.sampling",
-           function(.Object, Initial, Terminal, division, delta, grid, random, regular){  
-             
+           function(.Object, Initial, Terminal, division, delta, grid, random, 
+				 scale, regular){  
+               .Object@scale <- 1
 			   if(length(grid)>0){
 				   
 				   testInitial<-(min(grid)==Initial)
@@ -74,8 +75,11 @@ setMethod("initialize", "yuima.sampling",
              return(.Object)
            })
 
-setSampling <- function(Initial=0, Terminal=1, division=100, delta=0.1, grid=as.numeric(NULL), random=FALSE){
-  return(new("yuima.sampling", Initial=Initial, Terminal=Terminal, division=division, delta=delta, grid=grid, random=random, regular=TRUE))
+setSampling <- function(Initial=0, Terminal=1, division=100, delta=0.1, 
+ grid=as.numeric(NULL), random=FALSE, scale=1){
+  return(new("yuima.sampling", Initial=Initial, Terminal=Terminal, 
+	division=division, delta=delta, grid=grid, random=random, 
+			 scale=scale, regular=TRUE))
 }
 
 # accessors

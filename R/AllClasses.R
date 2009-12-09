@@ -57,6 +57,7 @@ setClass("yuima.sampling", representation(Initial  = "numeric",
 										  delta    = "numeric",
 										  grid     = "numeric",
 										  random   = "ANY",
+										  scale	   = "ANY",
 										  regular  = "logical"
                                           )
          )

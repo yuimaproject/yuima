@@ -8,14 +8,21 @@
 }
 \section{Slots}{
   \describe{
-    \item{Initial}{Initial time of the data and/or model.}
-    \item{Terminal}{Horizon of the stochastic processes.}
-    \item{division}{Time division for the data and/or model.}
-    \item{grid}{a grid of time points on which data are simulated.}
-    \item{random}{whether simulation consists of random times.}
-	\item{delta}{the mesh size in case of regular sampling.}
-	\item{regular}{whether the ampling is regular. For internal use only.}
+	\item{\code{Initial}:}{initial time of the grid.}
+	\item{\code{Terminal}:}{terminal time fo the grid.}
+	\item{\code{division}:}{the number of observations - 1.}
+	\item{\code{delta}:}{in case of a regular grid is the mesh.}
+	\item{\code{grid}:}{the grid of times.}
+	\item{\code{random}:}{either \code{FALSE} or the distribution 
+	 of the random times.}
+	\item{\code{scale}:}{by default 1. NOT YET IN USE.}
+	\item{\code{regular}:}{indicator of whether the grid is regular or not.
+	 For internal use only.}
   }
+}
+\details{
+This object is created by \code{\link{setSampling}} or as a result of a 
+simulation scheme by the \code{\link{simulate}} function.
 }
 \author{The YUIMA Project Team}
 \keyword{classes}
