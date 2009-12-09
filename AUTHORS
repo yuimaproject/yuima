@@ -1,0 +1,22 @@
+Authors of yuima package.
+
+The YUIMA Project was initially started by Nakahiro Yoshida as principal 
+investigator and then Stefano M. Iacus joined as coordinator of the R
+implementation. The YUIMA Project is mainly developed by statisticians
+who actively publish in the field of inference and simulation for stochastic
+differential equations.
+
+
+The YUIMA Project Core Team with write access to the source code, currently 
+consists of
+
+Alexandre Brouste	<Alexandre.Brouste@univ-lemans.fr>
+Masaaki Fukasawa	<fukasawa@sigmath.es.osaka-u.ac.jp>
+Hideitsu Hino		<hideitsu.hino@toki.waseda.jp>
+Stefano M. Iacus	<stefano.iacus@unimi.it>
+Kengo Kamatani		<kengok@ms.u-tokyo.ac.jp>
+Hiroki Masuda		<hiroki@math.kyushu-u.ac.jp>
+Yusutaka Shimizu	<yasutaka@sigmath.es.osaka-u.ac.jp>
+Masayuki Uchida		<uchida@sigmath.es.osaka-u.ac.jp>
+Nakahiro Yoshida	<nakahiro@ms.u-tokyo.ac.jp>
+
