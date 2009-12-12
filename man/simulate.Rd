@@ -28,10 +28,6 @@ discretized Euler-Maruyama method for one dimensional SDE.
 
 It simulates solutions of stochastic differential equations with Gaussian noise,
 fractional Gaussian noise awith/without jumps.
-
-By default, \code{methodfGn = "Cholesky"} uses the exact method based on the
-Cholesky decomposition. This method may not work, i.e. the computation is 
-stopped, for too long grids due to memory constraints.
 }
 \value{
   \item{yuima}{A multi-dimensional \code{yuima} object(time series object).}
@@ -67,19 +63,8 @@ str(mod1)
 ou1 <- setYuima(model=mod1, sampling=samp)
 
 # Solve SDEs using Euler-Maruyama method. 
-ou1 <- simulate(ou1, xinit=1, true.p = list(theta=-1))
+ou1 <- simulate(ou, xinit=1, true.p = list(theta=-1))
 plot(ou1)
-
-
-# Path-simulation for 1-dim diffusion process with fractional noise. 
-# dXt = theta*Xt*dt + dWt^h
-mod2 <- setModel(drift="theta*y", diffusion=1, solve.variable=c("y"), hurst=0.3)
-str(mod2)
-ou2 <- setYuima(model=mod2, sampling=samp)
-
-# Solve SDEs using Euler-Maruyama method. 
-ou2 <- simulate(ou2, xinit=1, true.p = list(theta=-1))
-plot(ou2)
 
 
 
@@ -210,8 +195,9 @@ if( !is.null(yuima.obj.path) ){
 
 
 ##:: sample for Levy process ("CP" type)
+## specify the jump term as c(x,t)dz
 obj.model <- setModel(drift=c("-theta*x"), diffusion="sigma",
-jump.coeff="z", measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
+jump.coeff="1", measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
 measure.type="CP", solve.variable="x")
 
 ##:: Parameters
@@ -228,7 +214,16 @@ T <- n*h
 obj.sampling <- setSampling(Terminal=T, division=division)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
+X11()
 plot(X)
+
+
+##:: sample for Levy process ("CP" type)
+## specify the jump term as c(x,t,z)
+obj.model <- setModel(drift=c("-theta*x"), diffusion="sigma",
+jump.coeff="z",J.flag=TRUE, measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
+measure.type="CP", solve.variable="x")
+
 
 
 ##:: sample for Levy process ("code" type)
@@ -237,6 +232,7 @@ obj.model <- setModel(drift="-x", xinit=1, jump.coeff="1", measure.type="code", 
 obj.sampling <- setSampling(Terminal=10, division=10000)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 result <- simulate(obj.yuima)
+X11()
 plot(result)
 
 ##:: sample for multidimensional Levy process ("code" type)

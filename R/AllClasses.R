@@ -28,7 +28,8 @@ setClass("yuima.model",representation(drift="expression",
                                       equation.number="numeric",
                                       dimension="numeric",
                                       solve.variable="character",
-                                      xinit="numeric"
+                                      xinit="numeric",
+                                      J.flag="logical"
                                       )
          )
 

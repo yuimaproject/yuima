@@ -31,7 +31,8 @@ setMethod("initialize", "yuima.model",
                    equation.number,
                    dimension,
                    solve.variable,
-                   xinit){
+                   xinit,
+                   J.flag){
             .Object@drift <- drift
             .Object@diffusion <- diffusion
 			.Object@hurst <- hurst		   
@@ -47,6 +48,7 @@ setMethod("initialize", "yuima.model",
             .Object@dimension <- dimension
             .Object@solve.variable <- solve.variable
             .Object@xinit <- xinit
+            .Object@J.flag <- J.flag
             return(.Object)
           })
 
@@ -149,7 +151,7 @@ setModel <- function(drift=NULL,
       measure.par <- unique( c( all.vars(MEASURE$intensity), all.vars(MEASURE$df$expr) ) ) 
       ##measure.par$intensity <- unique(all.vars(MEASURE$intensity))
       ##::end check df name ####################
-      
+      ##::end CP
     }else if(measure.type=="code"){ ##::code
       if(length(measure)!=1){
         cat(paste("\nlength of measure must be one on type", measure.type, ".\n"))
@@ -187,7 +189,7 @@ setModel <- function(drift=NULL,
       
       measure.par <- unique(all.vars(MEASURE$df$expr))
       ##::end check df name ####################
-      
+      ##::end code
     }else if(measure.type=="density"){ ##::density
       if(length(measure)!=1){
         cat(paste("\nlength of measure must be one on type", measure.type, ".\n"))
@@ -227,7 +229,7 @@ setModel <- function(drift=NULL,
       
       measure.par <- unique(all.vars(MEASURE[[names(measure)]]$expr))
       ##::end check df name ####################
-      
+      ##::end density
     }else{ ##::else
       cat(paste("\nmeasure type", measure.type, "isn't supported.\n"))
       return(NULL)
@@ -345,7 +347,11 @@ setModel <- function(drift=NULL,
   }
 
   ##:: get parameters in jump expression
+  J.flag <- FALSE
   jump.par <- unique(all.vars(JUMP))
+  if(length(na.omit(match(jump.par, jump.variable)))){
+    J.flag <- TRUE
+  }
   jump.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable, solve.variable), jump.par)))
   if(length(jump.idx)>0){
     jump.par <- jump.par[-jump.idx]
@@ -356,7 +362,7 @@ setModel <- function(drift=NULL,
   if(length(measure.idx)>0){
     measure.par <- measure.par[-measure.idx]
   }
-
+  
   ##:: order parameters for 'yuima.pars'
   ##id1 <- which(diff.par %in% drift.par)
   ##id2 <- which(drift.par %in% diff.par)
@@ -401,7 +407,7 @@ setModel <- function(drift=NULL,
                length(tmppar@measure)
                ),
              solve.variable= solve.variable,
-             xinit= xinit)
-  
+             xinit= xinit,
+             J.flag <- J.flag)
   return(tmp)
 }

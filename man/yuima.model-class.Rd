@@ -43,6 +43,7 @@
 	 the stochastic differential equation has to be solved.}
     \item{\code{xinit}:}{contains the initial value of the stochastic 
 	 differential equation.}
+    \item{\code{J.flag}:}{wheather jump.coeff include jump.variable.}
   }
 }
 \author{The YUIMA Project Team}

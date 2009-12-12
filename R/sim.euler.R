@@ -125,7 +125,7 @@ euler<-function(xinit,yuima,dW,env){
       }
       return(tmp)
     }
-	  
+    
     if(sdeModel@measure.type == "CP"){ ##:: Compound-Poisson type
       eta0 <- eval(sdeModel@measure$intensity)
       ##:: get lambda from nu()
@@ -146,13 +146,13 @@ euler<-function(xinit,yuima,dW,env){
       }
       
       ##:: make expression to create iid rand J
-      if(grep("^[dexp|dnorm|dgamma]", sdeModel@measure$df$expr)) {
+      if(grep("^[dexp|dnorm|dgamma]", sdeModel@measure$df$expr)){
         ##:: e.g. dnorm(z,1,1) -> rnorm(mu.size*N_sharp,1,1)
         F <- suppressWarnings(parse(text=gsub("^d(.+?)\\(.+?,", "r\\1(mu.size*N_sharp,", sdeModel@measure$df$expr, perl=TRUE)))
       }else{
         stop("Sorry. CP only supports dexp, dnorm and dgamma yet.")
       }
-		randJ <- eval(F)  ## this expression is evaluated locally not in the yuimaEnv
+      randJ <- eval(F)  ## this expression is evaluated locally not in the yuimaEnv
       j <- 1
       for(i in 1:division){
         if(JAMP==FALSE || sum(i==ij)==0){
@@ -161,16 +161,21 @@ euler<-function(xinit,yuima,dW,env){
           J <- eta0*randJ[j]/lambda
           j <- j+1
           ##cat(paste(J,"\n"))
-          ##Pi <- zeta(dX,J)
+          ##Pi <- zeta(dX, J)
           assign(sdeModel@jump.variable, J, env)
-          ##Pi <- p.b.j(t=i*delta,X=dX) %*% J
-          Pi <- p.b.j(t=i*delta, X=dX)
+          
+          if(sdeModel@J.flag){
+            J <- 1
+          }
+          
+          Pi <- p.b.j(t=i*delta,X=dX) * J
+          ##Pi <- p.b.j(t=i*delta, X=dX)
         }
         dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] + Pi
         X_mat[, i+1] <- dX
       }
       tsX <- ts(data=t(X_mat), deltat=delta, start=0)
-      
+      ##::end CP
     }else if(sdeModel@measure.type=="code"){  ##:: code type
       ##:: Jump terms
       code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
@@ -194,18 +199,22 @@ euler<-function(xinit,yuima,dW,env){
       ##:: calcurate difference eq.
       
       for(i in 1:division){
-        assign(sdeModel@jump.variable, dZ[i])
+        assign(sdeModel@jump.variable, dZ[i], env)
+        
+        if(sdeModel@J.flag){
+          dZ[i] <- 1
+        }
+          
         dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] +p.b.j(t=i*delta, X=dX) * dZ[i]
         X_mat[, i+1] <- dX
       }
       tsX <- ts(data=t(X_mat), deltat=delta, start=0)
-	  
+      ##::end code
     }else{
       cat(paste("Type \"", sdeModel@measure.type, "\" not supported yet.\n", sep=""))
       return(NULL)
     }
-  }
-  
+  }##::end levy
   yuimaData <- setData(original.data=tsX)
   return(yuimaData)
 
