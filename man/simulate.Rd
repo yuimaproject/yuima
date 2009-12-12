@@ -211,6 +211,7 @@ eps <- h/50
 division <- 50*n
 T <- n*h
 
+set.seed(123)
 obj.sampling <- setSampling(Terminal=T, division=division)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
@@ -220,9 +221,18 @@ plot(X)
 
 ##:: sample for Levy process ("CP" type)
 ## specify the jump term as c(x,t,z)
+## same plot as above example
 obj.model <- setModel(drift=c("-theta*x"), diffusion="sigma",
-jump.coeff="z",J.flag=TRUE, measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
+jump.coeff="z", measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
 measure.type="CP", solve.variable="x")
+
+set.seed(123)
+obj.sampling <- setSampling(Terminal=T, division=division)
+obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
+X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
+X11()
+plot(X)
+
 
 
 
