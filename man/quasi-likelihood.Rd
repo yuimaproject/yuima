@@ -11,9 +11,9 @@
 \description{Calculate the quasi-likelihood and estimate of the parameters of the
   stochastic differential equation by the maximum likelihood method.}
 \usage{
-ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,BFGS=FALSE)
-ql(yuima,theta2,theta1,h,print=FALSE)
-rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE)
+ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,BFGS=FALSE,param,interval)
+ql(yuima,theta2,theta1,h,print=FALSE,param)
+rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
 }
 \arguments{
   \item{yuima}{a yuima object.}
@@ -24,6 +24,9 @@ rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE)
   \item{ptheta2,ptheta1}{}
   \item{print}{you can see a progress of the estimation when print is TRUE.}
   \item{BFGS}{}
+  \item{param}{}
+  \item{interval}{}
+  \item{prevparam}{}
 }
 \details{
   A function ql calculate the quasi-likelihood of a time series data X with any
@@ -51,6 +54,11 @@ yuima <- simulate(yuima, xinit=1, true.parameter=c(0.3, 0.1))
 QL <- ql(yuima, 0.8, 0.7, h=1/((division)^(2/3)))
 QL
 
+## another way of parameter specification
+##param <- list(theta2=0.8, theta1=0.7)
+##QL <- ql(yuima, h=1/((division)^(2/3)), param=param)
+##QL
+
 system.time(
 opt <- ml.ql(yuima, 0.8, 0.7, h=1/((division)^(2/3)), c(0, 1), c(0, 1))
 )
@@ -59,6 +67,16 @@ print("theta2 = .3, theta1 = .1")
 print("ML estimator")
 opt$par
 
+## another way of parameter specification
+##interval <- list(theta2.lim=c(0,1), theta1.lim=c(0,1))
+##system.time(
+##opt <- ml.ql(yuima, h=1/((division)^(2/3)), param=param, interval=interval)
+##)
+##print("True param")
+##print("theta2 = .3, theta1 = .1")
+##print("ML estimator")
+##opt$par
+
 system.time(
 opt <- ml.ql(yuima, 0.8, 0.7, h=1/((division)^(2/3)), c(0, 1), c(0, 1), BFGS=TRUE)
 )
@@ -66,7 +84,6 @@ print("True param")
 print("theta2 = .3, theta1 = .1")
 print("ML estimator")
 opt$par
-
 
 ##multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
@@ -90,6 +107,11 @@ theta1 <- c(0.7, 0.1) #c(theta1.1, theta1.2)
 QL <- ql(yuima, theta2, theta1, h=1/((division)^(2/3)))
 QL
 
+## another way of parameter specification
+#param <- list(theta2=theta2, theta1=theta1)
+#QL <- ql(yuima, h=1/((division)^(2/3)), param=param)
+#QL
+
 theta2.1.lim <- c(0, 1)
 theta2.2.lim <- c(0, 1)
 theta1.1.lim <- c(0, 1)
@@ -101,6 +123,13 @@ system.time(
 opt <- ml.ql(yuima, theta2, theta1, h=1/((division)^(2/3)), theta2.lim, theta1.lim)
 )
 opt$par
+
+## another way of parameter specification
+#interval <- list(theta2.1.lim, theta2.2.lim, theta1.1.lim, theta1.2.lim)
+#system.time(
+#opt <- ml.ql(yuima, h=1/((division)^(2/3)), param=param, interval=interval)
+#)
+#opt$par
 
 system.time(
 opt <- ml.ql(yuima, theta2, theta1, h=1/((division)^(2/3)), theta2.lim, theta1.lim, BFGS=TRUE)

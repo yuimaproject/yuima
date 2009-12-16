@@ -123,35 +123,74 @@ calc.B.grad <- function(yuima, para){
 ##::theta1 : parameter in diffusion.
 ##::h : time width.
 setGeneric("ql",
-           function(yuima, theta2, theta1, h, print=FALSE)
+           function(yuima, theta2, theta1, h, print=FALSE, param)
            standardGeneric("ql")
            )
 setMethod("ql", "yuima",
-          function(yuima, theta2, theta1, h, print=FALSE){
+          function(yuima, theta2, theta1, h, print=FALSE, param){
             ##QLG <- ql.grad(yuima, theta2, theta1, h, print=FALSE)
             ##print(QLG)
-            
             if( missing(yuima)){
               cat("\nyuima object is missing.\n")
               return(NULL)
             }
-            if( missing(theta2) || missing(theta1)){
-              cat("\nparameters of yuima.model is missing.\n")
-              return(NULL)
+            
+            ## param handling
+            if( missing(param) ){
+              if( missing(theta2) || missing(theta1) ){
+                cat("\nparameters of yuima.model is missing.\n")
+                return(NULL)
+              }              
+            }else{
+              if( missing(theta2) && missing(theta1) ){
+                if( !is.list(param) ){
+                  cat("\nparam must be list.\n")
+                  return(NULL)
+                }
+
+                if( length(param)!=2){
+                  cat("\nlength of param is strange.\n")
+                  return(NULL)
+                }
+                
+                ## get theta2 and theta1 from param
+                if( is.null(names(param)) ){
+                  theta2 <- as.vector(param[[1]])
+                  theta1 <- as.vector(param[[2]])
+                }
+                else if( sum( names(param)==c("theta2", "theta1") ) == 2 ){
+                  theta2 <- as.vector(param[[1]])
+                  theta1 <- as.vector(param[[2]])
+                }
+                else if( sum( names(param)==c("theta1", "theta2") ) == 2 ){
+                  theta2 <- as.vector(param[[2]])
+                  theta1 <- as.vector(param[[1]])
+                }
+                else{
+                  cat("\nnames of param are strange.\n")
+                  return(NULL)
+                }
+              }else{
+                cat("\nConflict in parameter specification method.\n")
+                return(NULL)
+              }
             }
+            ## END param handling
+                
             if( missing(h)){
               cat("\nlength of each time is missing.\n")
               return(NULL)
             }
+
             if(length(yuima@model@parameter@drift)!=length(theta2)){
               cat("\nlength of drift parameter is strange.\n")
               return(NULL)
             }
+            
             if(length(yuima@model@parameter@diffusion)!=length(theta1)){
               cat("\nlength of diffusion parameter is strange.\n")
               return(NULL)
             }
-            
             
             d.size <- yuima@model@equation.number
             division <- length(yuima)[1]
@@ -266,19 +305,100 @@ ql.grad <- function(yuima, theta2, theta1, h, print=FALSE){
 ##::ptheta1 : parameter in diffusion in the prevous mcmc step.
 ##::h : time width.
 setGeneric("rql",
-           function(yuima, theta2, theta1, ptheta2, ptheta1, h, print=FALSE)
+           function(yuima, theta2, theta1, ptheta2, ptheta1, h, print=FALSE, param, prevparam)
            standardGeneric("rql")
            )
 setMethod("rql", "yuima",
-          function(yuima, theta2, theta1, ptheta2, ptheta1, h, print=FALSE){
+          function(yuima, theta2, theta1, ptheta2, ptheta1, h, print=FALSE, param, prevparam){
             if(missing(yuima)){
               cat("\nyuima object is missing.\n")
               return(NULL)
             }
-            if(missing(theta2) || missing(theta1)){
-              cat("\nparameters of yuima.model is missing.\n")
-              return(NULL)
+            
+            ## param handling
+            if( missing(param) ){
+              if( missing(theta2) || missing(theta1) ){
+                cat("\nparameters of yuima.model is missing.\n")
+                return(NULL)
+              }              
+            }else{
+              if( missing(theta2) && missing(theta1) ){
+                if( !is.list(param) ){
+                  cat("\nparam must be list.\n")
+                  return(NULL)
+                }
+
+                if( length(param)!=2){
+                  cat("\nlength of param is strange.\n")
+                  return(NULL)
+                }
+                
+                ## get theta2 and theta1 from param
+                if( is.null(names(param)) ){
+                  theta2 <- as.vector(param[[1]])
+                  theta1 <- as.vector(param[[2]])
+                }
+                else if( sum( names(param)==c("theta2", "theta1") ) == 2 ){
+                  theta2 <- as.vector(param[[1]])
+                  theta1 <- as.vector(param[[2]])
+                }
+                else if( sum( names(param)==c("theta1", "theta2") ) == 2 ){
+                  theta2 <- as.vector(param[[2]])
+                  theta1 <- as.vector(param[[1]])
+                }
+                else{
+                  cat("\nnames of param are strange.\n")
+                  return(NULL)
+                }
+              }else{
+                cat("\nConflict in parameter specification method.\n")
+                return(NULL)
+              }
             }
+            ## END param handling
+            
+            ## prevparam handling
+            if( missing(prevparam) ){
+              if( missing(ptheta2) || missing(ptheta1) ){
+                cat("\nparameters of yuima.model is missing.\n")
+                return(NULL)
+              }              
+            }else{
+              if( missing(ptheta2) && missing(ptheta1) ){
+                if( !is.list(prevparam) ){
+                  cat("\nparam must be list.\n")
+                  return(NULL)
+                }
+                if( length(prevparam)!=2){
+                  cat("\nlength of param is strange.\n")
+                  return(NULL)
+                }
+                
+                ## get theta2 and theta1 from param
+                if( is.null(names(prevparam)) ){
+                  ptheta2 <- as.vector(prevparam[[1]])
+                  ptheta1 <- as.vector(prevparam[[2]])
+                }
+                else if( sum( names(prevparam)==c("ptheta2", "ptheta1") ) == 2 ){
+                  ptheta2 <- as.vector(prevparam[[1]])
+                  ptheta1 <- as.vector(prevparam[[2]])
+                }
+                else if( sum( names(prevparam)==c("ptheta1", "ptheta2") ) == 2 ){
+                  ptheta2 <- as.vector(prevparam[[2]])
+                  ptheta1 <- as.vector(prevparam[[1]])
+                }
+                else{
+                  cat("\nnames of prevparam are strange.\n")
+                  return(NULL)
+                }
+                
+              }else{
+                cat("\nConflict in parameter specification method.")
+                return(NULL)
+              }
+            }
+            ## END prevparam handling
+
             if(missing(h)){
               cat("\nlength of each time is missing.\n")
               return(NULL)
@@ -336,19 +456,59 @@ setMethod("rql", "yuima",
 ##::example: 0 <= theta1 <= 1 theta1.lim = matrix(c(0,1),1,2)
 ##::if theta1, theta2 are matrix, theta.lim can be defined matrix like rbind(c(0,1),c(0,1))
 setGeneric("ml.ql",
-           function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2), theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE, BFGS=FALSE)
+           function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2), theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE, BFGS=FALSE, param, interval)
            standardGeneric("ml.ql")
            )
 setMethod("ml.ql", "yuima",
-          function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2), theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE, BFGS=FALSE){
+          function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2), theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE, BFGS=FALSE, param, interval){
             if( missing(yuima)){
               cat("\nyuima object is missing.\n")
               return(NULL)
             }
-            if( missing(theta2) || missing(theta1)){
-              cat("\nparameters of yuima.model is missing.\n")
-              return(NULL)
+
+            ## param handling
+            if( missing(param) ){
+              if( missing(theta2) || missing(theta1) ){
+                cat("\nparameters of yuima.model is missing.\n")
+                return(NULL)
+              }              
+            }else{
+              if( missing(theta2) && missing(theta1) ){
+                if( !is.list(param) ){
+                  cat("\nparam must be list.\n")
+                  return(NULL)
+                }
+
+                if( length(param)!=2){
+                  cat("\nlength of param is strange.\n")
+                  return(NULL)
+                }
+                
+                ## get theta2 and theta1 from param
+                if( is.null(names(param)) ){
+                  theta2 <- as.vector(param[[1]])
+                  theta1 <- as.vector(param[[2]])
+                }
+                else if( sum( names(param)==c("theta2", "theta1") ) == 2 ){
+                  theta2 <- as.vector(param[[1]])
+                  theta1 <- as.vector(param[[2]])
+                }
+                else if( sum( names(param)==c("theta1", "theta2") ) == 2 ){
+                  theta2 <- as.vector(param[[2]])
+                  theta1 <- as.vector(param[[1]])
+                }
+                else{
+                  cat("\nnames of param are strange.\n")
+                  return(NULL)
+                }
+              }else{
+                cat("\nConflict in parameter specification method.\n")
+                return(NULL)
+              }
             }
+            ## END param handling
+            
+
             if(length(yuima@model@parameter@drift)!=length(theta2)){
               cat("\nlength of drift parameter is strange.\n")
               return(NULL)
@@ -361,10 +521,43 @@ setMethod("ml.ql", "yuima",
               cat("\nlength of each time is missing.\n")
               return(NULL)
             }
+
+            ## interval handling
+            if( !missing(interval) ){
+              if( missing(theta2.lim) && missing(theta2.lim) ){
+                if( !is.list(interval) ){
+                  cat("\ninterval must be list.\n")
+                  return(NULL)
+                }
+
+                theta2.len <- length(yuima@model@parameter@drift)
+                theta1.len <- length(yuima@model@parameter@diffusion)
+                
+                if( length(interval) !=  (theta2.len+theta1.len) ){
+                  cat("\nlength of interval is strange.\n")
+                  return(NULL)
+                }
+                
+                ## get theta2.lim and theta1.lim from interval
+                theta2.lim <- NULL
+                theta1.lim <- NULL
+                for(i in 1:theta2.len){
+                  theta2.lim <- rbind(theta2.lim, interval[[i]])
+                }
+                for(i in 1:theta1.len){
+                  theta1.lim <- rbind(theta1.lim, interval[[theta2.len+i]])
+                }
+              }else{
+                cat("\nConflict in parameter specification method.\n")
+                return(NULL)
+              }
+            }
+            ## END interval handling
+
             if(is.matrix(theta2.lim) && is.matrix(theta1.lim)){
               if(ncol(theta2.lim)!=2 || ncol(theta1.lim)!=2){
                 cat("\ntheta.lim is not available.\n")
-                return(NULL)    
+              return(NULL)    
               }
             }
             if( length(theta2)!=1 && length(theta2)!=nrow(theta2.lim)){
