@@ -33,7 +33,7 @@
 The \code{yuima-class} object is the main object of the \pkg{yuima} package.
 Some of the slots may be missing. 
 
-The \code{data} slot contain the data, either empirical or simulated. 
+The \code{data} slot contains the data, either empirical or simulated. 
 
 The \code{model} contains the description of the 
 (statistical) model which is used to generate the \code{data} via different 
@@ -47,16 +47,31 @@ The slot \code{characteristic} contains information on
 }
 \section{Methods}{
   \describe{
-    \item{initialize}{\code{signature(x = "yuima")}: intialization method for 
-	 \code{yuima-class} object.}
-    \item{get.data}{\code{signature(x = "yuima")}: returns \code{data}.}
-    \item{plot}{\code{signature(x = "yuima")}: same as for the list of 
-	 \code{\link{zoo}}.}
-    \item{dim}{\code{signature(x = "yuima")}: the number of SDEs in the
+    \item{new}{\code{signature(x = "yuima", data = "yuima.data",
+	  model = "yuima.model", sampling = "yuima.sampling",
+	  characteristic = "yuima.characteristic"}: the function makes a copy of 
+	  the prototype object from the class definition of 
+	  \code{\link{yuima-class}}, then calls the \code{initialize} method 
+	  passing as arguments the newly created object and the remaining
+	  arguments.}
+	\item{initialize}{\code{signature(x = "yuima", data = "yuima.data",
+	  model = "yuima.model", sampling = "yuima.sampling",
+	  characteristic = "yuima.characteristic"}:  makes a copy of each argument
+	  in the corresponding slots of the object \code{x}.}
+    \item{get.data}{\code{signature(x = "yuima")}: returns the content of the
+	  slot \code{data}.}
+    \item{plot}{\code{signature(x = "yuima", \dots)}: calls  
+	 \code{\link{plot}} from the \code{\link{zoo}} package with argument
+	 \code{x@data@zoo.data}. Additional arguments \code{\dots} are passed
+	 as is to the \code{\link{plot}} function.}   
+	\item{dim}{\code{signature(x = "yuima")}: the number of SDEs in the
 	  \code{yuima} object.}
     \item{length}{\code{signature(x = "yuima")}: a vector of length of
 	  each SDE described in the \code{yuima} object.}
-    \item{cce}{\code{signature(x = "yuima")}: Cumulative Covariance Estimator.}
+    \item{cce}{\code{signature(x = "yuima")}: calculates the asyncronous
+	 covariance estimator on the data contained in \code{x@data@zoo.data}. 
+	 For more details see \code{\link{cce}}.}
+
   }
 }
 \author{The YUIMA Project Team}

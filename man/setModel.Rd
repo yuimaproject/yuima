@@ -75,7 +75,7 @@ coefficient (a matrix).}
 \item{\code{solve.variable}:}{is a vector of variable names, each element 
  corresponds to the name of the solution variable (left-hand-side) of each 
  equation in the model, in the corresponding order.}	  
-\item{\code{state.variable}:}{used to identify the state variables in the \R{} 
+\item{\code{state.variable}:}{used to identify the state variables in the \R 
  expression. By default, it is assumed to be \code{x}, otherwise the user can 
  choose any other model specification.}
 \item{\code{jump.variable}:}{the variable for the jump coefficient. By default,
@@ -84,7 +84,7 @@ coefficient (a matrix).}
 \item{\code{time}:}{the time variable. By default, it is assumed to be \code{t}, 
  otherwise the user can choose any other model specification.}
 \item{\code{solve.variable}:}{used to identify the solution variables in the
- \R{} expression, i.e. the variable with respect to which the stochastic 
+ \R expression, i.e. the variable with respect to which the stochastic 
  differential equation has to be solved. By default, it is assumed to be 
  \code{x}, otherwise the user can choose any other model specification.}
 \item{\code{noise.number}:}{denotes the number of sources of noise. Currently 
@@ -100,7 +100,7 @@ coefficient (a matrix).}
 The \code{\link{yuima.model-class}} structure assumes that the user either uses the default
 names for \code{state.variable}, \code{jump.variable}, \code{solution.variable} and 
 \code{time.variable} or specify his own names. 
-All the rest of the terms in the \R{} expressions are considered as parameters 
+All the rest of the terms in the \R expressions are considered as parameters 
 and identified accordingly in the \code{parameter} slot.
 }
 \value{
@@ -140,8 +140,15 @@ str(mod2)
 # the error message is returned.
 
 # Ex 3. (Process with jumps)
+## specify the jump term as c(x,t)dz
+mod3 <- setModel(drift=c("-theta*x"), diffusion="sigma",
+jump.coeff="1", measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
+measure.type="CP", solve.variable="x")
 
 # Ex 4. (Process with fractional Gaussian noise)
+# dYt = 3*Yt*dt + dWt^h
+mod4 <- setModel(drift="3*y", diffusion=1, hurst=0.3, solve.variable=c("y"))
+str(mod4)
 }
 \keyword{ts}
 
