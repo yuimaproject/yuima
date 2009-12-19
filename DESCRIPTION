@@ -1,8 +1,8 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package
-Version: 0.0.77
-Date: 2009-12-16
+Version: 0.0.78
+Date: 2009-12-18
 Depends: methods, zoo
 Author: YUIMA Project Team.
 Maintainer: Stefano M. Iacus <stefano.iacus@R-project.org>

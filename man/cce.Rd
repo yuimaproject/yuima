@@ -1,32 +1,40 @@
 \name{cce}
 \alias{cce}
 
-\title{Nonsyncronous Cumulative Covariance Estimator}
+\title{Nonsynchronous Cumulative Covariance Estimator}
 \description{
-\code{cce} is a function to estimate the covariance of some diffusion-type processes when they are observed only at discrete 
-times in a nonsynchronous manner.}
+This function estimates the covariance between two Ito processes when they are
+observed at discrete times possibly nonsynchronously. It can apply to 
+irregularly sampled one-dimensional data as a special case.
+}
 \usage{
 cce(x)
 }
 \arguments{
-  \item{x}{An object of class 'yuima' or 'yuima.data'}
+  \item{x}{an object of class 'yuima' or 'yuima.data'}
 }
 \details{
-  This function is a method of class \code{yuima.data} or \code{yuima}.
-  In the case of \code{yuima} object extracts the \code{data} object from
-  it.
+  This function is a method of class \code{\link{yuima.data-class}} and \code{\link{yuima-class}}.
+  It extracts the \code{data} slot when applied to a an object of
+  class \code{\link{yuima-class}}.
 }
 \value{
-  \item{value}{returns a matrix of estimated covariance}
+  \item{value}{estimate of the covariance matrix}
+}
+\note{The example shows the central limit theorem for the nonsynchronous 
+covariance estimator.  Estimation of the asymptotic variance with p-values and
+the second-order correction will be provided in a future version of the package. 
 }
 \references{
  Hayashi, T and Yoshida, N. (2005)
-\emph{On covariance estimation of non-synchronously observed diffusion processes.}
-\emph{Bernoulli} \bold{11}, no. 2, 359--379.
+  On covariance estimation of non-synchronously observed diffusion processes,
+  \emph{Bernoulli}, \bold{11}, no. 2, 359--379.
+
+ Hayashi, T and Yoshida, N. (2008) Asymptotic normality of a covariance 
+  estimator for  nonsynchronously observed diffusion processes, \emph{Annals 
+  of the Institute of Statistical Mathematics}, \bold{60}, no. 2, 367--406.
 }
 \author{The YUIMA Project Team}
-\note{The example shows CLT for the non synchronous covariance estimator
-}
 \examples{
 ## Set a model
 diff.coef.1 <- function(t, x1 = 0, x2 = 0) sqrt(1+t)

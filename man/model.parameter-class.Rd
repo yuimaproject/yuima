@@ -28,7 +28,8 @@ but it is constructed when the \code{\link{yuima.model-class}} object is
 constructed via \code{\link{setModel}}.
 All the terms which are not in the list of \emph{solution, state, time, jump} variables
 are considered as parameters. These parameters are
-identified in the different components of the model (drift, diffusion jump part).
+identified in the different components of the model (drift, diffusion and
+jump part).
 This information is later used to draw inference jointly or separately for
 the different parameters depending on the model in hands. 
 }

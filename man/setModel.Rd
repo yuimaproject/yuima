@@ -6,9 +6,14 @@
 }
 
 \description{
-  'setModel' is used to give a mathematical description of 
-  diffusion processes. All functions relying on the \pkg{yuima} 
-  package should assume to get as much information as possible 
+  'setModel' gives a description of 
+  stochastic differential equation with or without jumps of the following
+  form:
+
+  \code{dXt = a(t,Xt, alpha)dt + b(t,Xt,beta)dWt + c(t,Xt,gamma)dZt,  X0=x0}  
+
+  All functions relying on the \pkg{yuima} 
+  package will get as much information as possible 
   from the different slots of the \code{\link{yuima-class}} structure
   without replicating the same code twice. 
   If there are missing pieces of information, some default values 
@@ -31,20 +36,19 @@ jump.variable = "z", time.variable = "t", solve.variable, xinit)
    of the Hurst index.}
   \item{jump.coeff}{a matrix of \code{expression}s for the jump component.}
   \item{measure}{Levy measure for jump variables.}
-  \item{measure.type}{Type specification for Levy measures.}
-  \item{state.variable}{a vector of names identifying the names used to 
-    denote the state variable in the drift and diffusion
-    specifications.}
-  \item{jump.variable}{a vector of names identifying the names used to denote
-    the jump variable in the jump specifications.}
-  \item{time.variable}{a vector of names identifying the names used to 
-    denote the time variable in the drift and diffusion specifications.}  
-  \item{solve.variable}{a vector of names identifying the names used to 
-    denote the left-hand-side of each equation in the model; this equals 
+  \item{measure.type}{type specification for Levy measures.}
+  \item{state.variable}{a vector of names of the state variables in the drift 
+	and diffusion coefficients.}
+  \item{jump.variable}{a vector of names of the jump variables in the jump 
+    coefficient.}
+  \item{time.variable}{the name of the time variable.}  
+  \item{solve.variable}{a vector of names of the variables in the left-hand-side 
+    of the equations in the model; \code{solve.variable} equals 
     \code{state.variable} as long as we have no exogenous variable other than 
     statistical parameters in the coefficients (\code{drift} and
     \code{diffusion}).}  
-  \item{xinit}{a vector of numbers identifying the initial value of model.}
+  \item{xinit}{a vector of numbers identifying the initial value of the 
+  \code{solve.variable}.}
 }
 
 \details{
@@ -54,9 +58,9 @@ package.
 An object of \code{\link{yuima.model-class}} contains several slots:
 
 \describe{		
-\item{\code{drift}:}{is an \R{} expression which specifies the drift coefficient 
+\item{\code{drift}:}{is an \R expression which specifies the drift coefficient 
 (a vector).}
-\item{\code{diffusion}:}{is an \R{} expression which specifies the diffusion 
+\item{\code{diffusion}:}{is an \R expression which specifies the diffusion 
 coefficient (a matrix).}
 \item{\code{jump.coeff}:}{is coefficients of the jump term.}
 \item{\code{measure}:}{is a measure of the Levy process}
@@ -109,24 +113,24 @@ Please contribute with suggestions and fixings.
 }
 
 \examples{
-# Ex 1. (One-dimensional homogeneous diffusion)
+# Ex 1. (One-dimensional diffusion process)
 # To describe
-# dXt = -3*Xt*dt + (1/(1+Xt^2))dWt,
+# dXt = -3*Xt*dt + (1/(1+Xt^2+t))dWt,
 # we set
-mod1 <- setModel(drift = "-3*x", diffusion = "1/(1+x^{2})", solve.variable = c("x"))
+mod1 <- setModel(drift = "-3*x", diffusion = "1/(1+x^2+t)", solve.variable = c("x"))
 # We may omit the solve.variable; then the default variable x is used
-mod1 <- setModel(drift = "-3*x", diffusion = "1/(1+x^{2})")
+mod1 <- setModel(drift = "-3*x", diffusion = "1/(1+x^2+t)")
 # Look at the model structure by
 str(mod1)
 
-# Ex 2. (Two-dimensional homogeneous diffusion)
+# Ex 2. (Two-dimensional diffusion process with three factors)
 # To describe
-# dX1t = -3*X1t*dt         + dW1t,
-# dX2t = -(X1t + 2*X2t)*dt + 0.5*dW1t + dW2t,
+# dX1t = -3*X1t*dt + dW1t +x2t*dW3t,
+# dX2t = -(X1t + 2*X2t)*dt + x1t*dW1t + 3*dW2t,
 # we set the drift coefficient
 a <- c("-3*x1","-x1-2*x2")
 # and also the diffusion coefficient
-b <- matrix(c("1","0.5","0","1"),2,2)
+b <- matrix(c("1","x1","0","3","x2","0"),2,3)
 # Then set
 mod2 <- setModel(drift = a, diffusion = b, solve.variable = c("x1","x2"))
 # Look at the model structure by
@@ -134,6 +138,10 @@ str(mod2)
 # The noise.number is automatically determined by inputting the diffusion matrix expression.
 # If the dimensions of the drift differs from the number of the rows of the diffusion, 
 # the error message is returned.
+
+# Ex 3. (Process with jumps)
+
+# Ex 4. (Process with fractional Gaussian noise)
 }
 \keyword{ts}
 
