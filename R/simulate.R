@@ -30,7 +30,7 @@ setMethod("simulate", "yuima",
   
 				sdeModel <- yuima@model
 				Terminal <- yuima@sampling@Terminal[1]
-				division <- yuima@sampling@division[1]
+				n <- yuima@sampling@n[1]
 				r.size <- sdeModel@noise.number
 				d.size <- sdeModel@equation.number				
 				
@@ -47,12 +47,8 @@ setMethod("simulate", "yuima",
 				}
 				
 
-  
-  ##   str(sdeModel)
-  ##   print(Terminal)
-  ##   print(yuima@sampling@division)
-  ##   readline()
-  
+
+				
   par.len <- length(sdeModel@parameter@all)
 				
   if(missing(true.parameter) & par.len>0){
@@ -91,8 +87,8 @@ setMethod("simulate", "yuima",
     }else if(dim(increment.W)[1] != r.size){
       cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
       return(NULL)
-    }else if(dim(increment.W)[2] != division){
-      cat("\nLength of increment's column must be same as yuima@sampling@division[1].\n")
+    }else if(dim(increment.W)[2] != n){
+      cat("\nLength of increment's column must be same as yuima@sampling@n[1].\n")
       return(NULL)
     }
   }
@@ -105,8 +101,8 @@ setMethod("simulate", "yuima",
     }else if(dim(increment.L)[1] != r.size){
       cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
       return(NULL)
-    }else if(dim(increment.L)[2] != division){
-      cat("\nLength of increment's column must be same as yuima@sampling@division[1].\n")
+    }else if(dim(increment.L)[2] != n){
+      cat("\nLength of increment's column must be same as yuima@sampling@n[1].\n")
       return(NULL)
     }
   }
@@ -123,7 +119,7 @@ setMethod("simulate", "yuima",
 	
 	
 ##:: using Euler-Maruyama method
-  delta <- Terminal/division 
+  delta <- Terminal/n 
 				
 
 				
@@ -139,9 +135,9 @@ setMethod("simulate", "yuima",
 						}
 						
 					} else {
-						delta<-Terminal/division
-						dW <- rnorm(division * r.size, 0, sqrt(delta))
-						dW <- matrix(dW, ncol=division, nrow=r.size,byrow=TRUE)  
+						delta<-Terminal/n
+						dW <- rnorm(n * r.size, 0, sqrt(delta))
+						dW <- matrix(dW, ncol=n, nrow=r.size,byrow=TRUE)  
 					}
 				} else {
 					dW <- increment.W

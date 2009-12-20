@@ -7,7 +7,7 @@ Poisson random sampling method.}
 poisson.random.sampling(x, rate, n)
 }
 \arguments{
-  \item{x}{an object of class \code{\link{yuima.data-class}} or \code{\link{yuima-class}}.}
+  \item{x}{an object of  \code{\link{yuima.data-class}} or \code{\link{yuima-class}}.}
   \item{rate}{a Poisson intensity or a vector of Poisson intensities.}
   \item{n}{a common multiplier to the Poisson intensities. The default value is 1.}
 }
@@ -15,10 +15,10 @@ poisson.random.sampling(x, rate, n)
   It returns an object
   of type \code{\link{yuima.data-class}} which is a copy of the original input 
   data where observations are sampled according to
-  the poisson process. The unsampled data are set to \code{NA}.
+  the Poisson process. The unsampled data are set to \code{NA}.
 }
 \value{
-  an object of class \code{\link{yuima.data-class}}.
+  an object of  \code{\link{yuima.data-class}}.
 }
 \author{The YUIMA Project Team}
 \seealso{\link{cce}}
@@ -35,7 +35,7 @@ solve.variable=c("x1", "x2"), xinit=c(3,2))
 set.seed(111)
 
 ## We first simulate the two dimensional diffusion model
-yuima.samp <- setSampling(Terminal=1, division=1200)
+yuima.samp <- setSampling(Terminal=1, n=1200)
 yuima <- setYuima(model=cor.mod, sampling=yuima.samp)
 yuima.sim <- simulate(yuima)
 

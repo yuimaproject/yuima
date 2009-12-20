@@ -32,7 +32,7 @@ setMethod("poisson.random.sampling", "yuima.data",
               }
               
               ## making time index
-              # get rid of first element of X and elements that over division
+              # get rid of first element of X and elements that over n
               # round Time to unit
               xTime<-trunc(Time[0<Time & Num>Time])
               # get rid of elements of value = 0

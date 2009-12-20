@@ -10,7 +10,7 @@
   \describe{
 	\item{\code{Initial}:}{initial time of the grid.}
 	\item{\code{Terminal}:}{terminal time fo the grid.}
-	\item{\code{division}:}{the number of observations - 1.}
+	\item{\code{n}:}{the number of observations - 1.}
 	\item{\code{delta}:}{in case of a regular grid is the mesh.}
 	\item{\code{grid}:}{the grid of times.}
 	\item{\code{random}:}{either \code{FALSE} or the distribution 

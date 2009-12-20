@@ -54,7 +54,7 @@ setClass("yuima.data", representation(original.data = "ANY",
 
 setClass("yuima.sampling", representation(Initial  = "numeric",
 										  Terminal = "numeric",
-                                          division = "numeric",
+                                          n = "numeric",
 										  delta    = "numeric",
 										  grid     = "numeric",
 										  random   = "ANY",

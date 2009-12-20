@@ -11,12 +11,12 @@ irregularly sampled one-dimensional data as a special case.
 cce(x)
 }
 \arguments{
-  \item{x}{an object of class 'yuima' or 'yuima.data'}
+  \item{x}{an object of  \code{\link{yuima-class}} or \code{\link{yuima.data-class}}.}
 }
 \details{
-  This function is a method of class \code{\link{yuima.data-class}} and \code{\link{yuima-class}}.
+  This function is a method for objects of \code{\link{yuima.data-class}} and \code{\link{yuima-class}}.
   It extracts the \code{data} slot when applied to a an object of
-  class \code{\link{yuima-class}}.
+   \code{\link{yuima-class}}.
 }
 \value{
   \item{value}{estimate of the covariance matrix}
@@ -46,7 +46,7 @@ cor.mod <- setModel(drift = c("", ""), diffusion = diff.coef.matrix,solve.variab
 set.seed(111) 
 
 ## We use a function poisson.random.sampling to get observation by Poisson sampling.
-yuima.samp <- setSampling(Terminal = 1, division = 1200) 
+yuima.samp <- setSampling(Terminal = 1, n = 1200) 
 yuima <- setYuima(model = cor.mod, sampling = yuima.samp) 
 yuima <- simulate(yuima) 
 psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 1000) 

@@ -11,11 +11,11 @@ space.discretized<-function(xinit,yuima, env){
 	r.size <- sdeModel@noise.number
 	d.size <- sdeModel@equation.number
 	Terminal <- yuima@sampling@Terminal[1]
-	division <- yuima@sampling@division[1]
+	n <- yuima@sampling@n[1]
 	dX <- xinit
 	
 ##:: set time step	
-	delta <- Terminal/division 
+	delta <- Terminal/n 
 
 	
 	
@@ -54,7 +54,7 @@ gfunc <- function(x){
     appfunc <- suppressWarnings(approxfun(gg, xx))
     
     ##:: calculate inverse of G
-    unif.a <- runif(division*2)
+    unif.a <- runif(n*2)
     inv.a <- pmin(qnorm(1 - unif.a/4), appfunc(unif.a), na.rm=TRUE)
     
     ##:: make random time steps

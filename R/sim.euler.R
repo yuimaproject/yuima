@@ -10,12 +10,12 @@ euler<-function(xinit,yuima,dW,env){
 	r.size <- sdeModel@noise.number
 	d.size <- sdeModel@equation.number
 	Terminal <- yuima@sampling@Terminal[1]
-	division <- yuima@sampling@division[1]
+	n <- yuima@sampling@n[1]
 	
 	dX <- xinit
 	
 ##:: set time step	
-	delta <- Terminal/division 
+	delta <- Terminal/n 
 	
 ##:: check if DRIFT and/or DIFFUSION has values
 	has.drift <- sum(as.character(sdeModel@drift) != "(0)")
@@ -49,11 +49,11 @@ euler<-function(xinit,yuima,dW,env){
     return(tmp)
   }
   
-  X_mat <- matrix(0, d.size, division+1)
+  X_mat <- matrix(0, d.size, n+1)
   X_mat[,1] <- dX
   
 	if(has.drift){  ##:: consider drift term to be one of the diffusion term(dW=1) 
-		dW <- rbind( rep(1, division)*delta , dW)
+		dW <- rbind( rep(1, n)*delta , dW)
 	}
 	
   
@@ -62,12 +62,12 @@ euler<-function(xinit,yuima,dW,env){
         
     if(var.in.diff){  ##:: diffusions have state variables
       ##:: calcurate difference eq.    
-      for( i in 1:division){
+      for( i in 1:n){
         dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i]
         X_mat[,i+1] <- dX
       }
     }else{  ##:: diffusions have no state variables (not use p.b(). faster)
-      sde.tics <- seq(0, Terminal, length=(division+1))
+      sde.tics <- seq(0, Terminal, length=(n+1))
       sde.tics <- sde.tics[2:length(sde.tics)]
       
       X_mat[, 1] <- dX
@@ -102,7 +102,7 @@ euler<-function(xinit,yuima,dW,env){
       pbdata <- t(pbdata)
       
       ##:: calcurate difference eq.
-      for( i in 1:division){
+      for( i in 1:n){
         dX <- dX + pbdata[((i-1)*d.size+1):(i*d.size), ] %*% dW[, i]
         X_mat[, i+1] <- dX
       }
@@ -140,7 +140,7 @@ euler<-function(xinit,yuima,dW,env){
         Uj <- sort( runif(N_sharp, 0, Terminal) )
         ij <- NULL
         for(i in 1:length(Uj)){
-          Min <- min(which(c(1:division)*delta > Uj[i]))
+          Min <- min(which(c(1:n)*delta > Uj[i]))
           ij <- c(ij, Min)
         }
       }
@@ -154,7 +154,7 @@ euler<-function(xinit,yuima,dW,env){
       }
       randJ <- eval(F)  ## this expression is evaluated locally not in the yuimaEnv
       j <- 1
-      for(i in 1:division){
+      for(i in 1:n){
         if(JAMP==FALSE || sum(i==ij)==0){
           Pi <- 0
         }else{
@@ -181,14 +181,14 @@ euler<-function(xinit,yuima,dW,env){
       code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
       args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
       dZ <- switch(code,
-                   rNIG=paste("rNIG(division, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
-                   rIG=paste("rIG(division,", args[2], "*delta, ", args[3], ")"),
-                   rgamma=paste("rgamma(division, ", args[2], "*delta, ", args[3], ")"),
-                   rbgamma=paste("rbgamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], "*delta, ", args[5], ")"),
-##                   rngamma=paste("rngamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
-                   rngamma=paste("rngamma(division, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta)"),
-##                   rstable=paste("rstable(division, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
-                   rstable=paste("rstable(division, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)")
+                   rNIG=paste("rNIG(n, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
+                   rIG=paste("rIG(n,", args[2], "*delta, ", args[3], ")"),
+                   rgamma=paste("rgamma(n, ", args[2], "*delta, ", args[3], ")"),
+                   rbgamma=paste("rbgamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], "*delta, ", args[5], ")"),
+##                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
+                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta)"),
+##                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
+                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)")
                    )
       
       if(is.null(dZ)){  ##:: "otherwise"
@@ -198,7 +198,7 @@ euler<-function(xinit,yuima,dW,env){
       dZ <- eval(parse(text=dZ))
       ##:: calcurate difference eq.
       
-      for(i in 1:division){
+      for(i in 1:n){
         assign(sdeModel@jump.variable, dZ[i], env)
         
         if(sdeModel@J.flag){

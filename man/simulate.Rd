@@ -46,8 +46,8 @@ str(mod)
 
 # Set the model in an `yuima' object with a sampling scheme. 
 T <- 1
-division <- 1000
-samp <- setSampling(Terminal=T, division=division)
+n <- 1000
+samp <- setSampling(Terminal=T, n=n)
 ou <- setYuima(model=mod, sampling=samp)
 
 # Solve SDEs using Euler-Maruyama method. 
@@ -99,7 +99,7 @@ solve.variable=c("x1","x2","x3") )
 str(cor.mod)
 
 # Set the `yuima' object. 
-cor.samp <- setSampling(Terminal=T, division=division)
+cor.samp <- setSampling(Terminal=T, n=n)
 cor <- setYuima(model=cor.mod, sampling=cor.samp)
 
 # Solve SDEs using Euler-Maruyama method. 
@@ -115,7 +115,7 @@ mod_sd <- setModel(drift = c("0.1*x1", "0.2*x2"),
                      diffusion = c("v1(t)","v4(t,x2)"),
                      solve.var=c("x1","x2")
                      )
-samp_sd <- setSampling(Terminal=T, division=division)
+samp_sd <- setSampling(Terminal=T, n=n)
 sd <- setYuima(model=mod_sd, sampling=samp_sd)
 sd <- simulate(sd, xinit=c(1,1), space.discretized=TRUE)
 plot(sd)
@@ -130,14 +130,14 @@ str(mod)
 
 ## Set the model in an `yuima' object with a sampling scheme. 
 Terminal <- 1
-division <- 500
-mod.sampling <- setSampling(Terminal=Terminal, division=division)
+n <- 500
+mod.sampling <- setSampling(Terminal=Terminal, n=n)
 yuima.mod <- setYuima(model=mod, sampling=mod.sampling)
 
 ##use original increment
-delta <- Terminal/division
-my.dW <- rnorm(division * yuima.mod@model@noise.number, 0, sqrt(delta))
-my.dW <- t(matrix(my.dW, nrow=division, ncol=yuima.mod@model@noise.number))
+delta <- Terminal/n
+my.dW <- rnorm(n * yuima.mod@model@noise.number, 0, sqrt(delta))
+my.dW <- t(matrix(my.dW, nrow=n, ncol=yuima.mod@model@noise.number))
 
 ## Solve SDEs using Euler-Maruyama method.
 yuima.mod <- simulate(yuima.mod,
@@ -179,12 +179,12 @@ cor.mod <- setModel(drift = U, diffusion = V,
 str(cor.mod)
 ## Set the `yuima' object.
 set.seed(123)
-obj.sampling <- setSampling(Terminal=Terminal, division=division)
+obj.sampling <- setSampling(Terminal=Terminal, n=n)
 yuima.obj <- setYuima(model=cor.mod, sampling=obj.sampling)
 
 ##use original dW
-my.dW <- rnorm(division * yuima.obj@model@noise.number, 0, sqrt(delta))
-my.dW <- t(matrix(my.dW, nrow=division, ncol=yuima.obj@model@noise.number))
+my.dW <- rnorm(n * yuima.obj@model@noise.number, 0, sqrt(delta))
+my.dW <- t(matrix(my.dW, nrow=n, ncol=yuima.obj@model@noise.number))
 
 ## Solve SDEs using Euler-Maruyama method.
 yuima.obj.path <- simulate(yuima.obj, space.discretized=FALSE, increment.W=my.dW)
@@ -205,14 +205,14 @@ lambda <- 3
 theta <- 6
 sigma <- 1
 xinit <- runif(1)
-n <- 500
-h <- n^(-0.7)
+N <- 500
+h <- N^(-0.7)
 eps <- h/50
-division <- 50*n
-T <- n*h
+n <- 50*N
+T <- N*h
 
 set.seed(123)
-obj.sampling <- setSampling(Terminal=T, division=division)
+obj.sampling <- setSampling(Terminal=T, n=n)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
 X11()
@@ -227,7 +227,7 @@ jump.coeff="z", measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
 measure.type="CP", solve.variable="x")
 
 set.seed(123)
-obj.sampling <- setSampling(Terminal=T, division=division)
+obj.sampling <- setSampling(Terminal=T, n=n)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
 X11()
@@ -239,7 +239,7 @@ plot(X)
 ##:: sample for Levy process ("code" type)
 ## dX_{t} = -x dt + dZ_t
 obj.model <- setModel(drift="-x", xinit=1, jump.coeff="1", measure.type="code", measure=list(df="rIG(z, 1, 0.1)"))
-obj.sampling <- setSampling(Terminal=10, division=10000)
+obj.sampling <- setSampling(Terminal=10, n=10000)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 result <- simulate(obj.yuima)
 X11()
@@ -254,7 +254,7 @@ plot(result)
 ##  mu <- c(0,0)
 ##  Lambda <- matrix(c(1,0,0,1),2,2)
 ##  obj.model <- setModel(drift=c("1 - 2*x1-x2",".5-x1-2*x2"), xinit=c(1,1), solve.variable=c("x1","x2"), jump.coeff="1", measure.type="code", measure=list(df="rIG(z, alpha=1, beta=beta, mu=mu, Lambda=Lambda)"))
-##  obj.sampling <- setSampling(Terminal=10, division=10000)
+##  obj.sampling <- setSampling(Terminal=10, n=10000)
 ##  obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 ##  result <- simulate(obj.yuima)	   
 ## plot(result)

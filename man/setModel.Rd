@@ -58,31 +58,28 @@ package.
 An object of \code{\link{yuima.model-class}} contains several slots:
 
 \describe{		
-\item{\code{drift}:}{is an \R expression which specifies the drift coefficient 
+\item{\code{drift}:}{an \R expression which specifies the drift coefficient 
 (a vector).}
-\item{\code{diffusion}:}{is an \R expression which specifies the diffusion 
+\item{\code{diffusion}:}{an \R expression which specifies the diffusion 
 coefficient (a matrix).}
-\item{\code{jump.coeff}:}{is coefficients of the jump term.}
-\item{\code{measure}:}{is a measure of the Levy process}
-\item{\code{measure.type}:}{is a type specification of measure, such as 
+\item{\code{jump.coeff}:}{coefficient of the jump term.}
+\item{\code{measure}:}{the Levy measure of the driving Levy process.}
+\item{\code{measure.type}:}{specifies the type of the measure, such as 
  \code{CP}, \code{code} or \code{density}. See below.}
-\item{\code{parameter}:}{which is a short name for ``parameters'', is an object 
- of class \code{\link{model.parameter-class}} which is a list of vectors of 
- names of parameter belonging to the single components of the model (drift, 
+\item{\code{parameter}:}{a short name for ``parameters''. It  is an object 
+ of  \code{\link{model.parameter-class}} which is a list of vectors of 
+ names of parameters belonging to the single components of the model (drift, 
  diffusion, jump and measure), the names of common parameters and the names 
  of all parameters. For more details see \code{\link{model.parameter-class}} 
  documentation page.}
-\item{\code{solve.variable}:}{is a vector of variable names, each element 
+\item{\code{solve.variable}:}{a vector of variable names, each element 
  corresponds to the name of the solution variable (left-hand-side) of each 
  equation in the model, in the corresponding order.}	  
-\item{\code{state.variable}:}{used to identify the state variables in the \R 
- expression. By default, it is assumed to be \code{x}, otherwise the user can 
- choose any other model specification.}
+\item{\code{state.variable}:}{identifies the state variables in the \R 
+ expression. By default, it is assumed to be \code{x}.}
 \item{\code{jump.variable}:}{the variable for the jump coefficient. By default,
- it is assumed to be \code{z}, otherwise the user can choose any other model
- specification.}
-\item{\code{time}:}{the time variable. By default, it is assumed to be \code{t}, 
- otherwise the user can choose any other model specification.}
+ it is assumed to be \code{z}.}
+\item{\code{time}:}{the time variable. By default, it is assumed to be \code{t}.}
 \item{\code{solve.variable}:}{used to identify the solution variables in the
  \R expression, i.e. the variable with respect to which the stochastic 
  differential equation has to be solved. By default, it is assumed to be 
@@ -91,7 +88,7 @@ coefficient (a matrix).}
  only for the Gaussian part.}
 \item{\code{equation.number}:}{denotes the dimension of the stochastic 
  differential equation.}
-\item{\code{dimension}:}{the dimensions of the parameter given in the 
+\item{\code{dimension}:}{the dimensions of the parameters in the 
  \code{parameter} slot.}
 \item{\code{xinit}:}{denotes the initial value of the stochastic differential 
  equation.}
@@ -99,12 +96,12 @@ coefficient (a matrix).}
 
 The \code{\link{yuima.model-class}} structure assumes that the user either uses the default
 names for \code{state.variable}, \code{jump.variable}, \code{solution.variable} and 
-\code{time.variable} or specify his own names. 
+\code{time.variable} or specifies his/her own names. 
 All the rest of the terms in the \R expressions are considered as parameters 
 and identified accordingly in the \code{parameter} slot.
 }
 \value{
-  \item{model}{an object of class \code{\link{yuima.model-class}}.}
+  \item{model}{an object of  \code{\link{yuima.model-class}}.}
 }
 
 \author{The YUIMA Project Team}
@@ -144,10 +141,13 @@ str(mod2)
 mod3 <- setModel(drift=c("-theta*x"), diffusion="sigma",
 jump.coeff="1", measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
 measure.type="CP", solve.variable="x")
+# Look at the model structure by
+str(mod3)
 
 # Ex 4. (Process with fractional Gaussian noise)
 # dYt = 3*Yt*dt + dWt^h
 mod4 <- setModel(drift="3*y", diffusion=1, hurst=0.3, solve.variable=c("y"))
+# Look at the model structure by
 str(mod4)
 }
 \keyword{ts}

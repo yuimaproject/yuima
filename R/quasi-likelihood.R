@@ -8,13 +8,13 @@
   modelstate <- yuima@model@state.variable
   modelpara <- yuima@model@parameter@drift
   DRIFT <- yuima@model@drift
-  division <- length(yuima)[1]
-  drift <- matrix(0,division,d.size)
+  n <- length(yuima)[1]
+  drift <- matrix(0,n,d.size)
   X <- as.matrix(onezoo(yuima))
   for(i in 1:length(modelpara)){
     assign(modelpara[i],para[i])
   }
-  for(t in 1:division){
+  for(t in 1:n){
     Xt <- X[t,]
     for(d in 1:d.size){
       assign(modelstate[d],Xt[d])
@@ -35,14 +35,14 @@
   modelstate <- yuima@model@state.variable
   modelpara <- yuima@model@parameter@diffusion
   DIFFUSION <- yuima@model@diffusion
-  division <- length(yuima)[1]
-  diff <- array(0, dim=c(d.size, r.size, division))
+  n <- length(yuima)[1]
+  diff <- array(0, dim=c(d.size, r.size, n))
   X <- as.matrix(onezoo(yuima))
   for(k in 1:length(modelpara)){
     assign(modelpara[k], para[k])
   }
   for(r in 1:r.size){
-    for(t in 1:division){
+    for(t in 1:n){
       Xt <- X[t, ]
       for(d in 1:d.size){
         assign(modelstate[d], Xt[d])
@@ -58,9 +58,9 @@
 ##::calcurate diffusion%*%t(diffusion) matrix
 calc.B <- function(diff){
   d.size <- dim(diff)[1]
-  division <- dim(diff)[3]
-  B <- array(0, dim=c(d.size, d.size, division))
-  for(t in 1:division){
+  n <- dim(diff)[3]
+  B <- array(0, dim=c(d.size, d.size, n))
+  for(t in 1:n){
     B[, , t] <- diff[, , t]%*%t(diff[, , t])
   }
   return(B)
@@ -72,7 +72,7 @@ calc.B.grad <- function(yuima, para){
   modelstate <- yuima@model@state.variable
   modelpara <- yuima@model@parameter@diffusion
   DIFFUSION <- yuima@model@diffusion
-  division <- length(yuima)[1]
+  n <- length(yuima)[1]
   X <- as.matrix(onezoo(yuima))
   
   for(k in 1:length(modelpara)){
@@ -93,9 +93,9 @@ calc.B.grad <- function(yuima, para){
   ##     }
   ##   }
   
-  B.grad <- array(0, dim=c(d.size, d.size, division, length(modelpara)))
+  B.grad <- array(0, dim=c(d.size, d.size, n, length(modelpara)))
   for(k in 1:length(modelpara)){
-    for(t in 1:division){
+    for(t in 1:n){
       for(d in 1:d.size){
         assign(modelstate[d], X[t, d])
       }
@@ -193,12 +193,20 @@ setMethod("ql", "yuima",
             }
             
             d.size <- yuima@model@equation.number
-            division <- length(yuima)[1]
+            n <- length(yuima)[1]
             X <- as.matrix(onezoo(yuima))
-            deltaX <- matrix(0, division-1, d.size)
-            for(t in 1:(division-1)){
-              deltaX[t, ] <- X[t+1, ]-X[t, ]
-            }
+            deltaX <- matrix(0, n-1, d.size)
+			for(t in 1:(n-1))
+			 deltaX[t, ] <- X[t+1, ]-X[t, ]
+			
+#		  
+#			  print(system.time(for(t in 1:(n-1))
+#              deltaX[t, ] <- X[t+1, ]-X[t, ]
+#            ))
+#			print(system.time(deltaX1 <- diff(X)))
+#				  print(deltaX)
+#				  print(deltaX1)
+				  
             if(is.nan(theta2) || is.nan(theta1)){
               stop("error: theta is not a namber in parameter matrix")
             }
@@ -207,8 +215,8 @@ setMethod("ql", "yuima",
             B <- calc.B(diff)
             
             QL <- 0
-            pn <- numeric(division-1)
-            for(t in 1:(division-1)){
+            pn <- numeric(n-1)
+            for(t in 1:(n-1)){
               if(det(as.matrix(B[, , t]))==0){
                 pn[t] <- log(1)
               }else{
@@ -257,10 +265,10 @@ ql.grad <- function(yuima, theta2, theta1, h, print=FALSE){
   }
   
   d.size <- yuima@model@equation.number
-  division <- length(yuima)[1]
+  n <- length(yuima)[1]
   X <- as.matrix(onezoo(yuima))
-  deltaX <- matrix(0, division-1, d.size)
-  for(t in 1:(division-1)){
+  deltaX <- matrix(0, n-1, d.size)
+  for(t in 1:(n-1)){
     deltaX[t, ] <- X[t+1, ]-X[t, ]
   }
   if(is.nan(theta2) || is.nan(theta1)){
@@ -275,7 +283,7 @@ ql.grad <- function(yuima, theta2, theta1, h, print=FALSE){
   for(k in 1:length(QLG)){
     pg1 <- 0
     pg2 <- 0
-    for(t in 1:(division-1)){
+    for(t in 1:(n-1)){
       B.tmp <- as.matrix(B[, , t])
       if(det(B.tmp)!=0){
         B.grad.tmp <- as.matrix(B.grad[, , t, k])
@@ -413,10 +421,10 @@ setMethod("rql", "yuima",
             }
             
             d.size <- yuima@model@equation.number
-            division <- length(yuima)[1]
+            n <- length(yuima)[1]
             X <- as.matrix(onezoo(yuima))
-            deltaX <- matrix(0, division-1, d.size)
-            for(t in 1:(division-1)){
+            deltaX <- matrix(0, n-1, d.size)
+            for(t in 1:(n-1)){
               deltaX[t, ] <- X[t+1, ]-X[t, ]
             }
             if(is.nan(theta2) || is.nan(theta1)){
@@ -431,8 +439,8 @@ setMethod("rql", "yuima",
             pB <- calc.B(pdiff)
             
             rQL <- 0
-            pn <- numeric(division-1)
-            for(t in 1:(division-1)){
+            pn <- numeric(n-1)
+            for(t in 1:(n-1)){
               if(det(as.matrix(B[, , t]))*det(as.matrix(pB[, , t]))==0){
                 pn[t] <- log(1)
               }else{

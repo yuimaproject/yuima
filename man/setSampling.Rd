@@ -8,13 +8,13 @@ Set sampling information and create a `sampling' object.
   \code{setSampling} is a constructor for \code{\link{yuima.sampling-class}}.
 }
 \usage{
-  setSampling(Initial = 0, Terminal = 1, division = 100, delta = 0.1, 
+  setSampling(Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
    grid = as.numeric(NULL), random = FALSE, scale=1)
 }
 \arguments{  
   \item{Initial}{Initial time of the grid.}
   \item{Terminal}{Terminal time of the grid.}
-  \item{division}{division into this number of intervals.}
+  \item{n}{number of time intervals.}
   \item{delta}{mesh size in case of regular grid.}
   \item{grid}{a grid of times for the simulation, possibly empty.}
   \item{random}{specify if it is random sampling. See Details.}
@@ -26,7 +26,7 @@ The function creates an object of type
 \describe{
 	\item{\code{Initial}:}{initial time of the grid.}
 	\item{\code{Terminal}:}{terminal time fo the grid.}
-	\item{\code{division}:}{the number of observations - 1.}
+	\item{\code{n}:}{the number of observations - 1.}
 	\item{\code{delta}:}{in case of a regular grid is the mesh.}
 	\item{\code{grid}:}{the grid of times.}
 	\item{\code{random}:}{either \code{FALSE} or the distribution 
@@ -41,7 +41,7 @@ The function creates an object of type
 }
 \author{The YUIMA Project Team}
 \examples{
-samp <- setSampling(Terminal=1, division=1000)
+samp <- setSampling(Terminal=1, n=1000)
 str(samp)
 }
 \keyword{ts}

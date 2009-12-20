@@ -18,7 +18,7 @@
 		the Levy measure.}
     \item{\code{all}:}{A vector of names of all the parameters found in the 
 	components of the model.}
-    \item{\code{common}:}{Vector of names of the parameters in common among
+    \item{\code{common}:}{A vector of names of the parameters in common among
 	 drift, diffusion, jump and measure term.}
   }
 }

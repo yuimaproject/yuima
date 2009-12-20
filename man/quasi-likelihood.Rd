@@ -45,22 +45,22 @@ The function ml.ql uses the function optim internally.
 #dXt^e = -theta2 * Xt^e * dt + theta1 * dWt
 diff.matrix <- matrix(c("theta1"), 1, 1)
 ymodel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix, time.variable="t", state.variable="x", solve.variable="x")
-division <- 100
+n <- 100
 
-ysamp <- setSampling(Terminal=(division)^(1/3), division=division) 
+ysamp <- setSampling(Terminal=(n)^(1/3), n=n) 
 yuima <- setYuima(model=ymodel, sampling=ysamp)
 set.seed(123)
 yuima <- simulate(yuima, xinit=1, true.parameter=c(0.3, 0.1))
-QL <- ql(yuima, 0.8, 0.7, h=1/((division)^(2/3)))
+QL <- ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)))
 QL
 
 ## another way of parameter specification
 ##param <- list(theta2=0.8, theta1=0.7)
-##QL <- ql(yuima, h=1/((division)^(2/3)), param=param)
+##QL <- ql(yuima, h=1/((n)^(2/3)), param=param)
 ##QL
 
 system.time(
-opt <- ml.ql(yuima, 0.8, 0.7, h=1/((division)^(2/3)), c(0, 1), c(0, 1))
+opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1))
 )
 print("True param")
 print("theta2 = .3, theta1 = .1")
@@ -70,7 +70,7 @@ opt$par
 ## another way of parameter specification
 ##interval <- list(theta2.lim=c(0,1), theta1.lim=c(0,1))
 ##system.time(
-##opt <- ml.ql(yuima, h=1/((division)^(2/3)), param=param, interval=interval)
+##opt <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
 ##)
 ##print("True param")
 ##print("theta2 = .3, theta1 = .1")
@@ -78,7 +78,7 @@ opt$par
 ##opt$par
 
 system.time(
-opt <- ml.ql(yuima, 0.8, 0.7, h=1/((division)^(2/3)), c(0, 1), c(0, 1), BFGS=TRUE)
+opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), BFGS=TRUE)
 )
 print("True param")
 print("theta2 = .3, theta1 = .1")
@@ -94,8 +94,8 @@ drift.matrix <- matrix(drift.c, 2, 2)
 
 ymodel <- setModel(drift=drift.matrix, diffusion=diff.matrix, time.variable="t",
                    state.variable=c("x1", "x2"), solve.variable=c("x1", "x2"))
-division <- 100
-ysamp <- setSampling(Terminal=(division)^(1/3), division=division)
+n <- 100
+ysamp <- setSampling(Terminal=(n)^(1/3), n=n)
 yuima <- setYuima(model=ymodel, sampling=ysamp)
 set.seed(123)
 
@@ -104,12 +104,12 @@ yuima <- simulate(yuima, xinit=c(1, 1), true.parameter=c(0.5, 0.3, 0.6, 0.2))
 
 theta2 <- c(0.8, 0.2) #c(theta2.1, theta2.2)
 theta1 <- c(0.7, 0.1) #c(theta1.1, theta1.2)
-QL <- ql(yuima, theta2, theta1, h=1/((division)^(2/3)))
+QL <- ql(yuima, theta2, theta1, h=1/((n)^(2/3)))
 QL
 
 ## another way of parameter specification
 #param <- list(theta2=theta2, theta1=theta1)
-#QL <- ql(yuima, h=1/((division)^(2/3)), param=param)
+#QL <- ql(yuima, h=1/((n)^(2/3)), param=param)
 #QL
 
 theta2.1.lim <- c(0, 1)
@@ -120,19 +120,19 @@ theta2.lim <- t( matrix( c(theta2.1.lim, theta2.2.lim), 2, 2) )
 theta1.lim <- t( matrix( c(theta1.1.lim, theta1.2.lim), 2, 2) )
 
 system.time(
-opt <- ml.ql(yuima, theta2, theta1, h=1/((division)^(2/3)), theta2.lim, theta1.lim)
+opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim)
 )
 opt$par
 
 ## another way of parameter specification
 #interval <- list(theta2.1.lim, theta2.2.lim, theta1.1.lim, theta1.2.lim)
 #system.time(
-#opt <- ml.ql(yuima, h=1/((division)^(2/3)), param=param, interval=interval)
+#opt <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
 #)
 #opt$par
 
 system.time(
-opt <- ml.ql(yuima, theta2, theta1, h=1/((division)^(2/3)), theta2.lim, theta1.lim, BFGS=TRUE)
+opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim, BFGS=TRUE)
 )
 opt$par
 

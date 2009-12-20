@@ -29,9 +29,9 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   set.seed(1)
   diff.matrix <- matrix(c("theta1"),1,1)
   mod <- setModel(drift=c("(-1)*theta2*x"),diffusion=diff.matrix,time.variable="t",state.variable="x")
-  division <- 100
-  Terminal <- (division)^(1/3)
-  mod.sampling <- setSampling(Terminal=Terminal, division=division)
+  n <- 100
+  Terminal <- (n)^(1/3)
+  mod.sampling <- setSampling(Terminal=Terminal, n=n)
   yuima.mod <- setYuima(model=mod, sampling=mod.sampling)
   yuima.mod <- simulate(yuima.mod,
                xinit=1,
@@ -56,13 +56,13 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   QL <- 0
   param <- numeric(2)
   for( i in 1:5){
-    PAR <- ml.ql(yuima.mod,theta2= rand[i,1],theta1=rand[i,2],h=(division^(-2/3)))
+    PAR <- ml.ql(yuima.mod,theta2= rand[i,1],theta1=rand[i,2],h=(n^(-2/3)))
     if(PAR$value > QL){
       QL <- PAR$value
       param <- PAR$par
     }
   }
-  BE <- adaBayes(yuima.mod,h=(division-1)^(-2/3),prior2=prior2,prior1=prior1,domain2=domain,domain1=domain,theta2.offset=param[1],theta1.offset=param[2])
+  BE <- adaBayes(yuima.mod,h=(n-1)^(-2/3),prior2=prior2,prior1=prior1,domain2=domain,domain1=domain,theta2.offset=param[1],theta1.offset=param[2])
   print("True param")
   print("theta2 = .6, theta1 = .3")
   print("ML estimate")

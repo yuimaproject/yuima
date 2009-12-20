@@ -18,7 +18,7 @@
 \description{
   The \code{yuima.data-class} is a class of the \pkg{yuima} package used to store 
   the data which are hold in the slot \code{data} of an object of
-  the \code{yuima-class} class.   
+  the \code{yuima-class}.   
   
   Objects from this class contain either true data or simulated data.
 }
@@ -36,7 +36,7 @@ The preferred way to construct an object in this class is to use the function
 
 Objects in this class are used to store 
 the data which are hold in the slot \code{data} of an object of
-the \code{yuima-class} class.   
+the \code{yuima-class}.   
 
 Objects in this class contain two slots described here. 
 \describe{
@@ -44,10 +44,10 @@ Objects in this class contain two slots described here.
    name suggests, a copy of the original data passed by the user to methods 
    \code{new} or \code{initialize} or to the function \code{\link{setData}}. 
    It is intended for backup purposes.}
-  \item{\code{zoo.data}:}{when a new object of this class is created or 
+  \item{\code{zoo.data}:}{When a new object of this class is created or 
    initialized using the \code{original.data}, the package tries to convert 
-   \code{original.data} into an object of class \code{\link{zoo}}. The 
-   \code{\link{zoo}}-fied data are stored in the slot \code{zoo.data}.
+   \code{original.data} into an object of class \code{\link{zoo}}. Once 
+   coerced to \code{\link{zoo}}, the data are stored in the slot \code{zoo.data}.
 
    If the conversion fails, the initialization or creation of the object fails.
 

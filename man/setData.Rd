@@ -8,13 +8,13 @@
 Set and access data of an object of type "yuima.data" or "yuima".
 }
 \description{
-\code{setData} constructs an object of class \code{\link{yuima.data-class}}.
+\code{setData} constructs an object of \code{\link{yuima.data-class}}.
 
 \code{get.zoo.data} returns the content of the \code{zoo.data} slot of a
 \code{\link{yuima.data-class}} object. (Note: value is a \code{list} of 
 \code{\link{zoo}} objects).
 
-\code{plot} plot method for object of class \code{\link{yuima.data-class}} or 
+\code{plot} plot method for object of \code{\link{yuima.data-class}} or 
 \code{\link{yuima-class}}.
 
 \code{dim} returns the \code{\link{dim}} of the \code{zoo.data} slot of a
@@ -35,29 +35,26 @@ Set and access data of an object of type "yuima.data" or "yuima".
   \code{\link{yuima-class}}.}
 }
 \details{
-Objects in the  \code{\link{yuima.data-class}} class contain two slots:
+Objects in the  \code{\link{yuima.data-class}} contain two slots:
 \describe{
   \item{\code{original.data}:}{The slot \code{original.data} contains, as the 
-   name suggests, a copy of the original data passed by the user in the
-   argument \code{original.data} of the function \code{setData}. 
-   It is intended for backup purposes.}
+   name suggests, a copy of the original data passed to the function 
+   \code{setData}. It is intended for backup purposes.}
   \item{\code{zoo.data}:}{the function \code{setData} tries to convert 
    \code{original.data} into an object of class \code{\link{zoo}}. The 
-   \code{\link{zoo}}-fied data are stored in the slot \code{zoo.data}.
-
+   coerced \code{\link{zoo}} data are stored in the slot \code{zoo.data}.
    If the conversion fails the function exits with an error.
-
    Internally, the \pkg{yuima} package stores and operates on  
    \code{\link{zoo}}-type objects.}
 }
 
 The function \code{get.zoo.data}
 returns the content of the slot \code{zoo.data} of \code{x} if \code{x}
-is of class \code{\link{yuima.data-class}} or the content of 
-\code{x@data@zoo.data} if \code{x} is of class \code{\link{yuima-class}}.
+is of \code{\link{yuima.data-class}} or the content of 
+\code{x@data@zoo.data} if \code{x} is of \code{\link{yuima-class}}.
 }
 \value{
-   \item{value}{a list of object(s) of class \code{\link{yuima.data-class}} for 
+   \item{value}{a list of object(s) of \code{\link{yuima.data-class}} for 
    \code{setData}. 
    The content of the \code{zoo.data}  slot for \code{get.zoo.data}}
 }

@@ -29,7 +29,7 @@ setMethod("initialize", "yuima",
                 if(eqn!=length(sampling@Terminal)){
                   if(length(sampling@Terminal)==1){
                     sampling@Terminal <- rep(sampling@Terminal, eqn)
-                    sampling@division <- rep(sampling@division, eqn)
+                    sampling@n <- rep(sampling@n, eqn)
                   }else{
                     cat("\nSampling's equation number missmatch.\n")
                     return(NULL)

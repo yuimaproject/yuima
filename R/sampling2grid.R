@@ -11,7 +11,7 @@ sampling2grid <- function(samp){
 #Check if this grid is random	
 	if (samp@random==FALSE){			
 #Regular deterministic grid 
-		return(seq(samp@Initial[1],samp@Terminal[1],length=samp@division[1]+1)) #Attention! do not treat multifrequency grid
+		return(seq(samp@Initial[1],samp@Terminal[1],length=samp@n[1]+1)) #Attention! do not treat multifrequency grid
 	}
 	
 	return(1) #To do: Random grid		
