@@ -6,10 +6,12 @@
  
 setMethod("initialize", "yuima.sampling",
            function(.Object, Initial, Terminal, n, delta, grid, random, 
-				 scale, regular){  
-               .Object@scale <- 1
+				 regular, sdelta, sgrid, oindex, interpolation){  
+				.Object@sdelta <- as.numeric(NULL) 	 
+				.Object@sgrid <- as.numeric(NULL) 	 
+				.Object@oindex <- as.numeric(NULL) 	 
+				.Object@interpolation <- "none" 	 
 			   if(length(grid)>0){
-				   
 				   testInitial<-(min(grid)==Initial)
 				   testTerminal<-(max(grid)==Terminal)
 				   testn<-(abs(n-diff(range(grid))/mean(diff(grid))+1)<10^(-10))
@@ -76,9 +78,11 @@ setMethod("initialize", "yuima.sampling",
            })
 
 setSampling <- function(Initial=0, Terminal=1, n=100, delta=0.1, 
- grid=as.numeric(NULL), random=FALSE, scale=1){
+ grid=as.numeric(NULL), random=FALSE, sdelta=as.numeric(NULL), 
+ sgrid=as.numeric(NULL), interpolation="none" ){
   return(new("yuima.sampling", Initial=Initial, Terminal=Terminal, 
 	n=n, delta=delta, grid=grid, random=random, 
-			 scale=scale, regular=TRUE))
+			 regular=TRUE, sdelta=sdelta, sgrid=sgrid,
+			 interpolation=interpolation))
 }
 

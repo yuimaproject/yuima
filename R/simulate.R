@@ -9,14 +9,53 @@
 
 ##:: function simulate
 ##:: solves SDE and returns result
+subsampling <- function(x,y) return(x)
+
 setGeneric("simulate",
-			function(object, nsim, seed, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL, methodfGn="Cholesky")
+	function(object, nsim, seed, xinit, true.parameter, space.discretized=FALSE, 
+		increment.W=NULL, increment.L=NULL, methodfGn="Cholesky", 
+		sampling=sampling, subsampling=subsampling,
+		Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
+		grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
+		sgrid=as.numeric(NULL), interpolation="none")
 			standardGeneric("simulate")
-           )
+		)
+
+
+setMethod("simulate", "yuima.model",
+ function(object, nsim=1, seed=NULL, xinit, true.parameter, 
+	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
+	methodfGn="Cholesky",
+	sampling, subsampling,
+	Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
+	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
+	sgrid=as.numeric(NULL), interpolation="none"){
+
+	 tmpsamp <- NULL
+	 if(missing(sampling)){
+	  tmpsamp <- setSampling(Initial = Initial, Terminal = Terminal, n = n, 
+				delta = delta, grid = grid, random = random, sdelta=sdelta, 
+				sgrid=sgrid, interpolation=interpolation)
+	 } else {
+	  tmpsamp <- sampling
+	 }
+     tmpyuima <- setYuima(model=object, sampling=tmpsamp) 		 
+	 out <- simulate(tmpyuima, nsim=nsim, seed=seed, xinit=xinit, 
+						true.parameter=true.parameter, 
+						space.discretized=space.discretized, 
+						increment.W=increment.W, increment.L=increment.L,
+						methodfGn=methodfGn, subsampling=subsampling)
+	return(out)	
+})
 
 setMethod("simulate", "yuima",
-			function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, increment.W=NULL, increment.L=NULL,methodfGn="Cholesky"){
-
+ function(object, nsim=1, seed=NULL, xinit, true.parameter, 
+	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
+	methodfGn="Cholesky",
+	sampling, subsampling,
+	Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
+	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
+	sgrid=as.numeric(NULL), interpolation="none"){
 
 ##:: errors checks
 
@@ -27,7 +66,23 @@ setMethod("simulate", "yuima",
     cat("\nyuima object is missing.\n")
     return(NULL)
   }
-  
+
+	tmpsamp <- NULL
+	if(is.null(yuima@sampling)){
+					if(missing(sampling)){
+						tmpsamp <- setSampling(Initial = Initial, 
+							Terminal = Terminal, n = n, delta = delta, 
+							grid = grid, random = random, sdelta=sdelta, 
+							sgrid=sgrid, interpolation=interpolation)
+					} else {
+						tmpsamp <- sampling
+					}
+	} else {
+		tmpsamp <- yuima@sampling
+	}
+
+	yuima@sampling <- tmpsamp		
+	
 				sdeModel <- yuima@model
 				Terminal <- yuima@sampling@Terminal[1]
 				n <- yuima@sampling@n[1]
@@ -80,7 +135,7 @@ setMethod("simulate", "yuima",
   }
 
   ##:: Error check for increment specified version.
-  if(!missing(increment.W)){
+  if(!missing(increment.W) & !is.null(increment.W)){
     if(space.discretized == TRUE){
       cat("\nParameter increment must be invalid if space.discretized=TRUE.\n")
       return(NULL)
@@ -88,13 +143,13 @@ setMethod("simulate", "yuima",
       cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
       return(NULL)
     }else if(dim(increment.W)[2] != n){
-      cat("\nLength of increment's column must be same as yuima@sampling@n[1].\n")
+      cat("\nLength of increment's column must be same as sampling@n[1].\n")
       return(NULL)
     }
   }
 
     ##:: Error check for increment specified version.
-  if(!missing(increment.L)){
+  if(!missing(increment.L) & !is.null(increment.L)){
     if(space.discretized == TRUE){
       cat("\nParameter increment must be invalid if space.discretized=TRUE.\n")
       return(NULL)
@@ -102,7 +157,7 @@ setMethod("simulate", "yuima",
       cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
       return(NULL)
     }else if(dim(increment.L)[2] != n){
-      cat("\nLength of increment's column must be same as yuima@sampling@n[1].\n")
+      cat("\nLength of increment's column must be same as sampling@n[1].\n")
       return(NULL)
     }
   }
@@ -120,10 +175,8 @@ setMethod("simulate", "yuima",
 	
 ##:: using Euler-Maruyama method
   delta <- Terminal/n 
-				
 
-				
-				if(missing(increment.W)){
+ if(missing(increment.W) | is.null(increment.W)){
 					if( sdeModel@hurst!=0.5 ){ 
 						grid<-sampling2grid(yuima@sampling)	
 						
@@ -142,7 +195,11 @@ setMethod("simulate", "yuima",
 				} else {
 					dW <- increment.W
 				}
-				
+
   yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
-  return(yuima)
+
+  if(missing(subsampling))
+		return(yuima)
+  subsampling(yuima, subsampling)
+
 })

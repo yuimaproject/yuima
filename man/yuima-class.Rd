@@ -71,7 +71,8 @@ The slot \code{characteristic} contains information on
     \item{cce}{\code{signature(x = "yuima")}: calculates the asyncronous
 	 covariance estimator on the data contained in \code{x@data@zoo.data}. 
 	 For more details see \code{\link{cce}}.}
-
+    \item{simulate}{simulation method. For more information see
+	  \code{\link{simulate}}.}
   }
 }
 \author{The YUIMA Project Team}

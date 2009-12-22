@@ -4,10 +4,15 @@
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
 simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE, 
- increment.W = NULL, increment.L = NULL, methodfGn = "Cholesky")
+ increment.W = NULL, increment.L = NULL, methodfGn = "Cholesky",
+ 	sampling, subsampling,
+	Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
+	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
+	sgrid=as.numeric(NULL), interpolation="none")
 }
 \arguments{
-  \item{object}{an \code{\link{yuima-class}} object.}
+  \item{object}{an \code{\link{yuima-class}} or 
+    \code{\link{yuima.model-class}} object.}
   \item{xinit}{initial value vector of state variables.}
   \item{true.parameter}{named list of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
@@ -19,6 +24,18 @@ simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE,
   \item{seed}{Not used yet. Included only to match the standard genenirc in 
 	package \code{stats}.}
   \item{methodfGn}{simulation methods for fractional Gaussian noise.}
+  \item{Initial}{Initial time of the grid.}
+  \item{Terminal}{Terminal time of the grid.}
+  \item{n}{number of time intervals.}
+  \item{delta}{mesh size in case of regular time grid.}
+  \item{grid}{a grid of times for the simulation, possibly empty.}
+  \item{random}{specify if it is random sampling. See Details.}
+  \item{sdelta}{mesh size in case of regular space grid.}
+  \item{sgrid}{a grid in space for the simulation, possibly empty.}
+  \item{interpolation}{a rule of interpolation in case of subsampling. 
+   By default, no interpolation. See Details.}
+  \item{sampling}{a \code{\link{yuima.sampling-class}} object.}
+  \item{subsampling}{a \code{\link{yuima.sampling-class}} object.}
 }
 \details{
 \code{simulate} is a function to solve SDE using the Euler-Maruyama
@@ -28,9 +45,18 @@ discretized Euler-Maruyama method for one dimensional SDE.
 
 It simulates solutions of stochastic differential equations with Gaussian noise,
 fractional Gaussian noise awith/without jumps.
+
+If a \code{\link{yuima-class}} object is passed as input, then the sampling
+information is taken from the slot \code{sampling} of the object.
+If a \code{\link{yuima.model-class}} object or a 
+\code{\link{yuima-class}} object with missing \code{sampling} slot is passed
+as input the \code{sampling} argument is used. If this argument is missing
+then the sampling structure is constructed from \code{Initial}, \code{Terminal},
+etc. arguments (see \code{\link{setSampling}} for details on how to use these 
+arguments).
 }
 \value{
-  \item{yuima}{A multi-dimensional \code{yuima} object(time series object).}
+  \item{yuima}{a \code{yuima-class} object.}
 }
 \author{The YUIMA Project Team}
 \note{There may be missing information in the simulate description.
@@ -51,9 +77,21 @@ samp <- setSampling(Terminal=T, n=n)
 ou <- setYuima(model=mod, sampling=samp)
 
 # Solve SDEs using Euler-Maruyama method. 
+par(mfrow=c(3,1))
 ou <- simulate(ou, xinit=1)
 plot(ou)
 
+
+set.seed(123)
+ouB <- simulate(mod, xinit=1,sampling=samp)
+plot(ouB)
+
+
+set.seed(123)
+ouC <- simulate(mod, xinit=1, Terminal=1, n=1000)
+plot(ouC)
+
+par(mfrow=c(1,1))
 
 
 # Path-simulation for 1-dim diffusion process. 
