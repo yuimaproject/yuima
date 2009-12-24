@@ -10,6 +10,7 @@
 \alias{initialize,yuima-method}
 \alias{simulate,yuima-method}
 \alias{poisson.random.sampling,yuima-method}
+\alias{subsampling,yuima-method}
 \alias{ql,yuima-method}
 \alias{rql,yuima-method}
 \alias{ml.ql,yuima-method}

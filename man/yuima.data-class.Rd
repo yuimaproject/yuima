@@ -13,6 +13,7 @@
 \alias{initialize,yuima.data-method}
 %\alias{setSampling,yuima.data-method}
 \alias{poisson.random.sampling,yuima.data-method}
+\alias{subsampling,yuima.data-method}
 
 \title{Class "yuima.data" for the data slot of a "yuima" class object}
 \description{
