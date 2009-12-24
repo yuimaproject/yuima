@@ -10,7 +10,7 @@ Set sampling information and create a `sampling' object.
 \usage{
   setSampling(Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
    grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
-   sgrid=as.numeric(NULL), interpolation="none" )
+   sgrid=as.numeric(NULL), interpolation="pt" )
 }
 \arguments{  
   \item{Initial}{Initial time of the grid.}
@@ -22,7 +22,7 @@ Set sampling information and create a `sampling' object.
   \item{sdelta}{mesh size in case of regular space grid.}
   \item{sgrid}{a grid in space for the simulation, possibly empty.}
   \item{interpolation}{a rule of interpolation in case of subsampling. 
-   By default, no interpolation. See Details.}
+   By default, the previous tick interpolation. See Details.}
 }
 \details{
 The function creates an object of type 

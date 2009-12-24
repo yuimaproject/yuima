@@ -56,12 +56,12 @@ setClass("yuima.sampling", representation(Initial  = "numeric",
 										  Terminal = "numeric",
                                           n = "numeric",
 										  delta    = "numeric",
-										  grid     = "numeric",
+										  grid     = "ANY",
 										  random   = "ANY",
 										  regular  = "logical",
 										  sdelta   = "numeric",
-										  sgrid    = "numeric",
-										  oindex   = "numeric",
+										  sgrid    = "ANY",
+										  oindex   = "ANY",
 										  interpolation = "character"
                                           )
          )

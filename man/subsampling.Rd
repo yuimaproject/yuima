@@ -5,7 +5,7 @@
 \usage{
 subsampling(x, sampling=NULL, Initial, Terminal, delta, 
  grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
- sgrid=as.numeric(NULL), interpolation="none") 
+ sgrid=as.numeric(NULL), interpolation="pt") 
 }
 \arguments{
   \item{x}{an \code{\link{yuima-class}} or 
@@ -19,10 +19,27 @@ subsampling(x, sampling=NULL, Initial, Terminal, delta,
   \item{sdelta}{mesh size in case of regular space grid.}
   \item{sgrid}{a grid in space for the simulation, possibly empty.}
   \item{interpolation}{a rule of interpolation in case of subsampling. 
-   By default, no interpolation. See Details.}
+   By default, previous tick interpolation is used. See Details.}
 }
 \value{
   \item{yuima}{a \code{yuima.data-class} object.}
+}
+\details{
+When subsampling on some grid of times, it may happen that no data is available
+at the given grid point. In this case it is possible to use several techniques.
+Different options are avaiable specifying the argument, or the slot, 
+\code{interpolation}:
+\describe{
+\item{\code{"none"} or \code{"exact"}}{no interpolation. If no data point exists
+at a given grid point, \code{NA} is returned in the subsampled data}
+\item{\code{"pt"} or \code{"previous"}}{the first data on the left of 
+the grid point instant is used.}
+\item{\code{"nt"} or \code{"next"}}{the first data on the right of 
+the grid point instant is used.}
+\item{\code{"lin"} or \code{"linear"}}{the average of the values of the first 
+data on the left and the first data to the right of 
+the grid point instant is used.}
+}
 }
 \examples{
 ## Set a model
@@ -44,10 +61,20 @@ yuima.sim <- simulate(yuima)
 plot(yuima.sim, plot.type="single")
 
 ## random sampling with exponential times
-
+## one random sequence per time series
 newsamp <- setSampling(
  random=list(rdist=c( function(x) rexp(x, rate=10), 
-  function(x) rexp(x, rate=20))))
+  function(x) rexp(x, rate=20))) )
+newdata <- subsampling(yuima.sim, sampling=newsamp)
+points(get.zoo.data(newdata)[[1]],col="red")
+points(get.zoo.data(newdata)[[2]],col="green")
+
+
+plot(yuima.sim, plot.type="single")
+
+## deterministic subsampling with different
+## frequence for each time series
+newsamp <- setSampling(delta=c(0.1,0.2))
 newdata <- subsampling(yuima.sim, sampling=newsamp)
 points(get.zoo.data(newdata)[[1]],col="red")
 points(get.zoo.data(newdata)[[2]],col="green")

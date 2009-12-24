@@ -9,24 +9,27 @@
 setGeneric("subsampling", 
 function(x, sampling=NULL, Initial, Terminal, delta, 
  grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
- sgrid=as.numeric(NULL), interpolation="none") 
+ sgrid=as.numeric(NULL), interpolation="pt") 
  standardGeneric("subsampling")
 )
 
 setMethod("subsampling","yuima", 
 function(x, sampling=NULL, Initial, Terminal, delta, 
  grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
- sgrid=as.numeric(NULL), interpolation="none")
- return(subsampling(x@data, sampling=sampling, Initial = Initial, 
+sgrid=as.numeric(NULL), interpolation="pt"){
+ obj <- subsampling(x@data, sampling=sampling, Initial = Initial, 
   Terminal = Terminal, delta = delta, 
   grid = grid, random = random, sdelta=sdelta, 
-  sgrid=sgrid, interpolation=interpolation))
+  sgrid=sgrid, interpolation=interpolation)
+ obj@model <- x@model
+ return(obj)
+}
 )
 
 setMethod("subsampling", "yuima.data",
 function(x, sampling=sampling, Initial, Terminal, delta, 
  grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
- sgrid=as.numeric(NULL), interpolation="none"){
+ sgrid=as.numeric(NULL), interpolation="pt"){
 
  tmpsamp <- NULL
  if(missing(sampling)){
@@ -39,7 +42,18 @@ function(x, sampling=sampling, Initial, Terminal, delta,
 
  
  Data <- get.zoo.data(x)
- tmpgrid <- NULL
+ n.data <- length(Data)
+ tmpgrid <- vector(n.data, mode="list")
+
+# prepares a grid of times
+
+	 if(is.logical(tmpsamp@random)){
+      if(tmpsamp@random)
+		 stop("wrong random sampling specification")
+      for(i in 1:n.data){
+		  tmpgrid[[i]] <- seq(start(Data[[i]]), end(Data[[i]]), by=tmpsamp@delta[i])
+	  }
+     }
 
 # random sampling
 	 if(is.list(tmpsamp@random)){
@@ -47,8 +61,6 @@ function(x, sampling=sampling, Initial, Terminal, delta,
 		 if(is.null(rdist))
 			stop("provide at least `rdist' argument for random sampling")
 		 n.rdist <- length(rdist)
-		 n.data <- length(Data)
-		 tmpgrid <- vector(n.data, mode="list")
 		 r.gen <- rep( rdist, n.data) # eventually reciclying arguments
 		 r.gen <- r.gen[1:n.data]
 		 for(i in 1:n.data){
@@ -60,16 +72,61 @@ function(x, sampling=sampling, Initial, Terminal, delta,
 			 if(tail(tmpgrid[[i]],1)>T)
 				tmpgrid[[i]] <- tmpgrid[[i]][-length(tmpgrid[[i]])]
 		 }
-	 }
+	 } 
 
-	 otime <- vector(n.data, mode="list")
-	 
+# prepares original index slot	 
+	 oindex <- vector(n.data, mode="list")
+# checks for interpolation method, if not in the list uses "pt"
+	 interpolation <- tmpsamp@interpolation
+	 int.methods <- c("previous", "pt", "next", "nt", "none", "exact", 
+					  "lin", "linear")
+     if(! (interpolation %in% int.methods) )
+	  interpolation <- "pt"
+
 	 for(i in 1:n.data){
-	  otime[[i]] <- time(Data[[i]]) 
-	  idx <- as.numeric(sapply(tmpgrid[[i]], function(x) max(which(otime[[i]] <= x))))
-	  x@zoo.data[[i]] <- zoo(as.numeric(Data[[i]][idx]), order.by=tmpgrid[[i]])	 
+	  oindex[[i]] <- time(Data[[i]]) 
+	  idx <- numeric(0)
+	  newData <- NULL
+	  lGrid <- length(tmpgrid[[i]]) 
+	  if( interpolation %in% c("previous", "pt")){	 
+		 idx <- as.numeric(sapply(tmpgrid[[i]], function(x) max(which(oindex[[i]] <= x))))
+		 newData <- sapply(1:lGrid, function(x) as.numeric(Data[[i]][idx[x]]))  
+		 oindex[[i]] <- sapply(1:lGrid, function(x) time(Data[[i]])[idx[x]])
+	  }
+	  if( interpolation %in% c("next", "nt")){	 
+		 idx <- as.numeric(sapply(tmpgrid[[i]], function(x) min(which(oindex[[i]] >= x))))
+		 newData <- sapply(1:lGrid, function(x) as.numeric(Data[[i]][idx[x]]))  
+		 oindex[[i]] <- sapply(1:lGrid, function(x) time(Data[[i]])[idx[x]])
+	  }
+	  if( interpolation %in% c("none", "exact")){
+		 idx <- match(tmpgrid[[i]], oindex[[i]])
+		 newData <- sapply(1:lGrid, function(x) as.numeric(Data[[i]][idx[x]]))  
+		 oindex[[i]] <- sapply(1:lGrid, function(x) time(Data[[i]])[idx[x]])
+	  }
+
+	  if( interpolation %in% c("lin", "linear")){
+		 idx.l <- as.numeric(sapply(tmpgrid[[i]], function(x) max(which(oindex[[i]] <= x))))
+		 idx.r <- as.numeric(sapply(tmpgrid[[i]], function(x) min(which(oindex[[i]] >= x))))
+		 f.int <- function(u)
+		  (as.numeric(Data[[i]][idx.r[u]])+as.numeric(Data[[i]][idx.l[u]]))/2
+		 newData <- sapply(1:lGrid, f.int ) 
+		 oindex[[i]] <- sapply(1:lGrid, function(u) time(Data[[i]])[idx.l[u]])
+ 	  }
+	  Data[[i]] <- zoo(newData, order.by=tmpgrid[[i]])	 
+	  tmpsamp@Terminal[i] <- end(Data[[i]])	 
+	  tmpsamp@Initial[i] <- start(Data[[i]])	 
+	  tmpsamp@n[i] <- length(Data[[i]])	 	 
 	 }
-	 return(x)
+	 tmpsamp@oindex <- oindex
+	 tmpsamp@grid <- tmpgrid
+	 tmpsamp@regular <- all(sapply(1:n.data, function(x) sum(diff(tmpgrid[[x]]))<1e-3))
+	 if(!tmpsamp@regular)
+	  tmpsamp@delta <- numeric(0)
+	 obj <- NULL
+	 tmpsamp@interpolation <- interpolation
+	 x@zoo.data <- Data 		 
+	 obj <- setYuima(data=x, sampling=tmpsamp)
+	 return(obj)
  } ### end method
 )
 
