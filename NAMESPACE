@@ -28,7 +28,17 @@ exportMethods(
               "rql",
               "ml.ql",
               "adaBayes",
-              "limiting.gamma"
+              "limiting.gamma",
+			  
+			  
+			  "getF",
+			  "getf",
+			  "getxinit",
+			  "gete",
+			  "simFunctional",
+			  "F0",
+			  "Fnorm",
+			  "asymptotic_term"
               )
 
 ## function which we want to expose to the user
@@ -58,3 +68,15 @@ export(ql,rql,ml.ql)
 export(adaBayes)
 export(rIG, rNIG, rbgamma, rngamma, rstable) ##:: random number generator for Inverse Gaussian
 export(limiting.gamma)
+
+export(setFunctional)
+export(getF)
+export(getf)
+export(getxinit)
+export(gete)
+
+export(simFunctional)
+export(F0)
+export(Fnorm)
+export(asymptotic_term)
+

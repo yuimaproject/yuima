@@ -28,6 +28,8 @@
 	 \code{\link{yuima.sampling-class}}}
     \item{\code{characteristic}:}{an object of class 
 	 \code{\link{yuima.characteristic-class}}}
+    \item{\code{functional}:}{an object of class 
+	 \code{\link{yuima.functional-class}}}
   }
 }
 \details{
@@ -44,6 +46,8 @@ The \code{sampling} slot contains information on how the \code{data} have been
 collected or how they should be generated.
 
 The slot \code{characteristic} contains information on 
+ \code{PLEASE FINISH THIS}.
+The slot \code{functional} contains information on 
  \code{PLEASE FINISH THIS}.
 }
 \section{Methods}{

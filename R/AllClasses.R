@@ -66,6 +66,18 @@ setClass("yuima.sampling", representation(Initial  = "numeric",
                                           )
          )
 
+# Class 'yuima.functional'
+
+# functional model used in 'asymptotic term' procedure
+
+setClass("yuima.functional", representation(F = "ANY",
+                                          f = "list",
+                                          xinit = "numeric",
+                                          e = "numeric"
+                                          )
+         )
+         
+
 # Class 'yuima'
 
 # this is the principal class of yuima project. It may contain up to
@@ -80,6 +92,7 @@ setClass("yuima.characteristic", representation(equation.number = "numeric",
 setClass("yuima", representation(data = "yuima.data",
                                  model = "yuima.model",
                                  sampling = "yuima.sampling",
-                                 characteristic = "yuima.characteristic"
+                                 characteristic = "yuima.characteristic",
+								 functional = "yuima.functional"
                                  )
          )

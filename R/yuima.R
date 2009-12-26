@@ -4,7 +4,7 @@
 # we should change it later to more flexible classes
 
 setMethod("initialize", "yuima",
-          function(.Object, data=NULL, model=NULL, sampling=NULL, characteristic=NULL){  
+          function(.Object, data=NULL, model=NULL, sampling=NULL, characteristic=NULL, functional=NULL){  
             eqn <- NULL
 
             if(!is.null(data)){
@@ -54,11 +54,13 @@ setMethod("initialize", "yuima",
               .Object@characteristic <- characteristic
             }
             
+			if(!is.null(functional)) .Object@functional <- functional
+			
             return(.Object)
           })
 
 # setter
 setYuima <-
-  function(data=NULL, model=NULL, sampling=NULL, characteristic=NULL){
-    return(new("yuima", data=data, model=model, sampling=sampling, characteristic=characteristic))
+  function(data=NULL, model=NULL, sampling=NULL, characteristic=NULL, functional=NULL){
+    return(new("yuima", data=data, model=model, sampling=sampling, characteristic=characteristic,functional=functional))
   }
