@@ -50,8 +50,12 @@ function(x, sampling=sampling, Initial, Terminal, delta,
 	 if(is.logical(tmpsamp@random)){
       if(tmpsamp@random)
 		 stop("wrong random sampling specification")
+	  if(length(tmpsamp@delta) < n.data)
+		 tmpsamp@delta <- rep( tmpsamp@delta, n.data)[1:n.data]
       for(i in 1:n.data){
 		  tmpgrid[[i]] <- seq(start(Data[[i]]), end(Data[[i]]), by=tmpsamp@delta[i])
+		  tmpsamp@regular[i] <- TRUE
+		  tmpsamp@random[i] <- FALSE
 	  }
      }
 
@@ -117,13 +121,15 @@ function(x, sampling=sampling, Initial, Terminal, delta,
 	  tmpsamp@Initial[i] <- start(Data[[i]])	 
 	  tmpsamp@n[i] <- length(Data[[i]])	 	 
 	 }
+	 
+	 print(str(tmpsamp))
 	 tmpsamp@oindex <- oindex
 	 tmpsamp@grid <- tmpgrid
-	 tmpsamp@regular <- all(sapply(1:n.data, function(x) sum(diff(tmpgrid[[x]]))<1e-3))
-	 if(!tmpsamp@regular)
-	  tmpsamp@delta <- numeric(0)
+	 tmpsamp@regular <- sapply(1:n.data, function(x) sum(diff(diff(tmpgrid[[x]])))<1e-3)
+	 tmpsamp@delta[which(!tmpsamp@regular)] <- numeric(0)  
 	 obj <- NULL
 	 tmpsamp@interpolation <- interpolation
+print(str(tmpsamp))
 	 x@zoo.data <- Data 		 
 	 obj <- setYuima(data=x, sampling=tmpsamp)
 	 return(obj)
