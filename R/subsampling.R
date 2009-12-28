@@ -122,14 +122,14 @@ function(x, sampling=sampling, Initial, Terminal, delta,
 	  tmpsamp@n[i] <- length(Data[[i]])	 	 
 	 }
 	 
-	 print(str(tmpsamp))
+
 	 tmpsamp@oindex <- oindex
 	 tmpsamp@grid <- tmpgrid
 	 tmpsamp@regular <- sapply(1:n.data, function(x) sum(diff(diff(tmpgrid[[x]])))<1e-3)
 	 tmpsamp@delta[which(!tmpsamp@regular)] <- numeric(0)  
 	 obj <- NULL
 	 tmpsamp@interpolation <- interpolation
-print(str(tmpsamp))
+
 	 x@zoo.data <- Data 		 
 	 obj <- setYuima(data=x, sampling=tmpsamp)
 	 return(obj)
