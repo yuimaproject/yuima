@@ -4,6 +4,9 @@
 # we convert objects to "zoo" internally
 
  
+
+
+
 setMethod("initialize", "yuima.sampling",
            function(.Object, Initial, Terminal, n, delta, grid, random, 
 				 regular, sdelta, sgrid, oindex, interpolation){  
@@ -11,7 +14,8 @@ setMethod("initialize", "yuima.sampling",
 				.Object@sgrid <- as.numeric(NULL) 	 
 				.Object@oindex <- as.numeric(NULL) 	 
 				.Object@interpolation <- interpolation 	 
-			   if(length(grid)>0){
+# grid given                 
+				 if(length(grid)>0){
 				   testInitial<-(min(grid)==Initial)
 				   testTerminal<-(max(grid)==Terminal)
 				   testn<-(abs(n-diff(range(grid))/mean(diff(grid))+1)<10^(-10))

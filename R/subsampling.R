@@ -125,8 +125,8 @@ function(x, sampling=sampling, Initial, Terminal, delta,
 
 	 tmpsamp@oindex <- oindex
 	 tmpsamp@grid <- tmpgrid
-	 tmpsamp@regular <- sapply(1:n.data, function(x) sum(diff(diff(tmpgrid[[x]])))<1e-3)
-	 tmpsamp@delta[which(!tmpsamp@regular)] <- numeric(0)  
+	 tmpsamp@regular <- sapply(1:n.data, function(x) sum(abs(diff(diff(tmpgrid[[x]]))))<1e-3)
+	 tmpsamp@delta <- sapply(1:n.data, function(x) ifelse(tmpsamp@regular[x], diff(tmpgrid[[x]])[1],  numeric(0)))
 	 obj <- NULL
 	 tmpsamp@interpolation <- interpolation
 
