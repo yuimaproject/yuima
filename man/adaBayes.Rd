@@ -56,7 +56,8 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   QL <- 0
   param <- numeric(2)
   for( i in 1:5){
-    PAR <- ml.ql(yuima.mod,theta2= rand[i,1],theta1=rand[i,2],h=(n^(-2/3)))
+    PAR <- ml.ql(yuima.mod,theta2=rand[i,1],theta1=rand[i,2],h=(n^(-2/3)))
+    PAR <- PAR@details
     if(PAR$value > QL){
       QL <- PAR$value
       param <- PAR$par

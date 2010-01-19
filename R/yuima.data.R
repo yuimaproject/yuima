@@ -128,8 +128,8 @@ setMethod("dim", "yuima",
 setMethod("plot","yuima",
           function(x,y,xlab=x@model@time.variable,ylab=x@model@solve.variable,...){
 		    if(length(x@model@time.variable)==0) {
-              plot(x@data,y,...)
+              plot(x@data,...)
 			} else {
-              plot(x@data,y,xlab=xlab,ylab=ylab,...)
+              plot(x@data,xlab=xlab,ylab=ylab,...)
 			}
           })

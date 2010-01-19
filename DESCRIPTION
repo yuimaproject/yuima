@@ -1,9 +1,9 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package
-Version: 0.0.85
-Date: 2010-1-8
-Depends: methods, zoo, adapt
+Version: 0.0.82
+Date: 2010-01-01
+Depends: methods, zoo, adapt, stats4
 Author: YUIMA Project Team.
 Maintainer: Stefano M. Iacus <stefano.iacus@R-project.org>
 Description: The YUIMA Project for Simulation and Inference 

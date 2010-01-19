@@ -582,21 +582,164 @@ setMethod("ml.ql", "yuima",
             ci[(length(ci)/2+1):length(ci)] <- (-1)*ci[(length(ci)/2+1):length(ci)]
             
             ql.opt <- function(theta=c(theta2, theta1)){
-              return(ql(yuima, theta2=theta[1:length(theta2)], theta1=theta[(length(theta2)+1):length(theta)], h=h, print=print))
+              return(ql(yuima, theta2=theta[1:length(theta2)],
+                        theta1=theta[(length(theta2)+1):length(theta)], h=h, print=print))
             }
             ql.grad.opt <- function(theta=c(theta2, theta1)){
-              return(ql.grad(yuima, theta2=theta[1:length(theta2)], theta1=theta[(length(theta2)+1):length(theta)], h=h, print=print))
+              return(ql.grad(yuima, theta2=theta[1:length(theta2)],
+                             theta1=theta[(length(theta2)+1):length(theta)], h=h, print=print))
             }
-            
+
+            ## constrOptim2 ( original code is constrOptim() in Package stat ) 
+            constrOptim2 <- function (theta, f, grad, ui, ci, mu = 1e-04, control = list(), 
+                                      method = if (is.null(grad)) "Nelder-Mead" else "BFGS",
+                                      outer.iterations = 100, outer.eps = 1e-05, ...)
+              {
+                if (!is.null(control$fnscale) && control$fnscale < 0) 
+                  mu <- -mu
+                R <- function(theta, theta.old, ...) {
+                  ui.theta <- ui %*% theta
+                  gi <- ui.theta - ci
+                  if (any(gi < 0)) 
+                    return(NaN)
+                  gi.old <- ui %*% theta.old - ci
+                  bar <- sum(gi.old * log(gi) - ui.theta)
+                  if (!is.finite(bar)) 
+                    bar <- -Inf
+                  f(theta, ...) - mu * bar
+                }
+                dR <- function(theta, theta.old, ...) {
+                  ui.theta <- ui %*% theta
+                  gi <- drop(ui.theta - ci)
+                  gi.old <- drop(ui %*% theta.old - ci)
+                  dbar <- colSums(ui * gi.old/gi - ui)
+                  grad(theta, ...) - mu * dbar
+                }
+                if (any(ui %*% theta - ci <= 0)) 
+                  stop("initial value not feasible")
+                obj <- f(theta, ...)
+                r <- R(theta, theta, ...)
+                for (i in 1L:outer.iterations) {
+                  obj.old <- obj
+                  r.old <- r
+                  theta.old <- theta
+                  fun <- function(theta, ...) {
+                    R(theta, theta.old, ...)
+                  }
+                  if(!is.null(grad)){
+                    gradient <- function(theta, ...) {
+                      dR(theta, theta.old, ...)
+                    }
+                  }else{
+                    gradient <- NULL
+                  }
+
+                  ## if hessian calculation is failure, hessian TRUE -> FALSE, and redo.    
+                  a <- try( optim(theta.old, fun, gradient, control = control, 
+                             method = method, hessian=TRUE, ...), silent=TRUE )
+                  if(class(a) == "try-error"){
+                    a <- optim(theta.old, fun, gradient, control=control,
+                               method=method, hessian=FALSE, ...)
+                  }
+                  ## END
+                  
+                  r <- a$value
+                  if (is.finite(r) && is.finite(r.old) && abs(r - r.old)/(outer.eps + 
+                                                                          abs(r - r.old)) < outer.eps) 
+                    break
+                  theta <- a$par
+                  obj <- f(theta, ...)
+                  if (obj > obj.old) 
+                    break
+                }
+                if (i == outer.iterations) {
+                  a$convergence <- 7
+                  a$message <- "Barrier algorithm ran out of iterations and did not converge"
+                }
+                if (mu > 0 && obj > obj.old) {
+                  a$convergence <- 11
+                  a$message <- paste("Objective function increased at outer iteration", i)
+                }
+                if (mu < 0 && obj < obj.old) {
+                  a$convergence <- 11
+                  a$message <- paste("Objective function decreased at outer iteration", i)
+                }
+                a$outer.iterations <- i
+                a$barrier.value <- a$value
+                a$value <- f(a$par, ...)
+                a$barrier.value <- a$barrier.value - a$value
+                a
+              }
+            ## END constrOptim2 ( original code is constrOptim() in Package stat ) 
+
+            ## optimize
             if(BFGS){
-              opt <- constrOptim(c(theta2, theta1), ql.opt, ql.grad.opt, ui=ui, ci=ci, control=list(fnscale=-1), method="BFGS", outer.iterations=500)
+              opt <- constrOptim2(c(theta2, theta1), ql.opt, ql.grad.opt, ui=ui, ci=ci,
+                                  control=list(fnscale=-1), method="BFGS", outer.iterations=500)
             }else{
-              opt <- constrOptim(c(theta2, theta1), ql.opt, NULL, ui=ui, ci=ci, control=list(fnscale=-1), outer.iterations=500)
+              opt <- constrOptim2(c(theta2, theta1), ql.opt, NULL, ui=ui, ci=ci,
+                                  control=list(fnscale=-1), outer.iterations=500)
             }
-            
             if(opt$convergence != 0){
               print("WARNING:optimization did not converge.")
             }
+            ## END optimize
+
+            
+            ## opt is converted into the mle form
+            ## get call()
+            call <- match.call()
+            
+            ## set par
+            coef <- opt$par
+            
+            ## get vcov
+            if( !is.null(opt$hessian) ){
+              if(length(coef))
+                vcov <- solve(opt$hessian)
+              else
+                vcov <- matrix(numeric(0L), 0L, 0L)
+            }else{
+              opt$hessian <- "calculation error"
+              vcov <- matrix()
+            }
+            ## END get vcov
+            
+            ## set min
+            min <- opt$value
+            
+            ## set param name
+            fullcoef <- coef
+            coef.name <- NULL
+            theta2.len <- length(yuima@model@parameter@drift)
+            if( theta2.len != 1){
+              for( i in 1:theta2.len){
+                coef.name <- c(coef.name, paste("theta2.", i, sep=""))
+              }
+            }else{
+              coef.name <- "theta2"
+            }              
+            theta1.len <- length(yuima@model@parameter@diffusion)
+            if( theta1.len != 1){
+              for( i in 1:theta1.len){
+                coef.name <- c(coef.name, paste("theta1.", i, sep=""))
+              }
+            }else{
+              coef.name <- c(coef.name, "theta1")
+            }
+            names(fullcoef) <- coef.name
+            ## END set param name
+            
+            ## set method name
+            method <- if(BFGS) "BFGS" else "Nelder-Mead" 
+              
+            ## make mle object
+            opt <- new("mle", call=call, coef=coef, fullcoef=unlist(fullcoef),
+                       vcov=vcov, min=min, details=opt, minuslogl=ql.opt,
+                       method=method)
+            
+            ## END opt convert
+
             return(opt)
           })
 

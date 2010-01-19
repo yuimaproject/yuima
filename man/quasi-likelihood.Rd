@@ -65,7 +65,7 @@ opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1))
 print("True param")
 print("theta2 = .3, theta1 = .1")
 print("ML estimator")
-opt$par
+print(opt)
 
 ## another way of parameter specification
 ##interval <- list(theta2.lim=c(0,1), theta1.lim=c(0,1))
@@ -75,7 +75,7 @@ opt$par
 ##print("True param")
 ##print("theta2 = .3, theta1 = .1")
 ##print("ML estimator")
-##opt$par
+##print(opt)
 
 system.time(
 opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), BFGS=TRUE)
@@ -83,7 +83,7 @@ opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), BFGS=TRUE)
 print("True param")
 print("theta2 = .3, theta1 = .1")
 print("ML estimator")
-opt$par
+print(opt)
 
 ##multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
@@ -122,19 +122,19 @@ theta1.lim <- t( matrix( c(theta1.1.lim, theta1.2.lim), 2, 2) )
 system.time(
 opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim)
 )
-opt$par
+print(opt)
 
 ## another way of parameter specification
 #interval <- list(theta2.1.lim, theta2.2.lim, theta1.1.lim, theta1.2.lim)
 #system.time(
 #opt <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
 #)
-#opt$par
+#print(opt)
 
 system.time(
 opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim, BFGS=TRUE)
 )
-opt$par
+print(opt)
 
 }
 
