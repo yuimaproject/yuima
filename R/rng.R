@@ -157,7 +157,7 @@ dIG <- function(x,delta,gamma){
 	if( gamma <= 0 )
     stop("gamma must be positive value.")
 
-	dens <- delta*e^(delta*gamma)*(x^(-3/2))*exp(-((delta^2)/x+x*gamma^2)/2)/sqrt(2*pi)
+	dens <- delta*exp(delta*gamma)*(x^(-3/2))*exp(-((delta^2)/x+x*gamma^2)/2)/sqrt(2*pi)
 	dens
 }
 
