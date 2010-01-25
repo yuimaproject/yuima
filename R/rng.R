@@ -52,6 +52,15 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     return(X)
     
   }else{ ## multivariate case
+    if( nrow(Lambda)!=ncol(Lambda)){
+      stop("Lambda must be a square matrix.")
+    }
+    if( nrow(Lambda)!=length(beta)){
+      stop("Dimension of Lambda and beta must be equal.")
+    }
+    if( sum(eigen(Lambda)$values <= 0 ) > 0){
+      stop("Lambda must be positive definite.")
+    }
     if( det(Lambda) < 10^(-15)){
       stop("Determinant of Lambda must be one.")
     }
@@ -63,7 +72,7 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
       stop("alpha must be positive value.")
     if( tmp <=0)
       stop("alpha^2 - beta^2*mu must be positive value.")
-  
+    
     tau <- rgamma(x,lambda,tmp/2)
     eta <- rnorm(x*length(beta))
     sqrt.L <- svd(Lambda)
