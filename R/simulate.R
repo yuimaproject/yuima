@@ -177,24 +177,27 @@ setMethod("simulate", "yuima",
   delta <- Terminal/n 
 
  if(missing(increment.W) | is.null(increment.W)){
-					if( sdeModel@hurst!=0.5 ){ 
-						grid<-sampling2grid(yuima@sampling)	
+					
+	 if( sdeModel@hurst!=0.5 ){ 
+	
+		grid<-sampling2grid(yuima@sampling)	
+		if(methodfGn=="Cholesky"){
+			dW<-CholeskyfGn(grid, sdeModel@hurst,r.size)
+		} else {
+			cat("\nNot done presently\n")
+			return(NULL)	
+		}
 						
-						if(methodfGn=="Cholesky"){
-						dW<-CholeskyfGn(grid, sdeModel@hurst,r.size)
-						}else{
-						cat("\nNot done presently\n")
-						return(NULL)	
-						}
-						
-					} else {
-						delta<-Terminal/n
-						dW <- rnorm(n * r.size, 0, sqrt(delta))
-						dW <- matrix(dW, ncol=n, nrow=r.size,byrow=TRUE)  
-					}
-				} else {
-					dW <- increment.W
-				}
+	} else {
+		
+		delta<-Terminal/n
+		dW <- rnorm(n * r.size, 0, sqrt(delta))
+		dW <- matrix(dW, ncol=n, nrow=r.size,byrow=TRUE)  
+	}
+ 
+ } else {
+		dW <- increment.W
+ }
 
   yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
 
