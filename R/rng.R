@@ -1,7 +1,7 @@
 ##################################################################
 ######  "Random number generators and 
 ######          related density functions for yuima packages"
-######  (Last modified: Jan. 8, 2010)
+######  (Last modified: March 9, 2010)
 ##################################################################
 
 
@@ -9,13 +9,13 @@
 
 rbgamma <- function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
  if( delta.plus <= 0 )
-   stop("delta.plus must be positive value.")
+   stop("delta.plus must be positive.")
  if( gamma.plus <= 0 )
-   stop("gamma.plus must be positive value.")
+   stop("gamma.plus must be positive.")
  if( delta.minus <= 0 )
-   stop("delta.minus must be positive value.")
+   stop("delta.minus must be positive.")
  if( gamma.minus <= 0 )
-   stop("gamma.minus must be positive value.")
+   stop("gamma.minus must be positive.")
  X <- rgamma(x,delta.plus,gamma.plus) - rgamma(x,delta.minus,gamma.minus)
  return(X)
 }
@@ -35,13 +35,13 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     }
     tmp <- as.numeric(alpha^2 - beta^2)
     if( lambda <= 0 ){
-      stop("lambda must be positive value.")
+      stop("lambda must be positive.")
     }
     if( alpha <= 0 ){
-      stop("alpha must be positive value.")
+      stop("alpha must be positive.")
     }
     if( tmp <= 0 ){
-      stop("alpha^2 - beta^2*mu must be positive value.")
+      stop("alpha^2 - beta^2 must be positive value.")
     }
   
     tau <- rgamma(x,lambda,tmp/2)
@@ -67,11 +67,11 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
   
     if( lambda <= 0 )
-      stop("lambda must be positive value.")
+      stop("lambda must be positive.")
     if( alpha <= 0 )
-      stop("alpha must be positive value.")
+      stop("alpha must be positive.")
     if( tmp <=0)
-      stop("alpha^2 - beta^2*mu must be positive value.")
+      stop("alpha^2 - t(beta) %*% Lambda %*% must be positive.")
     
     tau <- rgamma(x,lambda,tmp/2)
     eta <- rnorm(x*length(beta))
@@ -87,11 +87,11 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
 
 dungamma <- function(x,lam,al,be,mu){
     if( lam <= 0 )
-	stop("lambda must be positive value.")
+	stop("lambda must be positive.")
     if( al <= 0 )
-	stop("alpha must be positive value.")
+	stop("alpha must be positive.")
     if( al^2 - be^2 <= 0 )
-	stop("alpha^2 - beta^2 must be positive value.")
+	stop("alpha^2 - beta^2 must be positive.")
 	
 	dens <- exp(be*(x-mu))*((al^2 - be^2)^(lam))*besselK(al*abs(x-mu),lam-1/2)*abs(x-mu)^(lam-1/2)/(gamma(lam)*sqrt(pi)*((2*al)^(lam-1/2)))
 	dens
@@ -143,9 +143,9 @@ dungamma <- function(x,lam,al,be,mu){
 
 rIG <- function(x,delta,gamma){
   if( delta <= 0 )
-    stop("delta must be positive value.")
+    stop("delta must be positive.")
   if( gamma <= 0 )
-    stop("gamma must be positive value.")
+    stop("gamma must be positive.")
   V <- rchisq(x,df=1);
   
   z1 <- ( delta/gamma + V/(2*gamma^2) ) - sqrt( V*delta/(gamma^3) + ( V/(2*gamma^2) )^2 )  
@@ -162,9 +162,9 @@ rIG <- function(x,delta,gamma){
 
 dIG <- function(x,delta,gamma){
 	if( delta <= 0 )
-    stop("delta must be positive value.")
+    stop("delta must be positive.")
 	if( gamma <= 0 )
-    stop("gamma must be positive value.")
+    stop("gamma must be positive.")
 
 	dens <- delta*exp(delta*gamma)*(x^(-3/2))*exp(-((delta^2)/x+x*gamma^2)/2)/sqrt(2*pi)
 	dens
@@ -182,6 +182,9 @@ rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
   if(missing(Lambda)){
     ## univariate case
     gamma <- sqrt(alpha^2 - beta^2)
+    if(gamma <0){
+      stop("alpha^2-beta^2 must be positive.")
+    }
     
     if (gamma == 0) {
       V = rnorm(x)^2
@@ -200,7 +203,7 @@ rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
     }
     tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
     if(tmp <0){
-      stop("gamma must be positive.")
+      stop("alpha^2 - t(beta) %*% Lambda %*% beta must be nonnegative.")
     }
     gamma <- sqrt(tmp)
   }
