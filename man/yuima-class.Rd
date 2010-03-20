@@ -2,6 +2,7 @@
 \docType{class}
 \alias{yuima-class}
 
+\alias{get.mle,yuima-method}
 \alias{get.zoo.data,yuima-method}
 \alias{plot,yuima-method}
 \alias{dim,yuima-method}
@@ -68,7 +69,7 @@ The slot \code{functional} contains information on
     \item{plot}{\code{signature(x = "yuima", \dots)}: calls  
 	 \code{\link{plot}} from the \code{\link{zoo}} package with argument
 	 \code{x@data@zoo.data}. Additional arguments \code{\dots} are passed
-	 as is to the \code{\link{plot}} function.}   
+	 as is to the \code{\link{plot}} function.} 
 	\item{dim}{\code{signature(x = "yuima")}: the number of SDEs in the
 	  \code{yuima} object.}
     \item{length}{\code{signature(x = "yuima")}: a vector of length of
@@ -78,6 +79,8 @@ The slot \code{functional} contains information on
 	 For more details see \code{\link{cce}}.}
     \item{simulate}{simulation method. For more information see
 	  \code{\link{simulate}}.}
+	\item{get.mle}{\code{signature(x="yuima")}: return mle class object
+	  of mle result.}
   }
 }
 \author{The YUIMA Project Team}

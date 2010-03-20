@@ -11,7 +11,7 @@
 \description{Calculate the quasi-likelihood and estimate of the parameters of the
   stochastic differential equation by the maximum likelihood method.}
 \usage{
-ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,BFGS=FALSE,param,interval)
+ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 ql(yuima,theta2,theta1,h,print=FALSE,param)
 rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
 }
@@ -23,7 +23,7 @@ rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
     parameters. Vector can be available only if theta is a scalar.}
   \item{ptheta2,ptheta1}{}
   \item{print}{you can see a progress of the estimation when print is TRUE.}
-  \item{BFGS}{}
+  \item{method}{}
   \item{param}{}
   \item{interval}{}
   \item{prevparam}{}
@@ -60,30 +60,30 @@ QL
 ##QL
 
 system.time(
-opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1))
+yuima <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1))
 )
 print("True param")
 print("theta2 = .3, theta1 = .1")
 print("ML estimator")
-print(opt)
+get.mle(yuima)@coef
 
 ## another way of parameter specification
 ##interval <- list(theta2.lim=c(0,1), theta1.lim=c(0,1))
 ##system.time(
-##opt <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
+##yuima <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
 ##)
 ##print("True param")
 ##print("theta2 = .3, theta1 = .1")
 ##print("ML estimator")
-##print(opt)
+#get.mle(yuima)@coef
 
 system.time(
-opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), BFGS=TRUE)
+yuima <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), method="Newtoon")
 )
 print("True param")
 print("theta2 = .3, theta1 = .1")
 print("ML estimator")
-print(opt)
+get.mle(yuima)@coef
 
 ##multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
@@ -120,21 +120,54 @@ theta2.lim <- t( matrix( c(theta2.1.lim, theta2.2.lim), 2, 2) )
 theta1.lim <- t( matrix( c(theta1.1.lim, theta1.2.lim), 2, 2) )
 
 system.time(
-opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim)
+yuima <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim)
 )
-print(opt)
+get.mle(yuima)@coef
 
 ## another way of parameter specification
 #interval <- list(theta2.1.lim, theta2.2.lim, theta1.1.lim, theta1.2.lim)
 #system.time(
-#opt <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
+#yuima <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
 #)
-#print(opt)
+#get.mle(yuima)@coef
 
-system.time(
-opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim, BFGS=TRUE)
-)
-print(opt)
+
+
+##dXt^e = -theta2 * Xt^e * dt + theta1 * dWt
+diff.matrix <- matrix(c("theta1"), 1, 1)
+ymodel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix,
+                   time.variable="t", state.variable="x", solve.variable="x")
+n <- 100
+     
+ysamp <- setSampling(Terminal=(n)^(1/3), n=n) 
+yuima <- setYuima(model=ymodel, sampling=ysamp)
+set.seed(123)
+yuima <- simulate(yuima, xinit=1, true.parameter=c(0.5, 0.8))
+#0.3,0.1
+h <- 1/((n)^(2/3))
+
+onezoo <- function(ydata) {
+  dat <- get.zoo.data(ydata)
+  dats <- dat[[1]]
+  if(length(dat)>1) {
+    for(i in 2:(length(dat))) {
+      dats <- merge(dats,dat[[i]])
+    }
+  }
+  return(dats)
+}
+theta2 <- 0.1#0.65
+theta1 <- 0.2#0.7
+
+print("use Newton method")
+res1 <- ml.ql(yuima, theta2, theta1, h, method="Newton", print=TRUE)
+print(confint(res1))
+
+
+print("use optim")
+res2 <- ml.ql(yuima, theta2, theta1, h, print=FALSE)
+print(confint(res2))
+
 
 }
 

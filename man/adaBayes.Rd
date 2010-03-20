@@ -56,18 +56,18 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   QL <- 0
   param <- numeric(2)
   for( i in 1:5){
-    PAR <- ml.ql(yuima.mod,theta2=rand[i,1],theta1=rand[i,2],h=(n^(-2/3)))
-    PAR <- PAR@details
-    if(PAR$value > QL){
-      QL <- PAR$value
-      param <- PAR$par
+    PAR <-  ml.ql(yuima.mod,theta2=rand[i,1],theta1=rand[i,2],h=(n^(-2/3)))
+    PAR <- get.mle(PAR)
+    if(PAR@min > QL){
+      QL <- PAR@min
+      param <- PAR@coef
     }
   }
   BE <- adaBayes(yuima.mod,h=(n-1)^(-2/3),prior2=prior2,prior1=prior1,domain2=domain,domain1=domain,theta2.offset=param[1],theta1.offset=param[2])
   print("True param")
   print("theta2 = .6, theta1 = .3")
   print("ML estimate")
-  PAR$par
+  PAR@coef
   print("Bayes estimate")
   BE
 }

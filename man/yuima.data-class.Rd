@@ -14,6 +14,7 @@
 %\alias{setSampling,yuima.data-method}
 \alias{poisson.random.sampling,yuima.data-method}
 \alias{subsampling,yuima.data-method}
+\alias{get.mle,yuima.data-method}
 
 \title{Class "yuima.data" for the data slot of a "yuima" class object}
 \description{
@@ -27,6 +28,7 @@
   \describe{
     \item{\code{original.data}:}{The original data.}
 	\item{\code{zoo.data}:}{A list of \code{zoo} format data.}
+	\item{\code{mle}:}{mle class object, result of ml.ql}
   }
 }
 \details{
@@ -85,6 +87,8 @@ is usually empty.
     \item{cce}{\code{signature(x = "yuima.data")}: calculates asyncronous
 	 covariance estimator on the data contained in \code{x@zoo.data}. 
 	 For more details see \code{\link{cce}}.}
+    \item{get.mle}{\code{signature(x="yuima.data")}: return mle class of
+     ml.ql result.}
   }
 }
 \author{The YUIMA Project Team}

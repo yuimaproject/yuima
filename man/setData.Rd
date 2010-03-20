@@ -3,6 +3,7 @@
 \alias{get.zoo.data}
 \alias{dim}
 \alias{length}
+\alias{get.mle}
 
 \title{
 Set and access data of an object of type "yuima.data" or "yuima".
@@ -13,6 +14,8 @@ Set and access data of an object of type "yuima.data" or "yuima".
 \code{get.zoo.data} returns the content of the \code{zoo.data} slot of a
 \code{\link{yuima.data-class}} object. (Note: value is a \code{list} of 
 \code{\link{zoo}} objects).
+
+\code{get.mle} return the content of mle class of ml.ql result.
 
 \code{plot} plot method for object of \code{\link{yuima.data-class}} or 
 \code{\link{yuima-class}}.
@@ -52,6 +55,11 @@ The function \code{get.zoo.data}
 returns the content of the slot \code{zoo.data} of \code{x} if \code{x}
 is of \code{\link{yuima.data-class}} or the content of 
 \code{x@data@zoo.data} if \code{x} is of \code{\link{yuima-class}}.
+
+The function \code{get.mle}
+returns the content of the slot \code{mle} of \code{x} if \code{x}
+is of \code{\link{yuima.data-class}} or the content of 
+\code{x@data@mle} if \code{x} is of \code{\link{yuima-class}}.
 }
 \value{
    \item{value}{a list of object(s) of \code{\link{yuima.data-class}} for 

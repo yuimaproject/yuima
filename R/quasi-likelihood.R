@@ -455,6 +455,319 @@ setMethod("rql", "yuima",
             return(rQL)
           })
 
+
+## ml.ql by newton method.
+newton.ml.ql <- function(yuima, theta2, theta1, h, iteration=1, param.only=FALSE, verbose=FALSE, ...){
+    
+  ## get param
+  r.size <- yuima@model@noise.number
+  d.size <- yuima@model@equation.number
+  modelstate <- yuima@model@state.variable
+  modelpara.drift <- yuima@model@parameter@drift
+  modelpara.diff <- yuima@model@parameter@diffusion
+
+  ## get expression of functions ##
+  ## a
+  a <- yuima@model@drift
+  
+  ## b
+  b <- yuima@model@diffusion
+
+  ## B = b %*% t(b)
+  if(length(b)>=2){
+    ## expression matrix calculation
+    B <- list()
+    for( i in 1:d.size){
+      for( j in i:d.size){
+        tmp <- NULL   
+        for(l in 1:r.size){
+          B.il <- as.character(b[[i]][l])
+          B.jl <- as.character(b[[j]][l])
+          if(l==1){
+            tmp <- paste(B.il, "*", B.jl)
+          }else{
+            tmp <- paste(tmp, "+", B.il, "*", B.jl)
+          }
+        }
+        ## update B list
+        B[[ (i-1)*d.size + j ]] <- parse(text=tmp)        
+        if(i!=j) B[[ (j-1)*d.size + i ]] <- parse(text=tmp)
+      }
+    }
+    dim(B) <- c(d.size, d.size)
+  }else{
+    b <- yuima@model@diffusion[[1]]
+    B <- parse(text=paste(as.character(b),
+                 " * ", as.character(b), sep=""))
+    B <- list(B)
+    dim(B) <- c(1,1)
+  }
+  
+  ## some func def about B
+  deriv.B <- function(B, var=character()){
+    B.deriv <- B
+    for(i in 1:nrow(B)){
+      for( j in 1:ncol(B) ){
+        B.deriv[i,j][[1]] <- D(B[i,j][[1]], var)
+      }
+    }
+    return(B.deriv)
+  }
+  eval.B <- function(B, theta1, theta2, Xt.iMinus1, ...){
+    ##assign variable
+    for(j in 1:length(Xt.iMinus1)){
+      assign(modelstate[j], Xt.iMinus1[j])
+    }
+    for(j in 1:length(theta1)){
+      assign(modelpara.diff[j], theta1[j])
+    }
+    for(j in 1:length(theta2)){
+      assign(modelpara.drift[j], theta2[j])
+    }
+    B.subs <- matrix(0, nrow(B), ncol(B))
+    for( i in 1:nrow(B) ){
+      for( j in 1:ncol(B) ){
+        B.subs[i,j] <- eval(B[i,j][[1]])
+      }
+    }
+    return(B.subs)
+  }
+  eval.inv.B <- function(B, theta1, theta2, Xt.iMinus1, ...)
+    return(solve(eval.B(B, theta1, theta2, Xt.iMinus1, ...)))
+  ## END
+  
+  ## some func about a
+  deriv.a <- function(a, var=character()){
+    a.deriv <- NULL
+    for(i in 1:length(a)){
+      a.deriv <- c(a.deriv, as.expression(D(a[i], var)))
+    }
+    return(a.deriv)
+  }
+  
+  eval.a <- function(a, theta1, theta2, Xt.iMinus1, ...){
+    ##assign variable
+    for(j in 1:length(Xt.iMinus1)){
+      assign(modelstate[j], Xt.iMinus1[j])
+    }
+    for(j in 1:length(theta1)){
+      assign(modelpara.diff[j], theta1[j])
+    }
+    for(j in 1:length(theta2)){
+      assign(modelpara.drift[j], theta2[j])
+    }
+    a.subs <- matrix(0, length(a), 1)
+    for(i in 1:length(a)){
+      a.subs[i,] <- eval(a[i])      
+    }
+    return(a.subs)
+  }
+  ##END
+  
+  ## dGi_theta1
+  dGi.theta1 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...){    
+    ##d_theta1 log(detB)+d_theta1 1/2h*(-)T%*%B^(-1)%*%(-)
+    ## 2nd term d_theta1 log(det(B))
+    term.2 <- matrix(0, length(theta1), 1)
+    for( j in 1:length(theta1)){
+      term.2[j,1] <- sum(diag(eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+                              eval.B(deriv.B(B, modelpara.diff[j]), theta1, theta2, Xt.iMinus1)))
+    }
+    
+    ## 3rd term d_theta1 1/2h *(-)B^(-1)(-)
+    term.3 <- matrix(0, length(theta1),1)
+    for( j in 1:length(theta1)){
+      tmp <- delta.i.X - h * eval.a(a, theta1, theta2, Xt.iMinus1)
+      term.3[j,1] <-  -1/(2*h) * t(tmp) %*% eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+          eval.B(deriv.B(B, modelpara.diff[j]), theta1, theta2, Xt.iMinus1) %*%
+            eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*% tmp
+    }
+
+    ret <- 1/2*term.2+term.3
+    return(ret)
+  }
+  
+  ## dH_theta1
+  dH.theta1 <- function(theta1, theta2, h, yuima, B, a, ...){
+    ret <- matrix(0, length(theta1), 1)
+    data <- as.matrix(onezoo(yuima))
+    for( i in 1:(nrow(data)-1)){
+      ##Xt.iMinus1
+      Xt.iMinus1 <- data[i,]
+      ##delta.i.X
+      delta.i.X <- data[i+1,] - data[i,]
+      ##calc
+      ret <- ret + dGi.theta1(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
+    }
+    ret <- -ret
+    return(ret)
+  }
+
+  
+  ## d2Gi_theta1
+  d2Gi.theta1 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a,...){
+    ##2nd term
+    term.2 <- matrix(0, length(theta1), length(theta1))
+    for(j in 1:length(theta1)){
+      for(k in 1:length(theta1)){
+        tmp <- -eval.inv.B(B,theta1, theta2, Xt.iMinus1) %*%
+          eval.B(deriv.B(B,modelpara.diff[k]), theta1, theta2, Xt.iMinus1) %*%
+          eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+            eval.B(deriv.B(B,modelpara.diff[j]), theta1, theta2, Xt.iMinus1) +
+            eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+              eval.B( deriv.B(deriv.B(B,modelpara.diff[j]), modelpara.diff[k]),
+                     theta1, theta2, Xt.iMinus1)
+        term.2[j,k] <- sum(diag(tmp)) / 2
+      }
+    }
+    ##3rd term
+    term.3 <- matrix(0, length(theta1), length(theta1))
+    for(j in 1:length(theta1)){
+      for(k in 1:length(theta1)){
+        tmp <- -2 * eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+          eval.B( deriv.B(B, modelpara.diff[k]), theta1, theta2, Xt.iMinus1 ) %*%
+            eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+              eval.B( deriv.B(B, modelpara.diff[j]), theta1, theta2, Xt.iMinus1) %*%
+                eval.inv.B(B, theta1, theta2, Xt.iMinus1) +
+                  eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+                    eval.B( deriv.B(deriv.B(B,modelpara.diff[j]), modelpara.diff[k]),
+                           theta1, theta2, Xt.iMinus1 ) %*%
+                             eval.inv.B(B, theta1, theta2, Xt.iMinus1)
+        tmp2 <- delta.i.X -h * eval.a(a, theta1, theta2, Xt.iMinus1)
+        term.3[j,k] <- - 1 / (2*h) * t(tmp2) %*% tmp %*% tmp2 
+      }
+    }
+
+    ##ret
+    ret <- term.2+term.3
+    return(ret)
+  }
+  
+  ## d2H_theta1
+  d2H.theta1 <-function(theta1, theta2, h, yuima, B, a, ...){
+    ret <- matrix(0, length(theta1), length(theta1))
+    data <- as.matrix(onezoo(yuima))
+    for(i in 1:(nrow(data)-1)){
+      ##Xt.iMinus1
+      Xt.iMinus1 <- data[i,]
+      ##delta.i.X
+      delta.i.X <- data[i+1,] - data[i,]
+      ##calc
+      ret <- ret + d2Gi.theta1(theta1,  theta2, h, Xt.iMinus1, delta.i.X, B, a,...)
+    }
+    ret <- -ret
+    return(ret)
+  }
+
+  ## dGi_theta2
+  dGi.theta2 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...){
+    ##calc
+    ret <- matrix(0, length(theta2), 1)
+    for( j in 1:length(theta2) ){
+      ret[j,1] <- -t(delta.i.X - h * eval.a(a,theta1, theta2, Xt.iMinus1)) %*%
+        eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+          eval.a( deriv.a(a, modelpara.drift[j]), theta1, theta2, Xt.iMinus1)
+    }
+
+    return(ret)
+  }
+  
+  ## dH_theta2
+  dH.theta2 <-function(theta1, theta2, h, yuima, B, a, ...){
+    ret <- matrix(0, length(theta2), 1)
+    data <- as.matrix(onezoo(yuima))
+    for( i in 1:(nrow(data)-1)){
+      ##Xt.iMinus1
+      Xt.iMinus1 <- data[i,]
+      ##delta.i.X
+      delta.i.X <- data[i+1,] - data[i,]
+      ##calc
+      ret <- ret + dGi.theta2(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
+      #cat("dH.theta2-tmp:", ret, "\n")
+    }
+    ret <- -ret
+    return(ret)
+  }
+  
+  ## d2Gi_theta2
+  d2Gi.theta2 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...){
+    ##calc
+    ret <- matrix(0, length(theta2), length(theta2))
+    for(j in 1:length(theta2)){
+      for(k in 1:length(theta2)){
+        ret[j,k] <- - t(delta.i.X) %*% eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+          eval.a( deriv.a( deriv.a(a,modelpara.drift[j]), modelpara.drift[k]),
+                 theta1, theta2, Xt.iMinus1) +
+                   h * 
+                     t(eval.a(deriv.a(a, modelpara.drift[j]), theta1, theta2, Xt.iMinus1)) %*%
+                       eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+                         eval.a(deriv.a(a, modelpara.drift[k]), theta1, theta2, Xt.iMinus1) +
+                           h *
+                             t(eval.a(a, theta1, theta2, Xt.iMinus1)) %*%
+                               eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
+                                 eval.a( deriv.a(deriv.a(a,modelpara.drift[j]), modelpara.drift[k]),
+                                        theta1, theta2, Xt.iMinus1)
+      }
+    }
+    return(ret)
+  }
+  
+  ## d2H_theta2
+  d2H.theta2 <- function(theta1, theta2, h, yuima, B, a, ...){
+    ret <- matrix(0, length(theta2), length(theta2))
+    data <- as.matrix(onezoo(yuima))
+    for(i in 1:(nrow(data)-1)){
+      ##Xt.iMinus1
+      Xt.iMinus1 <- data[i,]
+      ##delta.i.X
+      delta.i.X <- data[i+1,] - data[i,]
+      ##calc
+      ret <- ret + d2Gi.theta2(theta1,  theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
+    }
+    ret <- -ret
+    return(ret)
+  }
+  ## END function define ##
+
+  ## newton algorithm main ##
+  if(!param.only){
+    if(verbose){
+      cat("theta2 init:", theta2, "\n")
+      cat("theta1 init:", theta1, "\n")
+    }
+    
+    for(ite in 1:iteration){
+      
+      dHtheta2 <- dH.theta2(theta1, theta2, h, yuima, B, a, ...)
+      d2Htheta2 <- d2H.theta2(theta1, theta2, h, yuima, B, a, ...)
+      theta2 <- as.vector(theta2 - solve(d2Htheta2) %*% dHtheta2)
+      
+      dHtheta1 <- dH.theta1(theta1, theta2, h, yuima, B, a, ...)
+      d2Htheta1 <- d2H.theta1(theta1, theta2, h, yuima, B, a, ...)
+      theta1 <- as.vector(theta1 - solve(d2Htheta1) %*% dHtheta1)
+      
+      if(verbose){
+        cat("\n## Iteration", ite, "##\n")
+        cat("theta2 new:", theta2, "\n")
+        cat("theta1 new:", theta1, "\n")
+      }
+      
+    }
+  }
+  ## END newtom algorithm ##
+
+  ##calc Sigma1, Sigma2, Hessian?##
+  Sigma1 <- - solve(d2H.theta1(theta1, theta2, h, yuima, B, a, ...))
+  Sigma2 <- - solve(d2H.theta2(theta1, theta2, h, yuima, B, a, ...))
+  hessian <- 1 ## Not Implemented yet!
+  ##END 
+  
+  ##temp
+  return(list(theta1.new=theta1, theta2.new=theta2, Sigma1=Sigma1, Sigma2=Sigma2, hessian=hessian))
+
+}
+## END ml.ql by newton method
+
 ##::estimate parameters(theta2,theta1) with a constraint ui%*%theta-ci=0  
 ##::yuima : yuima object
 ##::theta2 : init parameter in drift term.
@@ -464,11 +777,17 @@ setMethod("rql", "yuima",
 ##::example: 0 <= theta1 <= 1 theta1.lim = matrix(c(0,1),1,2)
 ##::if theta1, theta2 are matrix, theta.lim can be defined matrix like rbind(c(0,1),c(0,1))
 setGeneric("ml.ql",
-           function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2), theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE, BFGS=FALSE, param, interval)
+           function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2),
+                    theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE,
+                    method="optim",
+                    param, interval)
            standardGeneric("ml.ql")
            )
 setMethod("ml.ql", "yuima",
-          function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2), theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE, BFGS=FALSE, param, interval){
+          function(yuima, theta2, theta1, h, theta2.lim=matrix(c(0, 1), 1, 2),
+                   theta1.lim=matrix(c(0, 1), 1, 2), print=FALSE,
+                   method="optim", #(BFGS, Newton)
+                   param, interval){
             if( missing(yuima)){
               cat("\nyuima object is missing.\n")
               return(NULL)
@@ -562,25 +881,6 @@ setMethod("ml.ql", "yuima",
             }
             ## END interval handling
 
-            if(is.matrix(theta2.lim) && is.matrix(theta1.lim)){
-              if(ncol(theta2.lim)!=2 || ncol(theta1.lim)!=2){
-                cat("\ntheta.lim is not available.\n")
-              return(NULL)    
-              }
-            }
-            if( length(theta2)!=1 && length(theta2)!=nrow(theta2.lim)){
-              cat("\nsize of theta2 and theta2.lim are different.\n")
-              return(NULL)    
-            }
-            if( length(theta1)!=1 && length(theta1)!=nrow(theta1.lim)){
-              cat("\nsize of theta1 and theta1.lim are different.\n")
-              return(NULL)    
-            }
-            
-            ui <- rbind(diag(length(theta1)+length(theta2)), (-1)*diag(length(theta1)+length(theta2)))
-            ci <- c(rbind(theta2.lim, theta1.lim))
-            ci[(length(ci)/2+1):length(ci)] <- (-1)*ci[(length(ci)/2+1):length(ci)]
-            
             ql.opt <- function(theta=c(theta2, theta1)){
               return(ql(yuima, theta2=theta[1:length(theta2)],
                         theta1=theta[(length(theta2)+1):length(theta)], h=h, print=print))
@@ -589,157 +889,106 @@ setMethod("ml.ql", "yuima",
               return(ql.grad(yuima, theta2=theta[1:length(theta2)],
                              theta1=theta[(length(theta2)+1):length(theta)], h=h, print=print))
             }
+            
+            if(method=="Newton"){
+              opt <- newton.ml.ql(yuima, theta2, theta1, h,
+                                  iteration=10, param.only=FALSE, verbose=print)
 
-            ## constrOptim2 ( original code is constrOptim() in Package stat ) 
-            constrOptim2 <- function (theta, f, grad, ui, ci, mu = 1e-04, control = list(), 
-                                      method = if (is.null(grad)) "Nelder-Mead" else "BFGS",
-                                      outer.iterations = 100, outer.eps = 1e-05, ...)
-              {
-                if (!is.null(control$fnscale) && control$fnscale < 0) 
-                  mu <- -mu
-                R <- function(theta, theta.old, ...) {
-                  ui.theta <- ui %*% theta
-                  gi <- ui.theta - ci
-                  if (any(gi < 0)) 
-                    return(NaN)
-                  gi.old <- ui %*% theta.old - ci
-                  bar <- sum(gi.old * log(gi) - ui.theta)
-                  if (!is.finite(bar)) 
-                    bar <- -Inf
-                  f(theta, ...) - mu * bar
+              coef <- c(opt$theta2.new, opt$theta1.new)
+              min <- ql(yuima, opt$theta2.new, opt$theta1.new, h, print, param)
+         
+            #}else if(method=="BFGS"){
+            #  opt <- constrOptim(c(theta2, theta1), ql.opt, ql.grad.opt,
+            #                     ui=ui, ci=ci, control=list(fnscale=-1),
+            #                     method="BFGS", outer.iterations=500)            
+            #
+            }else{ ## optim
+              if(is.matrix(theta2.lim) && is.matrix(theta1.lim)){
+                if(ncol(theta2.lim)!=2 || ncol(theta1.lim)!=2){
+                  cat("\ntheta.lim is not available.\n")
+                  return(NULL)    
                 }
-                dR <- function(theta, theta.old, ...) {
-                  ui.theta <- ui %*% theta
-                  gi <- drop(ui.theta - ci)
-                  gi.old <- drop(ui %*% theta.old - ci)
-                  dbar <- colSums(ui * gi.old/gi - ui)
-                  grad(theta, ...) - mu * dbar
-                }
-                if (any(ui %*% theta - ci <= 0)) 
-                  stop("initial value not feasible")
-                obj <- f(theta, ...)
-                r <- R(theta, theta, ...)
-                for (i in 1L:outer.iterations) {
-                  obj.old <- obj
-                  r.old <- r
-                  theta.old <- theta
-                  fun <- function(theta, ...) {
-                    R(theta, theta.old, ...)
-                  }
-                  if(!is.null(grad)){
-                    gradient <- function(theta, ...) {
-                      dR(theta, theta.old, ...)
-                    }
-                  }else{
-                    gradient <- NULL
-                  }
-
-                  ## if hessian calculation is failure, hessian TRUE -> FALSE, and redo.    
-                  a <- try( optim(theta.old, fun, gradient, control = control, 
-                             method = method, hessian=TRUE, ...), silent=TRUE )
-                  if(class(a) == "try-error"){
-                    a <- optim(theta.old, fun, gradient, control=control,
-                               method=method, hessian=FALSE, ...)
-                  }
-                  ## END
-                  
-                  r <- a$value
-                  if (is.finite(r) && is.finite(r.old) && abs(r - r.old)/(outer.eps + 
-                                                                          abs(r - r.old)) < outer.eps) 
-                    break
-                  theta <- a$par
-                  obj <- f(theta, ...)
-                  if (obj > obj.old) 
-                    break
-                }
-                if (i == outer.iterations) {
-                  a$convergence <- 7
-                  a$message <- "Barrier algorithm ran out of iterations and did not converge"
-                }
-                if (mu > 0 && obj > obj.old) {
-                  a$convergence <- 11
-                  a$message <- paste("Objective function increased at outer iteration", i)
-                }
-                if (mu < 0 && obj < obj.old) {
-                  a$convergence <- 11
-                  a$message <- paste("Objective function decreased at outer iteration", i)
-                }
-                a$outer.iterations <- i
-                a$barrier.value <- a$value
-                a$value <- f(a$par, ...)
-                a$barrier.value <- a$barrier.value - a$value
-                a
               }
-            ## END constrOptim2 ( original code is constrOptim() in Package stat ) 
-
-            ## optimize
-            if(BFGS){
-              opt <- constrOptim2(c(theta2, theta1), ql.opt, ql.grad.opt, ui=ui, ci=ci,
-                                  control=list(fnscale=-1), method="BFGS", outer.iterations=500)
-            }else{
-              opt <- constrOptim2(c(theta2, theta1), ql.opt, NULL, ui=ui, ci=ci,
-                                  control=list(fnscale=-1), outer.iterations=500)
-            }
-            if(opt$convergence != 0){
-              print("WARNING:optimization did not converge.")
-            }
-            ## END optimize
-
-            
-            ## opt is converted into the mle form
-            ## get call()
-            call <- match.call()
-            
-            ## set par
-            coef <- opt$par
-            
-            ## get vcov
-            if( !is.null(opt$hessian) ){
-              if(length(coef))
-                vcov <- solve(opt$hessian)
-              else
-                vcov <- matrix(numeric(0L), 0L, 0L)
-            }else{
-              opt$hessian <- "calculation error"
-              vcov <- matrix()
-            }
-            ## END get vcov
-            
-            ## set min
-            min <- opt$value
-            
-            ## set param name
-            fullcoef <- coef
-            coef.name <- NULL
-            theta2.len <- length(yuima@model@parameter@drift)
-            if( theta2.len != 1){
-              for( i in 1:theta2.len){
-                coef.name <- c(coef.name, paste("theta2.", i, sep=""))
+              if( length(theta2)!=1 && length(theta2)!=nrow(theta2.lim)){
+                cat("\nsize of theta2 and theta2.lim are different.\n")
+                return(NULL)    
               }
-            }else{
-              coef.name <- "theta2"
-            }              
-            theta1.len <- length(yuima@model@parameter@diffusion)
-            if( theta1.len != 1){
-              for( i in 1:theta1.len){
-                coef.name <- c(coef.name, paste("theta1.", i, sep=""))
+              if( length(theta1)!=1 && length(theta1)!=nrow(theta1.lim)){
+                cat("\nsize of theta1 and theta1.lim are different.\n")
+                return(NULL)    
               }
-            }else{
-              coef.name <- c(coef.name, "theta1")
-            }
-            names(fullcoef) <- coef.name
-            ## END set param name
             
-            ## set method name
-            method <- if(BFGS) "BFGS" else "Nelder-Mead" 
+              ui <- rbind(diag(length(theta1)+length(theta2)), (-1)*diag(length(theta1)+length(theta2)))
+              ci <- c(rbind(theta2.lim, theta1.lim))
+              ci[(length(ci)/2+1):length(ci)] <- (-1)*ci[(length(ci)/2+1):length(ci)]
               
-            ## make mle object
-            opt <- new("mle", call=call, coef=coef, fullcoef=unlist(fullcoef),
+                           
+              opt <- constrOptim(c(theta2, theta1), ql.opt, NULL, ui=ui,
+                                 ci=ci, control=list(fnscale=-1), outer.iterations=500)              
+              coef <- opt$par
+              min <- opt$value
+
+              theta2 <- coef[1:length(yuima@model@parameter@drift)]
+              theta1 <- coef[(length(yuima@model@parameter@drift)+1):length(coef)]
+              opt2 <- newton.ml.ql(yuima, theta2, theta1, h,
+                                   iteration=0, param.only=TRUE, verbose=print)
+              opt$Sigma1 <- opt2$Sigma1
+              opt$Sigma2 <- opt2$Sigma2
+              opt$hessian <- opt2$hessian
+              
+              if(opt$convergence != 0){
+                print("WARNING:optimization did not converge.")
+              }
+            }
+
+            ##convert to mle object
+            call <- match.call()
+            names(coef) <- yuima@model@parameter@all
+            fullcoef <- coef
+            method <- method
+
+            hessian <- opt$hessian
+            vcov <- if(length(coef)) solve(hessian)
+            else matrix(numeric(0L), 0L, 0L)
+            
+            opt <- new("mle", call=call, coef=coef, fullcoef=fullcoef,
                        vcov=vcov, min=min, details=opt, minuslogl=ql.opt,
                        method=method)
-            
-            ## END opt convert
+            ##END convert to mle
 
-            return(opt)
+            yuima@data@mle <- opt
+            
+            return(yuima)
           })
 
+
+setMethod("confint", "yuima",
+          function(object, parm, level=0.95, ...){
+            yuima <- object
+            #print("This is yuima confint !")
+            Sigma1 <- yuima@data@mle@details$Sigma1
+            Sigma2 <- yuima@data@mle@details$Sigma2
+            #theta2 <- yuima@data@mle@coef[yuima@model@parameter@drift]
+            #theta1 <- yuima@data@mle@coef[yuima@model@parameter@diffusion]
+            coef <- yuima@data@mle@coef
+            
+            Calpha2 <- qnorm(level)
+
+            ## make matrix
+            ret <- matrix(0, length(yuima@model@parameter@all), 2)
+            rownames(ret) <- yuima@model@parameter@all
+            a <- (1 - level)/2
+            a <- c(a, 1 - a)
+            colnames(ret) <- paste(round(100 * a, 1), "%")
+            
+            ## get confint
+            Sigma.diag <- c( diag(Sigma2), diag(Sigma1) )
+            names(Sigma.diag) <- yuima@model@parameter@all
+            for(param in yuima@model@parameter@all){
+              ret[param,] <- c( (coef[param]-sqrt(Sigma.diag[param])*Calpha2),
+                              (coef[param]+sqrt(Sigma.diag[param])*Calpha2))
+            }
+
+            return(ret)
+            
+          })

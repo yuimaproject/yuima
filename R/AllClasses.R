@@ -42,7 +42,8 @@ setClass("yuima.model",representation(drift="expression",
 # classes
 
 setClass("yuima.data", representation(original.data = "ANY",
-                                      zoo.data = "ANY"
+                                      zoo.data = "ANY",
+                                      mle="ANY"
                                       )
          )
 
