@@ -4,7 +4,7 @@
 
 \alias{get.mle,yuima-method}
 \alias{get.zoo.data,yuima-method}
-\alias{plot,yuima-method}
+\alias{plot,yuima,ANY-method}
 \alias{dim,yuima-method}
 \alias{length,yuima-method}
 \alias{cce,yuima-method}

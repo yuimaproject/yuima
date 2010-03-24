@@ -3,7 +3,7 @@
 \alias{yuima.data-class}
 
 \alias{get.zoo.data,yuima.data-method}
-\alias{plot,yuima.data-method}
+\alias{plot,yuima.data,ANY-method}
 %\alias{start,yuima.data-method}
 %\alias{end,yuima.data-method}
 %\alias{time,yuima.data-method}
