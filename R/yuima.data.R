@@ -43,16 +43,6 @@ setMethod("get.zoo.data", signature(x="yuima.data"),
             return(x@zoo.data)
           })
 
-setGeneric("get.mle",
-           function(x)
-           standardGeneric("get.mle")
-           )
-
-setMethod("get.mle", signature(x="yuima.data"),
-          function(x){
-            return(x@mle)
-          })
-
 # following funcs are basic generic funcs
 
 setGeneric("plot",
@@ -120,12 +110,6 @@ setMethod("dim", signature(x = "yuima.data"),
 
 
 # same methods for 'yuima'. Depend on same methods for 'data'
-
-setMethod("get.mle", "yuima",
-          function(x){
-            return(get.mle(x@data))
-          })
-
 setMethod("get.zoo.data", "yuima",
           function(x){
             return(get.zoo.data(x@data))

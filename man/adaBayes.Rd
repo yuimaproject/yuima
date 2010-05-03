@@ -57,7 +57,6 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   param <- numeric(2)
   for( i in 1:5){
     PAR <-  ml.ql(yuima.mod,theta2=rand[i,1],theta1=rand[i,2],h=(n^(-2/3)))
-    PAR <- get.mle(PAR)
     if(PAR@min > QL){
       QL <- PAR@min
       param <- PAR@coef

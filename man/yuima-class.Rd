@@ -1,8 +1,6 @@
 \name{yuima-class}
 \docType{class}
 \alias{yuima-class}
-
-\alias{get.mle,yuima-method}
 \alias{get.zoo.data,yuima-method}
 \alias{plot,yuima,ANY-method}
 \alias{dim,yuima-method}
@@ -16,6 +14,7 @@
 \alias{rql,yuima-method}
 \alias{ml.ql,yuima-method}
 \alias{limiting.gamma,yuima-method}
+\alias{LSE,yuima-method}
 
 \title{Class for stochastic differential equations}
 \description{
@@ -79,8 +78,6 @@ The slot \code{functional} contains information on
 	 For more details see \code{\link{cce}}.}
     \item{simulate}{simulation method. For more information see
 	  \code{\link{simulate}}.}
-	\item{get.mle}{\code{signature(x="yuima")}: return mle class object
-	  of mle result.}
   }
 }
 \author{The YUIMA Project Team}

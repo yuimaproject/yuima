@@ -24,7 +24,6 @@ exportMethods(
               "cce",
               "poisson.random.sampling",
               "get.zoo.data",
-              "get.mle",
               "initialize",
               "ql",
               "rql",
@@ -40,10 +39,7 @@ exportMethods(
 			  "simFunctional",
 			  "F0",
 			  "Fnorm",
-			  "asymptotic_term",
-
-              "get.mle"
-              
+			  "asymptotic_term"              
               )
 
 ## function which we want to expose to the user
@@ -68,7 +64,6 @@ export(cce)
 export(poisson.random.sampling)
 
 export(get.zoo.data)
-export(get.mle)
 
 export(ql,rql,ml.ql)
 export(adaBayes)
@@ -85,5 +80,7 @@ export(simFunctional)
 export(F0)
 export(Fnorm)
 export(asymptotic_term)
+
+export(LSE)
 
 

@@ -955,10 +955,8 @@ setMethod("ml.ql", "yuima",
                        vcov=vcov, min=min, details=opt, minuslogl=ql.opt,
                        method=method)
             ##END convert to mle
-
-            yuima@data@mle <- opt
             
-            return(yuima)
+            return(opt)
           })
 
 
@@ -992,3 +990,83 @@ setMethod("confint", "yuima",
             return(ret)
             
           })
+
+##estimate theta2 by LSE
+##function name LSE
+setGeneric("LSE", function(yuima, h, theta2.init, interval, ...)
+           standardGeneric("LSE")
+           )
+setMethod("LSE", "yuima",
+          function(yuima, h, theta2.init=c(), interval=c(0,1), ...){
+            ##theta2.init : multi-dim param used by optim()
+            ##interval : 1-dim param used by optimize()
+
+            ##objective function
+            Mn <-function(theta2){
+              Mn.part <- function(deltaX, h, yuima){
+                tmp <- deltaX - h %*% eval(yuima@model@drift)
+                ret <- t(tmp) %*% tmp
+                return(ret)
+              }
+              
+              ##init
+              sum.tmp <- 0
+              X <- NULL
+              X.tmp <- get.zoo.data(yuima)
+              for(i in 1:length(X.tmp)){
+                X <- cbind(X, as.matrix(X.tmp[[i]]))
+              }
+              modelpara.drift <- yuima@model@parameter@drift
+              modelstate <- yuima@model@state.variable
+              for(i in 1:length(theta2)){
+                assign(modelpara.drift[i], theta2[i])
+              }
+              
+              ##sum loop
+              for(j in 2:dim(X)[1]){
+                ##get param
+                x <- X[j-1,]
+                deltaX <- X[j,] - X[j-1,]
+                for(k in 1:length(x)){
+                  assign(modelstate[k], x[k])
+                }
+                ##calc
+                sum.tmp <- sum.tmp + Mn.part(deltaX, h, yuima)
+              }
+              
+              #cat("theta2 value:", theta2, "\n")
+              #cat("Mn value:", sum.tmp, "\n\n")
+              
+              return(sum.tmp)
+  
+            }
+            ##END objective function
+
+            if(length(yuima@model@parameter@drift)==1){
+
+              if(missing(interval)){
+                stop("\ninterval missing.\n")
+              }
+              if(!missing(theta2.init)){
+                cat("\ntheta2.init is ignored.\n")
+              }
+              
+              opt <- optimize(f=Mn, interval=interval, tol=1e-100, ...)
+              opt <- list(par=opt$minimum, value=opt$objective)
+
+            }else{
+
+              if(missing(theta2.init)){
+                stop("\ntheta2.init missing.\n")
+              }
+              if(!missing(interval)){
+                cat("\ninterval is ignored.\n")
+              }
+              
+              opt <- optim(c(theta2.init), fn=Mn, gr=NULL, ...)
+              opt <- list(par=opt$par, value=opt$value)
+              
+            }            
+            return(opt)            
+          })
+          
