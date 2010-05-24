@@ -112,15 +112,21 @@ setMethod("simulate", "yuima",
      true.parameter[[i]] <- 0
 	names(true.parameter) <-   sdeModel@parameter@all
   }
-    
+  
   yuimaEnv <- new.env()
-				
+
   if(par.len>0){
 	for(i in 1:par.len){
 	 pars <- sdeModel@parameter@all[i]
-	 assign(sdeModel@parameter@all[i], true.parameter[[i]], yuimaEnv)
+
+     for(j in 1:length(true.parameter)){
+       if( is.na(match(pars, names(true.parameter)[j]))!=TRUE){
+         assign(sdeModel@parameter@all[i], true.parameter[[j]],yuimaEnv)
+       }
+     }
+	 #assign(sdeModel@parameter@all[i], true.parameter[[i]], yuimaEnv)
 	}
-  }
+   }
 
 				
   if(space.discretized){
