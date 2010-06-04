@@ -145,6 +145,17 @@ set.seed(123)
 cor <- simulate(cor)
 plot(cor)
 
+# A non-negative process (CIR process)
+# dXt= a*(c-y)*dt + b*sqrt(Xt)*dWt
+ sq <- function(x){y = 0;if(x>0){y = sqrt(x);};return(y);}
+ model<- setModel(drift="0.8*(0.2-x)",diffusion="0.5*sq(x)",solve.variable=c("x"))
+ T<-10
+ n<-1000
+ sampling <- setSampling(Terminal=T,n=n)
+ yuima<-setYuima(model=model, sampling=sampling)
+ cir<-simulate(yuima,xinit=0.1)
+ plot(cir)
+
 # solve SDEs using Space-discretized Euler-Maruyama method
 v4 <- function(t,x){
   return(0.5*(1-x)*sqrt(t))
