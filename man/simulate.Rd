@@ -66,8 +66,8 @@ Please contribute with suggestions and fixings.
 set.seed(123)
 
 # Path-simulation for 1-dim diffusion process. 
-# dXt = 3*Xt*dt + dWt
-mod <- setModel(drift="3*y", diffusion=1, solve.variable=c("y"))
+# dXt = -0.3*Xt*dt + dWt
+mod <- setModel(drift="-0.3*y", diffusion=1, solve.variable=c("y"))
 str(mod)
 
 # Set the model in an `yuima' object with a sampling scheme. 
@@ -101,7 +101,7 @@ str(mod1)
 ou1 <- setYuima(model=mod1, sampling=samp)
 
 # Solve SDEs using Euler-Maruyama method. 
-ou1 <- simulate(ou, xinit=1, true.p = list(theta=-1))
+ou1 <- simulate(ou1, xinit=1, true.p = list(theta=-0.3))
 plot(ou1)
 
 
@@ -161,9 +161,9 @@ plot(sd)
 
 ## example of simulation by specifying increments
 ## Path-simulation for 1-dim diffusion process
-## dXt = 3*Xt*dt + dWt
+## dXt = -0.3*Xt*dt + dWt
 
-mod <- setModel(drift="3*y", diffusion=3,solve.variable=c("y"))
+mod <- setModel(drift="-0.3*y", diffusion=1,solve.variable=c("y"))
 str(mod)
 
 ## Set the model in an `yuima' object with a sampling scheme. 
