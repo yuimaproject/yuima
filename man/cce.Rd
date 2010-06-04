@@ -40,7 +40,8 @@ the second-order correction will be provided in a future version of the package.
 diff.coef.1 <- function(t, x1 = 0, x2 = 0) sqrt(1+t)
 diff.coef.2 <- function(t, x1 = 0, x2 = 0) sqrt(1+t^2)
 cor.rho <- function(t, x1 = 0, x2 = 0) sqrt(1/2)
-diff.coef.matrix <- matrix(c("diff.coef.1(t,x1,x2)", "diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)", "", "diff.coef.2(t,x1,x2) * sqrt(1-cor.rho(t,x1,x2)^2)"), 2, 2) 
+diff.coef.matrix <- matrix(c("diff.coef.1(t,x1,x2)", "diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)", 
+"", "diff.coef.2(t,x1,x2) * sqrt(1-cor.rho(t,x1,x2)^2)"), 2, 2) 
 cor.mod <- setModel(drift = c("", ""), diffusion = diff.coef.matrix,solve.variable = c("x1", "x2")) 
 
 set.seed(111) 
@@ -51,7 +52,7 @@ yuima <- setYuima(model = cor.mod, sampling = yuima.samp)
 yuima <- simulate(yuima) 
 psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 1000) 
 
-## CCE takes the psample and returns an estimate of the quadratic covariation. 
+## cce takes the psample and returns an estimate of the quadratic covariation. 
 cce(psample)[1, 2] 
 
 ## True value of the quadratic covariation.
