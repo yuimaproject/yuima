@@ -207,6 +207,9 @@ setMethod("simulate", "yuima",
 
   yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
 
+ for(i in 1:length(yuima@data@zoo.data)) 
+		time(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid
+
   if(missing(subsampling))
 		return(yuima)
   subsampling(yuima, subsampling)

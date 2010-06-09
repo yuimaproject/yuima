@@ -585,10 +585,14 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     if( k.size ==1){ # use 'integrate' if k=1
       tmp <- integrate(gz_pi02,-Inf,Inf)
     }else if( 2 <= k.size || k.size <= 20 ){ # use library 'adapt' to solve multi-dimentional integration
-      max <- 10 * lambda.max
+	  max <- 10 * lambda.max
       min <- -10 * lambda.max
       L <- (max - min)
-      tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi0)
+	  if(require(adapt)){
+       tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi0)
+		} else {
+	   tmp <- NA		
+	  }
     }else{
       stop("length k is too big.")
     }
@@ -1260,7 +1264,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     }else if( 2 <= k.size || k.size <= 20 ){ # use 'adapt()' to solve multi-dim integration8
       max <- 10*lambda.max
       min <- -10*lambda.max
-      tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi1)
+	  if(require(adapt)){
+       tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi1)
+	  } else {
+	    tmp <- NA	  
+	  }
     }else{
       stop("length k is too big.")
     }

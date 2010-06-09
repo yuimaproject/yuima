@@ -1,10 +1,18 @@
 
+# general behaviour
+# if grid is specified, the following are derived from it
+# grid ->  n, delta, Initial, Terminal, regular, random
+
+# if grid is 1-dim, no problem, but we can have more grids. 
+# in this case it is better to have a listI replace grid
+# with alist
+
 ##Constructor and Initializer of class 'sampling'
 
 # we convert objects to "zoo" internally
 
  
-
+# to be fixed: the grdi should always be prepared unless it is random sampling
 
 
 setMethod("initialize", "yuima.sampling",
@@ -48,31 +56,31 @@ setMethod("initialize", "yuima.sampling",
 				.Object@Terminal <- max(grid)   
 				.Object@random   <- random   
 			   }else{ 
-			 # There is no grid
+# There is no grid
 			 eqn <- length(Terminal)
              if(length(Terminal)==length(n)){
                .Object@Initial  <- Initial
 			   .Object@Terminal <- Terminal
                .Object@n <- n
-			   .Object@delta    <- delta
-			   .Object@grid     <- grid
-			   .Object@random   <- random
+			   .Object@delta    <- (Terminal-Initial)/n
+			   .Object@grid     <- seq(Initial,Terminal,by=.Object@delta)
+			   .Object@random   <- FALSE
 			   .Object@regular  <- regular
              }else if(length(Terminal)==1){               
                .Object@Initial  <- Initial
 			   .Object@Terminal <- rep(Terminal, length(n))
 			   .Object@n <- n	 
-			   .Object@delta    <- delta
-			   .Object@grid     <- grid
-			   .Object@random   <- random
+			   .Object@delta    <- (Terminal-Initial)/n
+			   .Object@grid     <- seq(Initial,Terminal,by=.Object@delta)
+			   .Object@random   <- FALSE
 			   .Object@regular  <- regular	 
              }else if(length(n)==1){
                .Object@Initial  <- Initial
 			   .Object@Terminal <- Terminal
                .Object@n <- rep(n, length(Terminal))
-			   .Object@delta    <- delta
-			   .Object@grid     <- grid
-			   .Object@random   <- random
+			   .Object@delta    <- (Terminal-Initial)/n
+			   .Object@grid     <- seq(Initial,Terminal,by=.Object@delta)
+			   .Object@random   <- FALSE
 			   .Object@regular  <- regular
              }else{
                cat("\nDimension missmatch.\n")

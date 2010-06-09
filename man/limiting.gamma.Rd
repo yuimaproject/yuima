@@ -34,7 +34,7 @@ myModel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix, time.variab
 n <- 100
 mySampling <- setSampling(Terminal=(n)^(1/3), n=n)
 myYuima <- setYuima(model=myModel, sampling=mySampling)
-myYuima <- simulate(myYuima, xinit=1, true.parameter=c(0.6, 0.3))
+myYuima <- simulate(myYuima, xinit=1, true.parameter=list(theta1=0.6, theta2=0.3))
 
 ## theorical figure of theta
 theta1 <- 3.5

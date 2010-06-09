@@ -51,7 +51,7 @@ n <- 100
 ysamp <- setSampling(Terminal=(n)^(1/3), n=n) 
 yuima <- setYuima(model=ymodel, sampling=ysamp)
 set.seed(123)
-yuima <- simulate(yuima, xinit=1, true.parameter=c(0.3, 0.1))
+yuima <- simulate(yuima, xinit=1, true.parameter=list(theta1=0.3, theta2=0.1))
 QL <- ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)))
 QL
 
@@ -101,7 +101,7 @@ yuima <- setYuima(model=ymodel, sampling=ysamp)
 set.seed(123)
 
 ##xinit=c(x1, x2) #true.parameter=c(theta2.1, theta2.2, theta1.1, theta1.2)
-yuima <- simulate(yuima, xinit=c(1, 1), true.parameter=c(0.5, 0.3, 0.6, 0.2))
+yuima <- simulate(yuima, xinit=c(1, 1), true.parameter=list(theta2.1=0.5, theta2.2=0.3, theta1.1=0.6, theta1.2=0.2))
 
 theta2 <- c(0.8, 0.2) #c(theta2.1, theta2.2)
 theta1 <- c(0.7, 0.1) #c(theta1.1, theta1.2)
