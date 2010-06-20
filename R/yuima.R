@@ -1,3 +1,6 @@
+yuima.warn <- function(x) 
+   cat(sprintf("\nYUIMA: %s\n", x))
+
 ## Constructor and Initializer of class 'yuima'
 
 # we convert objects to "zoo" internally
@@ -15,7 +18,7 @@ setMethod("initialize", "yuima",
             if(!is.null(model)){
               if(!is.null(eqn)){
                 if(eqn!=model@equation.number){
-                  cat("\nModel's equation number missmatch.\n")
+                  yuima.warn("Model's equation number missmatch.")
                   return(NULL)
                 }
               }else{
@@ -31,7 +34,7 @@ setMethod("initialize", "yuima",
                     sampling@Terminal <- rep(sampling@Terminal, eqn)
                     sampling@n <- rep(sampling@n, eqn)
                   }else{
-                    cat("\nSampling's equation number missmatch.\n")
+                    yuima.warn("Sampling's equation number missmatch.")
                     return(NULL)
                   }
                 }
@@ -44,7 +47,7 @@ setMethod("initialize", "yuima",
             if(!is.null(characteristic)){
               if(!is.null(eqn)){
                 if(eqn!=characteristic@equation.number){
-                  cat("\nCharacteristic's equation number missmatch.\n")
+                  yuima.warn("Characteristic's equation number missmatch.")
                   return(NULL)                  
                 }
               }

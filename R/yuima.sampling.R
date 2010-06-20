@@ -33,7 +33,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 # grid given              
 				if(!is.null(grid)){
 					if(!is.list(grid)){
-						cat("\nYUIMA: attempting to coerce 'grid' to a list, unexpected results may occur!\n")
+						yuima.warn("attempting to coerce 'grid' to a list, unexpected results may occur!")
 						grid <- list(grid)
 					}
 				   grid <- lapply(grid, sort) # we make sure grids are ordered
@@ -48,7 +48,6 @@ regular, sdelta, sgrid, oindex, interpolation){
 				}
 # grid is missing, but random sampling					
 				if(!is.logical(random)){
-					cat("\nrandom\n")
 					.Object@regular <- FALSE
 					.Object@Terminal <- numeric(0)	
 					.Object@Initial <- Initial
@@ -81,7 +80,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 					delta <- rep(delta, ndim)[1:ndim]
 					n <- rep(n, ndim)[1:ndim] 	
 					Terminal <- Initial + n*delta 	
-					cat("\nYUIMA: 'Terminal' (re)defined\n")
+					yuima.warn("'Terminal' (re)defined.")
 					for(i in 1:ndim)
 						grid[[i]] <- seq(Initial[i], Terminal[i], by=delta[i])
 					
@@ -107,7 +106,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 						stop("\nYUIMA: 'Terminal' < 'Initial'\n")	
 					n <- rep(n, ndim)[1:ndim] 	
 					delta <- (Terminal-Initial)/n 						 
-					cat("\nYUIMA: 'delta' (re)defined\n")
+					yuima.warn("'delta' (re)defined.")
 					for(i in 1:ndim)
 						grid[[i]] <- seq(Initial[i], Terminal[i], by=delta[i])					
 				}

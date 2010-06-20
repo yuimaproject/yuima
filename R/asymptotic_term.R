@@ -387,7 +387,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     }
     if(any(eigen(sigma)$value<=0.0001)){
     # Singularity check
-      cat("Eigen value of covariance matrix in very small.\n")
+      yuima.warn("Eigen value of covariance matrix in very small.")
     }
     return(sigma)
   }
@@ -1348,7 +1348,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     dede.diffusion[i] <- list(Derivation.scalar(de.diffusion[[i]],pars,r.size))
   }
   
-  cat("Get variables ...")
+  yuima.warn("Get variables ...")
   Y <- Get.Y()
   mu <- funcmu()
   aMat <- funca()
@@ -1465,20 +1465,20 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   de.rho <- get.de.rho()
   H0 <- get.H0()
 
-  cat("done\n")
-  cat("initializing ...")
+  yuima.warn("Done.")
+  yuima.warn("Initializing ...")
   dat.di.bar <- get.di.bar.init()
   dat.dij <- get.dij.init()
   dat.el <- get.el.init()
-  cat("done\n")
+  yuima.warn("Done.")
   
   ## calculation
-  cat("calculating d0 ...")
+  yuima.warn("Calculating d0 ...")
   d0 <- get.d0.term()
-  cat("done\n")
-  cat("calculating d1 term ...")
+  yuima.warn("Done\n")
+  yuima.warn("Calculating d1 term ...")
   d1 <- get.d1.term()
-  cat("done\n")
+  yuima.warn("Done\n")
   terms <- list(d0=d0$value, d1=d1$value)
   return(terms)
  })

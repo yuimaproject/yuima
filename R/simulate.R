@@ -12,7 +12,7 @@
 subsampling <- function(x,y) return(x)
 
 setGeneric("simulate",
-	function(object, nsim, seed, xinit, true.parameter, space.discretized=FALSE, 
+	function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, 
 		increment.W=NULL, increment.L=NULL, methodfGn="Cholesky", 
 		sampling=sampling, subsampling=subsampling, ...
 #		Initial = 0, Terminal = 1, n = 100, delta, 
@@ -66,7 +66,7 @@ setMethod("simulate", "yuima",
   yuima <- object
 				
   if(missing(yuima)){
-    cat("\nyuima object is missing.\n")
+    yuima.warn("yuima object is missing.")
     return(NULL)
   }
 
@@ -99,7 +99,7 @@ setMethod("simulate", "yuima",
 					if(length(xinit)==1){
 						xinit <- rep(xinit, d.size)
 					}else{
-						cat("\nDimension of xinit variables missmatch.\n")
+						yuima.warn("Dimension of xinit variables missmatch.")
 						return(NULL)
 					}
 				}
@@ -146,13 +146,13 @@ setMethod("simulate", "yuima",
   ##:: Error check for increment specified version.
   if(!missing(increment.W) & !is.null(increment.W)){
     if(space.discretized == TRUE){
-      cat("\nParameter increment must be invalid if space.discretized=TRUE.\n")
+      yuima.warn("Parameter increment must be invalid if space.discretized=TRUE.")
       return(NULL)
     }else if(dim(increment.W)[1] != r.size){
-      cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
+      yuima.warn("Length of increment's row must be same as yuima@model@noise.number.")
       return(NULL)
     }else if(dim(increment.W)[2] != n){
-      cat("\nLength of increment's column must be same as sampling@n[1].\n")
+      yuima.warn("Length of increment's column must be same as sampling@n[1].")
       return(NULL)
     }
   }
@@ -160,13 +160,13 @@ setMethod("simulate", "yuima",
     ##:: Error check for increment specified version.
   if(!missing(increment.L) & !is.null(increment.L)){
     if(space.discretized == TRUE){
-      cat("\nParameter increment must be invalid if space.discretized=TRUE.\n")
+      yuima.warn("Parameter increment must be invalid if space.discretized=TRUE.")
       return(NULL)
     }else if(dim(increment.L)[1] != r.size){
-      cat("\nLength of increment's row must be same as yuima@model@noise.number.\n")
+      yuima.warn("Length of increment's row must be same as yuima@model@noise.number.")
       return(NULL)
     }else if(dim(increment.L)[2] != n){
-      cat("\nLength of increment's column must be same as sampling@n[1].\n")
+      yuima.warn("Length of increment's column must be same as sampling@n[1].")
       return(NULL)
     }
   }
@@ -193,7 +193,7 @@ setMethod("simulate", "yuima",
 		if(methodfGn=="Cholesky"){
 			dW<-CholeskyfGn(grid, sdeModel@hurst,r.size)
 		} else {
-			cat("\nNot done presently\n")
+			yuima.warn("Not done presently.")
 			return(NULL)	
 		}
 						

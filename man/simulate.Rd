@@ -182,7 +182,8 @@ yuima.mod <- simulate(yuima.mod,
                       space.discretized=FALSE,
                       increment.W=my.dW)
 if( !is.null(yuima.mod) ){
-  x11()
+ dev.new()
+ # x11()
   plot(yuima.mod)
 }
 
@@ -226,7 +227,8 @@ my.dW <- t(matrix(my.dW, nrow=n, ncol=yuima.obj@model@noise.number))
 ## Solve SDEs using Euler-Maruyama method.
 yuima.obj.path <- simulate(yuima.obj, space.discretized=FALSE, increment.W=my.dW)
 if( !is.null(yuima.obj.path) ){
-  x11()
+  dev.new()
+#  x11()
   plot(yuima.obj.path)
 }
 

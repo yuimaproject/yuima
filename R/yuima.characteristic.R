@@ -8,7 +8,7 @@ setMethod("initialize", "yuima.characteristic",
                .Object@equation.number <- equation.number
                .Object@time.scale <- time.scale
              }else{
-               cat("\nDimension missmatch\n")
+               yuima.warn("Dimension missmatch")
                return(NULL)
              }
              return(.Object)

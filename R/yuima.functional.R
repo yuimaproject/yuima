@@ -28,15 +28,15 @@ setMethod("setFunctional", "yuima.model",
   function(model, F, f, xinit, e){
     # error check
     if( missing(model)){
-      cat("\nyuima.model is missing.\n")
+      yuima.warn("yuima.model is missing.")
       return(NULL)
     }
     if( missing(xinit)){
-      cat("\nInitial value of state variable is missing\n")
+      yuima.warn("Initial value of state variable is missing.")
       return(NULL)
     }
     if( missing(f) || missing(F) || missing(e)){
-      cat("\nFunctional specification is incomplete.\n")
+      yuima.warn("Functional specification is incomplete.")
       return(NULL)
     }
 
@@ -45,15 +45,15 @@ setMethod("setFunctional", "yuima.model",
     k.size <- length(F)
 
     if( length(f) != (r.size + 1)){
-      cat("\nFunctional needs r+1 f_alphas\n")
+      yuima.warn("Functional needs r+1 f_alphas.")
       return(NULL)
     }
     if( length(f[[1]]) != k.size){
-      cat("\nMissmatch in dimension of functional\n")
+      yuima.warn("Missmatch in dimension of functional.")
       return(NULL)
     }
     if( length(xinit) != d.size){
-      cat("\nMissmatch in dimension of functional and state variables\n")
+      yuima.warn("Missmatch in dimension of functional and state variables.")
       return(NULL)
     }
     

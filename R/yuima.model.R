@@ -79,23 +79,23 @@ setModel <- function(drift=NULL,
   
   if(!length(measure.type)){
     if( length(jump.coeff) || length(measure) ){
-      cat("\nmeasure type isn't matched with jump term.\n")
+      yuima.warn("measure type does not match with jump term.")
       return(NULL)
     }
     jump.variable <- character()
     measure.par <- character()
   }else{
     if( !length(jump.coeff) || !length(measure) ){
-      cat("\nmeasure type isn't matched with jump term.\n")
+      yuima.warn("measure type isn't matched with jump term.")
       return(NULL)
     }else if(length(jump.coeff)!=1){
-      cat("\nmulti dimentional jump term is not supported yet.\n")
+      yuima.warn("multi dimentional jump term is not supported yet.")
       return(NULL)
     }
     
     if(measure.type=="CP"){ ##::CP
       if(length(measure)!=2){
-        cat(paste("\nlength of measure must be two on type", measure.type, ".\n"))
+        yuima.warn(paste("length of measure must be two on type", measure.type, "."))
         return(NULL)
       }
       
@@ -103,7 +103,7 @@ setModel <- function(drift=NULL,
         measure <- list(intensity=measure[1], df=measure[2])
       }else{
         if(length(measure[[1]])!=1 || length(measure[[2]])!=1){
-          cat("\nmulti dimentional jump term is not supported yet.\n")
+          yuima.warn("multi dimentional jump term is not supported yet.")
           return(NULL)
         }
         ##::naming measure list ########
@@ -117,18 +117,18 @@ setModel <- function(drift=NULL,
             if(names(measure)[-whichint]=="" || names(measure)[-whichint]=="df"){
               names(measure)[-whichint] <- "df"
             }else{
-              cat("\nnames of measure are incorrect.\n")
+              yuima.warn("names of measure are incorrect.")
               return(NULL)
             }
           }else if(!is.na(whichdf)){
             if(names(measure)[-whichdf]=="" || names(measure)[-whichdf]=="intensity"){
               names(measure)[-whichdf] <- "intensity"
             }else{
-              cat("\nnames of measure are incorrect.\n")
+              yuima.warn("names of measure are incorrect.")
               return(NULL)
             }
           }else{
-            cat("\nnames of measure are incorrect.\n")
+            yuima.warn("names of measure are incorrect.")
             return(NULL)
           }
         }
@@ -139,7 +139,7 @@ setModel <- function(drift=NULL,
       tmp <- regexpr("\\(", measure$df)[1]
       measurefunc <- substring(measure$df, 1, tmp-1)
       if(!is.na(match(measurefunc, codelist))){
-        cat(paste("\ndistribution function", measurefunc, "should be defined as type code.\n"))
+        yuima.warn(paste("distribution function", measurefunc, "should be defined as type code."))
         return(NULL)
       }else if(is.na(match(measurefunc, CPlist))){
         warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type CP.\n"))
@@ -154,7 +154,7 @@ setModel <- function(drift=NULL,
       ##::end CP
     }else if(measure.type=="code"){ ##::code
       if(length(measure)!=1){
-        cat(paste("\nlength of measure must be one on type", measure.type, ".\n"))
+        yuima.warn(paste("length of measure must be one on type", measure.type, "."))
         return(NULL)
       }
       
@@ -162,14 +162,14 @@ setModel <- function(drift=NULL,
         measure <- list(df=measure)
       }else{
         if(length(measure[[1]])!=1){
-          cat("\nmulti dimentional jump term is not supported yet.\n")
+          yuima.warn("multi dimentional jump term is not supported yet.")
           return(NULL)
         }
         ##::naming measure list #############
         if(is.null(names(measure)) || names(measure)=="df"){
           names(measure) <- "df"
         }else{
-          cat("\nname of measure is incorrect.\n")
+          yuima.warn("name of measure is incorrect.")
           return(NULL)
         }
         ##::end naming measure list #############
@@ -179,7 +179,7 @@ setModel <- function(drift=NULL,
       tmp <- regexpr("\\(", measure$df)[1]
       measurefunc <- substring(measure$df, 1, tmp-1)
       if(!is.na(match(measurefunc, CPlist))){
-        cat(paste("\ndistribution function", measurefunc, "should be defined as type CP.\n"))
+        yuima.warn(paste("\ndistribution function", measurefunc, "should be defined as type CP."))
         return(NULL)
       }else if(is.na(match(measurefunc, codelist))){
         warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type code.\n"))
@@ -192,7 +192,7 @@ setModel <- function(drift=NULL,
       ##::end code
     }else if(measure.type=="density"){ ##::density
       if(length(measure)!=1){
-        cat(paste("\nlength of measure must be one on type", measure.type, ".\n"))
+        yuima.warn(paste("length of measure must be one on type", measure.type, "."))
         return(NULL)
       }
       
@@ -200,7 +200,7 @@ setModel <- function(drift=NULL,
         measure <- list(df=measure)
       }else{
         if(length(measure[[1]])!=1){
-          cat("\nmulti dimentional jump term is not supported yet.\n")
+          yuima.warn("multi dimentional jump term is not supported yet.")
           return(NULL)
         }
         
@@ -208,7 +208,7 @@ setModel <- function(drift=NULL,
         if(is.null(names(measure))){
           names(measure) <- "df"
         }else if(names(measure)!="density" && names(measure)!="df"){
-          cat("\nname of measure is incorrect.\n")
+          yuima.warn("name of measure is incorrect.")
           return(NULL)
         }
         ##::end naming measure list #############
@@ -218,10 +218,10 @@ setModel <- function(drift=NULL,
       tmp <- regexpr("\\(", measure[[names(measure)]])[1]
       measurefunc <- substring(measure[[names(measure)]], 1, tmp-1)
       if(!is.na(match(measurefunc, CPlist))){
-        cat(paste("\ndistribution function", measurefunc, "should be defined as type CP.\n"))
+        yuima.warn(paste("distribution function", measurefunc, "should be defined as type CP."))
         return(NULL)
       }else if(!is.na(match(measurefunc, codelist))){
-        cat(paste("\ndistribution function", measurefunc, "should be defined as type code.\n"))
+        yuima.warn(paste("distribution function", measurefunc, "should be defined as type code."))
         return(NULL)
       }
       MEASURE[[names(measure)]]$func <- eval(parse(text=measurefunc))
@@ -231,7 +231,7 @@ setModel <- function(drift=NULL,
       ##::end check df name ####################
       ##::end density
     }else{ ##::else
-      cat(paste("\nmeasure type", measure.type, "isn't supported.\n"))
+      yuima.warn(paste("measure type", measure.type, "isn't supported."))
       return(NULL)
     }
     n.eqn3 <- 1
@@ -243,7 +243,7 @@ setModel <- function(drift=NULL,
   
   ##:: check for errors and reform values
   if(any(time.variable %in% state.variable)){
-    cat("\ntime and state(s) variable must be different\n")
+    yuima.warn("time and state(s) variable must be different.")
     return(NULL)
   }
   if(is.null(dim(drift))){ # this is a vector
@@ -276,7 +276,7 @@ setModel <- function(drift=NULL,
   }
 
   if(n.eqn1 != n.eqn2 || n.eqn1 != n.eqn3){
-    cat("\nMalformed model, number of equations in the drift and diffusion do not match\n")
+    yuima.warn("Malformed model, number of equations in the drift and diffusion do not match.")
     return(NULL)
   }
   n.eqn <- n.eqn1
@@ -287,17 +287,17 @@ setModel <- function(drift=NULL,
     if(length(xinit)==1){
       xinit <- rep(xinit, n.eqn)
     }else{
-      cat("\nDimension of xinit variables missmuch.\n")
+      yuima.warn("Dimension of xinit variables missmatch.")
       return(NULL)
     }
   }
   
   if(missing(solve.variable)){
-    cat("\nSolution variable (lhs) not specified. Trying to use state variables\n")
+    yuima.warn("Solution variable (lhs) not specified. Trying to use state variables.")
     solve.variable <- state.variable
   }
   if(n.eqn != length(solve.variable)){
-    cat("\nMalformed model, number of solution variables (lhs) do no match number of equations (rhs)\n")
+    yuima.warn("Malformed model, number of solution variables (lhs) do no match number of equations (rhs).")
     return(NULL)
   }
   

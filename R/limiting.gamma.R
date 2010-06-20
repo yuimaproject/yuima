@@ -21,7 +21,7 @@ setMethod("limiting.gamma", "yuima.model",
             }
             
             if(verbose){
-              cat("initialize ... ")
+              yuima.warn("Initializing... ")
             }
             
             r.size <- obj@noise.number
@@ -70,11 +70,11 @@ setMethod("limiting.gamma", "yuima.model",
               assign(THETA.2[i], theta[[2]][i])
             }            
             if(verbose){
-              cat("done\n")
+              yuima.warn("Done")
             }            
             ## p(x)            
             if(verbose){
-              cat("get C ... ")
+              yuima.warn("get C ... ")
             }
             
             ## a part of p(x) function  
@@ -119,12 +119,12 @@ setMethod("limiting.gamma", "yuima.model",
             ## normalize const
             C <- 1/integrate(integrate.p0.x, -Inf, Inf)$value            
             if(verbose){
-              cat("done\n")
+              yuima.warn("Done")
             }
             
             ## gamma1            
             if(verbose){
-              cat("get gamma1 ... ")
+              yuima.warn("Get gamma1 ... ")
             }
             counter.gamma1 <- 1
             
@@ -171,12 +171,12 @@ setMethod("limiting.gamma", "yuima.model",
               counter.gamma1 <- counter.gamma1+1
             }            
             if(verbose){
-              cat("done\n")
+              yuima.warn("Done")
             }
             
             ## gamma2            
             if(verbose){
-              cat("get gamma2 ... ")
+              yuima.warn("Get gamma2 ... ")
             }
             counter.gamma2 <- 1
             
@@ -217,7 +217,7 @@ setMethod("limiting.gamma", "yuima.model",
               counter.gamma2 <- counter.gamma2+1
             }            
             if(verbose){
-              cat("done\n")
+              yuima.warn("Done")
             }
             
             ## make list for return 

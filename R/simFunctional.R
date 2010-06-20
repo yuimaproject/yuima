@@ -19,7 +19,7 @@ funcF <- function(yuima,X,e){
           }
 
 # funcf
-# function to calculate fa's in (13.2)
+# function to calculate fa in (13.2)
 funcf <- function(yuima,X,e){ 
             division <- yuima@sampling@n  #number of observed time
             F <- getF(yuima@functional)
@@ -151,11 +151,11 @@ setMethod("simFunctional", signature(yuima="yuima"),
           function(yuima){
 		    Xlen <- length(yuima@data)
 			if(sum(Xlen != mean(Xlen)) != 0) {
-			  cat("\nAll length must be same yet.\n")
+			  yuima.warn("All length must be same yet.")
 			  return(NULL)
 			}
             if( (Xlen[1]-1) != yuima@sampling@n){
-              cat("\nLength of time series and division do not much.\n")
+              yuima.warn("Length of time series and division do not much.")
               return(NULL)
             }
             
