@@ -7,7 +7,7 @@
  require(methods)
  
  require(zoo)
- cat("\n\nThis is the S4 version of YUIMA Project package.\nIt is intended for internal use only!\n\n")
+ cat("\n\nThis is YUIMA Project package.\nNon stable release. Use at your own risk!!!\nFunctions and documentation may change in the final release\n\n")
 # require(KernSmooth, quietly=TRUE)
 # library.dynam("yuima", pkgname, libname) 
 }
