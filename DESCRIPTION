@@ -1,8 +1,8 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package
-Version: 0.0.86
-Date: 2010-06-07
+Version: 0.0.87
+Date: 2010-06-20
 Depends: methods, zoo, stats4
 Suggets: adapt
 Author: YUIMA Project Team.

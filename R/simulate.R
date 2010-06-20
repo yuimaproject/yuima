@@ -14,10 +14,11 @@ subsampling <- function(x,y) return(x)
 setGeneric("simulate",
 	function(object, nsim, seed, xinit, true.parameter, space.discretized=FALSE, 
 		increment.W=NULL, increment.L=NULL, methodfGn="Cholesky", 
-		sampling=sampling, subsampling=subsampling,
-		Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
-		grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
-		sgrid=as.numeric(NULL), interpolation="none")
+		sampling=sampling, subsampling=subsampling, ...
+#		Initial = 0, Terminal = 1, n = 100, delta, 
+#		grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
+#		sgrid=as.numeric(NULL), interpolation="none"
+		)
 			standardGeneric("simulate")
 		)
 
@@ -27,15 +28,17 @@ setMethod("simulate", "yuima.model",
 	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
 	methodfGn="Cholesky",
 	sampling, subsampling,
-	Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
-	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
-	sgrid=as.numeric(NULL), interpolation="none"){
+#Initial = 0, Terminal = 1, n = 100, delta, 
+#	grid, random = FALSE, sdelta=as.numeric(NULL), 
+#	sgrid=as.numeric(NULL), interpolation="none"
+     ...){
 
 	 tmpsamp <- NULL
 	 if(missing(sampling)){
-	  tmpsamp <- setSampling(Initial = Initial, Terminal = Terminal, n = n, 
-				delta = delta, grid = grid, random = random, sdelta=sdelta, 
-				sgrid=sgrid, interpolation=interpolation)
+		 tmpsamp <- setSampling(...)
+#		 tmpsamp <- setSampling(Initial = Initial, Terminal = Terminal, n = n, 
+#				delta = delta, grid = grid, random = random, sdelta=sdelta, 
+#				sgrid=sgrid, interpolation=interpolation)
 	 } else {
 	  tmpsamp <- sampling
 	 }
@@ -53,7 +56,7 @@ setMethod("simulate", "yuima",
 	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
 	methodfGn="Cholesky",
 	sampling, subsampling,
-	Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
+	Initial = 0, Terminal = 1, n = 100, delta, 
 	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
 	sgrid=as.numeric(NULL), interpolation="none"){
 
@@ -96,7 +99,7 @@ setMethod("simulate", "yuima",
 					if(length(xinit)==1){
 						xinit <- rep(xinit, d.size)
 					}else{
-						cat("\nDimension of xinit variables missmuch.\n")
+						cat("\nDimension of xinit variables missmatch.\n")
 						return(NULL)
 					}
 				}
@@ -208,7 +211,7 @@ setMethod("simulate", "yuima",
   yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
 
  for(i in 1:length(yuima@data@zoo.data)) 
-		time(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid
+		time(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid[[1]]  ## to be fixed
 
   if(missing(subsampling))
 		return(yuima)

@@ -5,10 +5,7 @@
 \usage{
 simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE, 
  increment.W = NULL, increment.L = NULL, methodfGn = "Cholesky",
- 	sampling, subsampling,
-	Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
-	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
-	sgrid=as.numeric(NULL), interpolation="none")
+ 	sampling, subsampling, ...)
 }
 \arguments{
   \item{object}{an \code{\link{yuima-class}} or 
@@ -24,16 +21,7 @@ simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE,
   \item{seed}{Not used yet. Included only to match the standard genenirc in 
 	package \code{stats}.}
   \item{methodfGn}{simulation methods for fractional Gaussian noise.}
-  \item{Initial}{Initial time of the grid.}
-  \item{Terminal}{Terminal time of the grid.}
-  \item{n}{number of time intervals.}
-  \item{delta}{mesh size in case of regular time grid.}
-  \item{grid}{a grid of times for the simulation, possibly empty.}
-  \item{random}{specify if it is random sampling. See Details.}
-  \item{sdelta}{mesh size in case of regular space grid.}
-  \item{sgrid}{a grid in space for the simulation, possibly empty.}
-  \item{interpolation}{a rule of interpolation in case of subsampling. 
-   By default, no interpolation. See Details.}
+  \item{...}{passed to \code{\link{setSampling}} to create a sampling}
   \item{sampling}{a \code{\link{yuima.sampling-class}} object.}
   \item{subsampling}{a \code{\link{yuima.sampling-class}} object.}
 }

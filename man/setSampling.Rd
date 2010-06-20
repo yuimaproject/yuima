@@ -8,8 +8,8 @@ Set sampling information and create a `sampling' object.
   \code{setSampling} is a constructor for \code{\link{yuima.sampling-class}}.
 }
 \usage{
-  setSampling(Initial = 0, Terminal = 1, n = 100, delta = 0.1, 
-   grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
+  setSampling(Initial = 0, Terminal = 1, n = 100, delta, 
+   grid, random = FALSE, sdelta=as.numeric(NULL), 
    sgrid=as.numeric(NULL), interpolation="pt" )
 }
 \arguments{  
@@ -64,8 +64,19 @@ the distribution of independent random times and \code{scale} is either a
 scaling constant or a scaling function.
 If the \code{grid} of times is deterministic, then \code{random} is \code{FALSE}.
 
-If not given, the slot \code{grid} is always filled after the call to the
-function \code{\link{simulate}}.
+If not specified and \code{random=FALSE}, the slot \code{grid} is filled 
+automatically by the function. It is eventually modified or created
+after the call to the function \code{\link{simulate}}.
+
+If \code{delta} is not specified, it is calculated as \code{(Terminal-Initial)/n)}.
+If \code{delta} is specified, the \code{Terminal} is adjusted to be equal to
+\code{Initial+n*delta}.
+
+The vectors \code{delta}, \code{n}, \code{Initial} and \code{Terminal} may
+have different lengths, but then they are extended to the maximal length to
+keep consistency. See examples.
+
+If \code{grid} is specified, it takes precedence over all other arguments.
 }
 \value{
    An object of type \code{\link{yuima.sampling-class}}.
@@ -73,6 +84,16 @@ function \code{\link{simulate}}.
 \author{The YUIMA Project Team}
 \examples{
 samp <- setSampling(Terminal=1, n=1000)
+str(samp)
+
+samp <- setSampling(Terminal=1, n=1000, delta=0.3)
+str(samp)
+
+
+samp <- setSampling(Terminal=1, n=1000, delta=c(0.1,0.3))
+str(samp)
+
+samp <- setSampling(Terminal=1:3, n=1000)
 str(samp)
 }
 \keyword{ts}
