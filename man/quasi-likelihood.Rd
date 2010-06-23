@@ -1,6 +1,8 @@
 \name{ql}
 \alias{ql}
 \alias{ml.ql}
+\alias{qmle}
+\alias{negquasilik}
 \alias{LSE}
 %\alias{ml.ql2}
 \alias{rql}
@@ -15,6 +17,8 @@
 ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 ql(yuima,theta2,theta1,h,print=FALSE,param)
 rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
+qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, ...)
+negquasilik(yuima, param, print=FALSE)
 }
 \arguments{
   \item{yuima}{a yuima object.}
@@ -24,15 +28,24 @@ rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
     parameters. Vector can be available only if theta is a scalar.}
   \item{ptheta2,ptheta1}{}
   \item{print}{you can see a progress of the estimation when print is TRUE.}
-  \item{method}{}
-  \item{param}{}
+  \item{method}{see Details.}
+  \item{param}{\code{list} of parameters for the negative quasi loglikelihood.}
   \item{interval}{}
   \item{prevparam}{}
+  \item{start}{initial values to be passed to the optimizer.}
+  \item{fixed}{for conditional (quasi)maximum likelihood estimation.}
+  \item{...}{passed to \code{\link{optim}} method. See Examples.}
 }
 \details{
   A function ql calculate the quasi-likelihood of a time series data X with any
   parameters. A function ml.pl estimates parameters of the sdeModel by
   maximizing the quasi-likelihood.
+  
+  \code{qmle} behaves more likely the standard \code{mle} function in \pkg{stats4} and
+  argument \code{method} is one of the methods available in \code{\link{optim}}.
+  
+  \code{negquasilik} returns the valueof the negative quasi loglikelihood for a given
+  \code{yuima} object and list of parameters \code{coef}.
 }
 \value{
   \item{QL}{a real value.}
@@ -67,6 +80,17 @@ print("True param")
 print("theta2 = .3, theta1 = .1")
 print("ML estimator")
 opt@coef
+
+
+system.time(
+opt2 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=c(.05,.05), 
+ upper=c(.5,.5), method="L-BFGS-B")
+)
+print("True param")
+print("theta2 = .3, theta1 = .1")
+print("ML estimator")
+opt2@coef
+
 
 ## another way of parameter specification
 ##interval <- list(theta2.lim=c(0,1), theta1.lim=c(0,1))
@@ -124,6 +148,14 @@ system.time(
 opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim)
 )
 opt@coef
+
+system.time(
+opt2 <- qmle(yuima, start=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0.1),lower=rep(.1,4), upper=rep(1,4),method="L-BFGS-B")
+)
+opt2@coef
+QL
+-negquasilik(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0.1))
+
 
 ## another way of parameter specification
 #interval <- list(theta2.1.lim, theta2.2.lim, theta1.1.lim, theta1.2.lim)
