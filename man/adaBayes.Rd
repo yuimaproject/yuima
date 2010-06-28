@@ -30,13 +30,14 @@ adaBayes(yuima, print = FALSE, start, prior, propose, n.iter = 100,
   This routine is not stable and accurate. Dr.Kamatani is now working for improvements.
 }
 \examples{
+\dontrun{
 library(yuima)
 library(mnormt)
 set.seed(123)
 
 ymodel <- setModel(drift="(-1)*theta2*x", diffusion="sqrt(theta1^2+1)",
                    time.variable="t", state.variable="x", solve.variable="x")
-n <- 100#10^2
+n <- 100
 h <- 1/((n)^(2/3))
 ysamp <- setSampling(Terminal=(n)^(1/3), n=n) 
 yuima <- setYuima(model=ymodel, sampling=ysamp)
@@ -61,5 +62,5 @@ bayes1 <- adaBayes(yuima, start=param.init, lower=lower,upper=upper,prior=prior,
 
 mle1 <- qmle(yuima, start=param.init, lower=lower, upper=upper, method="L-BFGS-B")
 mle1@coef
-}
+}}
 \keyword{ts}
