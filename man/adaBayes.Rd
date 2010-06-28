@@ -32,7 +32,6 @@ adaBayes(yuima, print = FALSE, start, prior, propose, n.iter = 100,
 \examples{
 \dontrun{
 library(yuima)
-library(mnormt)
 set.seed(123)
 
 ymodel <- setModel(drift="(-1)*theta2*x", diffusion="sqrt(theta1^2+1)",
@@ -59,6 +58,7 @@ lower = c(0,0)
 upper=c(1,1)
 
 bayes1 <- adaBayes(yuima, start=param.init, lower=lower,upper=upper,prior=prior, method="nomcmc")
+bayes1
 
 mle1 <- qmle(yuima, start=param.init, lower=lower, upper=upper, method="L-BFGS-B")
 mle1@coef
