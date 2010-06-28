@@ -7,38 +7,33 @@
 # returns sample of data using poisson sampling
 
 setGeneric("subsampling", 
-function(x, sampling=NULL, Initial, Terminal, delta, 
- grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
- sgrid=as.numeric(NULL), interpolation="pt") 
+function(x, sampling, ...) 
  standardGeneric("subsampling")
 )
 
 setMethod("subsampling","yuima", 
-function(x, sampling=NULL, Initial, Terminal, delta, 
- grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
-sgrid=as.numeric(NULL), interpolation="pt"){
- obj <- subsampling(x@data, sampling=sampling, Initial = Initial, 
-  Terminal = Terminal, delta = delta, 
-  grid = grid, random = random, sdelta=sdelta, 
-  sgrid=sgrid, interpolation=interpolation)
+function(x, sampling, ...){
+obj <- NULL
+	if(missing(sampling))
+		obj <- subsampling(x@data, setSampling(...))
+	 else
+		obj <- subsampling(x@data, sampling=sampling)
  obj@model <- x@model
  return(obj)
 }
 )
 
 setMethod("subsampling", "yuima.data",
-function(x, sampling=sampling, Initial, Terminal, delta, 
- grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
- sgrid=as.numeric(NULL), interpolation="pt"){
+function(x, sampling=sampling){
 
- tmpsamp <- NULL
- if(missing(sampling)){
-	tmpsamp <- setSampling(Initial = Initial, Terminal = Terminal, 
-				delta = delta, grid = grid, random = random, sdelta=sdelta, 
-				sgrid=sgrid, interpolation=interpolation)
- } else {
+#tmpsamp <- NULL
+#if(missing(sampling)){
+#	tmpsamp <- setSampling(Initial = Initial, Terminal = Terminal, 
+#				delta = delta, grid = grid, random = random, sdelta=sdelta, 
+#				sgrid=sgrid, interpolation=interpolation)
+#} else {
 	tmpsamp <- sampling
- }
+#}
 
  
  Data <- get.zoo.data(x)

@@ -125,10 +125,8 @@ regular, sdelta, sgrid, oindex, interpolation){
 setSampling <- function(Initial=0, Terminal=1, n=100, delta, 
  grid, random=FALSE, sdelta=as.numeric(NULL), 
  sgrid=as.numeric(NULL), interpolation="pt" ){
-  if(missing(delta))
-	delta <- NA
-  if(missing(grid))
-	 grid <- NULL
+  if(missing(delta))	delta <- NA
+  if(missing(grid))	 grid <- NULL
   return(new("yuima.sampling", Initial=Initial, Terminal=Terminal, 
 	n=n, delta=delta, grid=grid, random=random, 
 			 regular=TRUE, sdelta=sdelta, sgrid=sgrid,

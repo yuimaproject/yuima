@@ -385,16 +385,16 @@ newton.ml.qlb <- function(yuima, theta2, theta1, h, iteration=1, param.only=FALS
 ##::example: 0 <= theta1 <= 1 theta1.lim = matrix(c(0,1),1,2)
 ##::if theta1, theta2 are matrix, theta.lim can be defined matrix like rbind(c(0,1),c(0,1))
 setGeneric("adaBayes",
-           function(yuima, print=FALSE, init, prior,propose,n.iter=100,lower,upper,n.burnin,method="nomcmc",mhtype="independent")
+           function(yuima, print=FALSE, start, prior,propose,n.iter=100,lower,upper,n.burnin,method="nomcmc",mhtype="independent")
            standardGeneric("adaBayes")
            )
 setMethod("adaBayes", "yuima",
-          function(yuima, print=FALSE,  init, prior,propose,n.iter=100,lower,upper,n.burnin,method="nomcmc",mhtype="independent"){
+          function(yuima, print=FALSE,  start, prior,propose,n.iter=100,lower,upper,n.burnin,method="nomcmc",mhtype="independent"){
             if( missing(yuima)){
               cat("\nyuima object is missing.\n")
               return(NULL)
             }
-			            
+			            init <- start
 			  if(length(match(yuima@model@parameter@drift ,names(init),nomatch=0))!=length(yuima@model@parameter@drift)){
 				  cat("\ndrift parameters in yuima model and init do not match.\n")
 				  return(NULL)

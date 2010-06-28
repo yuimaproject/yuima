@@ -3,23 +3,13 @@
 \title{subsampling }
 \description{subsampling}
 \usage{
-subsampling(x, sampling=NULL, Initial, Terminal, delta, 
- grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
- sgrid=as.numeric(NULL), interpolation="pt") 
+subsampling(x, sampling, ...) 
 }
 \arguments{
   \item{x}{an \code{\link{yuima-class}} or 
     \code{\link{yuima.model-class}} object.}
   \item{sampling}{a \code{\link{yuima.sampling-class}} object.}
-  \item{Initial}{Initial time of the grid.}
-  \item{Terminal}{Terminal time of the grid.}
-  \item{delta}{mesh size in case of regular time grid.}
-  \item{grid}{a grid of times for the simulation, possibly empty.}
-  \item{random}{specify if it is random sampling. See Details.}
-  \item{sdelta}{mesh size in case of regular space grid.}
-  \item{sgrid}{a grid in space for the simulation, possibly empty.}
-  \item{interpolation}{a rule of interpolation in case of subsampling. 
-   By default, previous tick interpolation is used. See Details.}
+  \item{...}{used to create a sampling structure}
 }
 \value{
   \item{yuima}{a \code{yuima.data-class} object.}

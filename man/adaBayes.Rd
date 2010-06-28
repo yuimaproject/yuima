@@ -4,17 +4,21 @@
 \title{Adaptive Bayes estimator for the parameters in sde model}
 \description{Adaptive Bayes estimator for the parameters in a specific type of sde.}
 \usage{
-adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta1.offset=0)
+adaBayes(yuima, print = FALSE, start, prior, propose, n.iter = 100, 
+    lower, upper, n.burnin, method = "nomcmc", mhtype = "independent")
 }
 \arguments{
   \item{yuima}{a 'yuima' object.}
-  \item{h}{ sampling interval [positive value].}
-  \item{prior2}{ prior distribution function of theta2 [function].}
-  \item{prior1}{ prior distribution function of theta1 [function].}
-  \item{domain2}{ domain of theta2 [vector or matrix].}
-  \item{domain1}{ domain of theta1 [vector or matrix].}
-  \item{theta2.offset}{ offset value of theta2 [scalar or vector].}
-  \item{theta1.offset}{ offset value of theta1 [scalar or vector].}
+  \item{prior}{ a list of prior distributions for the parameters [function].}
+  \item{start}{ initial suggestion for parameter values }
+  \item{propose}{ ... }
+  \item{print}{trace optimization?}
+  \item{method}{ \code{nomcmc} requires package \code{adapt} }
+  \item{mhtype}{ ... }
+  \item{n.burnin}{ ... }
+  \item{lower}{ ... }
+  \item{upper}{ ... }
+  \item{n.iter}{ ... }
 }
 \details{
   Calculate the values of the parameters theta1 and theta2. When the quasi-likelihood is too large for the given data, the integral in the Bayes estimator may diverges. For such a case, offset values for the parameters can be specified not to diverge.}
@@ -26,48 +30,36 @@ adaBayes( yuima , h , prior2 , prior1 , domain2 , domain1, theta2.offset=0,theta
   This routine is not stable and accurate. Dr.Kamatani is now working for improvements.
 }
 \examples{
-  set.seed(1)
-  diff.matrix <- matrix(c("theta1"),1,1)
-  mod <- setModel(drift=c("(-1)*theta2*x"),diffusion=diff.matrix,time.variable="t",state.variable="x")
-  n <- 100
-  Terminal <- (n)^(1/3)
-  mod.sampling <- setSampling(Terminal=Terminal, n=n)
-  yuima.mod <- setYuima(model=mod, sampling=mod.sampling)
-  yuima.mod <- simulate(yuima.mod,
-               xinit=1,
-               true.parameter=list(theta1=0.6,theta2=0.3)
-               )
-  
-  ## TBC: sample the path later
+library(yuima)
+library(mnormt)
+set.seed(123)
 
-  domain <- c(0,1)
-  ## prior distribution of theta1
-  prior1 <- function(theta1,domain){
-    tmp <- 1/(domain[1,2] - domain[1,1])
-    return(tmp)
-  }
-  ## prior distribution of theta2
-  prior2 <- function(theta2,domain){
-    tmp <- 1/(domain[1,2]-domain[1,1])
-    return( tmp )
-  }
-  
-  rand <- matrix(runif(20,0,1),10,2) ## initial points for MLE
-  QL <- 0
-  param <- numeric(2)
-  for( i in 1:5){
-    PAR <-  ml.ql(yuima.mod,theta2=rand[i,1],theta1=rand[i,2],h=(n^(-2/3)))
-    if(PAR@min > QL){
-      QL <- PAR@min
-      param <- PAR@coef
-    }
-  }
-  BE <- adaBayes(yuima.mod,h=(n-1)^(-2/3),prior2=prior2,prior1=prior1,domain2=domain,domain1=domain,theta2.offset=param[1],theta1.offset=param[2])
-  print("True param")
-  print("theta2 = .6, theta1 = .3")
-  print("ML estimate")
-  PAR@coef
-  print("Bayes estimate")
-  BE
+ymodel <- setModel(drift="(-1)*theta2*x", diffusion="sqrt(theta1^2+1)",
+                   time.variable="t", state.variable="x", solve.variable="x")
+n <- 100#10^2
+h <- 1/((n)^(2/3))
+ysamp <- setSampling(Terminal=(n)^(1/3), n=n) 
+yuima <- setYuima(model=ymodel, sampling=ysamp)
+param.true <- list(theta2=0.3, theta1=0.5)
+yuima <- simulate(yuima, xinit=1, true.parameter=param.true)
+
+prior.theta1 <- function(theta2)
+  1*(theta2 > 0 & theta2 < 1)
+
+prior.theta2 <- function(theta1)
+  1*(theta1 > 0 & theta1 < 1)
+
+prior <- list(theta1=list(measure.type="density", density=prior.theta1,domain=c(-2,2)),
+theta2=list(measure.type="density", density=prior.theta2,domain=c(-2,2)))
+
+param.init <- list(theta2=0.35,theta1=0.52)
+
+lower = c(0,0)
+upper=c(1,1)
+
+bayes1 <- adaBayes(yuima, start=param.init, lower=lower,upper=upper,prior=prior, method="nomcmc")
+
+mle1 <- qmle(yuima, start=param.init, lower=lower, upper=upper, method="L-BFGS-B")
+mle1@coef
 }
 \keyword{ts}
