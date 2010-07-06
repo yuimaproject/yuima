@@ -1,0 +1,11 @@
+Changes in Version 0.0.91
+
+  o added toLatex method for yuima objects.
+
+  o when simulate is executed, the xinit slot in
+    the return yuima object is set to the proper value.
+
+Changes in Version 1.0.90
+
+  o released first demo for R/Rmetrics conference, Meielisalp, 2010
+

@@ -1287,7 +1287,7 @@ negquasilik <- function(yuima, param, print=FALSE){
 
 		yuima.warn(sprintf("NEG-QL: %f, %s", -QL, paste(names(param),param,sep="=",collapse=", ")))
 	}
-
+	if(is.infinite(QL)) return(1e10)
 	return(-QL)
 
 }

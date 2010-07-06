@@ -5,6 +5,12 @@ importFrom("graphics", "plot")
 importFrom("zoo")
 importFrom(stats, confint)
 
+importFrom(utils, toLatex)
+
+
+
+
+
 exportClasses("yuima",
               "yuima.data",
               "yuima.sampling",
@@ -30,8 +36,6 @@ exportMethods(
               "ml.ql",
               "adaBayes",
               "limiting.gamma",
-			  
-			  
 			  "getF",
 			  "getf",
 			  "getxinit",
@@ -86,4 +90,7 @@ export(LSE)
 export(qmle)
 export(negquasilik)
 
+
+S3method(toLatex, yuima)
+S3method(toLatex, yuima.model)
 

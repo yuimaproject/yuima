@@ -1,9 +1,9 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package (unstable version)
-Version: 0.0.90
-Date: 2010-06-28
-Depends: methods, zoo, stats4
+Version: 0.0.91
+Date: 2010-07-05
+Depends: methods, zoo, stats4, utils
 Suggests: adapt, mvtnorm
 Author: YUIMA Project Team.
 Maintainer: Stefano M. Iacus <stefano.iacus@R-project.org>

@@ -49,7 +49,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 # grid is missing, but random sampling					
 				if(!is.logical(random)){
 					.Object@regular <- FALSE
-					.Object@Terminal <- numeric(0)	
+					.Object@Terminal <- Terminal	
 					.Object@Initial <- Initial
 					.Object@n <- numeric(0)
 					.Object@delta <- numeric(0)	
