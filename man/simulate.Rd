@@ -254,7 +254,7 @@ set.seed(123)
 obj.sampling <- setSampling(Terminal=T, n=n)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
-X11()
+dev.new()
 plot(X)
 
 
@@ -269,7 +269,7 @@ set.seed(123)
 obj.sampling <- setSampling(Terminal=T, n=n)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 X <- simulate(obj.yuima, xinit=xinit, true.parameter=list(theta=theta, sigma=sigma))
-X11()
+dev.new()
 plot(X)
 
 
@@ -281,7 +281,7 @@ obj.model <- setModel(drift="-x", xinit=1, jump.coeff="1", measure.type="code", 
 obj.sampling <- setSampling(Terminal=10, n=10000)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 result <- simulate(obj.yuima)
-X11()
+dev.new()
 plot(result)
 
 ##:: sample for multidimensional Levy process ("code" type)

@@ -2,7 +2,7 @@
 \alias{ql}
 \alias{ml.ql}
 \alias{qmle}
-\alias{negquasilik}
+\alias{quasilogl}
 \alias{LSE}
 %\alias{ml.ql2}
 \alias{rql}
@@ -18,7 +18,7 @@ ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,
 ql(yuima,theta2,theta1,h,print=FALSE,param)
 rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
 qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, ...)
-negquasilik(yuima, param, print=FALSE)
+quasilogl(yuima, param, print=FALSE)
 }
 \arguments{
   \item{yuima}{a yuima object.}
@@ -29,7 +29,7 @@ negquasilik(yuima, param, print=FALSE)
   \item{ptheta2,ptheta1}{}
   \item{print}{you can see a progress of the estimation when print is TRUE.}
   \item{method}{see Details.}
-  \item{param}{\code{list} of parameters for the negative quasi loglikelihood.}
+  \item{param}{\code{list} of parameters for the  quasi loglikelihood.}
   \item{interval}{}
   \item{prevparam}{}
   \item{start}{initial values to be passed to the optimizer.}
@@ -44,7 +44,7 @@ negquasilik(yuima, param, print=FALSE)
   \code{qmle} behaves more likely the standard \code{mle} function in \pkg{stats4} and
   argument \code{method} is one of the methods available in \code{\link{optim}}.
   
-  \code{negquasilik} returns the valueof the negative quasi loglikelihood for a given
+  \code{quasilogl} returns the valueof the  quasi loglikelihood for a given
   \code{yuima} object and list of parameters \code{coef}.
 }
 \value{
@@ -154,7 +154,7 @@ opt2 <- qmle(yuima, start=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.
 )
 opt2@coef
 QL
--negquasilik(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0.1))
+quasilogl(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0.1))
 
 
 ## another way of parameter specification
