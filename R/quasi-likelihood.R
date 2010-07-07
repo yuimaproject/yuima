@@ -801,26 +801,31 @@ newton.ml.ql <- function(yuima, theta2, theta1, h, iteration=1, param.only=FALSE
   ## newton algorithm main ##
   if(!param.only){
     if(verbose){
-      cat("theta2 init:", theta2, "\n")
+      #cat("theta2 init:", theta2, "\n")
       cat("theta1 init:", theta1, "\n")
+      cat("theta2 init:", theta2, "\n")
     }
     
     for(ite in 1:iteration){
       
-      dHtheta2 <- dH.theta2(theta1, theta2, h, yuima, B, a, ...)
-      d2Htheta2 <- d2H.theta2(theta1, theta2, h, yuima, B, a, ...)
-      theta2 <- as.vector(theta2 - solve(d2Htheta2) %*% dHtheta2)
+      #dHtheta2 <- dH.theta2(theta1, theta2, h, yuima, B, a, ...)
+      #d2Htheta2 <- d2H.theta2(theta1, theta2, h, yuima, B, a, ...)
+      #theta2 <- as.vector(theta2 - solve(d2Htheta2) %*% dHtheta2)
       
       dHtheta1 <- dH.theta1(theta1, theta2, h, yuima, B, a, ...)
       d2Htheta1 <- d2H.theta1(theta1, theta2, h, yuima, B, a, ...)
       theta1 <- as.vector(theta1 - solve(d2Htheta1) %*% dHtheta1)
+
+      dHtheta2 <- dH.theta2(theta1, theta2, h, yuima, B, a, ...)
+      d2Htheta2 <- d2H.theta2(theta1, theta2, h, yuima, B, a, ...)
+      theta2 <- as.vector(theta2 - solve(d2Htheta2) %*% dHtheta2)
       
       if(verbose){
         cat("\n## Iteration", ite, "##\n")
-        cat("theta2 new:", theta2, "\n")
+        #cat("theta2 new:", theta2, "\n")
         cat("theta1 new:", theta1, "\n")
+        cat("theta2 new:", theta2, "\n")
       }
-      
     }
   }
   ## END newtom algorithm ##
@@ -965,49 +970,80 @@ setMethod("ml.ql", "yuima",
 
               coef <- c(opt$theta2.new, opt$theta1.new)
               min <- ql(yuima, opt$theta2.new, opt$theta1.new, h, print, param)
-         
-            #}else if(method=="BFGS"){
-            #  opt <- constrOptim(c(theta2, theta1), ql.opt, ql.grad.opt,
-            #                     ui=ui, ci=ci, control=list(fnscale=-1),
-            #                     method="BFGS", outer.iterations=500)            
-            #
+              
             }else{ ## optim
               if(is.matrix(theta2.lim) && is.matrix(theta1.lim)){
                 if(ncol(theta2.lim)!=2 || ncol(theta1.lim)!=2){
-                  yuima.warn("theta.lim is not available.")
+                  cat("\ntheta.lim is not available.\n")
                   return(NULL)    
                 }
               }
               if( length(theta2)!=1 && length(theta2)!=nrow(theta2.lim)){
-                yuima.warn("size of theta2 and theta2.lim are different.")
+                cat("\nsize of theta2 and theta2.lim are different.\n")
                 return(NULL)    
               }
               if( length(theta1)!=1 && length(theta1)!=nrow(theta1.lim)){
-                yuima.warn("size of theta1 and theta1.lim are different.")
+                cat("\nsize of theta1 and theta1.lim are different.\n")
                 return(NULL)    
               }
-            
-              ui <- rbind(diag(length(theta1)+length(theta2)), (-1)*diag(length(theta1)+length(theta2)))
-              ci <- c(rbind(theta2.lim, theta1.lim))
-              ci[(length(ci)/2+1):length(ci)] <- (-1)*ci[(length(ci)/2+1):length(ci)]
-              
-                           
-              opt <- constrOptim(c(theta2, theta1), ql.opt, NULL, ui=ui,
-                                 ci=ci, control=list(fnscale=-1), outer.iterations=500)              
-              coef <- opt$par
-              min <- opt$value
 
-              theta2 <- coef[1:length(yuima@model@parameter@drift)]
-              theta1 <- coef[(length(yuima@model@parameter@drift)+1):length(coef)]
-              opt2 <- newton.ml.ql(yuima, theta2, theta1, h,
-                                   iteration=0, param.only=TRUE, verbose=print)
-              opt$Sigma1 <- opt2$Sigma1
-              opt$Sigma2 <- opt2$Sigma2
-              opt$hessian <- opt2$hessian
-              
-              if(opt$convergence != 0){
-                print("WARNING:optimization did not converge.")
+              ql.opt.theta1 <- function(theta1){
+                return(ql(yuima, theta2=theta2,
+                          theta1=theta1, h=h, print=print))
               }
+
+              ql.opt.theta2 <- function(theta2){
+                return(ql(yuima, theta2=theta2,
+                          theta1=theta1, h=h, print=print))
+              }
+              
+              ##theta1 estim
+              if(length(theta1) != 1){
+                ui <- rbind(diag(length(theta1)), (-1)*diag(length(theta1)))
+                ci <- c(theta1.lim)
+                ci[(length(ci)/2+1):length(ci)] <- (-1)*ci[(length(ci)/2+1):length(ci)]
+                opt1 <- constrOptim(c(theta1), ql.opt.theta1, NULL, ui=ui,
+                                    ci=ci, control=list(fnscale=-1), outer.iterations=500)
+                if(opt1$convergence != 0) print("WARNING:optimization did not converge.")
+                theta1 <- opt1$par
+              }else{
+                cat("\none-diml optimization : Initial value (theta1) is ignored.\n")
+                opt1 <- optimize(ql.opt.theta1, interval=theta1.lim, maximum=TRUE)
+                theta1 <- opt1$maximum
+              }
+
+              #theta2 estim
+              if(length(theta2) != 1){
+                ui <- rbind(diag(length(theta2)), (-1)*diag(length(theta2)))
+                ci <- c(theta2.lim)
+                ci[(length(ci)/2+1):length(ci)] <- (-1)*ci[(length(ci)/2+1):length(ci)]
+                opt2 <- constrOptim(c(theta2), ql.opt.theta2, NULL, ui=ui,
+                                    ci=ci, control=list(fnscale=-1), outer.iterations=500)
+                if(opt2$convergence != 0) print("WARNING:optimization did not converge.")
+
+                theta2 <- opt2$par
+                min <- opt2$value
+                
+              }else{
+                cat("\none-diml optimization : Initial value (theta2) is ignored.\n")
+                opt2 <- optimize(ql.opt.theta2, interval=theta2.lim, maximum=TRUE)
+                theta2 <- opt2$maximum
+                min <- opt2$objective
+              }
+
+              opt <- NULL
+              opt$opt1 <- opt1
+              opt$opt2 <- opt2
+              coef <- c(theta2, theta1)
+
+              #theta2 <- coef[1:length(yuima@model@parameter@drift)]
+              #theta1 <- coef[(length(yuima@model@parameter@drift)+1):length(coef)]
+
+              opt3 <- newton.ml.ql(yuima, theta2, theta1, h,
+                                   iteration=0, param.only=TRUE, verbose=print)
+              opt$Sigma1 <- opt3$Sigma1
+              opt$Sigma2 <- opt3$Sigma2
+              opt$hessian <- opt3$hessian
             }
 
             ##convert to mle object
@@ -1027,7 +1063,6 @@ setMethod("ml.ql", "yuima",
             
             return(opt)
           })
-
 
 setMethod("confint", "yuima",
           function(object, parm, level=0.95, ...){
@@ -1287,7 +1322,7 @@ negquasilik <- function(yuima, param, print=FALSE){
 
 		yuima.warn(sprintf("NEG-QL: %f, %s", -QL, paste(names(param),param,sep="=",collapse=", ")))
 	}
-	if(is.infinite(QL)) return(1e10)
+
 	return(-QL)
 
 }
