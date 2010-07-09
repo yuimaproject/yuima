@@ -181,6 +181,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
         mycoef <- as.list(p)
 		names(mycoef) <- nm[-idx.fixed]
         mycoef[fixed.par] <- fixed
+		print(mycoef)
         minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
     }
 		
@@ -271,11 +272,48 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 		list(par = numeric(0L), value = f(start))
 	}
 	
-	coef <- oout$par
 	 
-    vcov <- if (!is.null(oout$hessian)) 
+	 f1 <- function(p) {
+		 mycoef <- as.list(p)
+		 names(mycoef) <- nm
+
+			 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+	 }
+	 
+	 
+	coef <- oout$par
+	 control=list()
+	 par <- coef
+	 fixed <- old.fixed
+	 fixed.par <- names(fixed)
+	 idx.fixed <- match(fixed.par, nm)
+	 con <- list(trace = 0, fnscale = 1, parscale = rep.int(1, 
+															length(par)), ndeps = rep.int(0.001, length(par)), maxit = 100L, 
+				 abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
+				 beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
+				 factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
+	 nmsC <- names(con)
+	 if (method == "Nelder-Mead") 
+	 con$maxit <- 500
+	 if (method == "SANN") {
+		 con$maxit <- 10000
+		 con$REPORT <- 100
+	 }
+	 con[(namc <- names(control))] <- control
+	 
+
+	 hess <- .Internal(optimhess(coef, f1, NULL, con))
+	 hess <- 0.5 * (hess + t(hess))
+	 if (!is.null(nm)) 
+		 dimnames(hess) <- list(nm, nm)
+		 oout$hessian <- hess
+
+    vcov <- if (length(coef)) 
 	 solve(oout$hessian)
     else matrix(numeric(0L), 0L, 0L)
+	 
+	
+	 
     min <- oout$value
 	
   	mycoef <- as.list(coef)
