@@ -181,8 +181,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
         mycoef <- as.list(p)
 		names(mycoef) <- nm[-idx.fixed]
         mycoef[fixed.par] <- fixed
-		print(mycoef)
-        minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
     }
 		
 	oout <- NULL
