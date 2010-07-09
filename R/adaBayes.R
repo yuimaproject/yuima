@@ -468,7 +468,7 @@ setMethod("adaBayes", "yuima",
 						  for(j in 1:(length(slot(yuima@model@parameter,term)))){
 							  nparam[slot(yuima@model@parameter,term)][j] <- matparam[k,][grep(slot(yuima@model@parameter,term)[j],names(unlist(param[slot(yuima@model@parameter,term)])))]
 						  }
-						  qvec[k] <- exp(-negquasilik(yuima,param=nparam,print=print)+log(mdensity(nparam))+negquasilik(yuima,param=param,print=print)-log(mdensity(param)))
+						  qvec[k] <- exp(quasilogl(yuima,param=nparam,print=print)+log(mdensity(nparam))-quasilogl(yuima,param=param,print=print)-log(mdensity(param)))
 					  }
 					  return(qvec)
 				  }
@@ -493,7 +493,7 @@ setMethod("adaBayes", "yuima",
 						qvec <- numeric(dim(matparam)[1])
 						for(k in 1:(dim(matparam)[1])){
 							nparam[slot(yuima@model@parameter,term)] <- matparam[k,]
-							qvec[k] <- matparam[k,i]*exp(-negquasilik(yuima,param=nparam,print=print)+log(mdensity(nparam))+negquasilik(yuima,param=param,print=print)-log(mdensity(param)))
+							qvec[k] <- matparam[k,i]*exp(quasilogl(yuima,param=nparam,print=print)+log(mdensity(nparam))-quasilogl(yuima,param=param,print=print)-log(mdensity(param)))
 						}
 						return(qvec)
 					}
@@ -560,13 +560,13 @@ setMethod("adaBayes", "yuima",
                   u <- runif(n.iter)
                   
                   pparam <- param
-                  pql <- -negquasilik(yuima,param=pparam,print=print)+log(mdensity(pparam[[j]]))
+                  pql <- quasilogl(yuima,param=pparam,print=print)+log(mdensity(pparam[[j]]))
                   nparam <- param
                   mhestimator <- 0
                   
 				for(i in 1:n.iter){
 					nparam[[j]] <- pparam[[j]] + dh[,i]									
-					nql <- -negquasilik(yuima,param=nparam,print=print)+log(mdensity(nparam[[j]]))
+					nql <- quasilogl(yuima,param=nparam,print=print)+log(mdensity(nparam[[j]]))
 					alpha <- exp(nql-pql)
 					if(is.na(alpha)){alpha <- -Inf}
 					pparam[[j]] <- (alpha>u[i])*(nparam[[j]]-pparam[[j]])+pparam[[j]]
@@ -655,12 +655,12 @@ setMethod("adaBayes", "yuima",
 
                   for(i in 1:n.iter){
                     tmp.param[[j]] <- state[,i] 
-                    weight[i] <- exp(-negquasilik(yuima,param=liparam(tmp.param),print=print))*mdensity(liparam(tmp.param))/
+                    weight[i] <- exp(quasilogl(yuima,param=liparam(tmp.param),print=print))*mdensity(liparam(tmp.param))/
                       dpropose(state[,i],propose.param[[1]],propose.param[[2]])
                   }
 
                   cstate <- param[[j]]
-                  cweight <- exp(-negquasilik(yuima,param=liparam(param),print=print))*mdensity(liparam(tmp.param))/
+                  cweight <- exp(quasilogl(yuima,param=liparam(param),print=print))*mdensity(liparam(tmp.param))/
                     dpropose(param[[j]],propose.param[[1]],as.matrix(propose.param[[2]]))
 
                   u <- runif(n.iter)

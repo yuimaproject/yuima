@@ -88,7 +88,8 @@ calc.B <- function(diff){
 ### S.M.I. 22/06/2010
 
 
-qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, ...){
+qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
+ lower, upper, ...){
 
 	call <- match.call()
 	
@@ -96,8 +97,11 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, ...){
 		yuima.stop("yuima object is missing.")
 	
 ## param handling
-	if( missing(start) )
-	 yuima.warn("Starting values for the parameters are missing. Using random initial values.")
+	
+## FIXME: maybe we should choose initial values at random within lower/upper
+##        at present, qmle stops	
+	if( missing(start) ) 
+	 yuima.stop("Starting values for the parameters are missing.")
 
 	diff.par <- yuima@model@parameter@diffusion
 	drift.par <- yuima@model@parameter@drift
@@ -105,8 +109,12 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, ...){
 	measure.par <- yuima@model@parameter@measure
 	common.par <- yuima@model@parameter@common
 	
-	if(length(common.par)>0)
-		yuima.stop("Drift and diffusion parameters must be different.")
+	JointOptim <- FALSE
+	if(length(common.par)>0){
+		JointOptim <- TRUE
+		yuima.warn("Drift and diffusion parameters must be different. Doing
+					  joint estimation, asymptotic theory may not hold true.")
+	}
 	
 	if(length(jump.par)+length(measure.par)>0)
 		yuima.stop("Cannot estimate the jump models, yet")
@@ -132,12 +140,36 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, ...){
 
 	idx.diff <- match(diff.par, nm)
 	idx.drift <- match(drift.par, nm)
+	idx.fixed <- match(fixed.par, nm)
 
+	tmplower <- as.list( rep( -Inf, length(nm)))
+	names(tmplower) <- nm	
+	if(!missing(lower)){
+	   idx <- match(names(lower), names(tmplower))
+	   if(any(is.na(idx)))
+		yuima.stop("names in 'lower' do not match names fo parameters")
+	   tmplower[ idx ] <- lower	
+	}
+	lower <- tmplower
+	 
+	tmpupper <- as.list( rep( Inf, length(nm)))
+	names(tmpupper) <- nm	
+	if(!missing(upper)){
+		idx <- match(names(upper), names(tmpupper))
+		if(any(is.na(idx)))
+			yuima.stop("names in 'lower' do not match names fo parameters")
+		tmpupper[ idx ] <- upper	
+	}
+	upper <- tmpupper
+
+	 
+	 
+	 
 	d.size <- yuima@model@equation.number
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(yuima:::onezoo(yuima)), env=env)
+	assign("X",  as.matrix(onezoo(yuima)), env=env)
 	assign("deltaX",  matrix(0, n-1, d.size), env=env)
 	for(t in 1:(n-1))
 	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
@@ -147,20 +179,102 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, ...){
 	
 	f <- function(p) {
         mycoef <- as.list(p)
-        names(mycoef) <- nm
+		names(mycoef) <- nm[-idx.fixed]
         mycoef[fixed.par] <- fixed
         minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
     }
 		
-	oout <- if(length(start)){ 
-		optim(start, f, method = method, hessian = TRUE, ...)
+	oout <- NULL
+
+	if(length(start)){
+		if(JointOptim){ ### joint optimization
+			if(length(start)>1){ # multidimensional optim
+				oout <- optim(start, f, method = method, hessian = TRUE, ...)
+			} else { ### one dimensional optim
+				opt1 <- optimize(f, ...) ## an interval should be provided
+                oout <- list(par = opt1$minimum, value = opt1$objective)
+			} ### endif( length(start)>1 )
+		} else {  ### first diffusion, then drift
+## DIFFUSION ESTIMATIOn first
+			old.fixed <- fixed
+			old.start <- start
+			new.start <- start[idx.diff] # considering only initial guess for diffusion
+			new.fixed <- fixed
+			new.fixed[nm[idx.drift]] <- start[idx.drift]
+			fixed <- new.fixed
+			fixed.par <- names(fixed)
+			idx.fixed <- match(fixed.par, nm)
+			names(new.start) <- nm[idx.diff]
+			
+			mydots <- as.list(call)[-(1:2)]
+			mydots$fixed <- NULL
+			mydots$fn <- as.name("f")
+			mydots$start <- NULL
+			mydots$par <- unlist(new.start)
+			mydots$hessian <- FALSE
+			mydots$upper <- unlist( upper[ nm[idx.diff] ])
+			mydots$lower <- unlist( lower[ nm[idx.diff] ])
+			if(length(mydots$par)>1)
+			 oout <- do.call(optim, args=mydots)
+			else {
+			 mydots$f <- mydots$fn
+			 mydots$fn <- NULL
+			 mydots$par <- NULL
+			 mydots$hessian <- NULL	
+			 mydots$method <- NULL	
+			 opt1 <- do.call(optimize, args=mydots)
+			 theta1 <- opt1$minimum
+			 names(theta1) <- diff.par
+			 oout <- list(par = theta1, value = opt1$objective) 	
+			}
+			theta1 <- oout$par
+			
+## DRIFT estimation with first state diffusion estimates
+			fixed <- old.fixed
+			start <- old.start
+			new.start <- start[idx.drift] # considering only initial guess for drift
+			new.fixed <- fixed
+			new.fixed[names(theta1)] <- theta1
+			fixed <- new.fixed
+			fixed.par <- names(fixed)
+			idx.fixed <- match(fixed.par, nm)
+			names(new.start) <- nm[idx.drift]
+
+			mydots <- as.list(call)[-(1:2)]
+			mydots$fixed <- NULL
+			mydots$fn <- as.name("f")
+			mydots$start <- NULL
+			mydots$par <- unlist(new.start)
+			mydots$hessian <- TRUE
+			mydots$upper <- unlist( upper[ nm[idx.drift] ])
+			mydots$lower <- unlist( lower[ nm[idx.drift] ])
+			
+			if(length(mydots$par)>1)
+			  oout1 <- do.call(optim, args=mydots)
+			else {
+				mydots$f <- mydots$fn
+				mydots$fn <- NULL
+				mydots$par <- NULL
+				mydots$hessian <- NULL	
+				mydots$method <- NULL	
+				opt1 <- do.call(optimize, args=mydots)
+				theta2 <- opt1$minimum
+				names(theta2) <- drift.par
+				oout1 <- list(par = theta2, value = as.numeric(opt1$objective)) 	
+			}
+			theta2 <- oout1$par
+			oout1$par <- c(theta1, theta2)
+			oout <- oout1
+			
+		} ### endif JointOptim
     } else {
 		list(par = numeric(0L), value = f(start))
 	}
 	
 	coef <- oout$par
-    vcov <- if (length(coef)) 
-	solve(oout$hessian)
+	 
+    vcov <- if (!is.null(oout$hessian)) 
+	 solve(oout$hessian)
     else matrix(numeric(0L), 0L, 0L)
     min <- oout$value
 	

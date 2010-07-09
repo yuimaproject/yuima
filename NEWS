@@ -1,3 +1,12 @@
+Changes in Version 0.0.94
+
+  o implemented two stage estimation in qmle
+
+  o optimized qmle for speed
+
+  o changed interface to qmle: lower and upper must
+    be a named list now
+
 Changes in Version 0.0.91
 
   o added toLatex method for yuima objects.
