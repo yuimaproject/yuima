@@ -79,11 +79,30 @@ lse <- function(yuima, start, lower, upper, method="BFGS", ...){
 		ret <- t(tmp) %*% tmp
 		return(sum(ret))
 	}
+
+	mydots <- as.list(call)[-(1:2)]
+	mydots$fixed <- NULL
+	mydots$fn <- as.name("f")
+	mydots$start <- NULL
+	mydots$par <- unlist(start)
+	mydots$hessian <- FALSE
+	mydots$upper <- unlist( upper[ nm[idx.diff] ])
+	mydots$lower <- unlist( lower[ nm[idx.diff] ])
+	
 	
 	if(length(start)>1){ # multidimensional optim				
-		oout <- optim(start, f, method = method, hessian = FALSE, lower=lower, upper=upper)
+		oout <- do.call(optim, args=mydots)
 	} else { ### one dimensional optim
-		opt1 <- optimize(f, ...) ## an interval should be provided
+		mydots$f <- mydots$fn
+		mydots$fn <- NULL
+		mydots$par <- NULL
+		mydots$hessian <- NULL	
+		mydots$method <- NULL	
+		mydots$interval <- as.numeric(c(lower[drift.par],upper[drift.par])) 
+		mydots$lower <- NULL	
+		mydots$upper <- NULL
+		opt1 <- do.call(optimize, args=mydots)
+#opt1 <- optimize(f, ...) ## an interval should be provided
 		oout <- list(par = opt1$minimum, value = opt1$objective)
 	} 
 	

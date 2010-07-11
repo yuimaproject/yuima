@@ -55,8 +55,6 @@ quasilogl(yuima, param, print=FALSE)
   \code{quasilogl} returns the valueof the  quasi loglikelihood for a given
   \code{yuima} object and list of parameters \code{coef}.
   
-  The argument \code{...} can accept \code{interval} for one-dimensional
-  optimization.
 }
 \value{
   \item{QL}{a real value.}
@@ -99,7 +97,7 @@ cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
 print(coef(opt2))
 
 ## initial guess for theta2 by least squares estimator
-tmp <- lse(yuima, start=list(theta2=0.7), interval=c(0,2))
+tmp <- lse(yuima, start=list(theta2=0.7), lower=list(theta2=0), upper=list(theta2=1))
 tmp
 
 system.time(

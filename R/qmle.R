@@ -225,6 +225,9 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			 mydots$par <- NULL
 			 mydots$hessian <- NULL	
 			 mydots$method <- NULL	
+			 mydots$interval <- as.numeric(c(lower[diff.par],upper[diff.par])) 
+			 mydots$lower <- NULL	
+			 mydots$upper <- NULL	
 			 opt1 <- do.call(optimize, args=mydots)
 			 theta1 <- opt1$minimum
 			 names(theta1) <- diff.par
@@ -251,7 +254,9 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$hessian <- TRUE
 			mydots$upper <- unlist( upper[ nm[idx.drift] ])
 			mydots$lower <- unlist( lower[ nm[idx.drift] ])
-			
+			mydots$lower <- NULL	
+			mydots$upper <- NULL	
+		
 			if(length(mydots$par)>1)
 			  oout1 <- do.call(optim, args=mydots)
 			else {
@@ -260,6 +265,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 				mydots$par <- NULL
 				mydots$hessian <- NULL	
 				mydots$method <- NULL	
+				mydots$interval <- as.numeric(c(lower[drift.par],upper[drift.par])) 
 				opt1 <- do.call(optimize, args=mydots)
 				theta2 <- opt1$minimum
 				names(theta2) <- drift.par
