@@ -6,13 +6,15 @@
 \alias{LSE}
 %\alias{ml.ql2}
 \alias{rql}
+\alias{lse}
 %\alias{ql,ANY-method} 
 %\alias{ml.ql,ANY-method} 
 %\alias{ml.ql2,ANY-method} 
 %\alias{rql,ANY-method} 
-\title{Calculate quasi-likelihood and ML estimator}
+\title{Calculate quasi-likelihood and ML estimator of least squares estimator}
 \description{Calculate the quasi-likelihood and estimate of the parameters of the
-  stochastic differential equation by the maximum likelihood method.}
+  stochastic differential equation by the maximum likelihood method or least squares estimator
+  of the drift parameter.}
 \usage{
 ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 ql(yuima,theta2,theta1,h,print=FALSE,param)
@@ -46,9 +48,15 @@ quasilogl(yuima, param, print=FALSE)
   
   \code{qmle} behaves more likely the standard \code{mle} function in \pkg{stats4} and
   argument \code{method} is one of the methods available in \code{\link{optim}}.
+
+  \code{lse} calculates least squares estimators of the drift parameters. This is
+  useful for initial guess of \code{qmle} estimation.
   
   \code{quasilogl} returns the valueof the  quasi loglikelihood for a given
   \code{yuima} object and list of parameters \code{coef}.
+  
+  The argument \code{...} can accept \code{interval} for one-dimensional
+  optimization.
 }
 \value{
   \item{QL}{a real value.}
@@ -79,39 +87,43 @@ QL
 system.time(
 opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1))
 )
-print("True param")
-print("theta2 = .3, theta1 = .1")
-print("ML estimator")
-opt@coef
+cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
+print(coef(opt))
 
 
 system.time(
-opt2 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=.05,theta2=.05), 
- upper=list(theta1=.5,theta2=.5), method="L-BFGS-B")
+opt2 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=0,theta2=0), 
+ upper=list(theta1=1,theta2=1), method="L-BFGS-B")
 )
-print("True param")
-print("theta2 = .3, theta1 = .1")
-print("ML estimator")
-opt2@coef
+cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
+print(coef(opt2))
+
+## initial guess for theta2 by least squares estimator
+tmp <- lse(yuima, start=list(theta2=0.7), interval=c(0,2))
+tmp
+
+system.time(
+opt3 <- qmle(yuima, start=list(theta1=0.8, theta2=tmp), lower=list(theta1=0,theta2=0), 
+ upper=list(theta1=1,theta2=1), method="L-BFGS-B")
+)
+cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
+print(coef(opt3))
+
 
 ## perform joint estimation? Non-optimal, just for didactic purposes
 system.time(
-opt3 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=.05,theta2=.05), 
- upper=list(theta1=.5,theta2=.5), method="L-BFGS-B", joint=TRUE)
+opt4 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=0,theta2=0), 
+ upper=list(theta1=1,theta2=1), method="L-BFGS-B", joint=TRUE)
 )
-print("True param")
-print("theta2 = .3, theta1 = .1")
-print("ML estimator")
-opt3@coef
+cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
+print(coef(opt4))
 
 
 system.time(
-opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), method="Newtoon")
+opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), method="Newton")
 )
-print("True param")
-print("theta2 = .3, theta1 = .1")
-print("ML estimator")
-opt@coef
+cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
+print(coef(opt))
 
 ##multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
@@ -158,12 +170,14 @@ opt2 <- qmle(yuima, start=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.
  upper=list(theta1.1=4,theta1.2=4,theta2.1=4,theta2.2=4), method="L-BFGS-B")
 )
 opt2@coef
+summary(opt2)
 
 ## unconstrained optimization
 system.time(
 opt3 <- qmle(yuima, start=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0.1))
 )
 opt3@coef
+summary(opt3)
 
 QL
 quasilogl(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0.1))
@@ -172,12 +186,6 @@ quasilogl(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0
 
 
 
-## another way of parameter specification
-#interval <- list(theta2.1.lim, theta2.2.lim, theta1.1.lim, theta1.2.lim)
-#system.time(
-#opt <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
-#)
-#opt@coef
 
 system.time(
 opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim, method="Newton")

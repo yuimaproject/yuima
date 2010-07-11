@@ -86,6 +86,7 @@ export(Fnorm)
 export(asymptotic_term)
 
 export(LSE)
+export(lse)
 
 export(qmle)
 export(quasilogl)

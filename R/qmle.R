@@ -415,7 +415,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 		yuima.warn(sprintf("NEG-QL: %f, %s", -QL, paste(names(param),param,sep="=",collapse=", ")))
 	}
 	if(is.infinite(QL)) return(1e10)
-	return(-QL)
+	return(as.numeric(-QL))
 
 }
 
