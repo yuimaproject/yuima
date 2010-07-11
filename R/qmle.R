@@ -115,7 +115,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 		yuima.warn("Drift and diffusion parameters must be different. Doing
 					  joint estimation, asymptotic theory may not hold true.")
 	}
-	
+
+	 
 	if(length(jump.par)+length(measure.par)>0)
 		yuima.stop("Cannot estimate the jump models, yet")
 	
@@ -137,7 +138,9 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 		yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
     start <- start[order(oo)]
     nm <- names(start)
-
+	
+	 
+	 
 	idx.diff <- match(diff.par, nm)
 	idx.drift <- match(drift.par, nm)
 	idx.fixed <- match(fixed.par, nm)
@@ -184,12 +187,19 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
     }
 		
-	oout <- NULL
+	 fj <- function(p) {
+		 mycoef <- as.list(p)
+		 names(mycoef) <- nm
+		 mycoef[fixed.par] <- fixed
+		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+	 }
 
-	if(length(start)){
+	 oout <- NULL
+
+	 if(length(start)){
 		if(JointOptim){ ### joint optimization
 			if(length(start)>1){ # multidimensional optim
-				oout <- optim(start, f, method = method, hessian = TRUE, ...)
+				oout <- optim(start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
 			} else { ### one dimensional optim
 				opt1 <- optimize(f, ...) ## an interval should be provided
                 oout <- list(par = opt1$minimum, value = opt1$objective)
@@ -264,6 +274,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			}
 			theta2 <- oout1$par
 			oout1$par <- c(theta1, theta2)
+			names(oout1$par) <- c(diff.par,drift.par)
 			oout <- oout1
 			
 		} ### endif JointOptim
@@ -274,19 +285,18 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 
 	 f1 <- function(p) {
 		 mycoef <- as.list(p)
-		 names(mycoef) <- nm
+		 names(mycoef) <- c(diff.par, drift.par)
 
 			 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
 	 }
 	 
-	 
-	coef <- oout$par
+	 coef <- oout$par
 	 control=list()
 	 par <- coef
-	 fixed <- old.fixed
-	 fixed.par <- names(fixed)
-	 idx.fixed <- match(fixed.par, nm)
-	 con <- list(trace = 0, fnscale = 1, parscale = rep.int(1, 
+	 names(par) <- c(diff.par, drift.par)
+     nm <- c(diff.par, drift.par)
+	 
+	 con <- list(trace = 0, fnscale = 1, parscale = rep.int(5, 
 															length(par)), ndeps = rep.int(0.001, length(par)), maxit = 100L, 
 				 abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
 				 beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
@@ -299,17 +309,30 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 		 con$REPORT <- 100
 	 }
 	 con[(namc <- names(control))] <- control
+	 if (length(noNms <- namc[!namc %in% nmsC])) 
+	 warning("unknown names in control: ", paste(noNms, collapse = ", "))
+	 if (con$trace < 0) 
+	 warning("read the documentation for 'trace' more carefully")
+	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) == 
+			  0) 
+	 stop("'trace != 0' needs 'REPORT >= 1'")
+	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol", 
+													"abstol"), namc)))) 
+	 warning("method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'")
+	 npar <- length(par)
+	 if (npar == 1 && method == "Nelder-Mead") 
+	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
 	 
 
 	 hess <- .Internal(optimhess(coef, f1, NULL, con))
 	 hess <- 0.5 * (hess + t(hess))
 	 if (!is.null(nm)) 
-		 dimnames(hess) <- list(nm, nm)
-		 oout$hessian <- hess
+	 dimnames(hess) <- list(nm, nm)
+	 oout$hessian <- hess
 
-    vcov <- if (length(coef)) 
-	 solve(oout$hessian)
-    else matrix(numeric(0L), 0L, 0L)
+	 vcov <- if (length(coef)) 
+	  solve(oout$hessian)
+     else matrix(numeric(0L), 0L, 0L)
 	 
 	
 	 
