@@ -447,7 +447,8 @@ setMethod("adaBayes", "yuima",
 			  }
 			
 			if(method=="nomcmc"){
-			  require(adapt)
+			  require(cubature)
+#				require(adapt)
               ## BEGIN numerical integration function
               nintegral <- function(term,param=init,prior=prior,lower=lower,upper=upper,print=FALSE){
 				lip <- liprior(prior,term); mdom <- lip$mdom; mdensity <- lip$mdensity
@@ -475,7 +476,9 @@ setMethod("adaBayes", "yuima",
 				  if(length(slot(yuima@model@parameter,term))==1){
 					  denomvalue <- integrate(denominator,mdom[1,1],mdom[2,1])$value
 				  }else{
-					  denomvalue <- adapt(length(unlist(param[slot(yuima@model@parameter,term)])),lower=mdom[1,],upper=mdom[2,],functn=denominator)$value
+					  
+#					  denomvalue <- adapt(length(unlist(param[slot(yuima@model@parameter,term)])),lower=mdom[1,],upper=mdom[2,],functn=denominator)$value
+					  denomvalue <- adaptIntegrate(denominator, lower=mdom[1,],upper=mdom[2,])$integral
 				  }
 				## END denominator calculation
 				  
@@ -500,7 +503,8 @@ setMethod("adaBayes", "yuima",
 					if(length(slot(yuima@model@parameter,term))==1){
 						numevalue <- integrate(numerator,mdom[1,1],mdom[2,1])$value
 					}else{
-						numevalue <- adapt(length(param[slot(yuima@model@parameter,term)]),lower=mdom[1,],upper=mdom[2,],functn=numerator)$value
+#						numevalue <- adapt(length(param[slot(yuima@model@parameter,term)]),lower=mdom[1,],upper=mdom[2,],functn=numerator)$value
+						numevalue <- adaptIntegrate(numerator, lower=mdom[1,],upper=mdom[2,])$integral
 					}
 					unlistparam[i] <- numevalue/denomvalue
 				}

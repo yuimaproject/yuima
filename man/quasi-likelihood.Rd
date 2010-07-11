@@ -17,7 +17,7 @@
 ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 ql(yuima,theta2,theta1,h,print=FALSE,param)
 rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
-qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, ...)
+qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, ...)
 quasilogl(yuima, param, print=FALSE)
 }
 \arguments{
@@ -36,6 +36,7 @@ quasilogl(yuima, param, print=FALSE)
   \item{upper}{a named list for specifying upper bounds of parameters}
   \item{start}{initial values to be passed to the optimizer.}
   \item{fixed}{for conditional (quasi)maximum likelihood estimation.}
+  \item{joint}{perform joint estimation or two stage estimation? by default \code{joint=FALSE}.}
   \item{...}{passed to \code{\link{optim}} method. See Examples.}
 }
 \details{
@@ -93,15 +94,16 @@ print("theta2 = .3, theta1 = .1")
 print("ML estimator")
 opt2@coef
 
-## another way of parameter specification
-##interval <- list(theta2.lim=c(0,1), theta1.lim=c(0,1))
-##system.time(
-##opt <- ml.ql(yuima, h=1/((n)^(2/3)), param=param, interval=interval)
-##)
-##print("True param")
-##print("theta2 = .3, theta1 = .1")
-##print("ML estimator")
-#opt@coef
+## perform joint estimation? Non-optimal, just for didactic purposes
+system.time(
+opt3 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=.05,theta2=.05), 
+ upper=list(theta1=.5,theta2=.5), method="L-BFGS-B", joint=TRUE)
+)
+print("True param")
+print("theta2 = .3, theta1 = .1")
+print("ML estimator")
+opt3@coef
+
 
 system.time(
 opt <- ml.ql(yuima, 0.8, 0.7, h=1/((n)^(2/3)), c(0, 1), c(0, 1), method="Newtoon")

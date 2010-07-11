@@ -13,24 +13,19 @@ drift.term <- function(yuima, theta, env){
 	r.size <- yuima@model@noise.number
 	d.size <- yuima@model@equation.number
 	modelstate <- yuima@model@state.variable
-#	modelpara <- yuima@model@parameter@drift
 	DRIFT <- yuima@model@drift
 	n <- length(yuima)[1]
 	drift <- matrix(0,n,d.size)
-#	X <- as.matrix(onezoo(yuima))
 
 	for(i in 1:length(theta)){
 		assign(names(theta)[i],theta[[i]])
 	}
 	for(t in 1:n){
-#		Xt <- X[t,]
-		for(d in 1:d.size){
-#			assign(modelstate[d],Xt[d])
+		for(d in 1:d.size)
 			assign(modelstate[d], env$X[t,d])
-		}
-		for(d in 1:d.size){
+# do not collapse the two for loops					
+		for(d in 1:d.size)
 			drift[t,d] <- eval(DRIFT[d])
-		}
 	}
 	return(drift)  
 }
@@ -44,20 +39,18 @@ diffusion.term <- function(yuima, theta, env){
 	DIFFUSION <- yuima@model@diffusion
 	n <- length(yuima)[1]
 	diff <- array(0, dim=c(d.size, r.size, n))
-#	X <- as.matrix(onezoo(yuima))
 	for(i in 1:length(theta)){
 		assign(names(theta)[i],theta[[i]])
 	}
 
 	for(r in 1:r.size){
 		for(t in 1:n){
-#			Xt <- X[t, ]
-			for(d in 1:d.size){
+			for(d in 1:d.size)
 				assign(modelstate[d], env$X[t,d])
-			}
-			for(d in 1:d.size){
+# do not collapse the two for loops			
+			for(d in 1:d.size)
 				diff[d, r, t] <- eval(DIFFUSION[[d]][r])
-			}
+			
 		}
 	}
 	return(diff)
@@ -65,7 +58,7 @@ diffusion.term <- function(yuima, theta, env){
 
 
 
-
+## take from original Hino-san code
 ##::calculate diffusion%*%t(diffusion) matrix
 calc.B <- function(diff){
   d.size <- dim(diff)[1]
@@ -89,7 +82,7 @@ calc.B <- function(diff){
 
 
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
- lower, upper, ...){
+ lower, upper, joint=FALSE, ...){
 
 	call <- match.call()
 	
@@ -109,7 +102,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	measure.par <- yuima@model@parameter@measure
 	common.par <- yuima@model@parameter@common
 	
-	JointOptim <- FALSE
+	JointOptim <- joint
 	if(length(common.par)>0){
 		JointOptim <- TRUE
 		yuima.warn("Drift and diffusion parameters must be different. Doing

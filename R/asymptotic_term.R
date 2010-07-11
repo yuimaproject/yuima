@@ -583,13 +583,15 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
 
     ## integrate
     if( k.size ==1){ # use 'integrate' if k=1
-      tmp <- integrate(gz_pi02,-Inf,Inf)
+      tmp <- integrate(gz_pi02,-Inf,Inf)$value
     }else if( 2 <= k.size || k.size <= 20 ){ # use library 'adapt' to solve multi-dimentional integration
 	  max <- 10 * lambda.max
       min <- -10 * lambda.max
       L <- (max - min)
-	  if(require(adapt)){
-       tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi0)
+#	if(require(adapt)){
+	  if(require(cubature)){
+#tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi0)$value
+	   tmp <- adaptIntegrate(gz_pi0, lower=rep(min,k.size),upper=rep(max,k.size))$integral
 		} else {
 	   tmp <- NA		
 	  }
@@ -1260,12 +1262,14 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     }
     ## integrate
     if( k.size ==1){ # use 'integrate()'
-      tmp <- integrate(gz_pi1,-Inf,Inf)
+      tmp <- integrate(gz_pi1,-Inf,Inf)$value
     }else if( 2 <= k.size || k.size <= 20 ){ # use 'adapt()' to solve multi-dim integration8
       max <- 10*lambda.max
       min <- -10*lambda.max
-	  if(require(adapt)){
-       tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi1)
+#		if(require(adapt)){
+	  if(require(cubature)){
+#		  tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi1)$value
+       tmp <- adaptIntegrate(gz_pi1,lower=rep(min,k.size),upper=rep(max,k.size))$integral
 	  } else {
 	    tmp <- NA	  
 	  }
@@ -1479,6 +1483,6 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   yuima.warn("Calculating d1 term ...")
   d1 <- get.d1.term()
   yuima.warn("Done\n")
-  terms <- list(d0=d0$value, d1=d1$value)
+  terms <- list(d0=d0, d1=d1)
   return(terms)
  })
