@@ -9,6 +9,7 @@
 ### calc.diffusion to make them independent of the specification of the 
 ### parameters.  S.M.I. 22/06/2010
 
+
 drift.term <- function(yuima, theta, env){
 	r.size <- yuima@model@noise.number
 	d.size <- yuima@model@equation.number
@@ -16,20 +17,18 @@ drift.term <- function(yuima, theta, env){
 	DRIFT <- yuima@model@drift
 	n <- length(yuima)[1]
 	drift <- matrix(0,n,d.size)
-
+	
+	
 	for(i in 1:length(theta)){
 		assign(names(theta)[i],theta[[i]])
 	}
-	for(t in 1:n){
-		for(d in 1:d.size)
-			assign(modelstate[d], env$X[t,d])
-# do not collapse the two for loops					
-		for(d in 1:d.size)
-			drift[t,d] <- eval(DRIFT[d])
+	
+	for(d in 1:d.size){
+		assign(modelstate[d], env$X[,d])
+		drift[,d] <- eval(DRIFT[d])
 	}
 	return(drift)  
 }
-
 
 
 diffusion.term <- function(yuima, theta, env){
@@ -44,17 +43,16 @@ diffusion.term <- function(yuima, theta, env){
 	}
 
 	for(r in 1:r.size){
-		for(t in 1:n){
-			for(d in 1:d.size)
-				assign(modelstate[d], env$X[t,d])
-# do not collapse the two for loops			
-			for(d in 1:d.size)
-				diff[d, r, t] <- eval(DIFFUSION[[d]][r])
-			
+		for(d in 1:d.size){
+			assign(modelstate[d], env$X[,d])
+			diff[d, r, ] <- eval(DIFFUSION[[d]][r])
 		}
 	}
 	return(diff)
 }
+
+
+
 
 
 
