@@ -1,3 +1,9 @@
+Changes in Version 0.0.98
+
+  o added lse() for least squares estimation of the drift parameters
+  o fixed in qmle()/lse(): upper/lower arguments transformed into 'interval'
+	automatically for one-dimesional optimization in both drift and diffusion
+  
 Changes in Version 0.0.97
 
   o no longer using adapt, we now use cubature which is GPL

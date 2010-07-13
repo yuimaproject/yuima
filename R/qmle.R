@@ -58,17 +58,6 @@ diffusion.term <- function(yuima, theta, env){
 
 
 
-## take from original Hino-san code
-##::calculate diffusion%*%t(diffusion) matrix
-calc.B <- function(diff){
-  d.size <- dim(diff)[1]
-  n <- dim(diff)[3]
-  B <- array(0, dim=c(d.size, d.size, n))
-  for(t in 1:n){
-    B[, , t] <- diff[, , t]%*%t(diff[, , t])
-  }
-  return(B)
-}
 
 
 
@@ -364,8 +353,12 @@ quasilogl <- function(yuima, param, print=FALSE){
 }
 
 
-minusquasilogl <- function(yuima, param, print=FALSE, env){
 
+
+
+
+minusquasilogl <- function(yuima, param, print=FALSE, env){
+	
 	diff.par <- yuima@model@parameter@diffusion
 	drift.par <- yuima@model@parameter@drift
 	fullcoef <- c(diff.par, drift.par)
@@ -374,13 +367,13 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	nm <- names(param)
     oo <- match(nm, fullcoef)
     if(any(is.na(oo))) 
-		yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
+	yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
     param <- param[order(oo)]
     nm <- names(param)
 	
 	idx.diff <- match(diff.par, nm)
 	idx.drift <- match(drift.par, nm)
-
+	
 	h <- env$h
 	
     theta1 <- unlist(param[idx.diff])
@@ -391,26 +384,31 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	
 	d.size <- yuima@model@equation.number
 	n <- length(yuima)[1]
-
+	
 	
 	drift <- drift.term(yuima, param, env)
 	diff <- diffusion.term(yuima, param, env)
-
-	B <- calc.B(diff)
 	
 	QL <- 0
-
+	
 	pn <- 0
+
+	
+	vec <- env$deltaX-h*drift[-n,]
+	K <- -0.5*d.size * log( (2*pi*h) )
+
+	
 	for(t in 1:(n-1)){
-		yB <- as.matrix(B[, , t])
-		ydet <- det(yB)
-		if(abs(ydet) <1e-7){ # should we return 1e10?
+		yB <- diff[, , t] %*% t(diff[, , t])
+
+		logdet <- log(det(yB))
+		if(is.infinite(logdet) ){ # should we return 1e10?
 			pn <- log(1)
 			yuima.warn("singular diffusion matrix")
 			return(1e10)
 		}else{
-			pn <- log( 1/((2*pi*h)^(d.size/2)*ydet^(1/2)) *
-						 exp((-1/(2*h))*t(env$deltaX[t, ]-h*drift[t, ])%*%solve(yB)%*%(env$deltaX[t,]-h*drift[t, ])) )
+			pn <- K - 0.5*logdet + 
+					  ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]) 
 			QL <- QL+pn
 		}
 	}
@@ -422,8 +420,6 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	}
 	if(is.infinite(QL)) return(1e10)
 	return(as.numeric(-QL))
-
+	
 }
-
-
 
