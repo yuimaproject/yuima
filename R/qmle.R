@@ -395,12 +395,22 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 
 	
 	vec <- env$deltaX-h*drift[-n,]
+
 	K <- -0.5*d.size * log( (2*pi*h) )
 
-	
-	for(t in 1:(n-1)){
-		yB <- diff[, , t] %*% t(diff[, , t])
+	dimB <- dim(diff[, , 1])
 
+	if(is.null(dimB)){  # one dimensional X
+	  for(t in 1:(n-1)){
+		yB <- diff[, , t]^2
+		logdet <- log(yB)
+		pn <- K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB) 
+		QL <- QL+pn
+			
+		}
+	} else {  # multidimensional X
+	 for(t in 1:(n-1)){
+		yB <- diff[, , t] %*% t(diff[, , t])
 		logdet <- log(det(yB))
 		if(is.infinite(logdet) ){ # should we return 1e10?
 			pn <- log(1)
@@ -411,7 +421,11 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 					  ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]) 
 			QL <- QL+pn
 		}
+	 }
 	}
+	
+	
+	
 	if(QL==-Inf){
 		yuima.warn("quasi likelihood is too small to calculate.")
 	}
