@@ -421,11 +421,12 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 		}
 	 }
 	}
+
 	
 	
-	
-	if(QL==-Inf){
+	if(!is.finite(QL)){
 		yuima.warn("quasi likelihood is too small to calculate.")
+		return(1e10)
 	}
 	if(print==TRUE){
 		yuima.warn(sprintf("NEG-QL: %f, %s", -QL, paste(names(param),param,sep="=",collapse=", ")))

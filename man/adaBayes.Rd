@@ -60,7 +60,7 @@ upper=c(1,1)
 bayes1 <- adaBayes(yuima, start=param.init, lower=lower,upper=upper,prior=prior, method="nomcmc")
 bayes1
 
-mle1 <- qmle(yuima, start=param.init, lower=lower, upper=upper, method="L-BFGS-B")
+mle1 <- qmle(yuima, start=param.init, lower=list(theta1=0,theta2=0), upper=list(theta1=1,theta2=1), method="L-BFGS-B")
 mle1@coef
 }}
 \keyword{ts}
