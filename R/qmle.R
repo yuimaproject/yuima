@@ -45,10 +45,11 @@ diffusion.term <- function(yuima, theta, env){
 		assign(names(theta)[i],theta[[i]])
 	}
 
+	for(d in 1:d.size){
+		assign(modelstate[d], env$X[,d])
+	}
+
 	for(r in 1:r.size){
-		for(d in 1:d.size){
-			assign(modelstate[d], env$X[,d])
-		}
 		for(d in 1:d.size){
 			diff[d, r, ] <- eval(DIFFUSION[[d]][r])
 		}
