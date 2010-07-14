@@ -165,7 +165,6 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 
 	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
 
-	
 	f <- function(p) {
         mycoef <- as.list(p)
 		names(mycoef) <- nm[-idx.fixed]
@@ -181,11 +180,19 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 }
 
 	 oout <- NULL
-
+     HESS <- matrix(0, length(nm), length(nm))
+	 colnames(HESS) <- nm
+	 rownames(HESS) <- nm
+	 HaveDriftHess <- FALSE
+	 HaveDiffHess <- FALSE
+	 
 	 if(length(start)){
 		if(JointOptim){ ### joint optimization
 			if(length(start)>1){ # multidimensional optim
 				oout <- optim(start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
+				HESS <- oout$hessian
+				HaveDriftHess <- TRUE
+				HaveDiffHess <- TRUE
 			} else { ### one dimensional optim
 				opt1 <- optimize(f, ...) ## an interval should be provided
                 oout <- list(par = opt1$minimum, value = opt1$objective)
@@ -210,9 +217,9 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$hessian <- FALSE
 			mydots$upper <- unlist( upper[ nm[idx.diff] ])
 			mydots$lower <- unlist( lower[ nm[idx.diff] ])
-			if(length(mydots$par)>1)
+			if(length(mydots$par)>1){
 			 oout <- do.call(optim, args=mydots)
-			else {
+			} else {
 			 mydots$f <- mydots$fn
 			 mydots$fn <- NULL
 			 mydots$par <- NULL
@@ -224,7 +231,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			 opt1 <- do.call(optimize, args=mydots)
 			 theta1 <- opt1$minimum
 			 names(theta1) <- diff.par
-			 oout <- list(par = theta1, value = opt1$objective) 	
+			 oout <- list(par = theta1, value = opt1$objective) 
 			}
 			theta1 <- oout$par
 			
@@ -244,15 +251,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$fn <- as.name("f")
 			mydots$start <- NULL
 			mydots$par <- unlist(new.start)
-			mydots$hessian <- TRUE
+			mydots$hessian <- FALSE
 			mydots$upper <- unlist( upper[ nm[idx.drift] ])
 			mydots$lower <- unlist( lower[ nm[idx.drift] ])
-			mydots$lower <- NULL	
-			mydots$upper <- NULL	
-		
-			if(length(mydots$par)>1)
+
+			if(length(mydots$par)>1){
 			  oout1 <- do.call(optim, args=mydots)
-			else {
+			} else {
 				mydots$f <- mydots$fn
 				mydots$fn <- NULL
 				mydots$par <- NULL
@@ -268,18 +273,25 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			oout1$par <- c(theta1, theta2)
 			names(oout1$par) <- c(diff.par,drift.par)
 			oout <- oout1
-			
+
 		} ### endif JointOptim
     } else {
 		list(par = numeric(0L), value = f(start))
 	}
 	
-	 
-	 f1 <- function(p) {
+	 	
+	 fDrift <- function(p) {
 		 mycoef <- as.list(p)
-		 names(mycoef) <- c(diff.par, drift.par)
+		 names(mycoef) <- drift.par
+		 mycoef[diff.par] <- coef[diff.par]
+		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+	 }
 
-			 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+	 fDiff <- function(p) {
+		 mycoef <- as.list(p)
+		 names(mycoef) <- diff.par
+		 mycoef[drift.par] <- coef[drift.par]
+		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
 	 }
 	 
 	 coef <- oout$par
@@ -288,39 +300,52 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 names(par) <- c(diff.par, drift.par)
      nm <- c(diff.par, drift.par)
 	 
-	 con <- list(trace = 0, fnscale = 1, parscale = rep.int(5, 
-															length(par)), ndeps = rep.int(0.001, length(par)), maxit = 100L, 
+	 conDrift <- list(trace = 5, fnscale = 1, 
+				 parscale = rep.int(5, length(drift.par)), 
+				 ndeps = rep.int(0.001, length(drift.par)), maxit = 100L, 
 				 abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
 				 beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
 				 factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
-	 nmsC <- names(con)
-	 if (method == "Nelder-Mead") 
-	 con$maxit <- 500
-	 if (method == "SANN") {
-		 con$maxit <- 10000
-		 con$REPORT <- 100
-	 }
-	 con[(namc <- names(control))] <- control
-	 if (length(noNms <- namc[!namc %in% nmsC])) 
-	 warning("unknown names in control: ", paste(noNms, collapse = ", "))
-	 if (con$trace < 0) 
-	 warning("read the documentation for 'trace' more carefully")
-	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) == 
-			  0) 
-	 stop("'trace != 0' needs 'REPORT >= 1'")
-	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol", 
-													"abstol"), namc)))) 
-	 warning("method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'")
-	 npar <- length(par)
-	 if (npar == 1 && method == "Nelder-Mead") 
-	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
+	 conDiff <- list(trace = 5, fnscale = 1, 
+				  parscale = rep.int(5, length(diff.par)), 
+				  ndeps = rep.int(0.001, length(diff.par)), maxit = 100L, 
+				  abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
+				  beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
+				  factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
 	 
+#	 nmsC <- names(con)
+#	 if (method == "Nelder-Mead") 
+#	 con$maxit <- 500
+#	 if (method == "SANN") {
+#		 con$maxit <- 10000
+#		 con$REPORT <- 100
+#	 }
+#	 con[(namc <- names(control))] <- control
+#	 if (length(noNms <- namc[!namc %in% nmsC])) 
+#	 warning("unknown names in control: ", paste(noNms, collapse = ", "))
+#	 if (con$trace < 0) 
+#	 warning("read the documentation for 'trace' more carefully")
+#	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) == 
+#			  0) 
+#	 stop("'trace != 0' needs 'REPORT >= 1'")
+#	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol", 
+#													"abstol"), namc)))) 
+#	 warning("method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'")
+#	 npar <- length(par)
+#	 if (npar == 1 && method == "Nelder-Mead") 
+#	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
+#	 
+	 if(!HaveDriftHess){
+	  hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
+	  HESS[drift.par,drift.par] <- hess2	 
+	 }
 
-	 hess <- .Internal(optimhess(coef, f1, NULL, con))
-	 hess <- 0.5 * (hess + t(hess))
-	 if (!is.null(nm)) 
-	 dimnames(hess) <- list(nm, nm)
-	 oout$hessian <- hess
+	 if(!HaveDiffHess){
+		 hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
+		 HESS[diff.par,diff.par] <- hess1	 
+	 }
+	 	 
+	 oout$hessian <- HESS
 
 	 vcov <- if (length(coef)) 
 	  solve(oout$hessian)
