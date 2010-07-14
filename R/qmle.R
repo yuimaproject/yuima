@@ -25,8 +25,11 @@ drift.term <- function(yuima, theta, env){
 	
 	for(d in 1:d.size){
 		assign(modelstate[d], env$X[,d])
+	}
+	for(d in 1:d.size){
 		drift[,d] <- eval(DRIFT[d])
 	}
+
 	return(drift)  
 }
 
@@ -45,6 +48,8 @@ diffusion.term <- function(yuima, theta, env){
 	for(r in 1:r.size){
 		for(d in 1:d.size){
 			assign(modelstate[d], env$X[,d])
+		}
+		for(d in 1:d.size){
 			diff[d, r, ] <- eval(DIFFUSION[[d]][r])
 		}
 	}
