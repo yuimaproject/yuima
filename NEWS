@@ -1,3 +1,9 @@
+Changes in Version 0.1.05
+
+  o added lasso() for adaptive lasso estimation
+  
+  o fixed hessina calculation for qmle()
+  
 Changes in Version 0.0.98
 
   o added lse() for least squares estimation of the drift parameters

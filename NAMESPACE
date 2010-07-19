@@ -90,6 +90,7 @@ export(lse)
 
 export(qmle)
 export(quasilogl)
+export(lasso)
 
 
 S3method(toLatex, yuima)
