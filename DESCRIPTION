@@ -1,7 +1,7 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package (unstable version)
-Version: 0.1.05
+Version: 0.1.06
 Date: 2010-07-19
 Depends: methods, zoo, stats4, utils
 Suggests: cubature, mvtnorm

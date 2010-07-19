@@ -211,7 +211,7 @@ setMethod("simulate", "yuima",
   yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
 
  for(i in 1:length(yuima@data@zoo.data)) 
-		time(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid[[1]]  ## to be fixed
+		index(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid[[1]]  ## to be fixed
   yuima@model@xinit <- xinit
   if(missing(subsampling))
 		return(yuima)
