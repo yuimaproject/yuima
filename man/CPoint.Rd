@@ -13,6 +13,9 @@ qmleR(yuima, t,  ...)
   \item{yuima}{a yuima object.}
   \item{param1}{parameter values before the change point t}
   \item{param2}{parameter values after the change point t}
+  \item{plot}{plot test statistics? Default is \code{FALSE}.}
+  \item{print}{print some debug output. Default is \code{FALSE}.}
+  \item{t}{time value. See Details.}
   \item{...}{passed to \code{\link{qmle}} method. See Examples.}
 }
 \details{
@@ -102,7 +105,7 @@ tmp21
 # second stage estimator of the change point
 CPoint(yuima,param1=coef(tmp11),param2=coef(tmp21))
 
-## One dimensional example
+## One dimensional example: non linear case
 diff.matrix <- matrix("(1+x1^2)^theta1", 1, 1)
 drift.c <- c("x1")
 
@@ -117,7 +120,7 @@ theta00 <- 1/5
 gamma <- 1/4
 
 
-theta01 <- theta0+n^(-gamma)
+theta01 <- theta00+n^(-gamma)
 
 
 t1 <- list(theta1= theta00)

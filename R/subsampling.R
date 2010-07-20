@@ -14,10 +14,11 @@ function(x, sampling, ...)
 setMethod("subsampling","yuima", 
 function(x, sampling, ...){
 obj <- NULL
-	if(missing(sampling))
+	if(missing(sampling)){
 		obj <- subsampling(x@data, setSampling(...))
-	 else
+	} else {
 		obj <- subsampling(x@data, sampling=sampling)
+	}
  obj@model <- x@model
  return(obj)
 }

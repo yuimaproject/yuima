@@ -9,7 +9,7 @@ qmleL <- function(yuima, t, ...){
 	 t <- mean(c(minT,maxT))
 
 	if(t<minT || t>maxT)
-	 syuima.stop("time 't' out of bounds")
+	  yuima.stop("time 't' out of bounds")
 	grid <- times[which(times<=t)]
 	qmle(subsampling(yuima, grid=grid), ...)
 }
@@ -25,7 +25,7 @@ qmleR <- function(yuima, t, ...){
 	t <- mean(c(minT,maxT))
 	
 	if(t<minT || t>maxT)
-	syuima.stop("time 't' out of bounds")
+	 yuima.stop("time 't' out of bounds")
 	grid <- times[which(times>=t)]
 	qmle(subsampling(yuima, grid=grid), ...)
 }

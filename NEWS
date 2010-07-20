@@ -1,4 +1,4 @@
-Changes in Version 0.1.07
+Changes in Version 0.1.08
 
   o added CPoint() for change point estimation
   o fixed qmle() to handle models with parameters only 
