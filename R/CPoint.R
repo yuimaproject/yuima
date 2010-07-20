@@ -170,17 +170,13 @@ qmleR <- function(yuima, start, method="BFGS", t, print=FALSE, lower, upper, ...
 	if(k>n-2)
 	k <- n-2
 
-	
+
 	env <- new.env()
-#	assign("X",  as.matrix(onezoo(yuima)), env=env)
-#	assign("deltaX",  matrix(0, n-1, d.size), env=env)
-#	for(t in 1:(n-1))
-#	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 
 	assign("X",  as.matrix(onezoo(yuima))[-(1:k),], env=env)
 	assign("deltaX",  matrix(0, dim(env$X)[1]-1, d.size), env=env)
 	for(t in 1:(dim(env$X)[1]-1))
-	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
+	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 
 	
 	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
