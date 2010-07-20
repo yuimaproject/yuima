@@ -87,9 +87,9 @@ low <- list(theta1.1=0, theta1.2=0)
 
 # first state estimate of parameters using small 
 # portion of data in the tails
-tmp1 <- qmleL(yuima,start=list(theta1.1=0.3,theta1.2=0.5),t=1.5,low=low,method="L-BFGS-B")
+tmp1 <- qmleL(yuima,start=list(theta1.1=0.3,theta1.2=0.5),t=1.5,lower=low, method="L-BFGS-B")
 tmp1
-tmp2 <- qmleR(yuima,start=list(theta1.1=0.3,theta1.2=0.5), t=8.5,low=low,method="L-BFGS-B")
+tmp2 <- qmleR(yuima,start=list(theta1.1=0.3,theta1.2=0.5), t=8.5,lower=low, method="L-BFGS-B")
 tmp2
 
 
@@ -100,10 +100,10 @@ t.est2$tau
 
 # second stage estimation of parameters given first stage
 # change point estimator
-tmp11 <- qmleL(yuima,start=as.list(tmp1$par), t=t.est2$tau-0.1,method="L-BFGS-B")
+tmp11 <- qmleL(yuima,start=as.list(tmp1$par), t=t.est2$tau-0.1,lower=low, method="L-BFGS-B")
 tmp11
 
-tmp21 <- qmleR(yuima,start=as.list(tmp2$par), t=t.est2$tau+0.1,method="L-BFGS-B")
+tmp21 <- qmleR(yuima,start=as.list(tmp2$par), t=t.est2$tau+0.1,lower=low, method="L-BFGS-B")
 tmp21
 
 # second stage estimator of the change point
