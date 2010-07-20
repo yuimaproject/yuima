@@ -1,6 +1,9 @@
 Changes in Version 0.1.07
 
   o added CPoint() for change point estimation
+  o fixed qmle() to handle models with parameters only 
+	in the drift or in the diffusion coefficient
+
 
 Changes in Version 0.1.05
 
