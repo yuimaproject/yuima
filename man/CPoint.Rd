@@ -6,21 +6,14 @@
 \description{Adaptive LASSO estimation for stochastic differential equations.}
 \usage{
 CPoint(yuima, param1, param2, print=FALSE, plot=FALSE)
-qmleL(yuima, start, method="BFGS", t, print=FALSE, lower, upper, ...)
-qmleR(yuima, start, method="BFGS", t, print=FALSE, lower, upper, ...)
+qmleL(yuima, t,  ...)
+qmleR(yuima, t,  ...)
 }
 \arguments{
   \item{yuima}{a yuima object.}
   \item{param1}{parameter values before the change point t}
   \item{param2}{parameter values after the change point t}
-  \item{print}{produces some output.}
-  \item{t}{right end point for \code{qmleL}, left end point for \code{qmleR}. See Details.}
-  \item{plot}{plot change point test statistics? Default is \code{FALSE}.}
-  \item{...}{passed to \code{\link{optim}} method. See Examples.}
-  \item{lower}{a named list for specifying lower bounds of parameters}
-  \item{upper}{a named list for specifying upper bounds of parameters}
-  \item{start}{initial values to be passed to the optimizer.}
-  \item{method}{see Details.}
+  \item{...}{passed to \code{\link{qmle}} method. See Examples.}
 }
 \details{
   
@@ -94,20 +87,93 @@ tmp2
 
 
 # first stage changepoint estimator
-t.est2 <- CPoint(yuima,param1=tmp1$par,param2=tmp2$par)
+t.est2 <- CPoint(yuima,param1=coef(tmp1),param2=coef(tmp2))
 t.est2$tau
 
 
 # second stage estimation of parameters given first stage
 # change point estimator
-tmp11 <- qmleL(yuima,start=as.list(tmp1$par), t=t.est2$tau-0.1,lower=low, method="L-BFGS-B")
+tmp11 <- qmleL(yuima,start=as.list(coef(tmp1)), t=t.est2$tau-0.1,lower=low, method="L-BFGS-B")
 tmp11
 
-tmp21 <- qmleR(yuima,start=as.list(tmp2$par), t=t.est2$tau+0.1,lower=low, method="L-BFGS-B")
+tmp21 <- qmleR(yuima,start=as.list(coef(tmp2)), t=t.est2$tau+0.1,lower=low, method="L-BFGS-B")
 tmp21
 
 # second stage estimator of the change point
-CPoint(yuima,param1=tmp11$par,param2=tmp21$par)
+CPoint(yuima,param1=coef(tmp11),param2=coef(tmp21))
+
+## One dimensional example
+diff.matrix <- matrix("(1+x1^2)^theta1", 1, 1)
+drift.c <- c("x1")
+
+ymodel <- setModel(drift=drift.c, diffusion=diff.matrix, time.variable="t",
+state.variable=c("x1"), solve.variable=c("x1"))
+n <- 500
+
+set.seed(123)
+
+y0 <- 5 # initial value
+theta00 <- 1/5
+gamma <- 1/4
+
+
+theta01 <- theta0+n^(-gamma)
+
+
+t1 <- list(theta1= theta00)
+t2 <- list(theta1= theta01)
+
+tau <- 0.4
+ysamp1 <- setSampling(n=tau*n, Initial=0, delta=1/n)
+yuima1 <- setYuima(model=ymodel, sampling=ysamp1)
+yuima1 <- simulate(yuima1, xinit=c(5), true.parameter=t1)
+x1 <- yuima1@data@zoo.data[[1]]
+x1 <- as.numeric(x1[length(x1)])
+
+ysamp2 <- setSampling(Initial=tau, n=n*(1-tau), delta=1/n)
+yuima2 <- setYuima(model=ymodel, sampling=ysamp2)
+
+yuima2 <- simulate(yuima2, xinit=c(x1), true.parameter=t2)
+
+
+yuima <- yuima1
+yuima@data@zoo.data[[1]] <- c(yuima1@data@zoo.data[[1]], yuima2@data@zoo.data[[1]][-1])
+
+
+plot(yuima)
+
+
+t.est <- CPoint(yuima,param1=t1,param2=t2)
+t.est$tau
+
+low <- list(theta1=0)
+upp <- list(theta1=1)
+
+# first state estimate of parameters using small 
+# portion of data in the tails
+tmp1 <- qmleL(yuima,start=list(theta1=0.5),t=.15,lower=low, upper=upp,method="L-BFGS-B")
+tmp1
+tmp2 <- qmleR(yuima,start=list(theta1=0.5), t=.85,lower=low, upper=upp,method="L-BFGS-B")
+tmp2
+
+
+
+# first stage changepoint estimator
+t.est2 <- CPoint(yuima,param1=coef(tmp1),param2=coef(tmp2))
+t.est2$tau
+
+
+# second stage estimation of parameters given first stage
+# change point estimator
+tmp11 <- qmleL(yuima,start=as.list(coef(tmp1)), t=t.est2$tau-0.1, lower=low, upper=upp,method="L-BFGS-B")
+tmp11
+
+tmp21 <- qmleR(yuima,start=as.list(coef(tmp2)), t=t.est2$tau+0.1,lower=low, upper=upp,method="L-BFGS-B")
+tmp21
+
+
+# second stage estimator of the change point
+CPoint(yuima,param1=coef(tmp11),param2=coef(tmp21),plot=TRUE)
 }
  
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -35,11 +35,12 @@ function(x, sampling=sampling){
 	tmpsamp <- sampling
 #}
 
- 
+
  Data <- get.zoo.data(x)
  n.data <- length(Data)
  tmpgrid <- vector(n.data, mode="list")
-
+ tmpsamp@grid <- rep(tmpsamp@grid, n.data)[1:n.data]
+	
 # prepares a grid of times
 
 	 if(is.logical(tmpsamp@random)){
@@ -48,7 +49,7 @@ function(x, sampling=sampling){
 	  if(length(tmpsamp@delta) < n.data)
 		 tmpsamp@delta <- rep( tmpsamp@delta, n.data)[1:n.data]
       for(i in 1:n.data){
-		  tmpgrid[[i]] <- seq(start(Data[[i]]), end(Data[[i]]), by=tmpsamp@delta[i])
+		  tmpgrid[[i]] <- tmpsamp@grid[[i]] #seq(start(Data[[i]]), end(Data[[i]]), by=tmpsamp@delta[i])
 		  tmpsamp@regular[i] <- TRUE
 		  tmpsamp@random[i] <- FALSE
 	  }

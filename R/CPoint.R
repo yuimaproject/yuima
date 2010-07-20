@@ -1,208 +1,38 @@
-qmleL <- function(yuima, start, method="BFGS", t, print=FALSE, lower, upper, ...){
+qmleL <- function(yuima, t, ...){
 	
-	call <- match.call()
-	
-	if( missing(yuima))
-	yuima.stop("yuima object is missing.")
-	
-## param handling
-	
-## FIXME: maybe we should choose initial values at random within lower/upper
-##        at present, qmle stops	
-	if( missing(start) ) 
-		yuima.stop("Starting values for the parameters are missing.")
-	
-	diff.par <- yuima@model@parameter@diffusion
-		
-	if(!is.list(start))
-	yuima.stop("Argument 'start' must be of list type.")
-	
-	fullcoef <- diff.par
-	npar <- length(fullcoef)
 
-	nm <- names(start)
-    oo <- match(nm, fullcoef)
-    if(any(is.na(oo))) 
-	yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
-    start <- start[order(oo)]
-    nm <- names(start)
-	
-	idx.diff <- match(diff.par, nm)
-	
-	tmplower <- as.list( rep( -Inf, length(nm)))
-	names(tmplower) <- nm	
-	if(!missing(lower)){
-		idx <- match(names(lower), names(tmplower))
-		if(any(is.na(idx)))
-		yuima.stop("names in 'lower' do not match names fo parameters")
-		tmplower[ idx ] <- lower	
-	}
-	lower <- tmplower
-	
-	tmpupper <- as.list( rep( Inf, length(nm)))
-	names(tmpupper) <- nm	
-	if(!missing(upper)){
-		idx <- match(names(upper), names(tmpupper))
-		if(any(is.na(idx)))
-		yuima.stop("names in 'lower' do not match names fo parameters")
-		tmpupper[ idx ] <- upper	
-	}
-	upper <- tmpupper
-	
-	d.size <- yuima@model@equation.number
-	n <- length(yuima)[1]
-	
 	times <- time(yuima@data@zoo.data[[1]])
 	minT <- as.numeric(times[1])
 	maxT <- as.numeric(times[length(times)])
 	
-	if(missing(t))
+	if(missing(t) )
 	 t <- mean(c(minT,maxT))
-	k <- max(which(times <=t),na.rm=TRUE)[1]
-	
-	if(k<2)
-	 k <- 2
-	if(k>n-2)
-	 k <- n-2
 
-	env <- new.env()
-#	assign("X",  as.matrix(onezoo(yuima)), env=env)
-#	assign("deltaX",  matrix(0, n-1, d.size), env=env)
-#	for(t in 1:(n-1))
-#	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
-
-	assign("X",  as.matrix(onezoo(yuima)[1:k,]), env=env)
-	assign("deltaX",  matrix(0, k-1, d.size), env=env)
-	for(t in 1:(k-1))
-	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
-
-	
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-		
-	f <- function(p) {
-		mycoef <- as.list(p)
-		names(mycoef) <- nm
-		sum(pminusquasilogl(yuima=yuima, param=mycoef, print=print, env))
-	}
-		
-
-	oout <- NULL
-	
-	
-	if(length(start)>1){ # multidimensional optim
-		oout <- optim(start, f, method = method, hessian = FALSE, lower=lower, upper=upper)
-				
-			} else { ### one dimensional optim
-				opt <- optimize(f, ...) ## an interval should be provided
-                oout <- list(par = opt$minimum, value = opt$objective)
-			} ### endif( length(start)>1 )
-		
-
-	oout <- oout[c("par","value")]
-	return(oout)
+	if(t<minT || t>maxT)
+	 syuima.stop("time 't' out of bounds")
+	grid <- times[which(times<=t)]
+	qmle(subsampling(yuima, grid=grid), ...)
 }
 
-
-qmleR <- function(yuima, start, method="BFGS", t, print=FALSE, lower, upper, ...){
+qmleR <- function(yuima, t, ...){
 	
-	call <- match.call()
-	
-	if( missing(yuima))
-	yuima.stop("yuima object is missing.")
-	
-## param handling
-	
-## FIXME: maybe we should choose initial values at random within lower/upper
-##        at present, qmle stops	
-	if( missing(start) ) 
-	yuima.stop("Starting values for the parameters are missing.")
-	
-	diff.par <- yuima@model@parameter@diffusion
-	
-	if(!is.list(start))
-	yuima.stop("Argument 'start' must be of list type.")
-	
-	fullcoef <- diff.par
-	npar <- length(fullcoef)
-	
-	nm <- names(start)
-    oo <- match(nm, fullcoef)
-    if(any(is.na(oo))) 
-	yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
-    start <- start[order(oo)]
-    nm <- names(start)
-	
-	idx.diff <- match(diff.par, nm)
-	
-	tmplower <- as.list( rep( -Inf, length(nm)))
-	names(tmplower) <- nm	
-	if(!missing(lower)){
-		idx <- match(names(lower), names(tmplower))
-		if(any(is.na(idx)))
-		yuima.stop("names in 'lower' do not match names fo parameters")
-		tmplower[ idx ] <- lower	
-	}
-	lower <- tmplower
-	
-	tmpupper <- as.list( rep( Inf, length(nm)))
-	names(tmpupper) <- nm	
-	if(!missing(upper)){
-		idx <- match(names(upper), names(tmpupper))
-		if(any(is.na(idx)))
-		yuima.stop("names in 'lower' do not match names fo parameters")
-		tmpupper[ idx ] <- upper	
-	}
-	upper <- tmpupper
-	
-	d.size <- yuima@model@equation.number
-	n <- length(yuima)[1]
 	
 	times <- time(yuima@data@zoo.data[[1]])
 	minT <- as.numeric(times[1])
 	maxT <- as.numeric(times[length(times)])
 	
-	if(missing(t))
+	if(missing(t) )
 	t <- mean(c(minT,maxT))
-	k <- max(which(times <=t),na.rm=TRUE)[1]
 	
-	if(k<2)
-	k <- 2
-	if(k>n-2)
-	k <- n-2
-
-
-	env <- new.env()
-
-	assign("X",  as.matrix(onezoo(yuima)[-(1:k),]), env=env)
-	assign("deltaX",  matrix(0, dim(env$X)[1]-1, d.size), env=env)
-	for(t in 1:(dim(env$X)[1]-1))
-	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
-
-	
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-	
-	f <- function(p) {
-		mycoef <- as.list(p)
-		names(mycoef) <- nm
-		sum(pminusquasilogl(yuima=yuima, param=mycoef, print=print, env))
-	}
-	
-	
-	oout <- NULL
-	
-	
-	if(length(start)>1){ # multidimensional optim
-		oout <- optim(start, f, method = method, hessian = FALSE, lower=lower, upper=upper)
-		
-	} else { ### one dimensional optim
-		opt <- optimize(f, ...) ## an interval should be provided
-		oout <- list(par = opt$minimum, value = opt$objective)
-	} ### endif( length(start)>1 )
-	
-	
-	oout <- oout[c("par","value")]
-	return(oout)
+	if(t<minT || t>maxT)
+	syuima.stop("time 't' out of bounds")
+	grid <- times[which(times>=t)]
+	qmle(subsampling(yuima, grid=grid), ...)
 }
+
+
+
+
 
 CPoint <- function(yuima, param1, param2, print=FALSE, plot=FALSE){
 	d.size <- yuima@model@equation.number

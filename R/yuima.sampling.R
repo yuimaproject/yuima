@@ -20,7 +20,7 @@
 
 # which.delta: check is grid is regular. If regular returns the delta, otherwise NA
 
-which.delta <- function(x) ifelse(length(unique(diff(x)))==1, diff(x)[1], NA)
+which.delta <- function(x) ifelse(length(unique(round(diff(x),7)))==1, diff(x)[1], NA)
 
 setMethod("initialize", "yuima.sampling",
 function(.Object, Initial, Terminal, n, delta, grid, random, 
@@ -42,7 +42,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 				   .Object@Terminal <- sapply(grid, max)
 				   .Object@n <- sapply(grid, function(x) length(x))
 				   .Object@random <- FALSE
-				   .Object@delta <- sapply(grid, which.delta)
+				   .Object@delta <- as.numeric(sapply(grid, which.delta))
 				   .Object@regular <- !any(is.na( .Object@delta ) )	
 				   return(.Object)
 				}
