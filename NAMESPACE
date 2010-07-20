@@ -91,6 +91,9 @@ export(lse)
 export(qmle)
 export(quasilogl)
 export(lasso)
+export(CPoint)
+export(qmleR)
+export(qmleL)
 
 
 S3method(toLatex, yuima)

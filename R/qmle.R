@@ -15,7 +15,9 @@ drift.term <- function(yuima, theta, env){
 	d.size <- yuima@model@equation.number
 	modelstate <- yuima@model@state.variable
 	DRIFT <- yuima@model@drift
-	n <- length(yuima)[1]
+#	n <- length(yuima)[1]
+	n <- dim(env$X)[1]
+	
 	drift <- matrix(0,n,d.size)
 	
 	
@@ -39,7 +41,9 @@ diffusion.term <- function(yuima, theta, env){
 	d.size <- yuima@model@equation.number
 	modelstate <- yuima@model@state.variable
 	DIFFUSION <- yuima@model@diffusion
-	n <- length(yuima)[1]
+#	n <- length(yuima)[1]
+	n <- dim(env$X)[1]
+
 	diff <- array(0, dim=c(d.size, r.size, n))
 	for(i in 1:length(theta)){
 		assign(names(theta)[i],theta[[i]])
@@ -109,9 +113,15 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	if(!is.list(start))
 		yuima.stop("Argument 'start' must be of list type.")
 
-	fullcoef <- c(diff.par, drift.par)
-	npar <- length(fullcoef)
+	fullcoef <- NULL
 	
+	if(length(diff.par)>0)
+	 fullcoef <- diff.par
+	
+	if(length(drift.par)>0)
+	 fullcoef <- c(fullcoef, drift.par)
+
+	npar <- length(fullcoef)
 	
 	fixed.par <- names(fixed)
 
@@ -167,7 +177,12 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 
 	f <- function(p) {
         mycoef <- as.list(p)
-		names(mycoef) <- nm[-idx.fixed]
+#		print(nm[-idx.fixed])
+#		print(nm)
+		if(length(idx.fixed)>0)
+		 names(mycoef) <- nm[-idx.fixed]
+		else
+		 names(mycoef) <- nm
         mycoef[fixed.par] <- fixed
 	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
     }
@@ -198,12 +213,19 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
                 oout <- list(par = opt1$minimum, value = opt1$objective)
 			} ### endif( length(start)>1 )
 		} else {  ### first diffusion, then drift
+			theta1 <- NULL
+
+			old.fixed <- fixed 
+			old.start <- start
+			
+			if(length(idx.diff)>0){
 ## DIFFUSION ESTIMATIOn first
 			old.fixed <- fixed
 			old.start <- start
 			new.start <- start[idx.diff] # considering only initial guess for diffusion
 			new.fixed <- fixed
-			new.fixed[nm[idx.drift]] <- start[idx.drift]
+			if(length(idx.drift)>0)	
+			 new.fixed[nm[idx.drift]] <- start[idx.drift]
 			fixed <- new.fixed
 			fixed.par <- names(fixed)
 			idx.fixed <- match(fixed.par, nm)
@@ -214,6 +236,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$fn <- as.name("f")
 			mydots$start <- NULL
 			mydots$par <- unlist(new.start)
+#		print(mydots)
 			mydots$hessian <- FALSE
 			mydots$upper <- unlist( upper[ nm[idx.diff] ])
 			mydots$lower <- unlist( lower[ nm[idx.diff] ])
@@ -234,7 +257,11 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			 oout <- list(par = theta1, value = opt1$objective) 
 			}
 			theta1 <- oout$par
+			} ## endif(length(idx.diff)>0)
 			
+			theta2 <- NULL
+			
+			if(length(idx.drift)>0){
 ## DRIFT estimation with first state diffusion estimates
 			fixed <- old.fixed
 			start <- old.start
@@ -270,7 +297,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 				oout1 <- list(par = theta2, value = as.numeric(opt1$objective)) 	
 			}
 			theta2 <- oout1$par
-			oout1$par <- c(theta1, theta2)
+			} ## endif(length(idx.drift)>0)
+			oout1 <- list(par=  c(theta1, theta2))
 			names(oout1$par) <- c(diff.par,drift.par)
 			oout <- oout1
 
@@ -300,6 +328,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 names(par) <- c(diff.par, drift.par)
      nm <- c(diff.par, drift.par)
 	 
+#	 print(par)
+#	 print(coef)
 	 conDrift <- list(trace = 5, fnscale = 1, 
 				 parscale = rep.int(5, length(drift.par)), 
 				 ndeps = rep.int(0.001, length(drift.par)), maxit = 100L, 
@@ -335,12 +365,12 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 #	 if (npar == 1 && method == "Nelder-Mead") 
 #	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
 #	 
-	 if(!HaveDriftHess){
+	 if(!HaveDriftHess & (length(drift.par)>0)){
 	  hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
 	  HESS[drift.par,drift.par] <- hess2	 
 	 }
 
-	 if(!HaveDiffHess){
+	 if(!HaveDiffHess  & (length(diff.par)>0)){
 		 hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
 		 HESS[diff.par,diff.par] <- hess1	 
 	 }
@@ -351,13 +381,11 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	  solve(oout$hessian)
      else matrix(numeric(0L), 0L, 0L)
 	 
-	
-	 
-    min <- oout$value
-	
   	mycoef <- as.list(coef)
 	names(mycoef) <- nm
 	mycoef[fixed.par] <- fixed
+	
+	min <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
 	
     new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
        vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
@@ -390,9 +418,21 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	
 	diff.par <- yuima@model@parameter@diffusion
 	drift.par <- yuima@model@parameter@drift
-	fullcoef <- c(diff.par, drift.par)
-	npar <- length(fullcoef)
 	
+	fullcoef <- NULL
+	
+	if(length(diff.par)>0)
+	fullcoef <- diff.par
+	
+	if(length(drift.par)>0)
+	fullcoef <- c(fullcoef, drift.par)
+	
+#	fullcoef <- c(diff.par, drift.par)
+	npar <- length(fullcoef)
+#	cat("\nparam\n")
+#	print(param)
+#	cat("\nfullcoef\n")
+#	print(fullcoef)
 	nm <- names(param)
     oo <- match(nm, fullcoef)
     if(any(is.na(oo))) 
