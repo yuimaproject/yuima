@@ -65,6 +65,44 @@ theta <- cc.theta(T = 1, diff.coef.1, diff.coef.2, cor.rho)$value
 cat(sprintf("theta =\%.5f\n", theta))
 
 names(psample@zoo.data)
+
+
+
+
+
+
+# Example. A stochastic differential equation with nonlinear feedback. 
+
+## Set a model
+drift.coef.1 <- function(x1,x2) x2
+drift.coef.2 <- function(x1,x2) -x1
+drift.coef.vector <- c("drift.coef.1","drift.coef.2")
+diff.coef.1 <- function(t,x1,x2) sqrt(abs(x1))*sqrt(1+t)
+diff.coef.2 <- function(t,x1,x2) sqrt(abs(x2))
+cor.rho <- function(t,x1,x2) 1/(1+x1^2)
+diff.coef.matrix <- matrix(c("diff.coef.1(t,x1,x2)", "diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)","", "diff.coef.2(t,x1,x2) * sqrt(1-cor.rho(t,x1,x2)^2)"), 2, 2) 
+cor.mod <- setModel(drift = drift.coef.vector, diffusion = diff.coef.matrix,solve.variable = c("x1", "x2"))
+
+## Generate a path of the process
+set.seed(111) 
+yuima.samp <- setSampling(Terminal = 1, n = 10000) 
+yuima <- setYuima(model = cor.mod, sampling = yuima.samp) 
+yuima <- simulate(yuima, xinit=c(2,3)) 
+plot(yuima)
+
+
+## The "true" value of the quadratic covariation.
+cce(yuima)
+
+## We use the function poisson.random.sampling to generate nonsynchronous observations by Poisson sampling.
+psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 3000) 
+
+## cce takes the psample to return an estimated value  of the quadratic covariation. The off-diagonal elements are the value of the Hayashi-Yoshida estimator. 
+cce(psample)
+
+
+
+
 }
 \seealso{\link{setModel}}
 \keyword{ts}
