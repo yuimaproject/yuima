@@ -2,11 +2,11 @@
 
 
 setGeneric("asymptotic_term",
-           function(yuima,block=100, rho, g)
+           function(yuima,block=100, rho, g, expand.var="e")
            standardGeneric("asymptotic_term")
            )
 
-setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, rho, g){
+setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, rho, g, expand.var="e"){
 
   if(is.null(yuima@model)) stop("model object is missing!")
   if(is.null(yuima@sampling)) stop("sampling object is missing!")
@@ -14,7 +14,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     
   f <- getf(yuima@functional)
   F <- getF(yuima@functional)
-  e <- gete(yuima@functional)
+
+  ##:: fix bug 07/23
+  #e <- gete(yuima@functional)
+  assign(expand.var, gete(yuima@functional))
+  
   Terminal <- yuima@sampling@Terminal
   division <- yuima@sampling@n
   xinit <- getxinit(yuima@functional)
@@ -25,9 +29,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   d.size <- yuima@model@equation.number
   k.size <- length(F)
 
-  X.t0 <- Get.X.t0(yuima)
+  X.t0 <- Get.X.t0(yuima, expand.var=expand.var)
   delta <- deltat(X.t0)
-  pars <- yuima@model@parameter@all[1]  #epsilon
+
+  ##:: fix bug 07/23
+  pars <- expand.var #yuima@model@parameter@all[1]  #epsilon
 
   # function to return symbolic derivatives of myfunc by mystate(multi-state)
   Derivation.vector <- function(myfunc,mystate,dim1,dim2){

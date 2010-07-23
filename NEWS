@@ -1,3 +1,7 @@
+Changes in Version 0.1.10
+
+  o added an argument "expand.var" for functions related to asymptotic_term to specify the small variable "epsilon"
+
 Changes in Version 0.1.09
 
   o fixed toLatex() output for diffusion matrix

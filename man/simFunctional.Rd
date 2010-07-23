@@ -9,12 +9,13 @@
 \title{Calculate the value of functional}
 \description{Calculate the value of functional associated with sde by Euler scheme.}
 \usage{
-simFunctional(yuima)
-Fnorm(yuima)
-F0(yuima)
+simFunctional(yuima, expand.var="e")
+Fnorm(yuima, expand.var="e")
+F0(yuima, expand.var="e")
 }
 \arguments{
   \item{yuima}{a \code{yuima} object containing model, functional and data.}
+  \item{expand.var}{default expand.var="e".}
 }
 \details{
 Calculate the value of functional of interest. Fnorm returns normalized one, and F0 returns the value for the case small parameter epsilon = 0. In simFunctional and Fnorm, yuima MUST contains the 'data' slot (X in legacy version)

@@ -5,13 +5,14 @@
 \title{asymptotic expansion of the expected value of the functional}
 \description{calculate the fisrt and second term of asymptotic expansion of the functional mean.}
 \usage{
-asymptotic_term(yuima, block=100, rho, g)
+asymptotic_term(yuima, block=100, rho, g, expand.var="e")
 }
 \arguments{
   \item{yuima}{an yuima object containing model and functional.}
   \item{block}{the number of trapezoids for integrals.}
   \item{rho}{specify discounting factor in mean integral.}
   \item{g}{arbitrary measurable function for mean integral.}
+  \item{expand.var}{default expand.var="e".}
 }
 \details{
 Calculate the first and second term of asymptotic expansion of the expected value of the functional associated with a sde. The returned value d0 + epsilon * d1 is approximation of the expected value.

@@ -1,6 +1,9 @@
 # funcF
 # function to calculate F in (13.2)
-funcF <- function(yuima,X,e){ 
+funcF <- function(yuima,X,e,expand.var="e"){
+            ##:: fix bug 07/23
+            assign(expand.var, e)
+  
             division <- yuima@sampling@n  #number of observed time
             F <- getF(yuima@functional)
             d.size <- yuima@model@equation.number
@@ -20,7 +23,10 @@ funcF <- function(yuima,X,e){
 
 # funcf
 # function to calculate fa in (13.2)
-funcf <- function(yuima,X,e){ 
+funcf <- function(yuima,X,e, expand.var){
+            ##:: fix bug 07/23
+            assign(expand.var, e)
+  
             division <- yuima@sampling@n  #number of observed time
             F <- getF(yuima@functional)
             f <- getf(yuima@functional)
@@ -47,7 +53,10 @@ funcf <- function(yuima,X,e){
 # funcFe.
 # function to calculate Fe in (13.2).
 # core function of 'simFunctional'
-funcFe. <- function(yuima,X,e){
+funcFe. <- function(yuima,X,e,expand.var="e"){
+            ##:: fix bug 07/23
+            assign(expand.var, e) ## expand.var
+            
             F <- getF(yuima@functional)
             r.size <- yuima@model@noise.number
             d.size <- yuima@model@equation.number
@@ -65,8 +74,8 @@ funcFe. <- function(yuima,X,e){
               dw[,r] <- tmp[2:division]-tmp[1:(division-1)] #calculate dWr(t)
             }
             
-            resF <- funcF(yuima,X,e) #calculate F with X,e. size:vector[k.size]
-            resf <- funcf(yuima,X,e) #calculate f with X,e. size:array[k.size,division,r.size+1]
+            resF <- funcF(yuima,X,e,expand.var=expand.var) #calculate F with X,e. size:vector[k.size]
+            resf <- funcf(yuima,X,e,expand.var=expand.var) #calculate f with X,e. size:array[k.size,division,r.size+1]
             
             Fe <- numeric(k.size)
             for(k in 1:k.size){
@@ -77,7 +86,10 @@ funcFe. <- function(yuima,X,e){
 
 # Get.X.t0
 # function to calculate X(t=t0) using runge kutta method
-Get.X.t0 <- function(yuima){
+Get.X.t0 <- function(yuima, expand.var="e"){
+            ##:: fix bug 07/23
+            assign(expand.var,0)  ## epsilon=0
+  
             r.size <- yuima@model@noise.number
             d.size <- yuima@model@equation.number
             k.size <- length(getF(yuima@functional))
@@ -87,8 +99,10 @@ Get.X.t0 <- function(yuima){
 
             Terminal <- yuima@sampling@Terminal
             division <- yuima@sampling@n
+
+            ##:: fix bug 07/23
+            #pars <- #yuima@model@parameter@all[1]  #epsilon
             
-            pars <- yuima@model@parameter@all[1]  #epsilon
             xinit <- getxinit(yuima@functional)
             ## init
             dt <- Terminal/division
@@ -99,7 +113,11 @@ Get.X.t0 <- function(yuima){
             k2 <- numeric(d.size)
             k3 <- numeric(d.size)
             k4 <- numeric(d.size)
-            assign(pars,0)  ## epsilon==0
+
+            ##:: fix bug 07/23
+            #assign(pars,0) ## epsilon=0
+
+            
             ## runge kutta
             for(t in 1:division){
               ## k1
@@ -144,11 +162,11 @@ Get.X.t0 <- function(yuima){
 # simFunctional
 # public function to calculate Fe in (13.2).
 setGeneric("simFunctional",
-           function(yuima)
+           function(yuima, expand.var="e")
            standardGeneric("simFunctional")
            )
 setMethod("simFunctional", signature(yuima="yuima"),
-          function(yuima){
+          function(yuima, expand.var="e"){
 		    Xlen <- length(yuima@data)
 			if(sum(Xlen != mean(Xlen)) != 0) {
 			  yuima.warn("All length must be same yet.")
@@ -160,35 +178,41 @@ setMethod("simFunctional", signature(yuima="yuima"),
             }
             
             e <- gete(yuima@functional)
-            
-            Fe <- funcFe.(yuima,as.matrix(onezoo(yuima)),e)
+
+            ##:: fix bug 07/23
+            Fe <- funcFe.(yuima,as.matrix(onezoo(yuima)),e,expand.var=expand.var)
             return(Fe)
           })
 
 # F0
 # public function to calculate Fe at e=0
 setGeneric("F0",
-           function(yuima)
+           function(yuima, expand.var="e")
            standardGeneric("F0")
            )
 setMethod("F0", signature(yuima="yuima"),
-          function(yuima){
-            
-            X.t0 <- Get.X.t0(yuima)
-            F0 <- funcFe.(yuima, X.t0, 0)
+          function(yuima, expand.var="e"){
+
+            ##:: fix bug 07/23
+            X.t0 <- Get.X.t0(yuima, expand.var=expand.var)
+            F0 <- funcFe.(yuima, X.t0, 0, expand.var=expand.var)
+
             return(F0)
           })
 
 # Fnorm
 # public function to calculate (Fe-F0)/e
 setGeneric("Fnorm",
-           function(yuima)
+           function(yuima, expand.var="e")
            standardGeneric("Fnorm")
            )
 setMethod("Fnorm", signature(yuima="yuima"),
-          function(yuima){
+          function(yuima, expand.var="e"){
             e <- gete(yuima@functional)
-            Fe <- simFunctional(yuima)
-            F0 <- F0(yuima)
+
+            ##:: fix bug 0723
+            Fe <- simFunctional(yuima, expand.var=expand.var)
+            F0 <- F0(yuima, expand.var=expand.var)
+            
             return((Fe-F0)/e)
           })
