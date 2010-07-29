@@ -85,7 +85,7 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
 }
 
 
-dungamma <- function(x,lam,al,be,mu){
+dngamma <- function(x,lam,al,be,mu){
     if( lam <= 0 )
 	stop("lambda must be positive.")
     if( al <= 0 )
@@ -218,7 +218,7 @@ rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
 }
 
 
-duNIG <- function(x,al,be,de,mu){
+dNIG <- function(x,al,be,de,mu){
 	if( al < 0 )
 	stop("alpha must be nonnegative.")
     if( al^2 - be^2 < 0 )
