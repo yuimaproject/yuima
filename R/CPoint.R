@@ -47,7 +47,8 @@ CPoint <- function(yuima, param1, param2, print=FALSE, plot=FALSE){
 	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
 	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-	
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+
 	QL1 <- pminusquasilogl(yuima=yuima, param=param1, print=print, env)
 	QL2 <- pminusquasilogl(yuima=yuima, param=param2, print=print, env)
 

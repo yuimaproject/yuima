@@ -19,17 +19,19 @@ drift.term <- function(yuima, theta, env){
 	n <- dim(env$X)[1]
 	
 	drift <- matrix(0,n,d.size)
-	
+	tmp.env <- new.env()
+	assign(yuima@model@time.variable, env$time, env=tmp.env)
+
 	
 	for(i in 1:length(theta)){
-		assign(names(theta)[i],theta[[i]])
+		assign(names(theta)[i],theta[[i]], env=tmp.env)
 	}
 	
 	for(d in 1:d.size){
-		assign(modelstate[d], env$X[,d])
+		assign(modelstate[d], env$X[,d], env=tmp.env)
 	}
 	for(d in 1:d.size){
-		drift[,d] <- eval(DRIFT[d])
+		drift[,d] <- eval(DRIFT[d], env=tmp.env)
 	}
 
 	return(drift)  
@@ -43,19 +45,20 @@ diffusion.term <- function(yuima, theta, env){
 	DIFFUSION <- yuima@model@diffusion
 #	n <- length(yuima)[1]
 	n <- dim(env$X)[1]
-
+    tmp.env <- new.env()
+	assign(yuima@model@time.variable, env$time, env=tmp.env)
 	diff <- array(0, dim=c(d.size, r.size, n))
 	for(i in 1:length(theta)){
-		assign(names(theta)[i],theta[[i]])
+		assign(names(theta)[i],theta[[i]],env=tmp.env)
 	}
 
 	for(d in 1:d.size){
-		assign(modelstate[d], env$X[,d])
+		assign(modelstate[d], env$X[,d], env=tmp.env)
 	}
 
 	for(r in 1:r.size){
 		for(d in 1:d.size){
-			diff[d, r, ] <- eval(DIFFUSION[[d]][r])
+			diff[d, r, ] <- eval(DIFFUSION[[d]][r], env=tmp.env)
 		}
 	}
 	return(diff)
@@ -134,9 +137,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 		yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
     start <- start[order(oo)]
     nm <- names(start)
-	
-	 
-	 
+		 
 	idx.diff <- match(diff.par, nm)
 	idx.drift <- match(drift.par, nm)
 	idx.fixed <- match(fixed.par, nm)
@@ -170,6 +171,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	env <- new.env()
 	assign("X",  as.matrix(onezoo(yuima)), env=env)
 	assign("deltaX",  matrix(0, n-1, d.size), env=env)
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
 	for(t in 1:(n-1))
 	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 
@@ -200,7 +202,6 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 rownames(HESS) <- nm
 	 HaveDriftHess <- FALSE
 	 HaveDiffHess <- FALSE
-	 
 	 if(length(start)){
 		if(JointOptim){ ### joint optimization
 			if(length(start)>1){ # multidimensional optim
@@ -236,7 +237,6 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$fn <- as.name("f")
 			mydots$start <- NULL
 			mydots$par <- unlist(new.start)
-#		print(mydots)
 			mydots$hessian <- FALSE
 			mydots$upper <- unlist( upper[ nm[idx.diff] ])
 			mydots$lower <- unlist( lower[ nm[idx.diff] ])
@@ -248,7 +248,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			 mydots$par <- NULL
 			 mydots$hessian <- NULL	
 			 mydots$method <- NULL	
-			 mydots$interval <- as.numeric(c(lower[diff.par],upper[diff.par])) 
+			 mydots$interval <- as.numeric(c(unlist(lower[diff.par]),unlist(upper[diff.par]))) 
 			 mydots$lower <- NULL	
 			 mydots$upper <- NULL	
 			 opt1 <- do.call(optimize, args=mydots)
@@ -405,7 +405,8 @@ quasilogl <- function(yuima, param, print=FALSE){
 	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
 	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-	
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+
 	-minusquasilogl(yuima=yuima, param=param, print=print, env)
 }
 

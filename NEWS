@@ -1,6 +1,13 @@
+Changes in Version 0.1.11
+
+  o time.variable was not copied in the env where drift and diffusion are 
+	evaluated. Fixed.
+  
+
 Changes in Version 0.1.10
 
-  o added an argument "expand.var" for functions related to asymptotic_term to specify the small variable "epsilon"
+  o added an argument "expand.var" for functions related to asymptotic_term to 
+	specify the small variable "epsilon"
 
 Changes in Version 0.1.09
 
