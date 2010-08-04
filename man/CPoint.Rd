@@ -5,7 +5,7 @@
 \title{Adaptive LASSO estimation for stochastic differential equations}
 \description{Adaptive LASSO estimation for stochastic differential equations.}
 \usage{
-CPoint(yuima, param1, param2, print=FALSE, plot=FALSE)
+CPoint(yuima, param1, param2, print=FALSE, symmetrized=FALSE, plot=FALSE)
 qmleL(yuima, t,  ...)
 qmleR(yuima, t,  ...)
 }
@@ -16,6 +16,7 @@ qmleR(yuima, t,  ...)
   \item{plot}{plot test statistics? Default is \code{FALSE}.}
   \item{print}{print some debug output. Default is \code{FALSE}.}
   \item{t}{time value. See Details.}
+  \item{symmetrized}{if \code{TRUE} uses the symmetrized version of the quasi maximum-likelihood approximation.}
   \item{...}{passed to \code{\link{qmle}} method. See Examples.}
 }
 \details{
