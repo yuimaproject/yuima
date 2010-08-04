@@ -254,8 +254,8 @@ pminusquasiloglsym <- function(yuima, param, print=FALSE, env){
 	
 	K <- -0.5*d.size * log( (2*pi*h) )
 	
-	print(length(idx0))
-print(dim(vec))
+#	print(length(idx0))
+#print(dim(vec))
 	
 	QL <- 0
 	pn <- numeric(length(idx0)-1)
