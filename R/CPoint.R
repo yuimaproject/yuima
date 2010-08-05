@@ -246,28 +246,25 @@ pminusquasiloglsym <- function(yuima, param, print=FALSE, env){
 	n.theta <- n.theta1
 	
 	d.size <- yuima@model@equation.number
-#n <- length(yuima)[1]
-	n <- dim(env$X)[1]
-	
+
+	n <- dim(env$X)[1]-1
+
     idx0 <- 1:round((n-1)/2)
-	vec <- matrix((env$deltaX[2*idx0+1]-2* env$deltaX[2*idx0]+env$deltaX[2*idx0-1])/sqrt(2), length(idx0), dim(env$X)[2])
-	
+
+	vec <- matrix((env$X[2*idx0+1]-2* env$X[2*idx0]+env$X[2*idx0-1])/sqrt(2), length(idx0), dim(env$X)[2])
+
 	K <- -0.5*d.size * log( (2*pi*h) )
 	
-#	print(length(idx0))
-#print(dim(vec))
-	
+
 	QL <- 0
-	pn <- numeric(length(idx0)-1)
+	pn <- numeric(length(idx0))
 	diff <- diffusion.term(yuima, param, env)
 	dimB <- dim(diff[, , 1])
 	
 	if(is.null(dimB)){  # one dimensional X
-		for(t in idx0[-length(idx0)]){
+		for(t in idx0){
 			yB <- diff[, , 2*t-1]^2
 			logdet <- log(yB)
-#	print(t)
-#			print(vec[t, ]^2/(h*yB))
 			pn[t] <- K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB) 
 			QL <- QL+pn[t]
 			

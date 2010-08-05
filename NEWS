@@ -1,3 +1,7 @@
+Changes in Version 0.1.13
+
+  o fixed a bug in symmetrized cpoint estimator
+
 Changes in Version 0.1.12
 
   o added change point estimator with symmetrized QML approximation
