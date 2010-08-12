@@ -53,7 +53,7 @@ yuima <- simulate(yuima)
 psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 1000) 
 
 ## cce takes the psample and returns an estimate of the quadratic covariation. 
-cce(psample)[1, 2] 
+cce(psample)$covmat[1, 2] 
 
 ## True value of the quadratic covariation.
 cc.theta <- function(T, sigma1, sigma2, rho) { 
