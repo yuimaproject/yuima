@@ -3,6 +3,7 @@
 \alias{get.zoo.data}
 \alias{dim}
 \alias{length}
+\alias{cbind.yuima}
 
 \title{
 Set and access data of an object of type "yuima.data" or "yuima".
@@ -22,6 +23,7 @@ Set and access data of an object of type "yuima.data" or "yuima".
 
 \code{length} returns the \code{\link{length}} of the time series in 
 \code{zoo.data} slot of a \code{\link{yuima.data-class}} object.
+\code{cbind.yuima} bind yuima.data object.
 }
 \usage{
   setData(original.data)

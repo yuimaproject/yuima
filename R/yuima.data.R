@@ -132,3 +132,58 @@ setMethod("plot","yuima",
               plot(x@data,xlab=xlab,ylab=ylab,...)
 			}
           })
+
+
+##:: yuima.data obj cbind ( implementation 08/18 )
+setGeneric("cbind.yuima",
+           function(x, ...)
+           standardGeneric("cbind.yuima")
+           )
+
+setMethod("cbind.yuima", signature(x="yuima"),
+          function(x, ...){
+            ##:: init
+            y.list <- list(x, ...)
+            y.num <- length(y.list)
+
+            ##:: bind yuima.data in yuima
+            yd.tmp <- y.list[[1]]@data
+            for(idx in 2:y.num){
+              ##:: error check
+              if( class(y.list[[idx]])!="yuima"){
+                stop("arg ", idx, " is not yuima-class")
+              }
+              ##:: bind
+              yd.tmp <- cbind.yuima(yd.tmp, y.list[[idx]]@data)
+            }
+
+            ##:: substitute yuima.data
+            x@data <- yd.tmp
+
+            ##:: return result
+            return(x)
+          }
+          )
+
+setMethod("cbind.yuima", signature(x="yuima.data"),
+          function(x, ...){
+            ##:: init
+            yd.list <- list(x, ...)
+            yd.num <- length(yd.list)
+            
+            ##:: bind yuima.data (original.data)
+            od.tmp <- yd.list[[1]]@original.data
+            for(idx in 2:yd.num){
+              ##:: error check
+              if( class(yd.list[[idx]])!="yuima.data" ){
+                stop("arg ", idx, " is not yuima.data-class.")
+              }
+              ##:: bind
+              od.tmp <- cbind(od.tmp, yd.list[[idx]]@original.data)
+            }
+            ##:: return result
+            return(new("yuima.data", original.data=od.tmp))
+          }
+          )
+
+##:: END ( yuima.data obj cbind )

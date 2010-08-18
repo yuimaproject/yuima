@@ -14,6 +14,7 @@
 %\alias{setSampling,yuima.data-method}
 \alias{poisson.random.sampling,yuima.data-method}
 \alias{subsampling,yuima.data-method}
+\alias{cbind.yuima,yuima.data-method}
 
 \title{Class "yuima.data" for the data slot of a "yuima" class object}
 \description{
@@ -85,6 +86,7 @@ is usually empty.
     \item{cce}{\code{signature(x = "yuima.data")}: calculates asyncronous
 	 covariance estimator on the data contained in \code{x@zoo.data}. 
 	 For more details see \code{\link{cce}}.}
+    \item{cbind.yuima}{\code{signature(x = "yuima.data")}: bind yuima.data object.}
   }
 }
 \author{The YUIMA Project Team}

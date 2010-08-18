@@ -15,6 +15,7 @@
 \alias{ml.ql,yuima-method}
 \alias{limiting.gamma,yuima-method}
 \alias{LSE,yuima-method}
+\alias{cbind.yuima,yuima-method}
 
 \title{Class for stochastic differential equations}
 \description{
@@ -78,6 +79,7 @@ The slot \code{functional} contains information on
 	 For more details see \code{\link{cce}}.}
     \item{simulate}{simulation method. For more information see
 	  \code{\link{simulate}}.}
+    \item{cbind.yuima}{\code{signature(x = "yuima")}: bind yuima.data object.}	
   }
 }
 \author{The YUIMA Project Team}

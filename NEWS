@@ -1,4 +1,8 @@
 Changes in Version 0.1.14
+  o added yuima.cbind function to bind yuima.data object by column.
+
+
+Changes in Version 0.1.14
   o added a correlation matrix to the output of "cce". Accordingly,
  the output of the function cce is now a list which contains a covariance
  matrix and a correlation matrix.
