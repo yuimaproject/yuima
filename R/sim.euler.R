@@ -127,7 +127,13 @@ euler<-function(xinit,yuima,dW,env){
     }
     
     if(sdeModel@measure.type == "CP"){ ##:: Compound-Poisson type
-      eta0 <- eval(sdeModel@measure$intensity)
+
+      ##:: delete 2010/09/13 for simulate func bug fix by s.h
+            ## eta0 <- eval(sdeModel@measure$intensity)
+      
+      ##:: add 2010/09/13 for simulate func bug fix by s.h
+      eta0 <- eval(sdeModel@measure$intensity, env) ## intensity param
+
       ##:: get lambda from nu()
       lambda <- integrate(sdeModel@measure$df$func, 0, Inf)$value * eta0
       
@@ -152,7 +158,16 @@ euler<-function(xinit,yuima,dW,env){
       }else{
         stop("Sorry. CP only supports dexp, dnorm and dgamma yet.")
       }
-      randJ <- eval(F)  ## this expression is evaluated locally not in the yuimaEnv
+
+      ##:: delete 2010/09/13 for simulate func bug fix by s.h
+           ## randJ <- eval(F)  ## this expression is evaluated locally not in the yuimaEnv
+
+      ##:: add 2010/09/13 for simulate func bug fix by s.h
+      F.env <- new.env(parent=env)
+      assign("mu.size", mu.size, envir=F.env)
+      assign("N_sharp", N_sharp, envir=F.env)
+      randJ <- eval(F, F.env)  ## this expression is evaluated in the F.env
+      
       j <- 1
       for(i in 1:n){
         if(JAMP==FALSE || sum(i==ij)==0){
