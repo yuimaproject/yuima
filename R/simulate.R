@@ -13,7 +13,7 @@ subsampling <- function(x,y) return(x)
 
 setGeneric("simulate",
 	function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, 
-		increment.W=NULL, increment.L=NULL, methodfGn="Cholesky", 
+		increment.W=NULL, increment.L=NULL, methodfGn="WoodChan", 
 		sampling=sampling, subsampling=subsampling, ...
 #		Initial = 0, Terminal = 1, n = 100, delta, 
 #		grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
@@ -26,7 +26,7 @@ setGeneric("simulate",
 setMethod("simulate", "yuima.model",
  function(object, nsim=1, seed=NULL, xinit, true.parameter, 
 	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
-	methodfGn="Cholesky",
+	methodfGn="WoodChan",
 	sampling, subsampling,
 #Initial = 0, Terminal = 1, n = 100, delta, 
 #	grid, random = FALSE, sdelta=as.numeric(NULL), 
@@ -54,7 +54,7 @@ setMethod("simulate", "yuima.model",
 setMethod("simulate", "yuima",
  function(object, nsim=1, seed=NULL, xinit, true.parameter, 
 	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
-	methodfGn="Cholesky",
+	methodfGn="WoodChan",
 	sampling, subsampling,
 	Initial = 0, Terminal = 1, n = 100, delta, 
 	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
@@ -190,11 +190,14 @@ setMethod("simulate", "yuima",
 	 if( sdeModel@hurst!=0.5 ){ 
 	
 		grid<-sampling2grid(yuima@sampling)	
-		if(methodfGn=="Cholesky"){
+		isregular<-yuima@sampling@regular 
+		 
+		
+		if((!isregular) || (methodfGn=="Cholesky")){
 			dW<-CholeskyfGn(grid, sdeModel@hurst,r.size)
+			yuima.warn("Cholesky method for simulating fGn has been used.")
 		} else {
-			yuima.warn("Not done presently.")
-			return(NULL)	
+			dW<-WoodChanfGn(grid, sdeModel@hurst,r.size)
 		}
 						
 	} else {
