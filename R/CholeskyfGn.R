@@ -48,5 +48,4 @@ for (k in 1:dim){
 		
 return(fGn)
 
-
 }

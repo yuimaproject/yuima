@@ -192,7 +192,6 @@ setMethod("simulate", "yuima",
 		grid<-sampling2grid(yuima@sampling)	
 		isregular<-yuima@sampling@regular 
 		 
-		
 		if((!isregular) || (methodfGn=="Cholesky")){
 			dW<-CholeskyfGn(grid, sdeModel@hurst,r.size)
 			yuima.warn("Cholesky method for simulating fGn has been used.")
