@@ -3,9 +3,9 @@
 \title{Simulator function for multi-dimensional stochastic processes}
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
-simulate(object, nsim, seed, xinit, true.parameter, space.discretized = FALSE, 
- increment.W = NULL, increment.L = NULL, methodfGn = "Cholesky",
- 	sampling, subsampling, ...)
+simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = FALSE, 
+ increment.W = NULL, increment.L = NULL, methodfGn = "WoodChan",
+ 	sampling=sampling, subsampling=subsampling, ...)
 }
 \arguments{
   \item{object}{an \code{\link{yuima-class}} or 
