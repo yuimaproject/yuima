@@ -8,7 +8,7 @@
 
 setGeneric( "cce", function(x) standardGeneric("cce") )
 
-setMethod("cce", "yuima", function(x) cce(x@data) )
+setMethod("cce", "yuima", function(x) cce(x@data) ) 
 
 setMethod("cce", "yuima.data", function(x) {  
 	
@@ -79,25 +79,8 @@ setMethod("cce", "yuima.data", function(x) {
 		}
 		
 	}
-	return( cmat )            
-})
 
-##:: add 2010/09/19 for list data handling
-setMethod("cce", "list", function(x){
-  ##:: init
-  cce.result <- list()
-  
-  ##:: error check and  run cce
-  for( i in 1:length(x) ){
-    if(class(x[[i]])=="yuima" || class(x[[i]])=="yuima.data"){
-      cce.result[[i]] <- cce(x[[i]])
-    }else{
-      stop("Objects in list-class must be yuima-class or yuima.data-class.")
-    }
-  }  
-
-  ##:: return result
-  names(cce.result) <- names(x)
-  return(cce.result)
-  
+    sdmat <- diag(sqrt(diag(cmat)))
+    cormat <- solve(sdmat) %*% cmat %*% solve(sdmat)
+	return( list(covmat=cmat,cormat=cormat)  )
 })
