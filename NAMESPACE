@@ -28,6 +28,7 @@ exportMethods(
               ## "end",
               "simulate",
               "cce",
+              "llag",
               "poisson.random.sampling",
               "get.zoo.data",
               "initialize",
@@ -66,6 +67,7 @@ export(plot)
 export(simulate) # simulates couple of processes
 export(subsampling)
 export(cce)
+export(llag)
 export(poisson.random.sampling)
 
 export(get.zoo.data)

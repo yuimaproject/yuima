@@ -10,6 +10,7 @@
 \alias{dim,yuima.data-method}
 \alias{length,yuima.data-method}
 \alias{cce,yuima.data-method}
+\alias{llag,yuima.data-method}
 \alias{initialize,yuima.data-method}
 %\alias{setSampling,yuima.data-method}
 \alias{poisson.random.sampling,yuima.data-method}
@@ -86,6 +87,9 @@ is usually empty.
     \item{cce}{\code{signature(x = "yuima.data")}: calculates asyncronous
 	 covariance estimator on the data contained in \code{x@zoo.data}. 
 	 For more details see \code{\link{cce}}.}
+   \item{llag}{\code{signature(x = "yuima.data")}: calculates lead lag estimate
+	  on the data contained in \code{x@zoo.data}. 
+	 For more details see \code{\link{llag}}.}   
     \item{cbind.yuima}{\code{signature(x = "yuima.data")}: bind yuima.data object.}
   }
 }

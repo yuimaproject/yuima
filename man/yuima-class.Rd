@@ -6,6 +6,7 @@
 \alias{dim,yuima-method}
 \alias{length,yuima-method}
 \alias{cce,yuima-method}
+\alias{llag,yuima-method}
 \alias{initialize,yuima-method}
 \alias{simulate,yuima-method}
 \alias{poisson.random.sampling,yuima-method}
@@ -77,6 +78,9 @@ The slot \code{functional} contains information on
     \item{cce}{\code{signature(x = "yuima")}: calculates the asyncronous
 	 covariance estimator on the data contained in \code{x@data@zoo.data}. 
 	 For more details see \code{\link{cce}}.}
+   \item{llag}{\code{signature(x = "yuima")}: calculates the lead lag estimate
+	 r on the data contained in \code{x@data@zoo.data}. 
+	 For more details see \code{\link{llag}}.}
     \item{simulate}{simulation method. For more information see
 	  \code{\link{simulate}}.}
     \item{cbind.yuima}{\code{signature(x = "yuima")}: bind yuima.data object.}	
