@@ -1,694 +1,1 @@
-##::quasi-likelihood with prior
-##
-##
-
-## rmnorm
-rmnorm <- function (n, mean, cov=diag(length(mean))) 
-{
-	if(length(mean)==1){	
-		return(rnorm(n,mean,sqrt(cov)))
-	}else{
-		return(rmvnorm(n,mean,cov))
-	}
-}
-
-## dmnorm
-dmnorm <- function (x, mean, cov=diag(length(mean))) 
-{
-	if(length(mean)==1){	
-		return(dnorm(x,mean,sqrt(cov)))
-	}else{
-		return(dmvnorm(x,mean,cov))
-	}
-}
-
-## ml.ql by newton method.
-newton.ml.qlb <- function(yuima, theta2, theta1, h, iteration=1, param.only=FALSE, verbose=FALSE, ...){
-## get param
-	r.size <- yuima@model@noise.number
-	d.size <- yuima@model@equation.number
-	modelstate <- yuima@model@state.variable
-	modelpara.drift <- yuima@model@parameter@drift
-	modelpara.diff <- yuima@model@parameter@diffusion
-## get expression of functions ##
-## a
-	a <- yuima@model@drift
-	
-## b
-	b <- yuima@model@diffusion
-	
-## B = b %*% t(b)
-	if(length(b)>=2){
-## expression matrix calculation
-		B <- list()
-		for( i in 1:d.size){
-			for( j in i:d.size){
-				tmp <- NULL   
-				for(l in 1:r.size){
-					B.il <- as.character(b[[i]][l])
-					B.jl <- as.character(b[[j]][l])
-					if(l==1){
-						tmp <- paste(B.il, "*", B.jl)
-					}else{
-						tmp <- paste(tmp, "+", B.il, "*", B.jl)
-					}
-				}
-## update B list
-				B[[ (i-1)*d.size + j ]] <- parse(text=tmp)        
-				if(i!=j) B[[ (j-1)*d.size + i ]] <- parse(text=tmp)
-			}
-		}
-		dim(B) <- c(d.size, d.size)
-	}else{
-		b <- yuima@model@diffusion[[1]]
-		B <- parse(text=paste(as.character(b),
-							  " * ", as.character(b), sep=""))
-		B <- list(B)
-		dim(B) <- c(1,1)
-	}
-	
-## some func def about B
-	deriv.B <- function(B, var=character()){
-		B.deriv <- B
-		for(i in 1:nrow(B)){
-			for( j in 1:ncol(B) ){
-				B.deriv[i,j][[1]] <- D(B[i,j][[1]], var)
-			}
-		}
-		return(B.deriv)
-	}
-	
-	eval.B <- function(B, theta1, theta2, Xt.iMinus1, ...){
-##assign variable
-		for(j in 1:length(Xt.iMinus1)){
-			assign(modelstate[j], Xt.iMinus1[j])
-		}
-		for(j in 1:length(theta1)){
-			assign(modelpara.diff[j], theta1[j])
-		}
-		for(j in 1:length(theta2)){
-			assign(modelpara.drift[j], theta2[j])
-		}
-		B.subs <- matrix(0, nrow(B), ncol(B))
-		for( i in 1:nrow(B) ){
-			for( j in 1:ncol(B) ){
-				B.subs[i,j] <- eval(B[i,j][[1]])
-			}
-		}
-		return(B.subs)
-	}
-	eval.inv.B <- function(B, theta1, theta2, Xt.iMinus1, ...){
-    return(solve(eval.B(B, theta1, theta2, Xt.iMinus1, ...)))
-	}
-## END
-	
-## some func about a
-	deriv.a <- function(a, var=character()){
-		a.deriv <- NULL
-		for(i in 1:length(a)){
-			a.deriv <- c(a.deriv, as.expression(D(a[i], var)))
-		}
-		return(a.deriv)
-	}
-	
-	eval.a <- function(a, theta1, theta2, Xt.iMinus1, ...){
-##assign variable
-		for(j in 1:length(Xt.iMinus1)){
-			assign(modelstate[j], Xt.iMinus1[j])
-		}
-		for(j in 1:length(theta1)){
-			assign(modelpara.diff[j], theta1[j])
-		}
-		for(j in 1:length(theta2)){
-			assign(modelpara.drift[j], theta2[j])
-		}
-		a.subs <- matrix(0, length(a), 1)
-		for(i in 1:length(a)){
-			a.subs[i,] <- eval(a[i])      
-		}
-		return(a.subs)
-	}
-##END
-## dGi_theta1
-	dGi.theta1 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...){    
-##d_theta1 log(detB)+d_theta1 1/2h*(-)T%*%B^(-1)%*%(-)
-## 2nd term d_theta1 log(det(B))
-		term.2 <- matrix(0, length(theta1), 1)
-		for( j in 1:length(theta1)){
-			term.2[j,1] <- sum(diag(eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-									eval.B(deriv.B(B, modelpara.diff[j]), theta1, theta2, Xt.iMinus1)))
-		}
-		
-## 3rd term d_theta1 1/2h *(-)B^(-1)(-)
-		term.3 <- matrix(0, length(theta1),1)
-		for( j in 1:length(theta1)){
-			tmp <- delta.i.X - h * eval.a(a, theta1, theta2, Xt.iMinus1)
-			term.3[j,1] <-  -1/(2*h) * t(tmp) %*% eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-			eval.B(deriv.B(B, modelpara.diff[j]), theta1, theta2, Xt.iMinus1) %*%
-            eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*% tmp
-		}
-		
-		ret <- 1/2*term.2+term.3
-		return(ret)
-	}
-	
-## dH_theta1
-	dH.theta1 <- function(theta1, theta2, h, yuima, B, a, ...){
-		ret <- matrix(0, length(theta1), 1)
-		data <- as.matrix(onezoo(yuima))
-		for( i in 1:(nrow(data)-1)){
-##Xt.iMinus1
-			Xt.iMinus1 <- data[i,]
-##delta.i.X
-			delta.i.X <- data[i+1,] - data[i,]
-##calc
-			ret <- ret + dGi.theta1(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
-		}
-		ret <- -ret
-		return(ret)
-	}
-	
-## Temporary dH2_theta1
-	d2Htemp.theta1 <- function(theta1, theta2, h, yuima, B, a, ...){
-		ret <- matrix(0, length(theta1), length(theta1))
-		data <- as.matrix(onezoo(yuima))
-		for( i in 1:(nrow(data)-1)){
-##Xt.iMinus1
-			Xt.iMinus1 <- data[i,]
-##delta.i.X
-			delta.i.X <- data[i+1,] - data[i,]
-##calc		
-			temp <- dGi.theta1(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
-			ret <- ret + temp%*%t(temp)
-		}
-		ret <- -ret
-		return(ret)
-	}
-	
-	
-## d2Gi_theta1
-	d2Gi.theta1 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a,...){
-##2nd term
-		term.2 <- matrix(0, length(theta1), length(theta1))
-		for(j in 1:length(theta1)){
-			for(k in 1:length(theta1)){
-				tmp <- -eval.inv.B(B,theta1, theta2, Xt.iMinus1) %*%
-				eval.B(deriv.B(B,modelpara.diff[k]), theta1, theta2, Xt.iMinus1) %*%
-				eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.B(deriv.B(B,modelpara.diff[j]), theta1, theta2, Xt.iMinus1) +
-				eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.B( deriv.B(deriv.B(B,modelpara.diff[j]), modelpara.diff[k]),
-					   theta1, theta2, Xt.iMinus1)
-				term.2[j,k] <- sum(diag(tmp)) / 2
-			}
-		}
-##3rd term
-		term.3 <- matrix(0, length(theta1), length(theta1))
-		for(j in 1:length(theta1)){
-			for(k in 1:length(theta1)){
-				tmp <- -2 * eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.B( deriv.B(B, modelpara.diff[k]), theta1, theta2, Xt.iMinus1 ) %*%
-				eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.B( deriv.B(B, modelpara.diff[j]), theta1, theta2, Xt.iMinus1) %*%
-                eval.inv.B(B, theta1, theta2, Xt.iMinus1) +
-				eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.B( deriv.B(deriv.B(B,modelpara.diff[j]), modelpara.diff[k]),
-					   theta1, theta2, Xt.iMinus1 ) %*%
-				eval.inv.B(B, theta1, theta2, Xt.iMinus1)
-				tmp2 <- delta.i.X -h * eval.a(a, theta1, theta2, Xt.iMinus1)
-				term.3[j,k] <- - 1 / (2*h) * t(tmp2) %*% tmp %*% tmp2 
-			}
-		}
-		
-##ret
-		ret <- term.2+term.3
-		return(ret)
-	}
-	
-## d2H_theta1
-	d2H.theta1 <-function(theta1, theta2, h, yuima, B, a, ...){
-		ret <- matrix(0, length(theta1), length(theta1))
-		data <- as.matrix(onezoo(yuima))
-		for(i in 1:(nrow(data)-1)){
-##Xt.iMinus1
-			Xt.iMinus1 <- data[i,]
-##delta.i.X
-			delta.i.X <- data[i+1,] - data[i,]
-##calc
-			ret <- ret + d2Gi.theta1(theta1,  theta2, h, Xt.iMinus1, delta.i.X, B, a,...)
-		}
-		ret <- -ret
-		return(ret)
-	}
-	
-## dGi_theta2
-	dGi.theta2 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...){
-##calc
-		ret <- matrix(0, length(theta2), 1)
-		for( j in 1:length(theta2) ){
-			ret[j,1] <- -t(delta.i.X - h * eval.a(a,theta1, theta2, Xt.iMinus1)) %*%
-			eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-			eval.a( deriv.a(a, modelpara.drift[j]), theta1, theta2, Xt.iMinus1)
-		}
-		
-		return(ret)
-	}
-	
-## dH_theta2
-	dH.theta2 <-function(theta1, theta2, h, yuima, B, a, ...){
-		ret <- matrix(0, length(theta2), 1)
-		data <- as.matrix(onezoo(yuima))
-		for( i in 1:(nrow(data)-1)){
-##Xt.iMinus1
-			Xt.iMinus1 <- data[i,]
-##delta.i.X
-			delta.i.X <- data[i+1,] - data[i,]
-##calc
-			ret <- ret + dGi.theta2(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
-#cat("dH.theta2-tmp:", ret, "\n")
-		}
-		ret <- -ret
-		return(ret)
-	}
-	
-## Temp dH_theta2
-	d2Htemp.theta2 <-function(theta1, theta2, h, yuima, B, a, ...){
-		ret <- matrix(0, length(theta2), length(theta2))
-		data <- as.matrix(onezoo(yuima))
-		for( i in 1:(nrow(data)-1)){
-##Xt.iMinus1
-			Xt.iMinus1 <- data[i,]
-##delta.i.X
-			delta.i.X <- data[i+1,] - data[i,]
-##calc
-			temp <- dGi.theta2(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
-			ret <- ret + temp%*%t(temp)
-#cat("dH.theta2-tmp:", ret, "\n")
-		}
-		ret <- -ret
-		return(ret)
-	}
-	
-	
-	
-## d2Gi_theta2
-	d2Gi.theta2 <- function(theta1, theta2, h, Xt.iMinus1, delta.i.X, B, a, ...){
-##calc
-		ret <- matrix(0, length(theta2), length(theta2))
-		for(j in 1:length(theta2)){
-			for(k in 1:length(theta2)){
-				ret[j,k] <- - t(delta.i.X) %*% eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.a( deriv.a( deriv.a(a,modelpara.drift[j]), modelpara.drift[k]),
-					   theta1, theta2, Xt.iMinus1) +
-				h * 
-				t(eval.a(deriv.a(a, modelpara.drift[j]), theta1, theta2, Xt.iMinus1)) %*%
-				eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.a(deriv.a(a, modelpara.drift[k]), theta1, theta2, Xt.iMinus1) +
-				h *
-				t(eval.a(a, theta1, theta2, Xt.iMinus1)) %*%
-				eval.inv.B(B, theta1, theta2, Xt.iMinus1) %*%
-				eval.a( deriv.a(deriv.a(a,modelpara.drift[j]), modelpara.drift[k]),
-					   theta1, theta2, Xt.iMinus1)
-			}
-		}
-		return(ret)
-	}
-	
-## d2H_theta2
-	d2H.theta2 <- function(theta1, theta2, h, yuima, B, a, ...){
-		ret <- matrix(0, length(theta2), length(theta2))
-		data <- as.matrix(onezoo(yuima))
-		for(i in 1:(nrow(data)-1)){
-##Xt.iMinus1
-			Xt.iMinus1 <- data[i,]
-##delta.i.X
-			delta.i.X <- data[i+1,] - data[i,]
-##calc
-			ret <- ret + d2Gi.theta2(theta1,  theta2, h, Xt.iMinus1, delta.i.X, B, a, ...)
-		}
-		ret <- -ret
-		return(ret)
-	}
-## END function define ##
-	
-## newton algorithm main ##
-	if(!param.only){
-		if(verbose){
-			cat("theta2 init:", theta2, "\n")
-			cat("theta1 init:", theta1, "\n")
-		}
-		
-		for(ite in 1:iteration){
-			
-			dHtheta2 <- dH.theta2(theta1, theta2, h, yuima, B, a, ...)
-			d2Htheta2 <- d2Htemp.theta2(theta1, theta2, h, yuima, B, a, ...)
-			theta2 <- as.vector(theta2 - solve(d2Htheta2) %*% dHtheta2)
-			dHtheta1 <- dH.theta1(theta1, theta2, h, yuima, B, a, ...)
-			d2Htheta1 <- d2Htemp.theta1(theta1, theta2, h, yuima, B, a, ...)
-			theta1 <- as.vector(theta1 - solve(d2Htheta1) %*% dHtheta1)
-			if(verbose){
-				cat("\n## Iteration", ite, "##\n")
-				cat("theta2 new:", theta2, "\n")
-				cat("theta1 new:", theta1, "\n")
-			}
-			
-		}
-	}
-## END newtom algorithm ##
-	
-##calc Sigma1, Sigma2, Hessian?##
-	Sigma1 <- - solve(d2H.theta1(theta1, theta2, h, yuima, B, a, ...))
-	Sigma1temp <- - solve(d2Htemp.theta1(theta1, theta2, h, yuima, B, a, ...))
-	Sigma2 <- - solve(d2H.theta2(theta1, theta2, h, yuima, B, a, ...))
-    Sigma2temp <- - solve(d2Htemp.theta2(theta1, theta2, h, yuima, B, a, ...))
-	hessian <- 1 ## Not Implemented yet!
-##END 
-##temp
-	return(list(theta1.new=theta1, theta2.new=theta2, Sigma1=Sigma1, Sigma1temp=Sigma1temp, Sigma2=Sigma2,Sigma2temp=Sigma2temp, hessian=hessian))
-	
-}
-
-##::calculate the log quasi-likelihood with parameters (theta2, theta1) and X.
-##::yuima : yuima object
-##::theta2 : parameter in drift.
-##::theta1 : parameter in diffusion.
-##::h : time width.
-
-##::quasi-bayes function
-
-##::estimate parameters(theta2,theta1) with a constraint ui%*%theta-ci=0  
-##::yuima : yuima object
-##::theta2 : init parameter in drift term.
-##::theta1 : init parameter in diffusion term.
-##::h : length between each observation time.
-##::theta1.lim, theta2.lim : limit of those parameters.
-##::example: 0 <= theta1 <= 1 theta1.lim = matrix(c(0,1),1,2)
-##::if theta1, theta2 are matrix, theta.lim can be defined matrix like rbind(c(0,1),c(0,1))
-setGeneric("adaBayes",
-           function(yuima, print=FALSE, start, prior,propose,n.iter=100,lower,upper,n.burnin,method="nomcmc",mhtype="independent")
-           standardGeneric("adaBayes")
-           )
-setMethod("adaBayes", "yuima",
-          function(yuima, print=FALSE,  start, prior,propose,n.iter=100,lower,upper,n.burnin,method="nomcmc",mhtype="independent"){
-            if( missing(yuima)){
-              cat("\nyuima object is missing.\n")
-              return(NULL)
-            }
-			            init <- start
-			  if(length(match(yuima@model@parameter@drift ,names(init),nomatch=0))!=length(yuima@model@parameter@drift)){
-				  cat("\ndrift parameters in yuima model and init do not match.\n")
-				  return(NULL)
-			  }
-			  if(length(match(yuima@model@parameter@diffusion ,names(init),nomatch=0))!=length(yuima@model@parameter@diffusion)){
-				  cat("\ndiffusion parameters in yuima model and init do not match.\n")
-				  return(NULL)
-			  }
-			              
-			## BEGIN burnin handling
-			if(missing(n.burnin)){
-              n.burnin <- n.iter
-			}
-			## END burnin handling
-			  
-			h <- deltat(yuima@data@zoo.data[[1]])
-			
-			  ## BEGIN Prior construction
-			  liprior<- function(prior,term){
-				  mvec <- numeric(0); mdom <- numeric(0)
-				  for(i in 1:length(slot(yuima@model@parameter,term))){
-					  if(prior[slot(yuima@model@parameter,term)[i]][[1]]$measure.type=="density"){
-						  mvec <- append(mvec,prior[slot(yuima@model@parameter,term)[i]][[1]]$density)
-						  if(is.null(prior[slot(yuima@model@parameter,term)[i]][[1]]$domain)){
-							  mdom <- cbind(mdom,c(-Inf,Inf))
-						  }else{
-							  mdom <- cbind(mdom,prior[slot(yuima@model@parameter,term)[i]][[1]]$domain)
-						  }
-					  }
-				  }
-				  mdensity <- function(param){
-					  res <- 1
-					  for(i in 1:length(slot(yuima@model@parameter,term))){
-						  res <- res*mvec[i][[1]](param[slot(yuima@model@parameter,term)[i]])
-					  }
-					  return(res)
-					  
-				  }
-				  return(list(mdom=mdom,mdensity=mdensity))
-			  }
-			  ## END Prior construction
-			  
-			n <- length(yuima)[1]
-			  
-			  ilparam <- function(liparam){
-				  return(list("theta2"=unlist(liparam[slot(yuima@model@parameter,"drift")]),"theta1"=unlist(liparam[slot(yuima@model@parameter,"diffusion")])))
-			  }
-			  liparam <- function(ilparam){
-				  return(relist(unlist(ilparam),init))
-			  }
-			
-			if(method=="nomcmc"){
-			  require(cubature)
-#				require(adapt)
-              ## BEGIN numerical integration function
-              nintegral <- function(term,param=init,prior=prior,lower=lower,upper=upper,print=FALSE){
-				lip <- liprior(prior,term); mdom <- lip$mdom; mdensity <- lip$mdensity
-				  
-				## BEGIN denominator calculation
-				  nparam <- param
-				  denominator <- function(subparam){
-					  if(is.null(dim(subparam))){
-						  matparam <- matrix(subparam,ncol=length(unlist(param[slot(yuima@model@parameter,term)])))
-					  }else{
-						  matparam <- subparam
-					  }
-					  
-					  nparam <- param
-
-					  qvec <- numeric(dim(matparam)[1])
-					  for(k in 1:dim(matparam)[1]){
-						  for(j in 1:(length(slot(yuima@model@parameter,term)))){
-							  nparam[slot(yuima@model@parameter,term)][j] <- matparam[k,][grep(slot(yuima@model@parameter,term)[j],names(unlist(param[slot(yuima@model@parameter,term)])))]
-						  }
-						  qvec[k] <- exp(quasilogl(yuima,param=nparam,print=print)+log(mdensity(nparam))-quasilogl(yuima,param=param,print=print)-log(mdensity(param)))
-					  }
-					  return(qvec)
-				  }
-				  if(length(slot(yuima@model@parameter,term))==1){
-					  denomvalue <- integrate(denominator,mdom[1,1],mdom[2,1])$value
-				  }else{
-					  
-#					  denomvalue <- adapt(length(unlist(param[slot(yuima@model@parameter,term)])),lower=mdom[1,],upper=mdom[2,],functn=denominator)$value
-					  denomvalue <- adaptIntegrate(denominator, lower=mdom[1,],upper=mdom[2,])$integral
-				  }
-				## END denominator calculation
-				  
-                ## BEGIN numerator calculation
-				unlistparam <- numeric(length(param[slot(yuima@model@parameter,term)]))
-				for(i in 1:length(param[slot(yuima@model@parameter,term)])){
-					numevalue <- numeric(1)
-					nparam <- param
-					numerator <- function(subparam){
-						if(is.null(dim(subparam))){
-							matparam <- matrix(subparam,ncol=length(unlist(param[slot(yuima@model@parameter,term)])))
-						}else{
-							matparam <- subparam
-						}
-						qvec <- numeric(dim(matparam)[1])
-						for(k in 1:(dim(matparam)[1])){
-							nparam[slot(yuima@model@parameter,term)] <- matparam[k,]
-							qvec[k] <- matparam[k,i]*exp(quasilogl(yuima,param=nparam,print=print)+log(mdensity(nparam))-quasilogl(yuima,param=param,print=print)-log(mdensity(param)))
-						}
-						return(qvec)
-					}
-					if(length(slot(yuima@model@parameter,term))==1){
-						numevalue <- integrate(numerator,mdom[1,1],mdom[2,1])$value
-					}else{
-#						numevalue <- adapt(length(param[slot(yuima@model@parameter,term)]),lower=mdom[1,],upper=mdom[2,],functn=numerator)$value
-						numevalue <- adaptIntegrate(numerator, lower=mdom[1,],upper=mdom[2,])$integral
-					}
-					unlistparam[i] <- numevalue/denomvalue
-				}
-                ## END numerator calculation
-				newparam <- param
-				newparam[slot(yuima@model@parameter,term)] <- relist(unlistparam,param[slot(yuima@model@parameter,term)])
-                
-                return(newparam)
-              }
-              ## END numerical integration function
-              
-              ## BEGIN numerical integration procedure
-              param <- nintegral("diffusion",param=init,prior=prior,lower=lower,upper=upper)
-              param <- nintegral("drift",param=param,prior=prior,lower=lower,upper=upper)
-              ## END numerical integration procedure
-              
-			}else if(method=="mcmc"){
-              if(mhtype=="RW"){
-                ## BEGIN propose construction
-                if(missing(propose)){
-                  rpropose1 <- function(n,mean,varcov){
-                    sd <- sqrt(varcov)
-                    d <- length(init[slot(yuima@model@parameter,"diffusion")])		
-                    return(matrix(data=rnorm(d*n,mean,sd),nrow=n))
-                  }
-                  rpropose2 <- function(n,mean,varcov){
-                    sd <- sqrt(varcov)
-                    d <- length(init[slot(yuima@model@parameter,"drift")])
-                    return(matrix(data=rnorm(d*n,mean,sd),nrow=n))
-                  }
-
-                  propose.param1 <- list(mean=0,varcov=1/n)
-                  propose.param2 <- list(mean=0,varcov=1/(n*h))
-                  propose1 <- list(rpropose=rpropose1,propose.param=propose.param1)
-                  propose2 <- list(rpropose=rpropose2,propose.param=propose.param2)
-                  propose <- list(propose2 = propose2,propose1 = propose1)
-                }
-                ## END propose construction
-                
-                ## BEGIN mh RW-algorithm function
-                mhalgorithm <- function(j,length=n.iter,param=init,prior=prior,print=FALSE){
-				if(prior[[j]]$measure.type=="density"){
-					mdensity <- prior[[j]]$density
-					if(is.null(prior[[j]]$domain)){
-						mdom <- c(-Inf,Inf)
-					}else{
-						mdom <- prior[[j]]$domain
-					}
-				}
-
-                  rpropose <- propose[[j]][[1]]
-                  propose.param <- propose[[j]][[2]]
-                  d <- length(param[[j]])
-                  
-                  dh <- matrix(t(rpropose(n.iter,propose.param[[1]],propose.param[[2]])),nrow=d)
-                  
-                  u <- runif(n.iter)
-                  
-                  pparam <- param
-                  pql <- quasilogl(yuima,param=pparam,print=print)+log(mdensity(pparam[[j]]))
-                  nparam <- param
-                  mhestimator <- 0
-                  
-				for(i in 1:n.iter){
-					nparam[[j]] <- pparam[[j]] + dh[,i]									
-					nql <- quasilogl(yuima,param=nparam,print=print)+log(mdensity(nparam[[j]]))
-					alpha <- exp(nql-pql)
-					if(is.na(alpha)){alpha <- -Inf}
-					pparam[[j]] <- (alpha>u[i])*(nparam[[j]]-pparam[[j]])+pparam[[j]]
-					if(alpha>u[i]){ pql <- nql}
-					mhestimator <- mhestimator + pparam[[j]]
-					}
-                  
-                  return(mhestimator/n.iter)
-                }
-                ## END mh RW-algorithm function
-              }
-              
-              if(mhtype=="independent"){
-				require(mvtnorm)
-                ## propose distribution construction
-                if(missing(propose)){
-                  rpropose1 <- function(n,mean,varcov){
-                    d <- length(init[slot(yuima@model@parameter,"diffusion")])			
-                    
-                    if(d==1) varcov <- as.numeric(varcov)
-                    
-                    return( t( as.matrix(rmnorm(n,mean,varcov)) ) )
-                  }
-                  rpropose2 <- function(n,mean,varcov){
-                    d <- length(init[slot(yuima@model@parameter,"drift")])		
-                    
-                    if(d==1) varcov <- as.numeric(varcov)
-                    
-                    return( t( as.matrix(rmnorm(n,mean,varcov)) ) )
-                  }
-                  dpropose <- function(x,mean,varcov){
-                    n <- dim(as.matrix(x))[2]
-                    d <- dim(as.matrix(x))[1]
-                    
-                    if(n==1 & d==1) x <- matrix(x)
-                    
-                    if(!is.matrix(x)){
-                      x <- as.matrix(x)
-                    }
-                    dvector <- numeric(n)
-					
-                    for(i in 1:n){
-                      dvector[i] <- dmnorm(x[,i],mean,varcov)
-                    }
-                    return(dvector)
-                  }
-                }
-                
-                ## BEGIN mh Independent type algorithm function
-                mhalgorithm <- function(j,length=n.iter,param=init,prior=prior,print=FALSE){
-				if(j==2){term <- "diffusion"}else{term <- "drift"}
-					lip <- liprior(prior,term); mdom <- lip$mdom; mdensity <- lip$mdensity
-				if(sum(c("theta2","theta1") %in% names(param))==2){
-					unlistparam <- param
-				}else{
-					unlistparam <- ilparam(param)
-				}
-                  newton <- newton.ml.qlb(yuima, theta2=unlistparam[[1]],theta1=unlistparam[[2]], h, iteration=1)
-                  if(print){ cat("newton result\n"); print(newton) }
-					
-                  if(j==1){##estimate theta2
-                    newton.tmp <- newton.ml.qlb(yuima, theta2=unlist(newton$theta2.new), theta1=unlistparam[[2]], h, param.only=TRUE)
-                    propose.param1 <- list(mean=newton.tmp$theta1.new,varcov=newton.tmp$Sigma1temp)
-                    propose.param2 <- list(mean=newton.tmp$theta2.new,varcov=newton.tmp$Sigma2temp)
-                    if(length(prior)!=1) prior <- prior$prior.theta2
-                    
-				  }else if(j==2){ ##estimate theta1
-                    newton.tmp <- newton.ml.qlb(yuima, theta2=unlistparam[[1]], theta1=newton$theta1.new, h, param.only=TRUE)
-                    propose.param1 <- list(mean=newton.tmp$theta1.new,varcov=newton.tmp$Sigma1temp)
-                    propose.param2 <- list(mean=newton.tmp$theta2.new,varcov=newton.tmp$Sigma2temp)
-                    if(length(prior)!=1) prior <- prior$prior.theta1
-                  }
-                  propose1 <- list(rpropose=rpropose1, dpropose=dpropose, propose.param=propose.param1)
-                  propose2 <- list(rpropose=rpropose2, dpropose=dpropose, propose.param=propose.param2)
-                  propose <- list(propose2=propose2, propose1=propose1)
-                  param <- list(theta2=newton$theta2.new, theta1=newton$theta1.new)
-					
-                  rpropose <- propose[[j]][[1]]
-                  dpropose <- propose[[j]][[2]]
-                  propose.param <- propose[[j]][[3]]
-                  d <- length(param[[j]])
-
-                  state <- rpropose(n.iter,propose.param[[1]],propose.param[[2]])
-                  tmp.param <- param
-                  weight <- numeric(n.iter)
-
-                  for(i in 1:n.iter){
-                    tmp.param[[j]] <- state[,i] 
-                    weight[i] <- exp(quasilogl(yuima,param=liparam(tmp.param),print=print))*mdensity(liparam(tmp.param))/
-                      dpropose(state[,i],propose.param[[1]],propose.param[[2]])
-                  }
-
-                  cstate <- param[[j]]
-                  cweight <- exp(quasilogl(yuima,param=liparam(param),print=print))*mdensity(liparam(tmp.param))/
-                    dpropose(param[[j]],propose.param[[1]],as.matrix(propose.param[[2]]))
-
-                  u <- runif(n.iter)
-                  
-                  mhestimator <- 0
-
-                  for(i in 1:n.iter){
-                    alpha <- weight[i]/cweight
-                    if(is.na(alpha)){alpha <- -Inf}
-                    if(alpha>u[i]){ cweight <- weight[i]; cstate <- state[,i]}
-                    mhestimator <- mhestimator + state[,i]
-                  }
-                  return(mhestimator/n.iter)
-                }
-              }
-              
-              ## BEGIN mh procedure
-              ##theta1 estim.
-              param <- liparam(list(init[slot(yuima@model@parameter,"drift")],mhalgorithm(2,length=n.burnin,param=init,prior=prior, print=print)))
-              param <- liparam(list(param[slot(yuima@model@parameter,"drift")],mhalgorithm(2,length=n.iter,param=param,prior=prior, print=print)))
-              ##theta2 estim.
-              param <- liparam(list(list(mhalgorithm(1,length=n.burnin,param=param,prior=prior, print=print),param[slot(yuima@model@parameter,"diffusion")])))
-              param <- liparam(list(mhalgorithm(1,length=n.iter,param=param,prior=prior, print=print),param[slot(yuima@model@parameter,"diffusion")]))
-              ## END mh procedure
-			}
-            return(liparam(param))
-          })
+##::quasi-bayes functionsetGeneric("adaBayes",		function(yuima, start, method="nomcmc", fixed = list(), print=FALSE,  lower, upper, joint=FALSE,prior, ...)standardGeneric("adaBayes"))setMethod("adaBayes", "yuima",		function(yuima, start, method="nomcmc", fixed = list(), print=FALSE, 		lower, upper, joint=FALSE,prior, ...){		call <- match.call()	if(method=="mcmc"){		require(mvtnorm)	}else{		require(cubature)	}	if( missing(yuima))		yuima.stop("yuima object is missing.")	## param handling	## FIXME: maybe we should choose initial values at random within lower/upper##        at present, qmle stops		if( missing(start) ) 	 yuima.stop("Starting values for the parameters are missing.")	diff.par <- yuima@model@parameter@diffusion	drift.par <- yuima@model@parameter@drift	jump.par <- yuima@model@parameter@jump	measure.par <- yuima@model@parameter@measure	common.par <- yuima@model@parameter@common	 ## BEGIN Prior construction	 if(!missing(prior)){		lower = numeric(0)		upper = numeric(0)		pdlist <- numeric(length(yuima@model@parameter@all))		names(pdlist) <- yuima@model@parameter@all		for(i in 1: length(pdlist)){			if(prior[[names(pdlist)[i]]]$measure.type=="code"){				expr <- prior[[names(pdlist)[i]]]$df				code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", expr, perl=TRUE))				args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", expr, perl=TRUE)), ","))				pdlist[i] <- switch(code,							 dunif=paste("function(z){return(dunif(z, ", args[2], ", ", args[3],"))}"),							 dnorm=paste("function(z){return(dnorm(z,", args[2], ", ", args[3], "))}"),							 dbeta=paste("function(z){return(dbeta(z, ", args[2], ", ", args[3], "))}"),							 dgamma=paste("function(z){return(dgamma(z, ", args[2], ", ", args[3], "))}")							 )				qf <- switch(code,							 dunif=paste("function(z){return(qunif(z, ", args[2], ", ", args[3],"))}"),							 dnorm=paste("function(z){return(qnorm(z,", args[2], ", ", args[3], "))}"),							 dbeta=paste("function(z){return(qbeta(z, ", args[2], ", ", args[3], "))}"),							 dgamma=paste("function(z){return(qgamma(z, ", args[2], ", ", args[3], "))}")							 )				lower = append(lower,eval(parse("text"=qf))(0.05))				upper = append(upper,eval(parse("text"=qf))(0.95))			}					}		 names(lower) <- names(pdlist)		 names(upper) <- names(pdlist)		 		 pd <- function(param){			 value <- 1			 for(i in 1:length(pdlist)){				 value <- value*eval(parse(text=pdlist[[i]]))(param[[i]])			 }			 return(value)		 }	 }else{		 pd <- function(param) return(1)	 }## END Prior construction	JointOptim <- joint	if(length(common.par)>0){		JointOptim <- TRUE		yuima.warn("Drift and diffusion parameters must be different. Doing					  joint estimation, asymptotic theory may not hold true.")	}	 	if(length(jump.par)+length(measure.par)>0)		yuima.stop("Cannot estimate the jump models, yet")		if(!is.list(start))		yuima.stop("Argument 'start' must be of list type.")	fullcoef <- NULL		if(length(diff.par)>0)	 fullcoef <- diff.par		if(length(drift.par)>0)	 fullcoef <- c(fullcoef, drift.par)	npar <- length(fullcoef)		fixed.par <- names(fixed)	if (any(!(fixed.par %in% fullcoef))) 	 yuima.stop("Some named arguments in 'fixed' are not arguments to the supplied yuima model")		nm <- names(start)    oo <- match(nm, fullcoef)    if(any(is.na(oo))) 		yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")    start <- start[order(oo)]    nm <- names(start)		 	idx.diff <- match(diff.par, nm)	idx.drift <- match(drift.par, nm)	idx.fixed <- match(fixed.par, nm)	tmplower <- as.list( rep( -Inf, length(nm)))	names(tmplower) <- nm		if(!missing(lower)){	   idx <- match(names(lower), names(tmplower))	   if(any(is.na(idx)))		yuima.stop("names in 'lower' do not match names fo parameters")	   tmplower[ idx ] <- lower		}	lower <- tmplower	 	tmpupper <- as.list( rep( Inf, length(nm)))	names(tmpupper) <- nm		if(!missing(upper)){		idx <- match(names(upper), names(tmpupper))		if(any(is.na(idx)))			yuima.stop("names in 'lower' do not match names fo parameters")		tmpupper[ idx ] <- upper		}	upper <- tmpupper	 	 	 	d.size <- yuima@model@equation.number	n <- length(yuima)[1]		env <- new.env()	assign("X",  as.matrix(onezoo(yuima)), env=env)	assign("deltaX",  matrix(0, n-1, d.size), env=env)	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 	for(t in 1:(n-1))	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)	 mle <- qmle(yuima, "start"=start, "lower"=lower,"upper"=upper, "method"="L-BFGS-B")	integ <- function(idx.fixed=NULL,f=f,start=start,par=NULL,hessian=FALSE,upper,lower){		 intf <- adaptIntegrate(f,lowerLimit=lower[-idx.fixed],upperLimit=upper[-idx.fixed],fDim=(length(upper[-idx.fixed])+1))$integral		 return(intf[-1]/intf[1])	 }	 mcinteg <- function(idx.fixed=NULL,f=f,p,start=start,par=NULL,hessian=FALSE,upper,lower,mean,vcov){		 intf <- mcIntegrate(f,p,lowerLimit=lower[-idx.fixed],upperLimit=upper[-idx.fixed],mean[-idx.fixed],vcov[-idx.fixed,-idx.fixed],mcmc=1000)		 return(intf)	 }	 	 mcIntegrate <- function(f,p, lowerLimit, upperLimit,mean,vcov,mcmc=1000){		 x_c <- mean		 p_c <- p(mean)		 val <- f(x_c)		 		if(length(mean)>1){			x <- rmvnorm(mcmc-1,mean,vcov)			q <- dmvnorm(x,mean,vcov)			q_c <- dmvnorm(mean,mean,vcov) 		 }else{			x <- rnorm(mcmc-1,mean,sqrt(vcov))			q <- dnorm(x,mean,sqrt(vcov))			q_c <- dnorm(mean,mean,sqrt(vcov)) 		 }		 		 for(i in 1:(mcmc-1)){			 if(length(mean)>1){x_n <- x[i,]}else{x_n <- x[i]}			 if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0){			 q_n <- q[i]			 p_n <- p(x_n)			 u <- runif(1)			 a <- (p_n*q_c)/(p_c*q_n)			if(u<a){				 p_c <- p_n				 q_c <- q_n				 x_c <- x_n			 }			 }			 val <- val+f(x_c)		 }		 return(unlist(val/mcmc))	 }	 	tmp <- minusquasilogl(yuima=yuima, param=mle@coef, print=print, env)	 	 g <- function(p,fixed,idx.fixed){		 mycoef <- mle@coef		 if(length(idx.fixed)>0){			 mycoef[-idx.fixed] <- p			 mycoef[idx.fixed] <- fixed		 }else{			 names(mycoef) <- nm		 }		 		 return(c(1,p)*exp(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env)+tmp)*pd(param=mycoef))	 }	 	 pg <- function(p,fixed,idx.fixed){		 mycoef <- start		 if(length(idx.fixed)>0){			 mycoef[-idx.fixed] <- p			 mycoef[idx.fixed] <- fixed		 }else{			 names(mycoef) <- nm		 }		 		 return(exp(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env)+tmp)*pd(param=mycoef))	 }	 	 idf <- function(p){return(p)}		#	 fj <- function(p) {#		 mycoef <- as.list(p)#		 names(mycoef) <- nm#		 mycoef[fixed.par] <- fixed#		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)#	 }	 oout <- NULL     HESS <- matrix(0, length(nm), length(nm))	 colnames(HESS) <- nm	 rownames(HESS) <- nm	 HaveDriftHess <- FALSE	 HaveDiffHess <- FALSE	 if(length(start)){#		if(JointOptim){ ### joint optimization#			if(length(start)>1){ # multidimensional optim#				oout <- optim(start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)#				HESS <- oout$hessian#				HaveDriftHess <- TRUE#				HaveDiffHess <- TRUE#			} else { ### one dimensional optim#				opt1 <- optimize(f, ...) ## an interval should be provided#				opt1 <- list(par=integ(f=f,upper=upper,lower=lower,fDim=length(lower)+1),objective=0)#               oout <- list(par = opt1$minimum, value = opt1$objective)#			} ### endif( length(start)>1 )#		} else {  ### first diffusion, then drift			theta1 <- NULL			old.fixed <- fixed 			old.start <- start						if(length(idx.diff)>0){## DIFFUSION ESTIMATIOn first						old.fixed <- fixed			old.start <- start			new.start <- start[idx.diff] # considering only initial guess for diffusion			new.fixed <- fixed			if(length(idx.drift)>0)				 new.fixed[nm[idx.drift]] <- start[idx.drift]			fixed <- new.fixed			fixed.par <- names(fixed)			idx.fixed <- match(fixed.par, nm)			names(new.start) <- nm[idx.diff]						mydots <- as.list(call)[-(1:2)]			mydots$fixed <- NULL			mydots$fn <- as.name("f")			mydots$start <- NULL			mydots$par <- unlist(new.start)			mydots$hessian <- FALSE			mydots$upper <- unlist( upper[ nm[idx.diff] ])			mydots$lower <- unlist( lower[ nm[idx.diff] ])			f <- function(p){return(g(p,fixed,idx.fixed))}			pf <- function(p){return(pg(p,fixed,idx.fixed))}			if(length(mydots$par)>1){#			 oout <- do.call(optim, args=mydots)			if(method=="mcmc"){				oout <- list(par=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=diag(diag(mle@vcov))))			}else{			 oout <- list(par=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower,start=start))			}			} else {			 mydots$f <- mydots$fn			 mydots$fn <- NULL			 mydots$par <- NULL			 mydots$hessian <- NULL				 mydots$method <- NULL				 mydots$interval <- as.numeric(c(unlist(lower[diff.par]),unlist(upper[diff.par]))) 			 mydots$lower <- NULL				 mydots$upper <- NULL	#			 opt1 <- do.call(optimize, args=mydots)				if(method=="mcmc"){					opt1 <- list(minimum=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=diag(diag(mle@vcov))))				}else{			 opt1 <- list(minimum=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower))			}			 theta1 <- opt1$minimum			 names(theta1) <- diff.par#			 oout <- list(par = theta1, value = opt1$objective) 			 oout <- list(par=theta1,value=0)			}			theta1 <- oout$par			} ## endif(length(idx.diff)>0)						theta2 <- NULL						if(length(idx.drift)>0){## DRIFT estimation with first state diffusion estimates			fixed <- old.fixed			start <- old.start			new.start <- start[idx.drift] # considering only initial guess for drift			new.fixed <- fixed			new.fixed[names(theta1)] <- theta1			fixed <- new.fixed			fixed.par <- names(fixed)			idx.fixed <- match(fixed.par, nm)			names(new.start) <- nm[idx.drift]			mydots <- as.list(call)[-(1:2)]			mydots$fixed <- NULL			mydots$fn <- as.name("f")			mydots$start <- NULL			mydots$par <- unlist(new.start)			mydots$hessian <- FALSE			mydots$upper <- unlist( upper[ nm[idx.drift] ])			mydots$lower <- unlist( lower[ nm[idx.drift] ])				f <- function(p){return(g(p,fixed,idx.fixed))}				pf <- function(p){return(pg(p,fixed,idx.fixed))}			if(length(mydots$par)>1){#			  oout1 <- do.call(optim, args=mydots)				if(method=="mcmc"){					oout1 <- list(par=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=diag(diag(mle@vcov))))				}else{					oout1 <- list(par=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower))				}			} else {				mydots$f <- mydots$fn				mydots$fn <- NULL				mydots$par <- NULL				mydots$hessian <- NULL					mydots$method <- NULL					mydots$interval <- as.numeric(c(lower[drift.par],upper[drift.par])) #				opt1 <- do.call(optimize, args=mydots)				if(method=="mcmc"){					opt1 <- list(minimum=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=diag(diag(mle@vcov))))				}else{					opt1 <- list(minimum=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower))				}				theta2 <- opt1$minimum				names(theta2) <- drift.par				oout1 <- list(par = theta2, value = as.numeric(opt1$objective)) 				}			theta2 <- oout1$par			} ## endif(length(idx.drift)>0)			oout1 <- list(par=  c(theta1, theta2))			names(oout1$par) <- c(diff.par,drift.par)			oout <- oout1#		} ### endif JointOptim    } else {		list(par = numeric(0L), value = f(start))	}		 		 fDrift <- function(p) {		 mycoef <- as.list(p)		 names(mycoef) <- drift.par		 mycoef[diff.par] <- coef[diff.par]		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)	 }	 fDiff <- function(p) {		 mycoef <- as.list(p)		 names(mycoef) <- diff.par		 mycoef[drift.par] <- coef[drift.par]		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)	 }	 	 coef <- oout$par	 control=list()	 par <- coef	 names(par) <- c(diff.par, drift.par)     nm <- c(diff.par, drift.par)	 #	 print(par)#	 print(coef)	 conDrift <- list(trace = 5, fnscale = 1, 				 parscale = rep.int(5, length(drift.par)), 				 ndeps = rep.int(0.001, length(drift.par)), maxit = 100L, 				 abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 				 beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 				 factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)	 conDiff <- list(trace = 5, fnscale = 1, 				  parscale = rep.int(5, length(diff.par)), 				  ndeps = rep.int(0.001, length(diff.par)), maxit = 100L, 				  abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 				  beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 				  factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)	 #	 nmsC <- names(con)#	 if (method == "Nelder-Mead") #	 con$maxit <- 500#	 if (method == "SANN") {#		 con$maxit <- 10000#		 con$REPORT <- 100#	 }#	 con[(namc <- names(control))] <- control#	 if (length(noNms <- namc[!namc %in% nmsC])) #	 warning("unknown names in control: ", paste(noNms, collapse = ", "))#	 if (con$trace < 0) #	 warning("read the documentation for 'trace' more carefully")#	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) == #			  0) #	 stop("'trace != 0' needs 'REPORT >= 1'")#	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol", #													"abstol"), namc)))) #	 warning("method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'")#	 npar <- length(par)#	 if (npar == 1 && method == "Nelder-Mead") #	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")#	 	 if(!HaveDriftHess & (length(drift.par)>0)){	  hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))	  HESS[drift.par,drift.par] <- hess2	 	 }	 if(!HaveDiffHess  & (length(diff.par)>0)){		 hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))		 HESS[diff.par,diff.par] <- hess1	 	 }	 	 	 oout$hessian <- HESS	 vcov <- if (length(coef)) 	  solve(oout$hessian)     else matrix(numeric(0L), 0L, 0L)	   	mycoef <- as.list(coef)	names(mycoef) <- nm	mycoef[fixed.par] <- fixed		min <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env)	    new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), #       vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 		vcov = vcov,  details = oout,        method = method)})
