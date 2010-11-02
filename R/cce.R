@@ -79,8 +79,11 @@ setMethod("cce", "yuima.data", function(x) {
 		}
 		
 	}
-
-    sdmat <- diag(sqrt(diag(cmat)))
-    cormat <- solve(sdmat) %*% cmat %*% solve(sdmat)
+    if(n.series >1){
+      sdmat <- diag(sqrt(diag(cmat)))
+      cormat <- solve(sdmat) %*% cmat %*% solve(sdmat)
+    }else{
+      cormat <- as.matrix(1)
+    }
 	return( list(covmat=cmat,cormat=cormat)  )
 })
