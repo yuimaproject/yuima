@@ -4,21 +4,16 @@
 \title{Adaptive Bayes estimator for the parameters in sde model}
 \description{Adaptive Bayes estimator for the parameters in a specific type of sde.}
 \usage{
-adaBayes(yuima, print = FALSE, start, prior, 
+adaBayes(yuima, start, prior, 
     lower, upper, method = "nomcmc")
 }
 \arguments{
   \item{yuima}{a 'yuima' object.}
-  \item{prior}{ a list of prior distributions for the parameters [function].}
   \item{start}{ initial suggestion for parameter values }
-  \item{propose}{ ... }
-  \item{print}{trace optimization?}
-  \item{method}{ \code{nomcmc} requires package \code{cubature} }
-  \item{mhtype}{ ... }
-  \item{n.burnin}{ ... }
+  \item{prior}{ a list of prior distributions for the parameters [function].}
   \item{lower}{ ... }
   \item{upper}{ ... }
-  \item{n.iter}{ ... }
+  \item{method}{ \code{nomcmc} requires package \code{cubature} }
 }
 \details{
   Calculate the values of the parameters theta1 and theta2. When the quasi-likelihood is too large for the given data, the integral in the Bayes estimator may diverges. For such a case, offset values for the parameters can be specified not to diverge.}
