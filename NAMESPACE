@@ -32,9 +32,9 @@ exportMethods(
               "poisson.random.sampling",
               "get.zoo.data",
               "initialize",
-              "ql",
-              "rql",
-              "ml.ql",
+##              "ql",
+##              "rql",
+##              "ml.ql",
               "adaBayes",
               "limiting.gamma",
 			  "getF",
@@ -72,7 +72,8 @@ export(poisson.random.sampling)
 
 export(get.zoo.data)
 
-export(ql,rql,ml.ql)
+##export(ql,rql,ml.ql)
+##export(rql)
 export(adaBayes)
 export(rIG, rNIG, rbgamma, rngamma, rstable) ##:: random number generator for Inverse Gaussian
 export(limiting.gamma)
@@ -88,7 +89,7 @@ export(F0)
 export(Fnorm)
 export(asymptotic_term)
 
-export(LSE)
+##export(LSE)
 export(lse)
 
 export(qmle)
