@@ -5,10 +5,12 @@
 \description{TBA
 }
 \usage{
-llag(x)
+llag(x,verbose=FALSE)
 }
 \arguments{
-  \item{x}{an object of  \code{\link{yuima-class}} or \code{\link{yuima.data-class}}.}
+  \item{x}{an object of  \code{\link{yuima-class}} or
+	\code{\link{yuima.data-class}}.}
+  \item{verbose}{whether llag returns matrix or not.}
 }
 \details{
   TBA
@@ -56,7 +58,7 @@ llag(x)
   }
 
 # true value must be -theta=0.05
-ret <- llag(yuima)
+ret <- llag(yuima,verbose=TRUE)
 print(ret$opt)
 print(ret$covmat)
 print(ret$cormat)

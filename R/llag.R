@@ -1,9 +1,9 @@
 #lead-lag estimation
 
 #x:data plot:T or F
-setGeneric( "llag", function(x) standardGeneric("llag") )
-setMethod( "llag", "yuima", function(x) llag(x@data ))
-setMethod( "llag", "yuima.data", function(x) {
+setGeneric( "llag", function(x,verbose=FALSE) standardGeneric("llag") )
+setMethod( "llag", "yuima", function(x,verbose=FALSE) llag(x@data,verbose=verbose ))
+setMethod( "llag", "yuima.data", function(x,verbose=FALSE) {
 
   if(!is(x)=="yuima.data"){
      if(is(x)=="yuima"){
@@ -15,7 +15,8 @@ setMethod( "llag", "yuima.data", function(x) {
    }else{
      dat <- x
    }
-
+  
+     
 ##  dat <- get.zoo.data(x)
 ##  dat <- x@data
 
@@ -63,7 +64,10 @@ setMethod( "llag", "yuima.data", function(x) {
 
   covmat <- lagcce(opt)$covmat
   cormat <- lagcce(opt)$cormat
-  
-  return(list(lagcce=opt,covmat=covmat,cormat=cormat,mat=mat))
+  if(verbose==TRUE){
+    return(list(lagcce=opt,covmat=covmat,cormat=cormat,mat=mat))
+  }else{
+    return(list(lagcce=opt,covmat=covmat,cormat=cormat))
+  }
 })
 
