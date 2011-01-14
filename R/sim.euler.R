@@ -135,7 +135,12 @@ euler<-function(xinit,yuima,dW,env){
       eta0 <- eval(sdeModel@measure$intensity, env) ## intensity param
 
       ##:: get lambda from nu()
-      lambda <- integrate(sdeModel@measure$df$func, 0, Inf)$value * eta0
+      tmp.expr <- function(my.x){
+        assign(sdeModel@jump.variable,my.x)
+        return(eval(sdeModel@measure$df$expr))
+      }
+      #lambda <- integrate(sdeModel@measure$df$func, 0, Inf)$value * eta0
+      lambda <- integrate(tmp.expr, 0, Inf)$value * eta0
       
       ##:: lambda = nu() (p6)
       N_sharp <- rpois(1,Terminal*eta0)	##:: Po(Ne)
