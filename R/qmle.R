@@ -233,6 +233,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			names(new.start) <- nm[idx.diff]
 			
 			mydots <- as.list(call)[-(1:2)]
+			mydots$print <- NULL
 			mydots$fixed <- NULL
 			mydots$fn <- as.name("f")
 			mydots$start <- NULL
@@ -274,6 +275,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			names(new.start) <- nm[idx.drift]
 
 			mydots <- as.list(call)[-(1:2)]
+			mydots$print <- NULL
 			mydots$fixed <- NULL
 			mydots$fn <- as.name("f")
 			mydots$start <- NULL
