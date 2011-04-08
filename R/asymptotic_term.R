@@ -1283,12 +1283,16 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       for(k in 1:k.size){
         my.x <- rbind(my.x,tmp.x)
       }
-      est.points <- my.x[,sample(seq(1,ncol(my.x),by=1),ncol(my.x),rep=FALSE)]
+
+      est.ind <- seq(1,ncol(my.x),by=10)
+      est.points <- my.x[,est.ind]
+      width <- diff(tmp.x)
+      
       tmp <- 0
-      for(i in 1:ncol(est.points)){
-        tmp <- tmp + gz_pi1(est.points[,i])
+      for(i in 1:(ncol(est.points)-1)){
+        tmp <- tmp + gz_pi1(est.points[,i])*width[i]
       }
-      tmp <- tmp/ncol(est.points)
+      
 ##    }else if( 2 <= k.size || k.size <= 20 ){ # use 'cubatur()' to solve multi-dim integration.
     }else if( (2 <= k.size || k.size <= 20) && FALSE ){ # use 'cubatur()' to solve multi-dim integration. 
       max <- 10*lambda.max
@@ -1514,11 +1518,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   
   ## calculation
   yuima.warn("Calculating d0 ...")
-  print(system.time(d0 <- get.d0.term()))
+  d0 <- get.d0.term()
 
   yuima.warn("Done\n")
   yuima.warn("Calculating d1 term ...")
-  print(system.time(d1 <- get.d1.term()))
+  d1 <- get.d1.term()
   yuima.warn("Done\n")
   terms <- list(d0=d0, d1=d1)
   return(terms)
