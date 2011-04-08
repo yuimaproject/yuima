@@ -1283,7 +1283,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       for(k in 1:k.size){
         my.x <- rbind(my.x,tmp.x)
       }
-      est.points <- my.x[,seq(1,ncol(my.x),by=1)]
+      est.points <- my.x[,sample(seq(1,ncol(my.x),by=1),ncol(my.x),rep=FALSE)]
       tmp <- 0
       for(i in 1:ncol(est.points)){
         tmp <- tmp + gz_pi1(est.points[,i])
