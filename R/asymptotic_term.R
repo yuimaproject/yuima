@@ -1283,7 +1283,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       for(k in 1:k.size){
         my.x <- rbind(my.x,tmp.x)
       }
-      est.points <- my.x[sample(seq(1,nrow(my.x),by=1),nrow(my.x),rep=FALSE),sample(seq(1,ncol(my.x),by=1),ncol(my.x),rep=FALSE)]
+      est.points <- my.x[,seq(1,ncol(my.x),by=1)]
       tmp <- 0
       for(i in 1:ncol(est.points)){
         tmp <- tmp + gz_pi1(est.points[,i])
@@ -1294,13 +1294,10 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       max <- 10*lambda.max
 ##      max <- 10*lambda.max/k.size
       min <- -10*lambda.max
-##      min <- -10*lambda.max/k.size
-#		if(require(adapt)){
 	  if(require(cubature)){
 #		  tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi1)$value
         print("Messages bellow are for debug...")
         print(date())
-##        tmp <- adaptIntegrate(gz_pi1,lower=rep(min,k.size),upper=rep(max,k.size))$integral
         tmp <- adaptIntegrate(gz_pi1,lower=rep(min,k.size),upper=rep(max,k.size),tol=1e-5,maxEval=500/k.size)
         print(date())
         print("tolerance")
@@ -1517,10 +1514,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   
   ## calculation
   yuima.warn("Calculating d0 ...")
-  d0 <- get.d0.term()
+  print(system.time(d0 <- get.d0.term()))
+
   yuima.warn("Done\n")
   yuima.warn("Calculating d1 term ...")
-  d1 <- get.d1.term()
+  print(system.time(d1 <- get.d1.term()))
   yuima.warn("Done\n")
   terms <- list(d0=d0, d1=d1)
   return(terms)
