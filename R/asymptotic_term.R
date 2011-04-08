@@ -19,8 +19,10 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   #e <- gete(yuima@functional)
   assign(expand.var, gete(yuima@functional))
   
-  Terminal <- yuima@sampling@Terminal
-  division <- yuima@sampling@n
+##  Terminal <- yuima@sampling@Terminal
+  Terminal <- yuima@sampling@Terminal[1]
+##  division <- yuima@sampling@n
+  division <- yuima@sampling@n[1]
   xinit <- getxinit(yuima@functional)
   state <- yuima@model@state.variable
   V0 <- yuima@model@drift
@@ -29,6 +31,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   d.size <- yuima@model@equation.number
   k.size <- length(F)
 
+  print("compute X.t0")
   X.t0 <- Get.X.t0(yuima, expand.var=expand.var)
   delta <- deltat(X.t0)
 
@@ -55,7 +58,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     return(tmp)
   }
 
-  # function to solve Y_{t} (between (13.9) and (13.10)) using runge kutta method
+  # function to solve Y_{t} (between (13.9) and (13.10)) using runge kutta method. Y_{t} is GL(d) valued (matrices)
   Get.Y <- function(){
     ## init
     dt <- Terminal/division
@@ -82,12 +85,13 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     for(t in 1:division){
       ## Xt
       for(i in 1:d.size){
-        assign(state[i],X.t0[t,i])
+        assign(state[i],X.t0[t,i])   ## state[i] is x_i, for example.
       }
       ## k1
       for(i in 1:(d.size*d.size)){
         assign(Ystate[i],Yt[i])
       }
+
       for(i in 1:(d.size*d.size)){
         k1[i] <- dt*eval(F[i])
       }
@@ -291,7 +295,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     return(mu)
   }
 
-  # function to calculate a_{s}^{alpha} in thesis p5
+  # function to calculate a_{s}^{alpha} in bookchapter p5
   funca <- function(e=0){ 
     #init
     division <- nrow(X.t0)
@@ -307,8 +311,8 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
 	
 	# prepare expression of derivatives
     for(k in 1:k.size){
-      dxf[k] <- deriv(f[[1]][k],state) #expression of derived f0 by x
-      dxF[k] <- deriv(F[k],state) #expression of derived F by x
+      dxf[k] <- deriv(f[[1]][k],state) #expression of d f0/dx
+      dxF[k] <- deriv(F[k],state) #expression of d F/dx
       def[[k]] <- list()
       for(r in 2:(r.size+1)){
         def[[k]][[r-1]] <- deriv(f[[r]][k],"e") #expression of derived fa by e
@@ -597,7 +601,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
 #	if(require(adapt)){
 	  if(require(cubature)){
 #tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi0)$value
-	   tmp <- adaptIntegrate(gz_pi0, lower=rep(min,k.size),upper=rep(max,k.size))$integral
+        tmp <- adaptIntegrate(gz_pi0, lower=rep(min,k.size),upper=rep(max,k.size))$integral
 		} else {
 	   tmp <- NA		
 	  }
@@ -1262,6 +1266,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   get.d1.term<- function(){
     lambda.max <- max(eigen(Sigma)$values)
     ## get g(z)*pi1(z)
+    
     gz_pi1 <- function(z){
       tmp <- g(z) * get.pi1(z)
       return( tmp  )
@@ -1269,18 +1274,47 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     ## integrate
     if( k.size ==1){ # use 'integrate()'
       tmp <- integrate(gz_pi1,-Inf,Inf)$value
-    }else if( 2 <= k.size || k.size <= 20 ){ # use 'adapt()' to solve multi-dim integration8
+    }else if(2 <= k.size || k.size <= 20 ){ # use sampling approximation for solving multi-dim integration. 2010/11/13
+      set.seed(123)
       max <- 10*lambda.max
       min <- -10*lambda.max
+      tmp.x <- seq(min,max,length=100)
+      my.x <- NULL
+      for(k in 1:k.size){
+        my.x <- rbind(my.x,tmp.x)
+      }
+      est.points <- my.x[sample(seq(1,nrow(my.x),by=1),nrow(my.x),rep=FALSE),sample(seq(1,ncol(my.x),by=1),ncol(my.x),rep=FALSE)]
+      tmp <- 0
+      for(i in 1:ncol(est.points)){
+        tmp <- tmp + gz_pi1(est.points[,i])
+      }
+      tmp <- tmp/ncol(est.points)
+##    }else if( 2 <= k.size || k.size <= 20 ){ # use 'cubatur()' to solve multi-dim integration.
+    }else if( (2 <= k.size || k.size <= 20) && FALSE ){ # use 'cubatur()' to solve multi-dim integration. 
+      max <- 10*lambda.max
+##      max <- 10*lambda.max/k.size
+      min <- -10*lambda.max
+##      min <- -10*lambda.max/k.size
 #		if(require(adapt)){
 	  if(require(cubature)){
 #		  tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi1)$value
-       tmp <- adaptIntegrate(gz_pi1,lower=rep(min,k.size),upper=rep(max,k.size))$integral
+        print("Messages bellow are for debug...")
+        print(date())
+##        tmp <- adaptIntegrate(gz_pi1,lower=rep(min,k.size),upper=rep(max,k.size))$integral
+        tmp <- adaptIntegrate(gz_pi1,lower=rep(min,k.size),upper=rep(max,k.size),tol=1e-5,maxEval=500/k.size)
+        print(date())
+        print("tolerance")
+        print(tmp$error)
+        print("function evaluated times")
+        print(tmp$functionEvaluations)
+        print("return code: if it is not 0, error occured in integration (may be does not converge)")
+        print(tmp$returnCode)
+        tmp <- tmp$integral
 	  } else {
 	    tmp <- NA	  
 	  }
     }else{
-      stop("length k is too big.")
+      stop("length k is too long.")
     }
     return(tmp)
   }
@@ -1361,9 +1395,8 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   yuima.warn("Get variables ...")
   Y <- Get.Y()
   mu <- funcmu()
-  aMat <- funca()
+  aMat <- funca()   ## ここでエラー 2010/11/24, TBC
   Sigma <- funcsigma()
-  
   
   # calculate each variables shown in p.9 and
   # prepare for trapezium integration

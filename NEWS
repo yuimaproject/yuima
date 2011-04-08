@@ -1,3 +1,6 @@
+Change in Version 0.1.185
+  o asymptotic_term is now possible to handle multivariate cases.
+
 Change in Version 0.1.180
   o a minor bug on cce is fixed.
 Change in Version 0.1.179
