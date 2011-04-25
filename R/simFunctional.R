@@ -9,7 +9,7 @@ funcF <- function(yuima,X,e,expand.var="e"){
             d.size <- yuima@model@equation.number
             k.size <- length(F)
             modelstate <- yuima@model@state.variable
-            XT <- X[division,]   #X observed last. size:vector[d.size]
+            XT <- X[division+1,]   #X observed last. size:vector[d.size]
             resF <- numeric(k.size)   #values of F. size:vector[k.size]
             
             for(d in 1:d.size){
@@ -68,20 +68,22 @@ funcFe. <- function(yuima,X,e,expand.var="e"){
   division <- yuima@sampling@n[1]  ## 2010/11/13 modified. Currently, division must be the same for each path
   Terminal <- yuima@sampling@Terminal
   delta <- Terminal/division  #length between observed times
-  dw <- matrix(0,division-1,r.size+1) #Wr(t) size:matrix[division,r.size+1]
+  dw <- matrix(0,division,r.size+1) #Wr(t) size:matrix[division,r.size+1]
+  dw[,1] <- rep(delta,length=division) #W0(t)=t
 
-  dw[,1] <- rep(Terminal/(division-1),length=division-1) #W0(t)=t
-            
   for(r in 2:(r.size+1)){
     tmp <- rnorm(division,0,sqrt(delta)) #calculate Wr(t)
-    dw[,r] <- tmp[2:division]-tmp[1:(division-1)] #calculate dWr(t)
+    tmp <- c(0,tmp)
+##    dw[,r] <- tmp[-1]-tmp[-(division+1)] #calculate dWr(t)
+    dw[,r] <- diff(tmp) #calculate dWr(t)
+    
   }
   
   resF <- funcF(yuima,X,e,expand.var=expand.var) #calculate F with X,e. size:vector[k.size]
   resf <- funcf(yuima,X,e,expand.var=expand.var) #calculate f with X,e. size:array[k.size,division,r.size+1]  ## いま, ここでエラー 2010/11/13
   Fe <- numeric(k.size)
   for(k in 1:k.size){
-    Fe[k] <- sum(resf[k,1:division-1,]*dw)+resF[k]  #calculate Fe using resF and resf as (13.2).
+    Fe[k] <- sum(resf[k,1:division,]*dw)+resF[k]  #calculate Fe using resF and resf as (13.2).
   }
   return(Fe)            
 }
