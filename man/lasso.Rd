@@ -3,12 +3,13 @@
 \title{Adaptive LASSO estimation for stochastic differential equations}
 \description{Adaptive LASSO estimation for stochastic differential equations.}
 \usage{
-lasso(yuima, lambda0, start, ...)
+lasso(yuima, lambda0, start, delta=1, ...)
 }
 \arguments{
   \item{yuima}{a yuima object.}
   \item{lambda0}{a named list with penalty for each parameter.}
   \item{start}{initial values to be passed to the optimizer.}
+  \item{delta}{controls the amount of shrinking in the adaptive sequences.}
   \item{...}{passed to \code{\link{optim}} method. See Examples.}
 }
 \details{

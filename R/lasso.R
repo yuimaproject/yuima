@@ -1,6 +1,6 @@
 # Initial version of lasso estimation for SDEs
 
-lasso <- function(yuima, lambda0, start, ...){
+lasso <- function(yuima, lambda0, start, delta=1, ...){
 	
 	call <- match.call()
 	
@@ -39,7 +39,11 @@ lasso <- function(yuima, lambda0, start, ...){
 	return(list(mle=fail, sd.mle=NA, lasso=fail, sd.lasso=NA))
 	
 	
-	lambda <- unlist(lambda0[names(theta.mle)])/abs(theta.mle)
+#	lambda <- unlist(lambda0[names(theta.mle)])/abs(theta.mle)
+	lambda <- unlist(lambda0[names(theta.mle)])/abs(theta.mle)^delta
+    lambda1 <- unlist(lambda0[names(theta.mle)])/abs(theta.mle)
+	idx <- which(lambda>1e7)
+	lambda[idx] <- lambda1[idx]
 	
 	f2 <- function( theta ) as.numeric( t(theta-theta.mle) %*% H %*% (theta-theta.mle) + lambda %*% abs(theta) )
 	
@@ -55,7 +59,8 @@ lasso <- function(yuima, lambda0, start, ...){
 	SIGMA1 <- try(sqrt(diag(solve(fit2$hessian))), silent=TRUE)
 	
 	if(class(SIGMA1)=="try-error")
-	return(list(mle=fail, sd.mle=NA, lasso=fail, sd.lasso=NA))
+	return(list(mle = theta.mle, sd.mle = NA, lasso = theta.lasso, sd.lasso = NA))
+#	return(list(mle=fail, sd.mle=NA, lasso=fail, sd.lasso=NA))
 	
 	return(list(mle=theta.mle, sd.mle=SIGMA, lasso=theta.lasso, sd.lasso=SIGMA1,call=call, lambda0=lambda0))
 }
