@@ -42,8 +42,8 @@ lasso <- function(yuima, lambda0, start, delta=1, ...){
 #	lambda <- unlist(lambda0[names(theta.mle)])/abs(theta.mle)
 	lambda <- unlist(lambda0[names(theta.mle)])/abs(theta.mle)^delta
     lambda1 <- unlist(lambda0[names(theta.mle)])/abs(theta.mle)
-	idx <- which(lambda>1e7)
-	lambda[idx] <- lambda1[idx]
+	idx <- which(lambda>1e4)
+	lambda[idx] <- 1e4 # lambda1[idx]
 	
 	f2 <- function( theta ) as.numeric( t(theta-theta.mle) %*% H %*% (theta-theta.mle) + lambda %*% abs(theta) )
 	
