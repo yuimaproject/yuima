@@ -390,10 +390,12 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   # function to calculate sigma in thesis p5
   # require: aMat
   funcsigma <- function(e=0){
+
     division <- nrow(X.t0)
     sigma <- matrix(0,k.size,k.size) #size:matrix[k.size,k.size]
     for(t in 1:division){
-      sigma <- sigma+(aMat[,,t]%*%t(aMat[,,t])) /(division-1) #calculate sigma
+##      sigma <- sigma+(aMat[,,t]%*%t(aMat[,,t])) /(division-1) #calculate sigma: old code, modified 20110519
+      sigma <- sigma+(t(aMat[,,t])%*%(aMat[,,t])) /(division-1) #calculate sigma
     }
     if(any(eigen(sigma)$value<=0.0001)){
     # Singularity check
