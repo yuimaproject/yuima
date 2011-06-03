@@ -1,3 +1,8 @@
+
+yuima.warn <- function(x){
+	cat(sprintf("\nYUIMA: %s\n", x))
+}
+
 # in this source we note formulae like latex
 
 
@@ -11,7 +16,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   if(is.null(yuima@model)) stop("model object is missing!")
   if(is.null(yuima@sampling)) stop("sampling object is missing!")
   if(is.null(yuima@functional)) stop("functional object is missing!")
-    
+
   f <- getf(yuima@functional)
   F <- getF(yuima@functional)
 
@@ -72,12 +77,18 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     k3 <- numeric(d.size*d.size)
     k4 <- numeric(d.size*d.size)
     Ystate <- paste("y",1:(d.size*d.size),sep="")
+
     F <- NULL
     F.n <- vector(d.size,mode="expression")
     for(n in 1:d.size){
       for(i in 1:d.size){
         F.tmp <- dx.drift[((i-1)*d.size+1):(i*d.size)]
-        F.n[i] <- parse(text=paste(paste(F.tmp,"*",Ystate[((n-1)*d.size+1):(n*d.size)],sep=""),collapse="+"))
+
+##C³
+#        F.n[i] <- parse(text=paste(paste(F.tmp,"*",Ystate[((n-1)*d.size+1):(n*d.size)],sep=""),collapse="+"))
+        F.n[i] <- parse(text=paste(paste("(",F.tmp,")","*",Ystate[((n-1)*d.size+1):(n*d.size)],sep=""),collapse="+"))
+##
+
       }
       F <- append(F,F.n)
     }
@@ -110,6 +121,14 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
         k3[i] <- dt*eval(F[i])
       }
       ## k4
+
+##C³
+      ## Xt+1
+      for(i in 1:d.size){
+        assign(state[i],X.t0[t+1,i])   
+      }
+##
+
       for(i in 1:(d.size*d.size)){
         assign(Ystate[i],Yt[i]+k3[i])
       }
@@ -126,11 +145,17 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     colnames(Y) <- Ystate
     return(ts(Y,deltat=dt,start=0))  
   }
-  
+
   # function to calculate Y_{t}Y_{s}^{-1}
   Get.YtYis <- function(t,s,range){
-    yt <- matrix(Y[(range[t]-1)*delta/deltat(Y)+1,],d.size,d.size)
-    yis <- solve(matrix(Y[(range[s]-1)*delta/deltat(Y)+1,],d.size,d.size))
+
+##C³
+#    yt <- matrix(Y[(range[t]-1)*delta/deltat(Y)+1,],d.size,d.size)
+    yt <- matrix(Y[range[t],],d.size,d.size)
+#    yis <- solve(matrix(Y[(range[s]-1)*delta/deltat(Y)+1,],d.size,d.size))
+    yis <- solve(matrix(Y[range[s],],d.size,d.size))
+##
+
     return(yt%*%yis)
   }
   
@@ -141,7 +166,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     assign(pars,0)  ## epsilon=0
     #ytyis <- Get.YtYis((range[t]-1)*delta,(range[s]-1)*delta)
     for(i in 1:d.size){
-      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+
+##C³
+#      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+      assign(state[i],X.t0[range[s],i])
+##
     }
     for(i in 1:d.size){
       for(j in 1:r.size){
@@ -158,7 +187,12 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     assign(pars,0)  ## epsilon=0
     #ytyis <- Get.YtYis((range[t]-1)*delta,(range[s]-1)*delta)
     for(i in 1:d.size){
-      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+
+##C³
+#      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+      assign(state[i],X.t0[range[s],i])
+##
+
     }
     for(i in 1:d.size){
       tmp[i] <- eval(de.drift[i]) # dV0/de
@@ -173,7 +207,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     assign(pars,0)  ## epsilon=0
     #ytyis <- Get.YtYis((range[t]-1)*delta,(range[s]-1)*delta)
     for(i in 1:d.size){
-      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+
+##C³
+#      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+      assign(state[i],X.t0[range[s],i])
+##
     }
 	# make expression of dV/di
     diV <- as.list(NULL)
@@ -201,10 +239,20 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     assign(pars,0)  ## epsilon=0
     #ytyis <- Get.YtYis((range[t]-1)*delta,(range[s]-1)*delta)
     for(i in 1:d.size){
-      assign(state[i],X.t0[(range[t]-1)*delta/deltat(X.t0)+1,i])
+
+##C³
+#      assign(state[i],X.t0[(range[t]-1)*delta/deltat(X.t0)+1,i])
+#      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+      assign(state[i],X.t0[range[s],i])
+##
+
     }
     diV0 <- Derivation.scalar(V0,state[i.state],d.size) # dV0/di
-    dideV0 <- Derivation.scalar(V0,pars,d.size) #d(dV0/di)/de
+
+##C³
+#    dideV0 <- Derivation.scalar(V0,pars,d.size) #d(dV0/di)/de
+    dideV0 <- Derivation.scalar(diV0,pars,d.size) #d(dV0/di)/de
+##
     for(i in 1:d.size){
       tmp[i] <- eval(dideV0[i])
     }
@@ -218,7 +266,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     assign(pars,0)  ## epsilon=0
     #ytyis <- Get.YtYis((range[t]-1)*delta,(range[s]-1)*delta)
     for(i in 1:d.size){
-      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+
+##C³
+#      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+      assign(state[i],X.t0[range[s],i])
+##
     }
     diV0 <- Derivation.scalar(V0,state[i.state],d.size)     #dV0/di
     didjV0 <- Derivation.scalar(diV0,state[j.state],d.size) #d(dV0/di)/dj
@@ -235,7 +287,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     assign(pars,0)  ## epsilon=0
     #ytyis <- Get.YtYis((range[t]-1)*delta,(range[s]-1)*delta)
     for(i in 1:d.size){
-      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+
+##C³
+#      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+      assign(state[i],X.t0[range[s],i])
+##
     }
     for(i in 1:d.size){
       for(j in 1:r.size){
@@ -252,7 +308,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     assign(pars,0)  ## epsilon=0
     #ytyis <- Get.YtYis((range[t]-1)*delta,(range[s]-1)*delta)
     for(i in 1:d.size){
-      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+
+##C³
+#      assign(state[i],X.t0[(range[s]-1)*delta/deltat(X.t0)+1,i])
+      assign(state[i],X.t0[range[s],i])
+##
     }
     for(i in 1:d.size){
       tmp[i] <- eval(dede.drift[i])
@@ -290,8 +350,74 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     
 	# integrate def0 (just sum it)
     def0 <- apply(def0,1,sum) #sum of def0. size:vector[k.size]
-    def0 <- def0*(1/(division-1))
+
+##C³
+#    def0 <- def0*(1/(division-1))
+    def0 <- def0*(Terminal/(division-1))
+##
+
     mu <- def0+deF0  #size:vector[k.size]
+
+##C³
+    dxF <- c()
+    dxf <- c()
+
+    for(k in 1:k.size){
+      dxF[k] <- deriv(F[k],state)
+      dxf[k] <- deriv(f[[1]][k],state)
+    }
+
+    tmp1 <- matrix(0,d.size,division-1)
+    for(t in 1:(division-1)){
+	for(d in 1:d.size){
+	  assign(state[d],X.t0[t,])
+	}
+#	browser()
+		deV0 <- numeric(d.size)
+		for(i in 1:d.size) deV0[i]	<- eval(de.drift[i])
+
+##C³
+	tmp1[,t] <- deV0 %*% solve(matrix(Y[t,],d.size,d.size))
+##
+    }
+
+    for(d in 1:d.size){
+	assign(state[d],X.t0[division,d])
+    }
+
+    dxFT <- matrix(0,k.size,d.size)
+    for(k in 1:k.size){
+      dxFT[k,] <- attr(eval(dxF[k]),"gradient")
+    }
+
+    tmp2 <- as.matrix(rep(1,division-1))
+    third <- dxFT %*% matrix(Y[division,],d.size,d.size) %*% (tmp1 %*% tmp2) * (Terminal/(division-1))
+
+    dxf0 <- array(0,dim=c(k.size,d.size,division))
+    for(t in 1:division){
+	for(d in 1:d.size){
+	  assign(state[d],X.t0[t,d])
+	}
+	for(k in 1:k.size){
+	  dxf0[k,,t] <- attr(eval(dxf[k]),"gradient")
+	}
+    }
+
+    tmp3 <- matrix(0,k.size,division-2)
+    for(t in 2:(division-1)){
+	tmp4 <- tmp1[,1:(t-1)]
+	tmp5 <- as.matrix(rep(1,t-1))
+##C³
+	tmp3[,t-1] <- matrix(dxf0[,,t],k.size,d.size) %*% matrix(Y[t,],d.size,d.size) %*% (tmp4 %*% tmp5) * (Terminal/(division-1))
+##
+    }
+
+    tmp6 <- as.matrix(rep(1,division-2))
+    fourth <- tmp3 %*% tmp6 * (Terminal/(division-1))
+
+    mu <- mu + third + fourth
+##
+
     return(mu)
   }
 
@@ -324,7 +450,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
         dev[[r]][[d]] <- deriv(V[[d]][r],"e") #expression of derived Vr by e
       }
     }
-	
+
 	# evaluate derivative expressions
     for(t in 1:division){
       X0t <- X.t0[t,]
@@ -335,7 +461,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
         ##calculate derived f0 by x with Xt and e=0. dxf0(Xt,0)
         dxf0[k,,t] <- attr(eval(dxf[k]),"gradient") #calculate dxf(derived f0 by x) with X0t
         ##calculate derived F by x with XT and e=0. dxF(XT,0)
-        dxF0[k,] <- attr(eval(dxF[k]),"gradient") #calculate dxF(derived F by e) with XT
+        dxF0[k,] <- attr(eval(dxF[k]),"gradient") #calculate dxF(derived F by x) with XT
         for(r in 2:(r.size+1)){
           ##calculate derived fa by e with Xt and e=0. defa(Xt,0)
           defa[k,r-1,t] <- attr(eval(def[[k]][[r-1]]),"gradient")  #calculate def(derived fa by e) with X0t   
@@ -348,7 +474,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
         }
       }
     }  
-    
+
 	# prepare Y and Y^{-1}
     arrayY <- array(0,dim=c(d.size,d.size,division))
     invY <- array(0,dim=c(d.size,d.size,division))
@@ -356,23 +482,43 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       arrayY[,,t] <- matrix(Y[t,],d.size,d.size)
       invY[,,t] <- solve(arrayY[,,t])
     }
-	
+
 	# calculate dxF*Y^{T}*Y^{-1}*deV_{a}
 	second <- array(0,dim=c(k.size,r.size,division))
 	temp <- dxF0 %*% arrayY[,,division]
 	for(t in 1:division) {
 		second[,,t] <- temp %*% invY[,,t] %*% deva[,,t]
 	}
-	
+
 	#calculate integral
 	fIntegral <- array(0,dim=c(k.size,r.size,division))
 	third <- array(0,dim=c(k.size,r.size,division))
-	dt <- Terminal / division
-	third[,,division] <- dxf0[,,division] %*% arrayY[,,division] %*% invY[,,division] %*% deva[,,division] * dt
-	for(s in (division-1):1) {
-		third[,,s] <- third[,,s+1] + dxf0[,,s] %*% arrayY[,,s] %*% invY[,,s] %*% deva[,,s] * dt
+
+##C³
+#	dt <- Terminal / division
+	dt <- Terminal / (division-1)
+#	third[,,division] <- dxf0[,,division] %*% arrayY[,,division] %*% invY[,,division] %*% deva[,,division] * dt
+	third[,,division] <- 0
+##
+
+	for(s in (division-1):1){
+
+##C³
+#		third[,,s] <- third[,,s+1] + dxf0[,,s] %*% arrayY[,,s] %*% invY[,,s] %*% deva[,,s] * dt
+		third[,,s] <- third[,,s+1] + matrix(dxf0[,,s],k.size,d.size) %*% arrayY[,,s] %*% invY[,,s] %*% matrix(deva[,,s],d.size,r.size) * dt
+##
 	}
-	
+
+#	for(s in 1:(division-1)){
+#	  tmp <- array(0,dim=c(k.size,r.size,division-s))
+#	  for(t in s:(division-1)){
+#print(c(s,t))
+#	    tmp[,,t-s+1] <- dxf0[,,t] %*% arrayY[,,t] %*% invY[,,s] %*% deva[,,s] * dt
+
+#	    third[,,s] <- third[,,s] + tmp[,,t-s+1]
+#	  }
+#	}
+
  #   defa <- aperm(defa,c(1,3,2))*1.0
  #   deva <- aperm(deva,c(1,3,2))*1.0
  #   dxF0 <- dxF0*1.0
@@ -390,12 +536,18 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   # function to calculate sigma in thesis p5
   # require: aMat
   funcsigma <- function(e=0){
-
     division <- nrow(X.t0)
     sigma <- matrix(0,k.size,k.size) #size:matrix[k.size,k.size]
-    for(t in 1:division){
-##      sigma <- sigma+(aMat[,,t]%*%t(aMat[,,t])) /(division-1) #calculate sigma: old code, modified 20110519
-      sigma <- sigma+(t(aMat[,,t])%*%(aMat[,,t])) /(division-1) #calculate sigma
+
+##C³
+#    for(t in 1:division){
+    for(t in 1:(division-1)){
+
+#      sigma <- sigma+(aMat[,,t]%*%t(aMat[,,t])) /(division-1) #calculate sigma
+#      sigma <- sigma+(aMat[,,t]%*%t(aMat[,,t])) * Terminal/(division-1) #calculate sigma
+	a.t <- matrix(aMat[,,t],k.size,r.size)
+	sigma <- sigma+(a.t%*%t(a.t)) * Terminal/(division-1)
+##
     }
     if(any(eigen(sigma)$value<=0.0001)){
     # Singularity check
@@ -595,6 +747,8 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
 
     ## integrate
     if( k.size ==1){ # use 'integrate' if k=1
+
+##’ˆÓF’†S‚©‚ç‚¸‚ê‚·‚¬‚é‚ÆÏ•ª‚ğŒvZ‚µ‚È‚¢	#”ÍˆÍ‚ª•Ï‚í‚é‚Æ’l‚ª•Ï‚í‚Á‚Ä‚µ‚Ü‚¤
       tmp <- integrate(gz_pi02,-Inf,Inf)$value
     }else if( 2 <= k.size || k.size <= 20 ){ # use library 'adapt' to solve multi-dimentional integration
 	  max <- 10 * lambda.max
@@ -631,7 +785,8 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   ## This function returns First term of di.bar (d.size x block martix) and
   ## part of second term(Second.tmp)
   ## Second.tmp is ((d x block) x k) matrix
-  ## aMat.tmp is k x (d x block) matrix
+  ## aMat.tmp is k x (r x block) matrix
+
   get.di.bar.init <- function(){
     # trapezium rule
     tmp.mat <-  rep(1,block)
@@ -645,7 +800,12 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
     tmp.mat3 <- tmp.mat2
     for(i in 1:r.size){
       if(i != 1){
-        tmp.mat3 <- rbind(tmp.mat3,tmp.mat2)
+
+##C³?
+#        tmp.mat3 <- rbind(tmp.mat3,tmp.mat2)
+        tmp.mat3 <- cbind(tmp.mat3,tmp.mat2)
+##
+
       }
     }
     dim(tmp.mat3) <- c(d.size*block,r.size*block)
@@ -770,6 +930,9 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
         tmp4[,k] <- tmp3[,(c(1:block)*k.size + ( k - k.size))]
       }
       tmp.Diff <- Diff[block,]
+
+##’ˆÓF‘äŒ`Œö®‚ª‚æ‚­‚È‚¢‚ª‚ ‚éB
+
       for( j in 1:(k.size*r.size)){
         if(j !=1){
           tmp.Diff <- rbind(tmp.Diff,Diff[block,])
@@ -791,10 +954,15 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
         tmp[i] <- dat.Di.init$Second.tmp[,,i]
       }
       ##dat.Di.init$First is d x k matrix
-      First <- dat.Di.init$First %*% x / as.double(Sigma)
+
+##C³
+#      First <- dat.Di.init$First %*% x / as.double(Sigma)
+      First <- dat.Di.init$First %*% x 	#get.Di.init‚Åsolve(Sigma)‚ğ‚©‚¯‚Ä‚¢‚é
       Second <- (tmp/(as.double(Sigma)^2) ) %*% t(x^2 - as.double(Sigma))
     }else{
-      First <- dat.Di.init$First %*% solve(Sigma) %*% x
+#      First <- dat.Di.init$First %*% solve(Sigma) %*% x
+      First <- dat.Di.init$First %*% x	#get.Di.init‚Åsolve(Sigma)‚ğ‚©‚¯‚Ä‚¢‚é
+##
       Second <- numeric(d.size)
       for(i in 1:d.size){
         tmp <- dat.Di.init$Second.tmp[,,i]
@@ -1103,8 +1271,12 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       dim(tmp.x) <- c((d.size*length(x)),block)
       
       Fifth <- tmp.x * Fifth.tmp / as.double(Sigma)
-      
-      tmp <- First + Second * Third + Fourth + Fifth
+
+##C³      
+#      tmp <- First + Second * Third + Fourth + Fifth
+      tmp <- First + Second + Third + Fourth + Fifth
+##
+
     }else{
       First <- matrix(0,d.size,block)
       Second <- matrix(0,d.size,block)
@@ -1190,8 +1362,12 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       Fourth <- sum( de.de.f0.l[l,] * Diff[block,] *delta) /2
       Fourth <- rep(Fourth,length(z))
 
-      Di.init <- get.Di.init( t(as.matrix(di.de.f.l[l,,] )))
-      Fifth <- (t(rep(1,d.size)) %*% get.Di( Di.init , z) )
+		if(d.size==1){ 
+			Di.init <- get.Di.init( t(as.matrix(di.de.f.l[l,,] )))
+		}else{		
+			Di.init <- get.Di.init( as.matrix(di.de.f.l[l,,]))
+		}      
+		Fifth <- (t(rep(1,d.size)) %*% get.Di( Di.init , z) )
 
       Sixth <- ( (de.de.f.l[l,] * Diff[block,]) %*% t(aMat.tmp) *delta) / as.double(Sigma) * z /2
       
@@ -1380,7 +1556,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   dx.drift <- Derivation.vector(V0,state,d.size,d.size)
   de.drift <- Derivation.scalar(V0,pars,d.size)
   dede.drift <- Derivation.scalar(de.drift,pars,d.size)  ##
-  
+
   # make expressions of derivation of V
   dx.diffusion <- as.list(NULL)
   for(i in 1:d.size){
@@ -1394,13 +1570,13 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   for(i in 1:d.size){
     dede.diffusion[i] <- list(Derivation.scalar(de.diffusion[[i]],pars,r.size))
   }
-  
+
   yuima.warn("Get variables ...")
   Y <- Get.Y()
   mu <- funcmu()
   aMat <- funca()   ## ¤³¤³¤Ç¥¨¥é¡¼ 2010/11/24, TBC
   Sigma <- funcsigma()
-  
+
   # calculate each variables shown in p.9 and
   # prepare for trapezium integration
   
@@ -1420,8 +1596,13 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   }
   # calculate width of trapezoid
   diff <- numeric(block-1)
-  diff[1:(block-2)] <- range[2] - range[1]
-  diff[block-1] <- range[block]-range[block-1]
+
+##C³
+#  diff[1:(block-2)] <- range[2] - range[1]
+#  diff[block-1] <- range[block]-range[block-1]
+  diff <- range[2:block] - range[1:(block-1)]	#diff‚Ì·‚Íˆê’è‚Å‚Í‚È‚¢
+##
+
   Diff <- matrix(0,block,block)
   if(k.size == 1){
     aMat.tmp <- t(as.matrix(aMat[,,1]))
