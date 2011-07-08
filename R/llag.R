@@ -1,73 +1,1 @@
-#lead-lag estimation
-
-#x:data plot:T or F
-setGeneric( "llag", function(x,verbose=FALSE) standardGeneric("llag") )
-setMethod( "llag", "yuima", function(x,verbose=FALSE) llag(x@data,verbose=verbose ))
-setMethod( "llag", "yuima.data", function(x,verbose=FALSE) {
-
-  if(!is(x)=="yuima.data"){
-     if(is(x)=="yuima"){
-       dat <- x@data  
-     }else{
-       print("llag:invalid argument")
-       return(NULL)
-     }
-   }else{
-     dat <- x
-   }
-  
-     
-##  dat <- get.zoo.data(x)
-##  dat <- x@data
-
-  data1 <- dat@zoo.data[[1]]
-  data2 <- dat@zoo.data[[2]]
-##  data1 <- as.numeric(dat[[1]])
-##  data2 <- as.numeric(dat[[2]])
-  time1 <- time(data1)
-  time2 <- time(data2)  
-
-  lagcce <- function(theta){
-    stime <- time2 + theta  #shifted time
-    time(dat@zoo.data[[2]]) <- stime
-    return(cce(dat))
-  }
-  
-
-# calculate the maximum of correlation by substituting theta to lagcce
-
-#n:=2*length(data)
-
-  n <- round(2*max(length(data1),length(data2)))+1
-
-# maximum value of lagcce
-  theta <- as.numeric(time2[1])-as.numeric(time1[1]) # time lag (sec)
-
-  num1 <- as.numeric(time1[length(time1)])-as.numeric(time1[1]) # elapsed time for series 1
-  num2 <- as.numeric(time2[length(time2)])-as.numeric(time2[1]) # elapsed time for series 2
-
-  lagmax <- function(n){
-    y <- seq(-num2-theta,num1-theta,length=n)
-    tmp <- real(n)
-    for(i in 2:(n-1)){
-      tmp[i] <- lagcce(y[i])$covmat[1,2]
-    }
-
-    mat <- cbind(y[2:(n-1)],tmp[2:(n-1)])
-    return(mat)
-  }
-
- 
-  mat <- lagmax(n)
-
-  opt <- mat[,1][abs(mat[,2])==max(abs(mat[,2]))][1] # make the first timing of max or min
-
-  covmat <- lagcce(opt)$covmat
-  cormat <- lagcce(opt)$cormat
-  if(verbose==TRUE){
-    return(list(lagcce=opt,covmat=covmat,cormat=cormat,mat=mat))
-  }else{
-    return(list(lagcce=opt,covmat=covmat,cormat=cormat))
-  }
-})
-
+#lead-lag estimation#x:data plot:T or FsetGeneric( "llag", function(x,verbose=FALSE) standardGeneric("llag") )setMethod( "llag", "yuima", function(x,verbose=FALSE) llag(x@data,verbose=verbose ))setMethod( "llag", "yuima.data", function(x,verbose=FALSE) {  if(!is(x)=="yuima.data"){	 if(is(x)=="yuima"){	   dat <- x@data  	 }else{	   print("llag:invalid argument")	   return(NULL)	 }   }else{	 dat <- x   }		d <- length(dat@zoo.data)		lagccep <- function(datp,theta){		time(datp[[2]]) <- time(datp[[2]])+theta		return(cce(setData(datp))$covmat[1,2])	}		lagcce <- function(datzoo,theta){		d <- dim(theta)[1]		lcmat <- cce(setData(datzoo))$covmat				for(i in 1:(d-1)){			for(j in (i+1):d){			datp <- datzoo[c(i,j)]				lcmat[i,j] <- lagccep(datp,theta[i,j])				lcmat[j,i] <- lcmat[i,j]		}		}				return(lcmat)		}				find_lag <- function(i,j){		datp <- dat@zoo.data[c(i,j)]		time1 <- time(datp[[1]])		time2 <- time(datp[[2]])  		# calculate the maximum of correlation by substituting theta to lagcce		#n:=2*length(data)	  n <- round(2*max(length(datp[[1]]),length(datp[[2]])))+1    # maximum value of lagcce  theta <- as.numeric(time2[1])-as.numeric(time1[1]) # time lag (sec)    num1 <- as.numeric(time1[length(time1)])-as.numeric(time1[1]) # elapsed time for series 1  num2 <- as.numeric(time2[length(time2)])-as.numeric(time2[1]) # elapsed time for series 2  	y <- seq(-num2-theta,num1-theta,length=n)	tmp <- real(n)	for(i in 2:(n-1)){	  tmp[i] <- lagccep(datp,y[i])	}  	  mat <- cbind(y[2:(n-1)],tmp[2:(n-1)])	  	opt <- mat[,1][abs(mat[,2])==max(abs(mat[,2]))][1] # make the first timing of max or min	return(-opt)	}		theta <- matrix(numeric(d^2),ncol=d)	for(i in 1:(d-1)){		for(j in (i+1):d){			theta[i,j] <- find_lag(i,j)			theta[j,i] <- -theta[i,j]		}	}		  covmat <- lagcce(dat@zoo.data,theta)	cormat <- diag(1/sqrt(diag(covmat)))%*%covmat%*%diag(1/sqrt(diag(covmat)))	  if(verbose==TRUE){	return(list(lagcce=theta,covmat=covmat,cormat=cormat))  }else{	return(list(lagcce=theta,covmat=covmat,cormat=cormat))  }  })  
