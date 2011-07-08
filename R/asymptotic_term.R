@@ -42,6 +42,21 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
 
   ##:: fix bug 07/23
   pars <- expand.var #yuima@model@parameter@all[1]  #epsilon
+	
+	# fix bug 20110628
+	if(k.size==1){
+		G <- function(x){
+			n <- length(x)
+			res <- numeric(0)
+			for(i in 1:n){
+				res <- append(res,g(x[i]))
+			}
+			return(res)
+		}
+	}else{
+		G <- function(x) return(g(x))
+	}
+
 
   # function to return symbolic derivatives of myfunc by mystate(multi-state)
   Derivation.vector <- function(myfunc,mystate,dim1,dim2){
@@ -322,6 +337,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   
   # function to calculate mu in thesis p5
   funcmu <- function(e=0){
+
     division <- nrow(X.t0)
     XT <- X.t0[division,] #data X0 observated last. size:vector[d.size]
     
@@ -736,28 +752,55 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   ## get d0
   ## required library(adapt)
   get.d0.term <- function(){
-    lambda.max<- max(eigen(Sigma)$values)
+    lambda <- eigen(Sigma)$values
+    matA <- eigen(Sigma)$vector
     ## get g(z)*pi0(z)
+
+##C³
+#    gz_pi0 <- function(z){
+#      return( G(z) * H0 *normal(z,mu=mu,Sigma=Sigma))      
+#    }
+
     gz_pi0 <- function(z){
-      return( g(z) * H0 *normal(z,mu=mu,Sigma=Sigma))      
+	tmpz <- matA %*% z
+      return( G(tmpz) * H0 *normal(tmpz,mu=mu,Sigma=Sigma))   #det(matA) = 1
     }
+##
+
     gz_pi02 <- function(z){
-      return( g(z) * H0 *dnorm(z,mean=mu,sd=sqrt(Sigma)))
+      return( G(z) * H0 *dnorm(z,mean=mu,sd=sqrt(Sigma)))
     }
 
     ## integrate
     if( k.size ==1){ # use 'integrate' if k=1
 
 ##’ˆÓF’†S‚©‚ç‚¸‚ê‚·‚¬‚é‚ÆÏ•ª‚ðŒvŽZ‚µ‚È‚¢	#”ÍˆÍ‚ª•Ï‚í‚é‚Æ’l‚ª•Ï‚í‚Á‚Ä‚µ‚Ü‚¤
-      tmp <- integrate(gz_pi02,-Inf,Inf)$value
+      tmp <- integrate(gz_pi02,mu-5*sqrt(Sigma),mu+5*sqrt(Sigma))$value
     }else if( 2 <= k.size || k.size <= 20 ){ # use library 'adapt' to solve multi-dimentional integration
-	  max <- 10 * lambda.max
-      min <- -10 * lambda.max
-      L <- (max - min)
+
+##C³
+#	  max <- 6 * sqrt(lambda.max)
+#      min <- -6 * sqrt(lambda.max)
+#      L <- (max - min)
+
+	lower <- c()
+	upper <- c()
+
+	for(k in 1:k.size){
+	  max <- 7 * sqrt(lambda[k])
+	  lower[k] <- - max
+	  upper[k] <- max
+	}
+##
+
 #	if(require(adapt)){
 	  if(require(cubature)){
 #tmp <- adapt(ndim=k.size,lower=rep(min,k.size),upper=rep(max,k.size),functn=gz_pi0)$value
-        tmp <- adaptIntegrate(gz_pi0, lower=rep(min,k.size),upper=rep(max,k.size))$integral
+
+##C³
+#        tmp <- adaptIntegrate(gz_pi0, lower=rep(min,k.size),upper=rep(max,k.size))$integral
+	tmp <- adaptIntegrate(gz_pi0, lower=lower,upper=upper)$integral
+##
 		} else {
 	   tmp <- NA		
 	  }
@@ -1442,35 +1485,89 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   # calculate d1
   ## required library(adapt)
   get.d1.term<- function(){
-    lambda.max <- max(eigen(Sigma)$values)
+
+##C³
+#    lambda.max <- max(eigen(Sigma)$values)
+	lambda <- eigen(Sigma)$values
+##
+
     ## get g(z)*pi1(z)
     
     gz_pi1 <- function(z){
-      tmp <- g(z) * get.pi1(z)
+      tmp <- G(z) * get.pi1(z)
       return( tmp  )
     }
     ## integrate
     if( k.size ==1){ # use 'integrate()'
-      tmp <- integrate(gz_pi1,-Inf,Inf)$value
+      tmp <- integrate(gz_pi1,mu-5*sqrt(Sigma),mu+5*sqrt(Sigma))$value
     }else if(2 <= k.size || k.size <= 20 ){ # use sampling approximation for solving multi-dim integration. 2010/11/13
       set.seed(123)
-      max <- 10*lambda.max
-      min <- -10*lambda.max
-      tmp.x <- seq(min,max,length=100)
+
+##C³
+#      max <- 10*lambda.max
+#      min <- -10*lambda.max
+#      tmp.x <- seq(min,max,length=100)
+#      my.x <- NULL
+#      for(k in 1:k.size){
+#        my.x <- rbind(my.x,tmp.x)
+#      }
+
+#      est.ind <- seq(1,ncol(my.x),by=10)
+#      est.points <- my.x[,est.ind]
+#      width <- diff(tmp.x)
+      
+#      tmp <- 0
+#      for(i in 1:(ncol(est.points)-1)){
+#        tmp <- tmp + gz_pi1(est.points[,i])*width[i]
+#      }
+
+
+#      max <- 7*sqrt(lambda.max)
+#      min <- -7*sqrt(lambda.max)
+#      tmp.x <- seq(min,max,length=1000)
+#      my.x <- NULL
+#      for(k in 1:k.size){
+#	  samp <- sample(1000,20)
+#        my.x <- rbind(my.x,tmp.x[samp])
+#      }
+
+#      est.points <- my.x
+#      width <- diff(tmp.x)
+      
+#      tmp <- 0
+#      for(i in 1:(ncol(est.points)-1)){
+#        tmp <- tmp + gz_pi1(est.points[,i])*(width[i]^k.size)
+#      }
+
+##C³
+      matA <- eigen(Sigma)$vector
+
+      gz_pi1 <- function(z){
+	  tmpz <- t(matA) %*% z
+        tmp <- G(tmpz) * get.pi1(tmpz)	#det(matA) = 1
+        return( tmp  )
+      }
+ 
       my.x <- NULL
+
       for(k in 1:k.size){
-        my.x <- rbind(my.x,tmp.x)
+        max <- 7 * sqrt(lambda[k])
+        min <- -7 * sqrt(lambda[k])
+        tmp.x <- seq(min,max,length=1000)
+	  samp <- sample(1000,20)
+        my.x <- rbind(my.x,tmp.x[samp])
       }
 
-      est.ind <- seq(1,ncol(my.x),by=10)
-      est.points <- my.x[,est.ind]
-      width <- diff(tmp.x)
+      est.points <- my.x
       
       tmp <- 0
-      for(i in 1:(ncol(est.points)-1)){
-        tmp <- tmp + gz_pi1(est.points[,i])*width[i]
+      for(i in 1:20){
+        tmp <- tmp + gz_p2(est.points[,i])
       }
-      
+
+	tmp <- tmp/20
+
+
 ##    }else if( 2 <= k.size || k.size <= 20 ){ # use 'cubatur()' to solve multi-dim integration.
     }else if( (2 <= k.size || k.size <= 20) && FALSE ){ # use 'cubatur()' to solve multi-dim integration. 
       max <- 10*lambda.max
@@ -1534,6 +1631,9 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
   # H_{t}^{e} at t=0 (see formula (13.19))
   # use trapezium integration
   get.H0 <- function(){
+
+    assign(pars[1],0)
+
     tmp <- matrix(0,1,block)
     for(t in 1:block){
       for(i in 1:d.size){
