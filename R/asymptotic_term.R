@@ -1562,7 +1562,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"), function(yuima,block=100, 
       
       tmp <- 0
       for(i in 1:20){
-        tmp <- tmp + gz_p2(est.points[,i])
+        tmp <- tmp + gz_pi1(est.points[,i])
       }
 
 	tmp <- tmp/20
