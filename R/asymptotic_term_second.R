@@ -943,7 +943,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
   ## initialization part
 
 	division <- nrow(X.t0)
-	delta <- T/(division - 1)
+#	delta <- T/(division - 1)
 
 	# make expressions of derivation of V0
 	dx.drift <- Derivation.vector(V0,state,d.size,d.size)
