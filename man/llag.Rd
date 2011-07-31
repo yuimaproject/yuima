@@ -27,17 +27,18 @@ llag(x,verbose=FALSE)
 \examples{
 
 
-# generate two sample paths
+## Set a model
+diff.coef.matrix <- matrix(c("sqrt(x1)", "sqrt(3/5)*sqrt(x2)", 
+"", "sqrt(4/5)*sqrt(x2)"), 2, 2) 
+drift <- c("-x1","2*(10-x2)")
+cor.mod <- setModel(drift = drift, diffusion = diff.coef.matrix,solve.variable = c("x1", "x2")) 
 
-  rho <- 0.4   # correlation coefficiant
+set.seed(111) 
 
-  diff.coef.matrix <- matrix(c(1,rho,rho,1),2,2) 
-  drift <- c("0*x1","0*x2")
-  cor.mod <- setModel(drift = drift, diffusion = diff.coef.matrix,solve.variable = c("x1", "x2")) 
-
-  yuima.samp <- setSampling(Terminal = 1, n = 300) 
-  yuima <- setYuima(model = cor.mod, sampling = yuima.samp) 
-  yuima <- simulate(yuima) 
+## We use a function poisson.random.sampling to get observation by Poisson sampling.
+yuima.samp <- setSampling(Terminal = 1, n = 1200) 
+yuima <- setYuima(model = cor.mod, sampling = yuima.samp) 
+yuima <- simulate(yuima,xinit=c(1,7)) 
 
 # intentionally displace the second time series
 
@@ -49,22 +50,20 @@ llag(x,verbose=FALSE)
   stime <- time + theta  
   time(yuima@data@zoo.data[[2]]) <- stime
 
-# estimate lead-lag
 
- lagcce <- function(theta){
-    stime <- time2 + theta  #shifted time
-    time(dat@zoo.data[[2]]) <- stime
-    return(cce(dat))
-  }
+#sampled data by Poisson rules
+psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 1000) 
 
-# true value must be -theta=0.05
-ret <- llag(yuima,verbose=TRUE)
-print(ret$opt)
-print(ret$covmat)
-print(ret$cormat)
 
-plot(ret$mat,xlab="theta",ylab="U(theta)",type="l")
+# plot
+plot(psample)
 
+
+#cce
+cce(psample)
+
+#lead-lag estimation
+llag(psample)
 
 }
 \seealso{\link{cce}}
