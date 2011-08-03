@@ -7,7 +7,9 @@ Depends: methods, zoo, stats4, utils
 Suggests: cubature, mvtnorm
 Author: YUIMA Project Team.
 Maintainer: Stefano M. Iacus <stefano.iacus@R-project.org>
-Description: The YUIMA Project for Simulation and Inference 
- for Stochastic Differential Equations.
+Description: The YUIMA Project for Simulation and Inference for
+        Stochastic Differential Equations.
 License: GPL-2
 URL: http://R-Forge.R-project.org/projects/yuima/
+Packaged: 2010-03-02 06:40:30 UTC; Administrator
+Built: R 2.10.1; ; 2010-03-02 06:40:30 UTC; windows
