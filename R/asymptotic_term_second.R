@@ -190,15 +190,19 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 
 		assign(pars[1],0)
 
+		de.F <- list()
+
 		for(k in 1:k.size){
-		  tmp <- parse(text=deparse(D(tmp.F[k],pars[1])))
+		  de.F[[k]] <- parse(text=deparse(D(tmp.F[k],pars[1])))
+		}
 
-		  for(t in 1:division){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[t,d])
-		    }
+		for(t in 1:division){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[t,d])
+		  }
 
-		    result[k,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    result[k,t] <- eval(de.F[[k]])
 		  }
 		}
 
@@ -453,59 +457,15 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
   ###############################################################################
 
 
-	#a:l*t/0, b:l*j*t/j*r*t, c:1/l*r*t, d:l*j1*j2*t/j1*r*t&j2*r*t,
-	#e:1/l*j*r*t&j*r*t, f:l*j1*t/j1*j2*r*t&j2*r*t
-
+	#a:l, b:l*j*r*t/j*r*t, c:l*r*t
 
 	#l
 
-	ft1_1 <- function(a,env){
+	ft1_1 <- function(a1,env){
 
 		k.size <- env$k.size
-		block <- env$block
 
-		result <- a[[1]][,block]
-
-		return(result)
-	}
-
-
-	#l*k
-
-	ft1_2 <- function(b,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		result <- matrix(0,k.size,k.size)
-
-		for(j in 1:d.size){
-		  tmp <- I_1(b[[2]][j,,],env)
-
-		  for(l in 1:k.size){
-		    result[l,] <- result[l,] + b[[1]][l,j,block] * tmp[,block]
-		  }
-		}
-
-		return(result)
-	}
-
-
-	#l*k
-
-	ft1_3 <- function(c,env){
-
-		k.size <- env$k.size
-		block <- env$block
-
-		result <- matrix(0,k.size,k.size)
-
-		for(l in 1:k.size){
-		  tmp <- I_1(c[[2]][l,,],env)
-
-		  result[l,] <- c[[1]] * tmp[,block]
-		}
+		result <- a1
 
 		return(result)
 	}
@@ -513,36 +473,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 
 	#first:l*k*k, second:l
 
-	ft1_4 <- function(d,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size))
-		second <- real(k.size)
-
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    tmp <- I_12(d[[2]][[1]][j1,,],d[[2]][[2]][j2,,],env)
-
-		    for(l in 1:k.size){
-			first[l,,] <- first[l,,] +
-					  d[[1]][l,j1,j2,block] * tmp$first[,,block]
-
-			second[l] <- second[l] +
-					 d[[1]][l,j1,j2,block] * tmp$second[block]
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l*k*k, second:l
-
-	ft1_5 <- function(e,env){
+	ft1_2 <- function(b1,env){
 
 		d.size <- env$d.size
 		k.size <- env$k.size
@@ -553,11 +484,10 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 
 		for(l in 1:k.size){
 		  for(j in 1:d.size){
-		    tmp <- I_12(e[[2]][[1]][l,j,,],e[[2]][[2]][j,,],env)
+		    tmp <- I_12(b1[[1]][l,j,,],b1[[2]][j,,],env)
 
-		    first[l,,] <- first[l,,] + e[[1]] * tmp$first[,,block]
-
-		    second[l] <- second[l] + e[[1]] * tmp$second[block]
+		    first[l,,] <- first[l,,] + tmp$first[,,block]
+		    second <- second + tmp$second[block]
 		  }
 		}
 
@@ -565,32 +495,22 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 	}
 
 
-	#first:l*k*k, second:l
+	#l*k
 
-	ft1_6 <- function(f,env){
+	ft1_3 <- function(c1,env){
 
-		d.size <- env$d.size
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- array(0,dim=c(k.size,k.size,k.size))
-		second <- real(k.size)
+		result <- matrix(0,k.size,k.size)
 
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    tmp <- I_12(f[[2]][[1]][j1,j2,,],f[[2]][[2]][j1,,],env)
+		for(l in 1:k.size){
+		  tmp <- I_1(c1[l,,],env)
 
-		    for(l in 1:k.size){
-			first[l,,] <- first[l,,] +
-					  f[[1]][l,j2,block] * tmp$first[,,block]
-
-			second[l] <- second[l] +
-					 f[[1]][l,j2,block] * tmp$second[block]
-		    }
-		  }
+		  result[l,] <- tmp[,block]
 		}
 
-		return(list(first=first,second=second))
+		return(result)
 	}
 
 
@@ -603,68 +523,51 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 		temp$second <- matrix(0,k.size,k.size)
 		temp$third <- real(k.size)
 
-		calc.range <- c(1:30)
 
-		for(i in 1:7){
-			tmp <- get_F_tilde1[[i]][[1]]
-			n1 <- length(tmp)
-			n2 <- sum(tmp == 0)
+		calc.range <- c(1:3)
 
-			if(n1 == n2){
-				calc.range <- calc.range[calc.range != i]
-			}
+		tmp1 <- get_F_tilde1$result1
+
+		n1 <- length(tmp1)
+		n2 <- sum(tmp1 == 0)
+
+		if(n1 == n2){
+			calc.range <- calc.range[calc.range != 1]
 		}
 
-		for(i in 8:21){
-			tmp1 <- get_F_tilde1[[i]][[1]]
-			n1 <- length(tmp1)
-			n2 <- sum(tmp1 == 0)
+		tmp2 <- get_F_tilde1$result2[[1]]
 
-			tmp2 <- get_F_tilde1[[i]][[2]]
-			n3 <- length(tmp2)
-			n4 <- sum(tmp2 == 0)
+		n3 <- length(tmp2)
+		n4 <- sum(tmp2 == 0)
 
-			n <- (n1 - n2 != 0) * (n3 - n4 != 0)
+		tmp3 <- get_F_tilde1$result2[[2]]
 
-			if(n == 0){
-				calc.range <- calc.range[calc.range != i]
-			}
+		n5 <- length(tmp3)
+		n6 <- sum(tmp3 == 0)
+
+		n <- (n3 - n4 != 0) * (n5 - n6 != 0)
+
+		if(n == 0){
+			calc.range <- calc.range[calc.range != 2]
 		}
 
-		for(i in 22:30){
-			tmp1 <- get_F_tilde1[[i]][[1]]
-			n1 <- length(tmp1)
-			n2 <- sum(tmp1 == 0)
+		tmp3 <- get_F_tilde1$result3
 
-			tmp2 <- get_F_tilde1[[i]][[2]][[1]]
-			n3 <- length(tmp2)
-			n4 <- sum(tmp2 == 0)
+		n7 <- length(tmp3)
+		n8 <- sum(tmp3 == 0)
 
-			tmp3 <- get_F_tilde1[[i]][[2]][[2]]
-			n5 <- length(tmp3)
-			n6 <- sum(tmp3 == 0)
-
-			n <- (n1 - n2 != 0) * (n3 - n4 != 0) * (n5 - n6 != 0)
-
-			if(n == 0){
-				calc.range <- calc.range[calc.range != i]
-			}
+		if(n7 == n8){
+			calc.range <- calc.range[calc.range != 3]
 		}
 
 
 		for(i in calc.range){
 
-		  tmp <- switch(i,"a","a","a","a","a","a","a","b","b","c",
-					"b","c","b","c","b","c","b","b","b","b",
-					"b","d","e","d","e","f","e","d","f","d")
-
+		  tmp <- switch(i,"a","b","c")
 
 		  result <- switch(tmp,"a"=ft1_1(get_F_tilde1[[i]],env),
 					     "b"=ft1_2(get_F_tilde1[[i]],env),
-					     "c"=ft1_3(get_F_tilde1[[i]],env),
-					     "d"=ft1_4(get_F_tilde1[[i]],env),
-					     "e"=ft1_5(get_F_tilde1[[i]],env),
-					     "f"=ft1_6(get_F_tilde1[[i]],env))
+					     "c"=ft1_3(get_F_tilde1[[i]],env))
 
 		  nlist <- length(result)
 
@@ -726,17 +629,18 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 
 	#h:d*block
 
-	#first:numeric(1), second:r.size*block, third:r.size*block
+	#first:numeric(1), second:k.size*block
 
 	Di_bar <- function(h,env){
 
 		block <- env$block
 
 		first <- real(1)
-		second <- matrix(0,r.size,block)
-		third <- matrix(0,r.size,block)
 
 		tmp4 <- matrix(0,r.size,block)
+		tmp6 <- matrix(0,r.size,block)
+
+		tmp5 <- matrix(0,r.size,block)
 
 		for(i in 1:d.size){
 		  tmp1 <- h[i,] * get_Y_D[i,]
@@ -745,16 +649,19 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 		  for(j in 1:d.size){
 		    tmp2 <- h[i,] * tmpY[i,j,]
 		    tmp3 <- I0(tmp2,env)
-		    second <- second + tmp3[block] * get_Y_e_V[j,,]
+		    tmp4 <- tmp4 + tmp3[block] * get_Y_e_V[j,,]
 
 		    for(r in 1:r.size){
-			tmp4[r,] <- tmp3 * get_Y_e_V[j,r,]
+			tmp5[r,] <- tmp3 * get_Y_e_V[j,r,]
 		    }
-		    third <- third + tmp4
+		    tmp6 <- tmp6 + tmp5
 		  }
 		}
 
-		return(list(first=first,second=second,third=third))
+		tmp7 <- tmp4 - tmp6
+		second <- I_1(tmp7,env)
+
+		return(list(first=first,second=second))
 	}
 
 
@@ -762,18 +669,17 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 
 		tmp1 <- Di_bar(h,env)
 
-		for(r in 1:r.size){
-			tmp2 <- I_1(tmp1$second[r,],env)
-			tmp3 <- I_1(tmp1$third[r,],env)
-			result <- tmp1$first + I_1_x(x,tmp2,env) -
-				    I_1_x(x,tmp3,env)
-		}
+		tmp2 <- tmp1$second
+
+		result <- tmp1$first + I_1_x(x,tmp2,env)
 
 		return(result)
 	}
 
 
 	get.P2 <- function(z){
+
+		block <- env$block
 
 		if(k.size==1){
 			First <- Di_bar_x(di.rho,z)
@@ -782,7 +688,10 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 			First <- Di_bar_x(di.rho,z)
 			Second <- de.rho %*% Diff[block,] * delta
 		}
+
 		tmp <- First + Second
+
+		return(tmp)
 	}
   
 
@@ -835,7 +744,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 	get.d1.term<- function(){
 
 		## get g(z)*pi1(z)
-    
+
 		gz_pi1 <- function(z){
 			tmp <- G(z) * get.pi1(z)
 			return( tmp  )
@@ -857,20 +766,20 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 				return( tmp  )
 			}
 
-			my.x <- matrix(0,k.size,30^k.size)
+			my.x <- matrix(0,k.size,20^k.size)
 			dt <- 1
 
 			for(k in 1:k.size){
 				max <- 7 * sqrt(lambda[k])
 				min <- -7 * sqrt(lambda[k])
-				tmp.x <- seq(min,max,length=30)
+				tmp.x <- seq(min,max,length=20)
 				dt <- dt * (tmp.x[2] - tmp.x[1])
-				my.x[k,] <- rep(tmp.x,each=30^(k.size-k),times=30^(k-1))
+				my.x[k,] <- rep(tmp.x,each=20^(k.size-k),times=20^(k-1))
 			}
 
 			tmp <- 0
 
-			for(i in 1:30^k.size){
+			for(i in 1:20^k.size){
 				tmp <- tmp + gz_pi1(my.x[,i])
 			}
 
@@ -887,11 +796,15 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 
 	# d(rho)/di
 	get.di.rho <- function(){
+
+		assign(pars[1],0)
 		di.rho <- numeric(d.size)
 		tmp <- matrix(0,d.size,block+1)
+
 		for(i in 1:d.size){
 			di.rho[i] <- deriv(rho,state[i])
 		}
+
 		for(t in 1:(block+1)){
 			for(i in 1:d.size){
 				assign(state[i],X.t0[t,i])
@@ -906,8 +819,11 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 
 	# d(rho)/de
 	get.de.rho <- function(){
+
+		assign(pars[1],0)
 		tmp <- matrix(0,1,block+1)
 		de.rho <- deriv(rho,pars[1])
+
 		for(t in 1:(block+1)){
 			for(i in 1:d.size){
 				assign(state[i],X.t0[t,i])
@@ -923,8 +839,8 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 	get.H0 <- function(){
 
 		assign(pars[1],0)
-
 		tmp <- matrix(0,1,division-1)
+
 		for(t in 1:(division-1)){
 			for(i in 1:d.size){
 				assign(state[i],X.t0[t,i])
@@ -943,7 +859,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
   ## initialization part
 
 	division <- nrow(X.t0)
-#	delta <- T/(division - 1)
+	delta <- T/(division - 1)
 
 	# make expressions of derivation of V0
 	dx.drift <- Derivation.vector(V0,state,d.size,d.size)
@@ -1111,7 +1027,7 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 	get_e_t <- e_t(tmpY, get_Y_e_V, get_Y_D, get_Y_x1_x2_V0, get_Y_x_e_V0, get_Y_e_e_V0, env)
 	get_U_t <- U_t(tmpY, get_Y_D, get_Y_x1_x2_V0, get_Y_x_e_V0, env)
 	get_U_hat_t <- U_hat_t(tmpY, get_Y_e_V, get_Y_D, get_Y_x1_x2_V0, get_Y_x_e_V, env)
-	get_E0_t <- E0_t(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_x_e_V, get_Y_e_e_V, get_e_t, get_U_t, get_U_hat_t, env)
+	get_E0_t <- E0_t(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_e_e_V, get_e_t, get_U_t, get_U_hat_t, env)
 
 	get_e_f0 <- e_f0(X.t0,f,env)
 	get_e_f <- e_f(X.t0,f,env)
@@ -1128,14 +1044,14 @@ setMethod("asymptotic_term",signature(yuima="yuima"),
 	get_W_hat_t <- W_hat_t (tmpY, get_Y_e_V, get_x1_x2_f0, get_x_e_f, env)
 
 	get_F_tilde1_1 <- F_tilde1_1(tmpY, get_Y_e_V, get_x1_x2_f0, get_e_e_f, get_F_t, get_W_t, get_W_hat_t, env)
-	get_F_tilde1_2 <- F_tilde1_2(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_e_e_V, get_e_t, get_x_f0, get_x1_x2_f0, get_e_e_f, get_U_t, get_U_hat_t, env)
+	get_F_tilde1_2 <- F_tilde1_2(get_E0_t,get_x_f0,env)
 
 	get_x_F <- x_F(X.t0,F,env)
 	get_x1_x2_F <- x1_x2_F(X.t0,F,env)
 	get_x_e_F <- x_e_F(X.t0,F,env)
 	get_e_e_F <- e_e_F(X.t0,F,env)
 
-	get_F_tilde1_3 <- F_tilde1_3(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_e_e_V, get_e_t, get_U_t, get_U_hat_t, get_x_F, env)
+	get_F_tilde1_3 <- F_tilde1_3(get_E0_t,get_x_F,env)
 	get_F_tilde1_4 <- F_tilde1_4(tmpY, get_Y_e_V, get_Y_D, get_x_F, get_x1_x2_F, get_x_e_F, get_e_e_F, env)
 	get_F_tilde1 <- F_tilde1(get_F_tilde1_1, get_F_tilde1_2, get_F_tilde1_3, get_F_tilde1_4)
 

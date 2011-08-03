@@ -2137,13 +2137,13 @@
 		  }
 		}
 
-		result <- first + second
+		result <- first - second
 
 		return(result)
 	}
 
 
-	E0_t <- function(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_x_e_V, get_Y_e_e_V, get_e_t, get_U_t, get_U_hat_t, env){
+	E0_t <- function(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_e_e_V, get_e_t, get_U_t, get_U_hat_t, env){
 
 		d.size <- env$d.size
 		r.size <- env$r.size
@@ -2241,15 +2241,19 @@
 
 		assign(pars[1],0)
 
+		de.f0 <- list()
+
 		for(k in 1:k.size){
-		  tmp <- parse(text=deparse(D(tmp.f[[1]][k],pars[1])))
+		  de.f0[[k]] <- parse(text=deparse(D(tmp.f[[1]][k],pars[1])))
+		}
 
-		  for(t in 1:block){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[my.range[t],d])
-		    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-		    result[k,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    result[k,t] <- eval(de.f0[[k]])
 		  }
 		}
 
@@ -2273,16 +2277,24 @@
 
 		assign(pars[1],0)
 
+		de.f <- list()
+
 		for(k in 1:k.size){
+		  de.f[[k]] <- list()
+
 		  for(r in 1:r.size){
-		    tmp <- parse(text=deparse(D(tmp.f[[r+1]][k],pars[1])))
+		    de.f[[k]][r] <- parse(text=deparse(D(tmp.f[[r+1]][k],pars[1])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[k,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(r in 1:r.size){
+			result[k,r,t] <- eval(de.f[[k]][[r]])
 		    }
 		  }
 		}
@@ -2307,16 +2319,24 @@
 
 		assign(pars[1],0)
 
+		dx.f0 <- list()
+
 		for(k in 1:k.size){
+		  dx.f0[[k]] <- list()
+
 		  for(i in 1:d.size){
-		    tmp <- parse(text=deparse(D(tmp.f[[1]][k],state[i])))
+		    dx.f0[[k]][i] <- parse(text=deparse(D(tmp.f[[1]][k],state[i])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[k,i,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i in 1:d.size){
+			result[k,i,t] <- eval(dx.f0[[k]][[i]])
 		    }
 		  }
 		}
@@ -2341,17 +2361,29 @@
 
 		assign(pars[1],0)
 
+		dxdx.f0 <- list()
+
 		for(k in 1:k.size){
+		  dxdx.f0[[k]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdx.f0[[k]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
-			tmp <- parse(text=deparse(D(D(tmp.f[[1]][k],state[i2]),state[i1])))
+			dxdx.f0[[k]][[i1]][i2] <- parse(text=deparse(D(D(tmp.f[[1]][k],state[i2]),state[i1])))
+		    }
+		  }
+		}
 
-			for(t in 1:block){
-			  for(d in 1:d.size){
-			    assign(state[d],X.t0[my.range[t],d])
-			  }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			  result[k,i1,i2,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  result[k,i1,i2,t] <- eval(dxdx.f0[[k]][[i1]][[i2]])
 			}
 		    }
 		  }
@@ -2377,18 +2409,34 @@
 
 		assign(pars[1],0)
 
+		dxdx.f <- list()
+
 		for(k in 1:k.size){
+		  dxdx.f[[k]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdx.f[[k]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
+			dxdx.f[[k]][[i1]][[i2]] <- list()
+
 			for(r in 1:r.size){
-			  tmp <- parse(text=deparse(D(D(tmp.f[[r+1]][k],state[i2]),state[i1])))
+			  dxdx.f[[k]][[i1]][[i2]][r] <- parse(text=deparse(D(D(tmp.f[[r+1]][k],state[i2]),state[i1])))
+			}
+		    }
+		  }
+		}
 
-			  for(t in 1:block){
-			    for(d in 1:d.size){
-				assign(state[d],X.t0[my.range[t],d])
-			    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			    result[k,i1,i2,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  for(r in 1:r.size){
+			    result[k,i1,i2,r,t] <- eval(dxdx.f[[k]][[i1]][[i2]][[r]])
 			  }
 			}
 		    }
@@ -2415,16 +2463,24 @@
 
 		assign(pars[1],0)
 
+		dxde.f0 <- list()
+
 		for(k in 1:k.size){
+		  dxde.f0[[k]] <- list()
+
 		  for(i in 1:d.size){
-		    tmp <- parse(text=deparse(D(D(tmp.f[[1]][k],pars[1]),state[i])))
+		    dxde.f0[[k]][i] <- parse(text=deparse(D(D(tmp.f[[1]][k],pars[1]),state[i])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[k,i,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i in 1:d.size){
+			result[k,i,t] <- eval(dxde.f0[[k]][[i]])
 		    }
 		  }
 		}
@@ -2449,17 +2505,29 @@
 
 		assign(pars[1],0)
 
+		dxde.f <- list()
+
 		for(k in 1:k.size){
+		  dxde.f[[k]] <- list()
+
 		  for(i in 1:d.size){
+		    dxde.f[[k]][[i]] <- list()
+
 		    for(r in 1:r.size){
-			tmp <- parse(text=deparse(D(D(tmp.f[[r+1]][k],pars[1]),state[i])))
+			dxde.f[[k]][[i]][r] <- parse(text=deparse(D(D(tmp.f[[r+1]][k],pars[1]),state[i])))
+		    }
+		  }
+		}
 
-			for(t in 1:block){
-			  for(d in 1:d.size){
-			    assign(state[d],X.t0[my.range[t],d])
-			  }
+		 for(t in 1:block){
+		   for(d in 1:d.size){
+		     assign(state[d],X.t0[my.range[t],d])
+		   }
 
-			  result[k,i,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i in 1:d.size){
+			for(r in 1:r.size){
+			  result[k,i,r,t] <- eval(dxde.f[[k]][[i]][[r]])
 			}
 		    }
 		  }
@@ -2485,15 +2553,19 @@
 
 		assign(pars[1],0)
 
+		dede.f0 <- list()
+
 		for(k in 1:k.size){
-		  tmp <- parse(text=deparse(D(D(tmp.f[[1]][k],pars[1]),pars[1])))
+		  dede.f0[[k]] <- parse(text=deparse(D(D(tmp.f[[1]][k],pars[1]),pars[1])))
+		}
 
-		  for(t in 1:block){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[my.range[t],d])
-		    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-		    result[k,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    result[k,t] <- eval(dede.f0[[k]])
 		  }
 		}
 
@@ -2517,16 +2589,24 @@
 
 		assign(pars[1],0)
 
+		dede.f <- list()
+
 		for(k in 1:k.size){
+		  dede.f[[k]] <- list()
+
 		  for(r in 1:r.size){
-		    tmp <- parse(text=deparse(D(D(tmp.f[[r+1]][k],pars[1]),pars[1])))
+		    dede.f[[k]][r] <- parse(text=deparse(D(D(tmp.f[[r+1]][k],pars[1]),pars[1])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[k,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(r in 1:r.size){
+			result[k,r,t] <- eval(dede.f[[k]][[r]])
 		    }
 		  }
 		}
@@ -2551,18 +2631,34 @@
 
 		assign(pars[1],0)
 
+		dxdxdx.f0 <- list()
+
 		for(k in 1:k.size){
+		  dxdxdx.f0[[k]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdxdx.f0[[k]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
+			dxdxdx.f0[[k]][[i1]][[i2]] <- list()
+
 			for(i3 in 1:d.size){
-			  tmp <- parse(text=deparse(D(D(D(tmp.f[[1]][k],state[i3]),state[i2]),state[i1])))
+			  dxdxdx.f0[[k]][[i1]][[i2]][i3] <- parse(text=deparse(D(D(D(tmp.f[[1]][k],state[i3]),state[i2]),state[i1])))
+			}
+		    }
+		  }
+		}
 
-			  for(t in 1:block){
-			    for(d in 1:d.size){
-				assign(state[d],X.t0[my.range[t],d])
-			    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			    result[k,i1,i2,i3,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  for(i3 in 1:d.size){
+			    result[k,i1,i2,i3,t] <- eval(dxdxdx.f0[[k]][[i1]][[i2]][[i3]])
 			  }
 			}
 		    }
@@ -2589,19 +2685,39 @@
 
 		assign(pars[1],0)
 
+		dxdxdx.f <- list()
+
 		for(k in 1:k.size){
+		  dxdxdx.f[[k]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdxdx.f[[k]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
+			dxdxdx.f[[k]][[i1]][[i2]] <- list()
+
 			for(i3 in 1:d.size){
+			  dxdxdx.f[[k]][[i1]][[i2]][[i3]] <- list()
+
 			  for(r in 1:r.size){
-			    tmp <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],state[i3]),state[i2]),state[i1])))
+			    dxdxdx.f[[k]][[i1]][[i2]][[i3]][r] <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],state[i3]),state[i2]),state[i1])))
+			  }
+			}
+		    }
+		  }
+		}
 
-			    for(t in 1:block){
-				for(d in 1:d.size){
-				  assign(state[d],X.t0[my.range[t],d])
-				}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-				result[k,i1,i2,i3,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  for(i3 in 1:d.size){
+			    for(r in 1:r.size){
+				result[k,i1,i2,i3,r,t] <- eval(dxdxdx.f[[k]][[i1]][[i2]][[i3]][[r]])
 			    }
 			  }
 			}
@@ -2629,17 +2745,29 @@
 
 		assign(pars[1],0)
 
+		dxdxde.f0 <- list()
+
 		for(k in 1:k.size){
+		  dxdxde.f0[[k]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdxde.f0[[k]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
-			tmp <- parse(text=deparse(D(D(D(tmp.f[[1]][k],pars[1]),state[i2]),state[i1])))
+			dxdxde.f0[[k]][[i1]][i2] <- parse(text=deparse(D(D(D(tmp.f[[1]][k],pars[1]),state[i2]),state[i1])))
+		    }
+		  }
+		}
 
-			for(t in 1:block){
-			  for(d in 1:d.size){
-			    assign(state[d],X.t0[my.range[t],d])
-			  }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			  result[k,i1,i2,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  result[k,i1,i2,t] <- eval(dxdxde.f0[[k]][[i1]][[i2]])
 			}
 		    }
 		  }
@@ -2665,18 +2793,34 @@
 
 		assign(pars[1],0)
 
+		dxdxde.f <- list()
+
 		for(k in 1:k.size){
+		  dxdxde.f[[k]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdxde.f[[k]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
+			dxdxde.f[[k]][[i1]][[i2]] <- list()
+
 			for(r in 1:r.size){
-			  tmp <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],pars[1]),state[i2]),state[i1])))
+			  dxdxde.f[[k]][[i1]][[i2]][r] <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],pars[1]),state[i2]),state[i1])))
+			}
+		    }
+		  }
+		}
 
-			  for(t in 1:block){
-			    for(d in 1:d.size){
-				assign(state[d],X.t0[my.range[t],d])
-			    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			    result[k,i1,i2,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  for(r in 1:r.size){
+			    result[k,i1,i2,r,t] <- eval(dxdxde.f[[k]][[i1]][[i2]][[r]])
 			  }
 			}
 		    }
@@ -2703,16 +2847,24 @@
 
 		assign(pars[1],0)
 
+		dxdede.f0 <- list()
+
 		for(k in 1:k.size){
+		  dxdede.f0[[k]] <- list()
+
 		  for(i in 1:d.size){
-		    tmp <- parse(text=deparse(D(D(D(tmp.f[[1]][k],pars[1]),pars[1]),state[i])))
+		    dxdede.f0[[k]][i] <- parse(text=deparse(D(D(D(tmp.f[[1]][k],pars[1]),pars[1]),state[i])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[k,i,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i in 1:d.size){
+			result[k,i,t] <- eval(dxdede.f0[[k]][[i]])
 		    }
 		  }
 		}
@@ -2737,17 +2889,29 @@
 
 		assign(pars[1],0)
 
+		dxdede.f <- list()
+
 		for(k in 1:k.size){
+		  dxdede.f[[k]] <- list()
+
 		  for(i in 1:d.size){
+		    dxdede.f[[k]][[i]] <- list()
+
 		    for(r in 1:r.size){
-			tmp <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],pars[1]),pars[1]),state[i])))
+			dxdede.f[[k]][[i]][r] <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],pars[1]),pars[1]),state[i])))
+		    }
+		  }
+		}
 
-			for(t in 1:block){
-			  for(d in 1:d.size){
-			    assign(state[d],X.t0[my.range[t],d])
-			  }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			  result[k,i,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(i in 1:d.size){
+			for(r in 1:r.size){
+			  result[k,i,r,t] <- eval(dxdede.f[[k]][[i]][[r]])
 			}
 		    }
 		  }
@@ -2773,15 +2937,19 @@
 
 		assign(pars[1],0)
 
+		dedede.f0 <- list()
+
 		for(k in 1:k.size){
-		  tmp <- parse(text=deparse(D(D(D(tmp.f[[1]][k],pars[1]),pars[1]),pars[1])))
+		  dedede.f0[[k]] <- parse(text=deparse(D(D(D(tmp.f[[1]][k],pars[1]),pars[1]),pars[1])))
+		}
 
-		  for(t in 1:block){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[my.range[t],d])
-		    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-		    result[k,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    result[k,t] <- eval(dedede.f0[[k]])
 		  }
 		}
 
@@ -2803,18 +2971,24 @@
 
 		result <- array(0,dim=c(k.size,r.size,block))
 
+		dedede.f <- list()
+
 		for(k in 1:k.size){
+		  dedede.f[[k]] <- list()
+
 		  for(r in 1:r.size){
-		    tmp <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],pars[1]),pars[1]),pars[1])))
+		    dedede.f[[k]][r] <- parse(text=deparse(D(D(D(tmp.f[[r+1]][k],pars[1]),pars[1]),pars[1])))
+		  }
+		}
 
-		    assign(pars[1],0)
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
-
-			result[k,r,t] <- eval(tmp)
+		  for(k in 1:k.size){
+		    for(r in 1:r.size){
+			result[k,r,t] <- eval(dedede.f[[k]][[r]])
 		    }
 		  }
 		}
@@ -2987,9 +3161,7 @@
 	}
 
 
-	#first:l*t, second.coef:l*j1*j2*t, second:j1*r*t&j2*r*t,
-	#third.coef:l*j1*t, third:j1*r*t,fourth.coef:-2, fourth:l*r*t,
-	#fifth.coef:2, fifth:l*j1*r*t&j1*r*t, sixth:l*r*t
+	#first:l, second:l*j2*r*t&j2*r*t, third:l*r*t
 
 	F_tilde1_1 <- function(tmpY, get_Y_e_V, get_x1_x2_f0, get_e_e_f, get_F_t, get_W_t, get_W_hat_t, env){
 
@@ -2998,63 +3170,74 @@
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- get_F_t
+		first <- get_F_t[block]
 
-		second.coef <- array(0,dim=c(k.size,d.size,d.size,block))	#l, j1, j2, t
+		second <- list()
+		second[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
+		second[[2]] <- get_Y_e_V
 
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 		    for(j2 in 1:d.size){
+
+			tmp2 <- real(block)
+			tmp3 <- real(1)
+
 			for(i1 in 1:d.size){
 			  for(i2 in 1:d.size){
 			    tmp1 <- get_x1_x2_f0[l,i1,i2,] *
 					tmpY[i1,j1,] * tmpY[i2,j2,]
 
-			    second.coef[l,j1,j2,] <- second.coef[l,j1,j2,] +
-							     2 * I0(tmp1,env)
+			    tmp2 <- tmp2 + tmp1
 			  }
+			}
+
+			tmp3 <- tmp3 + 2 * I0(tmp2,env)[block]
+
+			for(r in 1:r.size){
+			  second[[1]][l,j2,r,] <- second[[1]][l,j2,r,] +
+							  tmp3 * get_Y_e_V[j1,r,]
 			}
 		    }
 		  }
 		}
 
-		second <- list()
-		second[[1]] <- get_Y_e_V
-		second[[2]] <- get_Y_e_V
-
 		third.coef <- array(0,dim=c(k.size,d.size,block))	#l, j1, t
+		third <- array(0,dim=c(k.size,r.size,block))
 
 		for(l in 1:k.size){
-			for(j1 in 1:d.size){
-				third.coef[l,j1,] <- 2 * I0(get_W_t[l,j1,],env)
-			}
+		  for(j1 in 1:d.size){
+
+		    third.coef[l,j1,] <- 2 * I0(get_W_t[l,j1,],env)
+
+		    for(r in 1:r.size){
+			third[l,r,] <- third[l,r,] +
+					   third.coef[l,j1,block] * get_Y_e_V[j1,r,]
+		    }
+		  }
 		}
 
-		third <- get_Y_e_V
-
-		fourth.coef <- - 2
 		fourth <- array(0,dim=c(k.size,r.size,block))
 
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 		    for(r in 1:r.size){
-			fourth[l,r,] <- fourth[l,r,] +
-					    third.coef[l,j1,]/2 * get_Y_e_V[j1,r,]
+			fourth[l,r,] <- fourth[l,r,] -
+					    third.coef[l,j1,] * get_Y_e_V[j1,r,]
 		    }
 		  }
 		}
 
-		fifth.coef <- 2
 		fifth <- list()
-		fifth[[1]] <- get_W_hat_t
+		fifth[[1]] <- 2 * get_W_hat_t
 		fifth[[2]] <- get_Y_e_V
 
 		sixth <- get_e_e_f
 
-		return(list(first=first,second.coef=second.coef,second=second,
-				third.coef=third.coef,third=third,
-				fourth.coef=fourth.coef,fourth=fourth,
-				fifth.coef=fifth.coef,fifth=fifth,sixth=sixth))
+		second[[1]] <- second[[1]] + fifth[[1]]
+		third <- third + fourth + sixth
+
+		return(list(first=first,second=second,third=third))
 	}
 
 
@@ -3226,190 +3409,152 @@
 	}
 
 
-	#first:l*t, second.coef:l*j1*j2*t, second:j1*r*t&j2*r*t, third.coef:-1,
-	#third:l*j2*r*t&j2*r*t, fourth.coef:l*j1*t, fourth:j1*r*t, fifth.coef:-1,
-	#fifth:l*r*t, sixth.coef:l*j*t,sixth:j*r*t, seventh:l*r*t,
-	#eighth.coef:l*j*t, eighth:j*j1*r*t&j1*r*t, ninth.coef:-1,
-	#ninth:l*j1*r*t&j1*r*t, tenth.coef:l*j*t, tenth:j*r*t,
-	#eleventh.coef:-1, eleventh:l*r*t
+	#first:l, second:l*j2*r*t&j2*r*t, third:l*r*t
 
-	F_tilde1_2 <- function(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_e_e_V, get_e_t, get_x_f0, get_x1_x2_f0, get_e_e_f, get_U_t, get_U_hat_t, env){
+	F_tilde1_2 <- function(get_E0_t,get_x_f0,env){
 
 		d.size <- env$d.size
 		r.size <- env$r.size
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- matrix(0,k.size,block)
+		result1 <- get_E0_t$first
+
+		first <- real(k.size)
 
 		for(l in 1:k.size){
 		  for(i in 1:d.size){
-		    tmp1 <- get_x_f0[l,i,] * get_e_t[i,]
-		    first[l,] <- first[l,] + I0(tmp1,env)
+		    tmp1 <- get_x_f0[l,i,] * result1[i,]
+		    first[l] <- first[l] + I0(tmp1,env)[block]
 		  }
 		}
 
-		second.coef <- array(0,dim=c(k.size,d.size,d.size,block))	#l, j1, j2,t
+		result2.coef <- get_E0_t$second.coef
+		result2 <- get_E0_t$second[[1]]
 
 		second <- list()
-		second[[1]] <- get_Y_e_V
-		second[[2]] <- get_Y_e_V
-
-		third.coef <- - 1
+		second[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))	#l,j2,r,t
+		second[[2]] <- result2
 
 		third <- list()
 		third[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
-		third[[2]] <- get_Y_e_V
+		third[[2]] <- result2
 
 		for(l in 1:k.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			for(i1 in 1:d.size){
-			  for(i2 in 1:d.size){
-			    for(j in 1:d.size){
+		  for(j2 in 1:d.size){
+		    for(j1 in 1:d.size){
 
-				tmp2 <- get_Y_x1_x2_V0[i1,i2,j,] *
-					  tmpY[i1,j1,] * tmpY[i2,j2,]
+			tmp3 <- real(block)
 
-				tmp3 <- I0(tmp2,env)
+			for(i in 1:d.size){
+			  tmp2 <- get_x_f0[l,i,] * result2.coef[i,j1,j2,]
 
-				for(i in 1:d.size){
+			  tmp3 <- tmp3 + tmp2
+			}
 
-				  tmp4 <- 2 * get_x_f0[l,i,] *
-					    tmpY[i,j,] * tmp3
+			tmp4 <- I0(tmp3,env)
 
-				  tmp5 <- I0(tmp4,env)
-				  second.coef[l,j1,j2,] <- second.coef[l,j1,j2,] + tmp5
+			for(r in 1:r.size){
+			  second[[1]][l,j2,r,] <- second[[1]][l,j2,r,] +
+							  tmp4[block] * result2[j1,r,]
 
-				  for(t in 1:block){
-				    third[[1]][l,j2,,t] <- third[[1]][l,j2,,t] +
-								   tmp5[t] * get_Y_e_V[j1,,t]
-				  }
-				}
-			    }
-			  }
+			  third[[1]][l,j2,r,] <- third[[1]][l,j2,r,] -
+							 tmp4 * result2[j1,r,]
 			}
 		    }
 		  }
 		}
 
-		fourth.coef <- array(0,dim=c(k.size,d.size,block))
-		fourth <- get_Y_e_V
+		result4.coef <- get_E0_t$third.coef
 
-		fifth.coef <- - 1
+		fourth <- array(0,dim=c(k.size,r.size,block))
+
 		fifth <- array(0,dim=c(k.size,r.size,block))
 
-		I0_U <- array(0,dim=c(d.size,d.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j in 1:d.size){
-		    I0_U[j1,j,] <- I0(get_U_t[j1,j,],env)
-		  }
-		}
-
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
-		    for(i in 1:d.size){
-			for(j in 1:d.size){
-			  tmp6 <- I0_U[j1,j,]
 
-			  tmp7 <- 2 * get_x_f0[l,i,] *
-				    tmpY[i,j,] * tmp6
-
-			  fourth.coef[l,j1,] <- fourth.coef[l,j1,] + I0(tmp7,env)
-			}
-		    }
-
-		    for(t in 1:block){
-			fifth[l,,t] <- fifth[l,,t] + fourth.coef[l,j1,t] * get_Y_e_V[j1,,t]
-		    }
-		  }
-		}
-
-		sixth.coef <- array(0,dim=c(k.size,d.size,block))
-		sixth <- array(0,dim=c(d.size,r.size,block))
-
-		for(l in 1:k.size){
-		  for(j in 1:d.size){
-		    tmp8 <- real(block)
+		    tmp6 <- real(block)
 
 		    for(i in 1:d.size){
-			tmp9 <- 2 * get_x_f0[l,i,] *
-				  tmpY[i,j,]
+			tmp5 <- get_x_f0[l,i,] * result4.coef[i,j1,]
 
-			tmp8 <- tmp8 + tmp9
+			tmp6 <- tmp6 + tmp5
 		    }
 
-		    sixth.coef[l,j,] <- sixth.coef[l,j,] - I0(tmp8,env)
-		  }
-		}
+		    tmp7 <- I0(tmp6,env)
 
-		for(j in 1:d.size){
-		  for(j1 in 1:d.size){
-		    for(t in 1:block){
-			sixth[j,,t] <- sixth[j,,t] + I0_U[j1,j,t] * get_Y_e_V[j1,,t]
+		    for(r in 1:r.size){
+			fourth[l,r,] <- fourth[l,r,] + tmp7[block] * result2[j1,r,]
+
+			fifth[l,r,] <- fifth[l,r,] - tmp7 * result2[j1,r,]
 		    }
 		  }
 		}
+
+		result6.coef <- get_E0_t$fourth.coef
+		result6 <- get_E0_t$fourth
+
+		result8 <- get_E0_t$fifth[[1]]
+
+		result10 <- get_E0_t$sixth
+
+		sixth <- array(0,dim=c(k.size,r.size,block))
 
 		seventh <- array(0,dim=c(k.size,r.size,block))
 
-		for(l in 1:k.size){
-		  for(j in 1:d.size){
-		    for(j1 in 1:d.size){
-			for(t in 1:block){
-			  seventh[l,,t] <- seventh[l,,t] - sixth.coef[l,j,t] *
-						 I0_U[j1,j,t] * get_Y_e_V[j1,,t]
-			}
-		    }
-		  }
-		}
-
-		eighth.coef <- - sixth.coef
 		eighth <- list()
-		eighth[[1]] <- get_U_hat_t
-		eighth[[2]] <- get_Y_e_V
+		eighth[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
+		eighth[[2]] <- result2
 
-		ninth.coef <- - 1
 		ninth <- list()
 		ninth[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
-		ninth[[2]] <- get_Y_e_V
+		ninth[[2]] <- result2
 
-		for(l in 1:k.size){
-		  for(j1 in 1:d.size){
-		    for(j in 1:d.size){
-			for(t in 1:block){
-			  ninth[[1]][l,j1,,t] <- ninth[[1]][l,j1,,t] - sixth.coef[l,j,t] *
-							 get_U_hat_t[j1,j,,t]
-			}
-		    }
-		  }
-		}
+		tenth <- array(0,dim=c(k.size,r.size,block))
 
-		tenth.coef <- - sixth.coef/2
-		tenth <- get_Y_e_e_V
-
-		eleventh.coef <- - 1
 		eleventh <- array(0,dim=c(k.size,r.size,block))
 
 		for(l in 1:k.size){
 		  for(j in 1:d.size){
-		    for(t in 1:block){
-			eleventh[l,,t] <- eleventh[l,,t] + tenth.coef[l,j,t] *
-						get_Y_e_e_V[j,,t]
+		    tmp9 <- real(block)
+
+		    for(i in 1:d.size){
+			tmp8 <- get_x_f0[l,i,] * result6.coef[i,j,]
+
+			tmp9 <- tmp9 + tmp8
+		    }
+
+		    tmp10 <- I0(tmp9,env)
+
+		    for(r in 1:r.size){
+			sixth[l,r,] <- sixth[l,r,] + tmp10[block] * result6[j,r,]
+
+			seventh[l,r,] <- seventh[l,r,] - tmp10 * result6[j,r,]
+
+			for(j1 in 1:d.size){
+			  eighth[[1]][l,j1,r,] <- eighth[[1]][l,j1,r,] -
+							  tmp10[block] * result8[j1,j,r,]
+
+			  ninth[[1]][l,j1,r,] <- ninth[[1]][l,j1,r,] +
+							 tmp10 * result8[j1,j,r,]
+			}
+
+			tenth[l,r,] <- tenth[l,r,] -
+					   tmp10[block]/2 * result10[j,r,]
+
+			eleventh[l,r,] <- eleventh[l,r,] +
+						tmp10/2 * result10[j,r,]
 		    }
 		  }
 		}
 
-		return(list(first=first,second.coef=second.coef,second=second,
-				third.coef=third.coef,third=third,
-				fourth.coef=fourth.coef,fourth=fourth,
-				fifth.coef=fifth.coef,fifth=fifth,
-				sixth.coef=sixth.coef,sixth=sixth,seventh=seventh,
-				eighth.coef=eighth.coef,eighth=eighth,
-				ninth.coef=ninth.coef,ninth=ninth,
-				tenth.coef=tenth.coef,tenth=tenth,
-				eleventh.coef=eleventh.coef,eleventh=eleventh))
+		second[[1]] <- second[[1]] + third[[1]] + eighth[[1]] +
+				   ninth[[1]]
+
+		third <- fourth + fifth + sixth + seventh + tenth + eleventh
+
+		return(list(first=first,second=second,third=third))
 	}
 
 
@@ -3436,16 +3581,24 @@
 
 		assign(pars[1],0)
 
+		dx.F <- list()
+
 		for(l in 1:k.size){
+		  dx.F[[l]] <- list()
+
 		  for(i in 1:d.size){
-		    tmp <- parse(text=deparse(D(F[l],state[i])))
+		    dx.F[[l]][i] <- parse(text=deparse(D(F[l],state[i])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[l,i,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    for(i in 1:d.size){
+			result[l,i,t] <- eval(dx.F[[l]][[i]])
 		    }
 		  }
 		}
@@ -3469,17 +3622,29 @@
 
 		assign(pars[1],0)
 
+		dxdx.F <- list()
+
 		for(l in 1:k.size){
+		  dxdx.F[[l]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdx.F[[l]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
-			tmp <- parse(text=deparse(D(D(F[l],state[i2]),state[i1])))
+			dxdx.F[[l]][[i1]][i2] <- parse(text=deparse(D(D(F[l],state[i2]),state[i1])))
+		    }
+		  }
+		}
 
-			for(t in 1:block){
-			  for(d in 1:d.size){
-			    assign(state[d],X.t0[my.range[t],d])
-			  }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			  result[l,i1,i2,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  result[l,i1,i2,t] <- eval(dxdx.F[[l]][[i1]][[i2]])
 			}
 		    }
 		  }
@@ -3504,16 +3669,24 @@
 
 		assign(pars[1],0)
 
+		dxde.F <- list()
+
 		for(l in 1:k.size){
+		  dxde.F[[l]] <- list()
+
 		  for(i in 1:d.size){
-		    tmp <- parse(text=deparse(D(D(F[l],pars[1]),state[i])))
+		    dxde.F[[l]][i] <- parse(text=deparse(D(D(F[l],pars[1]),state[i])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[l,i,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    for(i in 1:d.size){
+			result[l,i,t] <- eval(dxde.F[[l]][[i]])
 		    }
 		  }
 		}
@@ -3537,15 +3710,19 @@
 
 		assign(pars[1],0)
 
+		dede.F <- list()
+
 		for(l in 1:k.size){
-		  tmp <- parse(text=deparse(D(D(F[l],pars[1]),pars[1])))
+		  dede.F[[l]] <- parse(text=deparse(D(D(F[l],pars[1]),pars[1])))
+		}
 
-		  for(t in 1:block){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[my.range[t],d])
-		    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-		    result[l,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    result[l,t] <- eval(dede.F[[l]])
 		  }
 		}
 
@@ -3568,18 +3745,34 @@
 
 		assign(pars[1],0)
 
+		dxdxdx.F <- list()
+
 		for(l in 1:k.size){
+		  dxdxdx.F[[l]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdxdx.F[[l]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
+			dxdxdx.F[[l]][[i1]][[i2]] <- list()
+
 			for(i3 in 1:d.size){
-			  tmp <- parse(text=deparse(D(D(D(F[l],state[i3]),state[i2]),state[i1])))
+			  dxdxdx.F[[l]][[i1]][[i2]][i3] <- parse(text=deparse(D(D(D(F[l],state[i3]),state[i2]),state[i1])))
+			}
+		    }
+		  }
+		}
 
-			  for(t in 1:block){
-			    for(d in 1:d.size){
-				assign(state[d],X.t0[my.range[t],d])
-			    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			    result[l,i1,i2,i3,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  for(i3 in 1:d.size){
+			    result[l,i1,i2,i3,t] <- eval(dxdxdx.F[[l]][[i1]][[i2]][[i3]])
 			  }
 			}
 		    }
@@ -3605,17 +3798,29 @@
 
 		assign(pars[1],0)
 
+		dxdxde.F <- list()
+
 		for(l in 1:k.size){
+		  dxdxde.F[[l]] <- list()
+
 		  for(i1 in 1:d.size){
+		    dxdxde.F[[l]][[i1]] <- list()
+
 		    for(i2 in 1:d.size){
-			tmp <- parse(text=deparse(D(D(D(F[l],pars[1]),state[i2]),state[i1])))
+			dxdxde.F[[l]][[i1]][i2] <- parse(text=deparse(D(D(D(F[l],pars[1]),state[i2]),state[i1])))
+		    }
+		  }
+		}
 
-			for(t in 1:block){
-			  for(d in 1:d.size){
-			    assign(state[d],X.t0[my.range[t],d])
-			  }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			  result[l,i1,i2,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    for(i1 in 1:d.size){
+			for(i2 in 1:d.size){
+			  result[l,i1,i2,t] <- eval(dxdxde.F[[l]][[i1]][[i2]])
 			}
 		    }
 		  }
@@ -3640,16 +3845,24 @@
 
 		assign(pars[1],0)
 
+		dxdede.F <- list()
+
 		for(l in 1:k.size){
+		  dxdede.F[[l]] <- list()
+
 		  for(i in 1:d.size){
-		    tmp <- parse(text=deparse(D(D(D(F[l],pars[1]),pars[1]),state[i])))
+		    dxdede.F[[l]][i] <- parse(text=deparse(D(D(D(F[l],pars[1]),pars[1]),state[i])))
+		  }
+		}
 
-		    for(t in 1:block){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[my.range[t],d])
-			}
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-			result[l,i,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    for(i in 1:d.size){
+			result[l,i,t] <- eval(dxdede.F[[l]][[i]])
 		    }
 		  }
 		}
@@ -3673,15 +3886,19 @@
 
 		assign(pars[1],0)
 
+		dedede.F <- list()
+
 		for(l in 1:k.size){
-		  tmp <- parse(text=deparse(D(D(D(F[l],pars[1]),pars[1]),pars[1])))
+		  dedede.F[[l]] <- parse(text=deparse(D(D(D(F[l],pars[1]),pars[1]),pars[1])))
+		}
 
-		  for(t in 1:block){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[my.range[t],d])
-		    }
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
 
-		    result[l,t] <- eval(tmp)
+		  for(l in 1:k.size){
+		    result[l,t] <- eval(dedede.F[[l]])
 		  }
 		}
 
@@ -3689,118 +3906,122 @@
 	}
 
 
-	#first:l*t, second.coef:l*j1*j2*t, second:j1*r*t&j2*r*t, third.coef:l*j1*t,
-	#third:j1*r*t, fourth.coef:l*j*t, fourth:j*r*t, fifth.coef:l*j*t,
-	#fifth:l*j1*j*r*t&j1*r*t, sixth.coef:l*j*t, sixth:j*r*t
+	#first:l,second:l*j2*r*t&j2*r*t,third:l*r*t
 
-	F_tilde1_3 <- function(tmpY, get_Y_e_V, get_Y_x1_x2_V0, get_Y_e_e_V, get_e_t, get_U_t, get_U_hat_t, get_x_F, env){
+	F_tilde1_3 <- function(get_E0_t,get_x_F,env){
 
 		d.size <- env$d.size
 		r.size <- env$r.size
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- matrix(0,k.size,block)
+		result1 <- get_E0_t$first
+
+		first <- real(k.size)
 
 		for(l in 1:k.size){
 		  for(i in 1:d.size){
-		    tmp1 <- get_x_F[l,i,] * get_e_t[i,]
-		    first[l,] <- first[l,] + tmp1
+		    tmp1 <- get_x_F[l,i,block] * result1[i,block]
+		    first[l] <- first[l] + tmp1
 		  }
 		}
 
-		second.coef <- array(0,dim=c(k.size,d.size,d.size,block))	#l, j1, j2,t
+		result2.coef <- get_E0_t$second.coef
+		result2 <- get_E0_t$second[[1]]
 
 		second <- list()
-		second[[1]] <- get_Y_e_V
-		second[[2]] <- get_Y_e_V
-
-		F_Y <- array(0,dim=c(k.size,d.size,block))
-
-		for(l in 1:k.size){
-		  for(j in 1:d.size){
-		    for(i in 1:d.size){
-			for(t in 1:1:block){
-			  F_Y[l,j,t] <- F_Y[l,j,t] + 2 * get_x_F[l,i,t] *
-					    tmpY[i,j,t]
-			}
-		    }
-		  }
-		}
+		second[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
+		second[[2]] <- result2
 
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 		    for(j2 in 1:d.size){
-			for(i1 in 1:d.size){
-			  for(i2 in 1:d.size){
-			    for(j in 1:d.size){
 
-				tmp2 <- get_Y_x1_x2_V0[i1,i2,j,] *
-					  tmpY[i1,j1,] * tmpY[i2,j2,]
+			tmp3 <- real(1)
 
-				tmp3 <- I0(tmp2,env)
+			for(i in 1:d.size){
+			  tmp2 <- get_x_F[l,i,block] * result2.coef[i,j1,j2,block]
 
-				tmp4 <- F_Y[l,j,] * tmp3
+			  tmp3 <- tmp3 + tmp2
+			}
 
-				second.coef[l,j1,j2,] <- second.coef[l,j1,j2,] + tmp4
-			    }
-			  }
+			for(r in 1:r.size){
+			  second[[1]][l,j2,r,] <- second[[1]][l,j2,r,] +
+							  tmp3 * result2[j1,r,]
 			}
 		    }
 		  }
 		}
 
-		third.coef <- array(0,dim=c(k.size,d.size,block))
-		third <- get_Y_e_V
+		result3.coef <- get_E0_t$third.coef
 
-		I0_U <- array(0,dim=c(d.size,d.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j in 1:d.size){
-		    I0_U[j1,j,] <- I0(get_U_t[j1,j,],env)
-		  }
-		}
+		third <- array(0,dim=c(k.size,r.size,block))
 
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
-		    for(j in 1:d.size){
-			tmp5 <- I0_U[j1,j,]
 
-			third.coef[l,j1,] <- third.coef[l,j1,] + F_Y[l,j,] * tmp5
+		    tmp5 <- real(1)
+
+		    for(i in 1:d.size){
+			tmp4 <- get_x_F[l,i,block] * result3.coef[i,j1,block]
+
+			tmp5 <- tmp5 + tmp4
+		    }
+
+		    for(r in 1:r.size){
+			third[l,r,] <- third[l,r,] + tmp5 * result2[j1,r,]
 		    }
 		  }
 		}
 
-		fourth.coef <- - F_Y
-		fourth <- array(0,dim=c(d.size,r.size,block))
+		result4.coef <- get_E0_t$fourth.coef
+		result4 <- get_E0_t$fourth
 
-		for(j in 1:d.size){
-		  for(j1 in 1:d.size){
-		    for(t in 1:block){
-			fourth[j,,t] <- fourth[j,,t] + I0_U[j1,j,t] * get_Y_e_V[j1,,t]
-		    }
-		  }
-		}
+		result5 <- get_E0_t$fifth[[1]]
 
-		fifth.coef <- F_Y
+		result6 <- get_E0_t$sixth
+
+		fourth <- array(0,dim=c(k.size,r.size,block))
+
 		fifth <- list()
-		fifth[[1]] <- get_U_hat_t
-		fifth[[2]] <- get_Y_e_V
+		fifth[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
+		fifth[[2]] <- result2
 
-		sixth.coef <- F_Y/2
-		sixth <- get_Y_e_e_V
+		sixth <- array(0,dim=c(k.size,r.size,block))
 
-		return(list(first=first,second.coef=second.coef,second=second,
-				third.coef=third.coef,third=third,
-				fourth.coef=fourth.coef,fourth=fourth,
-				fifth.coef=fifth.coef,fifth=fifth,
-				sixth.coef=sixth.coef,sixth=sixth))
+		for(l in 1:k.size){
+		  for(j in 1:d.size){
+
+		    tmp7 <- real(1)
+
+		    for(i in 1:d.size){
+			tmp6 <- get_x_F[l,i,block] * result4.coef[i,j,block]
+
+			tmp7 <- tmp7 + tmp6
+		    }
+
+		    for(r in 1:r.size){
+			fourth[l,r,] <- fourth[l,r,] + tmp7 * result4[j,r,]
+
+			for(j1 in 1:d.size){
+			  fifth[[1]][l,j1,r,] <- fifth[[1]][l,j1,r,] -
+							 tmp7 * result5[j1,j,r,]
+			}
+
+			sixth[l,r,] <- sixth[l,r,] - tmp7/2 * result6[j1,r,]
+		    }
+		  }
+		}
+
+		second[[1]] <- second[[1]] + fifth[[1]]
+
+		third <- third + fourth + sixth
+
+		return(list(first=first,second=second,third=third))
 	}
 
 
-	#first:l*t, second:l*t, third:l*t, fourth.coef:l*j1*t, fourth:j1*r*t,
-	#fifth.coef:l*j*t, fifth:j*r*t, sixth.coef:l*j1*j2*t,
-	#sixth:j1*r*t&j2*r*t, seventh:l*t
+	#first:l,second:l*j2*r*t&j2*r*t,third:l*r*t
 
 	F_tilde1_4 <- function(tmpY, get_Y_e_V, get_Y_D, get_x_F, get_x1_x2_F, get_x_e_F, get_e_e_F, env){
 
@@ -3809,264 +4030,151 @@
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- matrix(0,k.size,block)
+		first <- real(k.size)
 
 		for(l in 1:k.size){
 		  for(i1 in 1:d.size){
 		    for(i2 in 1:d.size){
-			first[l,] <- first[l,] + get_x1_x2_F[l,i1,i2,] *
-					 get_Y_D[i1,] * get_Y_D[i2,]
+			first[l] <- first[l] + get_x1_x2_F[l,i1,i2,block] *
+					get_Y_D[i1,block] * get_Y_D[i2,block]
 		    }
 		  }
 		}
 
-		second <- matrix(0,k.size,block)
+		second <- real(k.size)
 
 		for(l in 1:k.size){
 		  for(i in 1:d.size){
-		    second[l,] <- second[l,] + 2 * get_x_e_F[l,i,] *
-					get_Y_D[i1,]
+		    second[l] <- second[l] + 2 * get_x_e_F[l,i,block] *
+				     get_Y_D[i1,block]
 		  }
 		}
 
-		third <- get_e_e_F
+		third <- get_e_e_F[,block]
 
-		fourth.coef <- array(0,dim=c(k.size,d.size,block))
-		fourth <- get_Y_e_V
+		fourth <- array(0,dim=c(k.size,r.size,block))
 
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
+
+		    tmp1 <- real(1)
+
 		    for(i1 in 1:d.size){
 			for(i2 in 1:d.size){
-			  fourth.coef[l,j1,] <- fourth.coef[l,j1,] + 2 *
-							get_x1_x2_F[l,i1,i2,] *
-							get_Y_D[i1,] * tmpY[i2,j1,]
+			  tmp1 <- tmp1 + 2 * get_x1_x2_F[l,i1,i2,block] *
+				    get_Y_D[i1,block] * tmpY[i2,j1,block]
 			}
+		    }
+
+		    for(r in 1:r.size){
+			fourth[l,r,] <- fourth[l,r,] + tmp1 * get_Y_e_V[j1,r,]
 		    }
 		  }
 		}
 
-		fifth.coef <- array(0,dim=c(k.size,d.size,block))
-		fifth <- get_Y_e_V
+		fifth <- array(0,dim=c(k.size,r.size,block))
 
 		for(l in 1:k.size){
 		  for(j in 1:d.size){
+
+		    tmp2 <- real(1)
+
 		    for(i in 1:d.size){
-			fifth.coef[l,j,] <- fifth.coef[l,j,] + 2 * get_x_e_F[l,i,] *
-						  tmpY[i,j,]
+			tmp2 <- tmp2 + 2 * get_x_e_F[l,i,block] * tmpY[i,j,block]
+		    }
+
+		    for(r in 1:r.size){
+			fifth[l,r,] <- fifth[l,r,] + tmp2 * get_Y_e_V[j,r,]
 		    }
 		  }
 		}
 
-		sixth.coef <- array(0,dim=c(k.size,d.size,d.size,block))
 		sixth <- list()
-		sixth[[1]] <- get_Y_e_V
+		sixth[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
 		sixth[[2]] <- get_Y_e_V
 
-		for(l in 1:k.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			for(i1 in 1:d.size){
-			  for(i2 in 1:d.size){
-			    sixth.coef[l,j1,j2,] <- sixth.coef[l,j1,j2,] + 2 *
-							    get_x1_x2_F[l,i1,i2,] *
-							    tmpY[i1,j1,] * tmpY[i2,j2,]
-			  }
-			}
-		    }
-		  }
-		}
-
-		seventh <- array(0,dim=c(k.size,block))
+		seventh <- real(k.size)
 
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 		    for(j2 in 1:d.size){
+
+			tmp3 <- real(1)
+
 			for(i1 in 1:d.size){
 			  for(i2 in 1:d.size){
-			    tmp1 <- b1_b2(get_Y_e_V[j1,,],get_Y_e_V[j2,,],env)
-
-			    seventh[l,] <- seventh[l,] + get_x1_x2_F[l,i1,i2,] *
-						 tmpY[i1,j1,] * tmpY[i2,j2,] * tmp1
+			    tmp3 <- tmp3 + 2 * get_x1_x2_F[l,i1,i2,block] *
+					tmpY[i1,j1,block] * tmpY[i2,j2,block]
 			  }
 			}
+
+			for(r in 1:r.size){
+			  sixth[[1]][l,j2,r,] <- sixth[[1]][l,j2,r,] +
+							 tmp3 * get_Y_e_V[j1,r,]
+			}
+
+			tmp4 <- b1_b2(get_Y_e_V[j1,,],get_Y_e_V[j2,,],env)[block]
+
+			seventh[l] <- seventh[l] + tmp3/2 * tmp4
 		    }
 		  }
 		}
 
-		return(list(first=first,second=second,third=third,
-				fourth.coef=fourth.coef,fourth=fourth,
-				fifth.coef=fifth.coef,fifth=fifth,
-				sixth.coef=sixth.coef,sixth=sixth,
-				seventh=seventh))
+		first <- first + second + third + seventh
+
+		second <- list()
+		second[[1]] <- sixth[[1]]
+		second[[2]] <- sixth[[2]]
+
+		third <- fourth + fifth
+
+		return(list(first=first,second=second,third=third))
 	}
 
 
-	#result1:l*t/0, result2:l*t/0, result3:l*t/0, result4:l*t/0,
-	#result5:l*t/0, result6:l*t/0, result7:l*t/0, result8:l*j1*t/j1*r*t,
-	#result9:l*j1*t/j1*r*t, result10:1/2/l*r*t, result11:l*j1*t/j1*r*t,
-	#result12:-1/2/l*r*t, result13:l*j*t/j*r*t, result14:1/2/l*r*t,
-	#result15:l*j*t/j*r*t, result16:-1/2/l*r*t, result17:l*j1*t/j1*r*t,
-	#result18:l*j*t/j*r*t, result19:l*j*t/j*r*t, result20:l*j1*t/j1*r*t,
-	#result21:l*j*t/j*r*t, result22:l*j1*j2*t/j1*r*t&j2*r*t,
-	#result23:1/l*j1*r*t&j1*r*t, result24:l*j1*j2*t/j1*r*t&j2*r*t,
-	#result25:-1/2/l*j2*r*t&j2*r*t, result26:l*j*t/j1*j*r*t&j1*r*t,
-	#result27:-1/2/l*j1*r*t&j1*r*t, result28:l*j1*j2*t/:j1*r*t&j2*r*t,
-	#result29:l*j*t/j1*j*r*t&j1*r*t, result30:l*j1*j2*t/j1*r*t&j2*r*t
+	#result1:l, result2:l*j2*r*t/j2*r*t, result3:l*r*t
 
 	F_tilde1 <- function(get_F_tilde1_1, get_F_tilde1_2, get_F_tilde1_3, get_F_tilde1_4){
 
-		result1 <- list()
-		result1[[1]] <- get_F_tilde1_1$first/2
-		result1[[2]] <- 0
+		result1 <- get_F_tilde1_1$first + get_F_tilde1_2$first +
+			     get_F_tilde1_3$first + get_F_tilde1_4$first
+
+		result1 <- result1/2
 
 		result2 <- list()
-		result2[[1]] <- get_F_tilde1_2$first/2
-		result2[[2]] <- 0
+		result2[[1]] <- get_F_tilde1_1$second[[1]] +
+				    get_F_tilde1_2$second[[1]] +
+				    get_F_tilde1_3$second[[1]] +
+				    get_F_tilde1_4$second[[1]]
 
-		result3 <- list()
-		result3[[1]] <- get_F_tilde1_3$first/2
-		result3[[2]] <- 0
+		result2[[1]] <- result2[[1]]/2
 
-		result4 <- list()
-		result4[[1]] <- get_F_tilde1_4$first/2
-		result4[[2]] <- 0
+		result2[[2]] <- get_F_tilde1_1$second[[2]]
 
-		result5 <- list()
-		result5[[1]] <- get_F_tilde1_4$second/2
-		result5[[2]] <- 0
+		result3 <- get_F_tilde1_1$third + get_F_tilde1_2$third +
+			     get_F_tilde1_3$third + get_F_tilde1_4$third
 
-		result6 <- list()
-		result6[[1]] <- get_F_tilde1_4$third/2
-		result6[[2]] <- 0
+		result3 <- result3/2
 
-		result7 <- list()
-		result7[[1]] <- get_F_tilde1_4$seventh/2
-		result7[[2]] <- 0
-
-		result8 <- list()
-		result8[[1]] <- get_F_tilde1_1$third.coef/2
-		result8[[2]] <- get_F_tilde1_1$third
-
-		result9 <- list()
-		result9[[1]] <- get_F_tilde1_1$fourth/2
-		result9[[2]] <- get_F_tilde1_1$fourth
-
-		result10 <- list()
-		result10[[1]] <- 1/2
-		result10[[2]] <- get_F_tilde1_1$sixth
-
-		result11 <- list()
-		result11[[1]] <- get_F_tilde1_2$fourth.coef/2
-		result11[[2]] <- get_F_tilde1_2$fourth
-
-		result12 <- list()
-		result12[[1]] <- get_F_tilde1_2$fifth.coef/2
-		result12[[2]] <- get_F_tilde1_2$fifth
-
-		result13 <- list()
-		result13[[1]] <- get_F_tilde1_2$sixth.coef/2
-		result13[[2]] <- get_F_tilde1_2$sixth
-
-		result14 <- list()
-		result14[[1]] <- 1/2
-		result14[[2]] <- get_F_tilde1_2$seventh
-
-		result15 <- list()
-		result15[[1]] <- get_F_tilde1_2$tenth.coef/2
-		result15[[2]] <- get_F_tilde1_2$tenth
-
-		result16 <- list()
-		result16[[1]] <- get_F_tilde1_2$eleventh.coef/2
-		result16[[2]] <- get_F_tilde1_2$eleventh
-
-		result17 <- list()
-		result17[[1]] <- get_F_tilde1_3$third.coef/2
-		result17[[2]] <- get_F_tilde1_3$third
-
-		result18 <- list()
-		result18[[1]] <- get_F_tilde1_3$fourth.coef/2
-		result18[[2]] <- get_F_tilde1_3$fourth
-
-		result19 <- list()
-		result19[[1]] <- get_F_tilde1_3$sixth.coef/2
-		result19[[2]] <- get_F_tilde1_3$sixth
-
-		result20 <- list()
-		result20[[1]] <- get_F_tilde1_4$fourth.coef/2
-		result20[[2]] <- get_F_tilde1_4$fourth
-
-		result21 <- list()
-		result21[[1]] <- get_F_tilde1_4$fifth.coef/2
-		result21[[2]] <- get_F_tilde1_4$fifth
-
-		result22 <- list()
-		result22[[1]] <- get_F_tilde1_1$second.coef/2
-		result22[[2]] <- get_F_tilde1_1$second
-
-		result23 <- list()
-		result23[[1]] <- get_F_tilde1_1$fifth.coef/2
-		result23[[2]] <- get_F_tilde1_1$fifth
-
-		result24 <- list()
-		result24[[1]] <- get_F_tilde1_2$second.coef/2
-		result24[[2]] <- get_F_tilde1_2$second
-
-		result25 <- list()
-		result25[[1]] <- get_F_tilde1_2$third.coef/2
-		result25[[2]] <- get_F_tilde1_2$third
-
-		result26 <- list()
-		result26[[1]] <- get_F_tilde1_2$eighth.coef/2
-		result26[[2]] <- get_F_tilde1_2$eighth
-
-		result27 <- list()
-		result27[[1]] <- get_F_tilde1_2$ninth.coef/2
-		result27[[2]] <- get_F_tilde1_2$ninth
-
-		result28 <- list()
-		result28[[1]] <- get_F_tilde1_3$second.coef/2
-		result28[[2]] <- get_F_tilde1_3$second
-
-		result29 <- list()
-		result29[[1]] <- get_F_tilde1_3$fifth.coef/2
-		result29[[2]] <- get_F_tilde1_3$fifth
-
-		result30 <- list()
-		result30[[1]] <- get_F_tilde1_4$sixth.coef/2
-		result30[[2]] <- get_F_tilde1_4$sixth
-
-		return(list(result1=result1,result2=result2,result3=result3,
-				result4=result4,result5=result5,result6=result6,
-				result7=result7,result8=result8,result9=result9,
-				result10=result10,result11=result11,result12=result12,
-				result13=result13,result14=result14,result15=result15,
-				result16=result16,result17=result17,result18=result18,
-				result19=result19,result20=result20,result21=result21,
-				result22=result22,result23=result23,result24=result24,
-				result25=result25,result26=result26,result27=result27,
-				result28=result28,result29=result29,result30=result30))
+		return(list(result1=result1,result2=result2,result3=result3))
 	}
 
 
 ##p.31(I)
 
-#a:l*t/0, b:l*j*t/j*r*t, c:1/l*r*t, d:l*j1*j2*t/j1*r*t&j2*r*t,
-#e:1/l*j*r*t&j*r*t, f:l*j*t/j1*j*r*t&j1*r*t
+	#a:l, b:l*j*r*t/j*r*t, c:l*r*t
 
-
-	#l1*l2*t
+	#l1*l2
 
 	ft_1 <- function(a1,a2,env){
 
 		k.size <- env$k.size
-		block <- env$block
 
-		result <- array(0,dim=c(k.size,k.size,block))
+		result <- matrix(0,k.size,k.size)
 
 		for(l1 in 1:k.size){
 			for(l2 in 1:k.size){
-				result[l1,l2,] <- a1[[1]][l1,] * a2[[1]][l2,]
+				result[l1,l2] <- a1[l1] * a2[l2]
 			}
 		}
 
@@ -4074,7 +4182,7 @@
 	}
 
 
-	#l1*l2*k*t
+	#first:l1*l2*k*k, second:l1*l2
 
 	ft_2 <- function(a1,b1,env){
 
@@ -4082,41 +4190,39 @@
 		k.size <- env$k.size
 		block <- env$block
 
-		result <- array(0,dim=c(k.size,k.size,k.size,block))
+		first <- array(0,dim=c(k.size,k.size,k.size,k.size))
+		second <- matrix(0,k.size,k.size)
 
-		for(j in 1:d.size){
-		  tmp <- I_1(b1[[2]][j,,],env)
+		for(l2 in 1:k.size){
+		  for(j in 1:d.size){
+		    tmp <- I_12(b1[[1]][l2,j,,],b1[[2]][j,,],env)
 
-		  for(l1 in 1:k.size){
-		    for(l2 in 1:k.size){
-			for(k in 1:k.size){
-			  result[l1,l2,k,] <- result[l1,l2,k,] + a1[[1]][l1,] *
-						    b1[[1]][l2,j,] * tmp[k,]
-			}
+		    for(l1 in 1:k.size){
+			first[l1,l2,,] <- first[l1,l2,,] + a1[l1] * tmp$first[,,block]
+
+			second[l1,l2] <- second[l1,l2] + a1[l1] * tmp$second[block]
 		    }
 		  }
 		}
 
-		return(result)
+		return(list(first=first,second=second))
 	}
 
 
-	#l1*l2*k*t
+	#l1*l2*k
 
 	ft_3 <- function(a1,c1,env){
 
 		k.size <- env$k.size
 		block <- env$block
 
-		result <- array(0,dim=c(k.size,k.size,k.size,block))
+		result <- array(0,dim=c(k.size,k.size,k.size))
 
 		for(l2 in 1:k.size){
-		  tmp <- I_1(c1[[2]][l2,,],env)
+		  tmp <- I_1(c1[l2,,],env)
 
 		  for(l1 in 1:k.size){
-		    for(k in 1:k.size){
-			 result[l1,l2,k,] <- a1[[1]][l1,] * c1[[1]] * tmp[k,]
-		    }
+		    result[l1,l2,] <- a1[l1] * tmp[,block]
 		  }
 		}
 
@@ -4124,355 +4230,59 @@
 	}
 
 
-	#first:l1*l2*k*k*t, second:l1*l2*t
+	#first:l1*l2*k*k*k*k, second:l1*l2*k*k*, third:l1*l2
 
-	ft_4 <- function(a1,d1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    tmp <- I_12(d1[[2]][[1]][j1,,],d1[[2]][[2]][j2,,],env)
-
-		    for(l1 in 1:k.size){
-			for(l2 in 1:k.size){
-			  for(t in 1:block){
-			    first[l1,l2,,,t] <- first[l1,l2,,,t] + a1[[1]][l1,t] *
-							d1[[1]][l2,j1,j2,t] * tmp$first[,,t]
-
-			    second[l1,l2,t] <- second[l1,l2,t] + a1[[1]][l1,t] *
-						     d1[[1]][l2,j1,j2,t] * tmp$second[t]
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*t, second:l1*l2*t
-
-	ft_5 <- function(a1,e1,env){
+	ft_4 <- function(b1,b2,env){
 
 		d.size <- env$d.size
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,block))
-
-		for(l2 in 1:k.size){
-		  for(j in 1:d.size){
-		    tmp <- I_12(e1[[2]][[1]][l2,j,,],e1[[2]][[2]][j,,],env)
-
-		    for(l1 in 1:k.size){
-			for(t in 1:block){
-			  first[l1,l2,,,t] <- first[l1,l2,,,t] + a1[[1]][l1,t] *
-						    e1[[1]] * tmp$first[,,t]
-
-			  second[l1,l2,t] <- second[l1,l2,t] + a1[[1]][l1,t] *
-						   e1[[1]] * tmp$second[t]
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*t, second:l1*l2*t
-
-	ft_6 <- function(a1,f1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    tmp <- I_12(f1[[2]][[1]][j1,j2,,],f1[[2]][[2]][j1,,],env)
-
-		    for(l1 in 1:k.size){
-			for(l2 in 1:k.size){
-			  for(t in 1:block){
-			    first[l1,l2,,,t] <- first[l1,l2,,,t] + a1[[1]][l1,t] *
-							f1[[1]][l2,j2,t] * tmp$first[,,t]
-
-			    second[l1,l2,t] <- second[l1,l2,t] + a1[[1]][l1,t] *
-						     f1[[1]][l2,j2,t] * tmp$second[t]
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*t, second:l1*l2*t
-
-	ft_7 <- function(b1,b2,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    tmp <- I_1_2(b1[[2]][j1,,],b2[[2]][j2,,],env)
-
-		    for(l1 in 1:k.size){
-			for(l2 in 1:k.size){
-			  for(t in 1:block){
-			    first[l1,l2,,,t] <- first[l1,l2,,,t] + b1[[1]][l1,j1,t] *
-							b2[[1]][l2,j2,t] * tmp$first[,,t]
-
-			    second[l1,l2,t] <- second[l1,l2,t] + b1[[1]][l1,j1,t] *
-						     b2[[1]][l2,j2,t] * tmp$second[t]
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*t, second:l1*l2*t
-
-	ft_8 <- function(b1,c1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,block))
-
-		for(l2 in 1:k.size){
-		  for(j in 1:d.size){
-		    tmp <- I_1_2(b1[[2]][j,,],c1[[2]][l2,,],env)
-
-		    for(l1 in 1:k.size){
-			for(t in 1:block){
-			  first[l1,l2,,,t] <- first[l1,l2,,,t] + b1[[1]][l1,j,t] *
-						    c1[[1]] * tmp$first[,,t]
-
-			  second[l1,l2,t] <- second[l1,l2,t] + b1[[1]][l1,j,t] *
-						   c1[[1]] * tmp$second[t]
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*k*t, second:l1*l2*k*t
-
-	ft_9 <- function(b1,d1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,block))
-
-		for(j in 1:d.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			tmp <- I_1_23(b1[[2]][j,,],d1[[2]][[1]][j1,,],d1[[2]][[2]][j2,,],env)
-
-			for(l1 in 1:k.size){
-			  for(l2 in 1:k.size){
-			    for(t in 1:block){
-				first[l1,l2,,,,t] <- first[l1,l2,,,,t] + b1[[1]][l1,j,t] *
-							   d1[[1]][l2,j1,j2,t] * tmp$first[,,,t]
-
-				second[l1,l2,,t] <- second[l1,l2,,t] + b1[[1]][l1,j,t] *
-							  d1[[1]][l2,j1,j2,t] * tmp$second[,t]
-			    }
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*k*t, second:l1*l2*k*t
-
-	ft_10 <- function(b1,e1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,block))
-
-		for(l2 in 1:k.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			tmp <- I_1_23(b1[[2]][j1,,],e1[[2]][[1]][l2,j2,,],e1[[2]][[2]][j2,,],env)
-
-			for(l1 in 1:k.size){
-			  for(t in 1:block){
-			    first[l1,l2,,,,t] <- first[l1,l2,,,,t] + b1[[1]][l1,j1,t] *
-							 e1[[1]] * tmp$first[,,,t]
-
-			    second[l1,l2,,t] <- second[l1,l2,,t] + b1[[1]][l1,j1,t] *
-							e1[[1]] * tmp$second[,t]
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*k*t, second:l1*l2*k*t
-
-	ft_11 <- function(b1,f1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,block))
-
-		for(j in 1:d.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			tmp <- I_1_23(b1[[2]][j,,],f1[[2]][[1]][j1,j2,,],f1[[2]][[2]][j1,,],env)
-
-			for(l1 in 1:k.size){
-			  for(l2 in 1:k.size){
-			    for(t in 1:block){
-				first[l1,l2,,,,t] <- first[l1,l2,,,,t] + b1[[1]][l1,j,t] *
-							   f1[[1]][l2,j2,t] * tmp$first[,,,t]
-
-				second[l1,l2,,t] <- second[l1,l2,,t] + b1[[1]][l1,j,t] *
-							  f1[[1]][l2,j2,t] * tmp$second[,t]
-			    }
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*t, second:l1*l2*t
-
-	ft_12 <- function(c1,c2,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,block))
+		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size))
+		second <- array(0,dim=c(k.size,k.size,k.size,k.size))
+		third <- matrix(0,k.size,k.size)
 
 		for(l1 in 1:k.size){
 		  for(l2 in 1:k.size){
-		    tmp <- I_1_2(c1[[2]][l1,,],c2[[2]][l2,,],env)
+		    for(j1 in 1:d.size){
+			for(j2 in 1:d.size){
 
-		    for(t in 1:block){
-			first[l1,l2,,,t] <- first[l1,l2,,,t] + c1[[1]] *
-						  c2[[1]] * tmp$first[,,t]
+			  tmp <- I_12_34(b1[[1]][l1,j1,,],b1[[2]][j1,,],
+					     b2[[1]][l2,j2,,],b2[[2]][j2,,],env)
 
-			second[l1,l2,t] <- second[l1,l2,t] + c1[[1]] *
-						 c2[[1]] * tmp$second[t]
-		    }
-		  }
-		}
+			  first[l1,l2,,,,] <- first[l1,l2,,,,] + tmp$first[,,,,block]
 
-		return(list(first=first,second=second))
-	}
+			  second[l1,l2,,] <- second[l1,l2,,] + tmp$second[,,block]
 
-
-	#first:l1*l2*k*k*k*t, second:l1*l2*k*t
-
-	ft_13 <- function(c1,d1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,block))
-
-		for(l1 in 1:k.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			tmp <- I_1_23(c1[[2]][l1,,],d1[[2]][[1]][j1,,],d1[[2]][[2]][j2,,],env)
-
-			for(l2 in 1:k.size){
-			  for(t in 1:block){
-			    first[l1,l2,,,,t] <- first[l1,l2,,,,t] + c1[[1]] *
-							 d1[[1]][l2,j1,j2,t] * tmp$first[,,,t]
-
-			    second[l1,l2,,t] <- second[l1,l2,,t] + c1[[1]] *
-							d1[[1]][l2,j1,j2,t] * tmp$second[,t]
-			  }
+			  third[l1,l2] <- third[l1,l2] + tmp$third[block]
 			}
 		    }
 		  }
 		}
 
-		return(list(first=first,second=second))
+		return(list(first=first,second=second,third=third))
 	}
 
 
-	#first:l1*l2*k*k*k*t, second:l1*l2*k*t
+	#first:l1*l2*k*k*k, second:l1*l2*k
 
-	ft_14 <- function(c1,e1,env){
+	ft_5 <- function(b1,c1,env){
 
 		d.size <- env$d.size
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,block))
+		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size))
+		second <- array(0,dim=c(k.size,k.size,k.size))
 
 		for(l1 in 1:k.size){
 		  for(l2 in 1:k.size){
 		    for(j in 1:d.size){
-			tmp <- I_1_23(c1[[2]][l1,,],e1[[2]][[1]][l2,j,,],e1[[2]][[2]][j,,],env)
+			tmp <- I_1_23(c1[l2,,],b1[[1]][l1,j,,],b1[[2]][j,,],env)
 
-			for(t in 1:block){
-			  first[l1,l2,,,,t] <- first[l1,l2,,,,t] + c1[[1]] *
-						     e1[[1]] * tmp$first[,,,t]
+			first[l1,l2,,,] <- first[l1,l2,,,] + tmp$first[,,,block]
 
-			  second[l1,l2,,t] <- second[l1,l2,,t] + c1[[1]] *
-						    e1[[1]] * tmp$second[,t]
-			}
+			second[l1,l2,] <- second[l1,l2,] + tmp$second[,block]
 		    }
 		  }
 		}
@@ -4481,404 +4291,113 @@
 	}
 
 
-	#first:l1*l2*k*k*k*t, second:l1*l2*k*t
+	#first:l1*l2*k*k, second:l1*l2
 
-	ft_15 <- function(c1,f1,env){
+	ft_6 <- function(c1,c2,env){
 
-		d.size <- env$d.size
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,block))
-
-		for(l1 in 1:k.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			tmp <- I_1_23(c1[[2]][l1,,],f1[[2]][[1]][j1,j2,,],f1[[2]][[2]][j1,,],env)
-
-			for(l2 in 1:k.size){
-			  for(t in 1:block){
-			    first[l1,l2,,,,t] <- first[l1,l2,,,,t] + c1[[1]] *
-							 f1[[1]][l2,j2,t] * tmp$first[,,,t]
-
-			    second[l1,l2,,t] <- second[l1,l2,,t] + c1[[1]] *
-							f1[[1]][l2,j2,t] * tmp$second[,t]
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second))
-	}
-
-
-	#first:l1*l2*k*k*k*k*t, second:l1*l2*k*k*t, third:l1*l2*t
-
-	ft_16 <- function(d1,d2,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		third <- array(0,dim=c(k.size,k.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    for(j3 in 1:d.size){
-			for(j4 in 1:d.size){
-			  tmp <- I_12_34(d1[[2]][[1]][j1,,],d1[[2]][[2]][j2,,],d2[[2]][[1]][j3,,],d2[[2]][[2]][j4,,],env)
-
-			  for(l1 in 1:k.size){
-			    for(l2 in 1:k.size){
-				for(t in 1:block){
-				  first[l1,l2,,,,,t] <- first[l1,l2,,,,,t] + d1[[1]][l1,j1,j2,t] *
-								d2[[1]][l2,j3,j4,t] * tmp$first[,,,,t]
-
-				  second[l1,l2,,,t] <- second[l1,l2,,,t] + d1[[1]][l1,j1,j2,t] *
-							     d2[[1]][l2,j3,j4,t] * tmp$second[,,t]
-
-				  third[l1,l2,t] <- third[l1,l2,t] + d1[[1]][l1,j1,j2,t] *
-							  d2[[1]][l2,j3,j4,t] * tmp$third[t]
-				}
-			    }
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second,third=third))
-	}
-
-
-	#first:l1*l2*k*k*k*k*t, second:l1*l2*k*k*t, third:l1*l2*t
-
-	ft_17 <- function(d1,e1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size,division))
-		second <- array(0,dim=c(k.size,k.size,k.size,k.size,division))
-		third <- array(0,dim=c(k.size,k.size,division))
-
-		for(l2 in 1:k.size){
-		  for(j1 in 1:d.size){
-		    for(j2 in 1:d.size){
-			for(j3 in 1:d.size){
-			  tmp <- I_12_34(d1[[2]][[1]][j1,,],d1[[2]][[2]][j2,,],e1[[2]][[1]][l2,j,,],e1[[2]][[2]][j,,],env)
-
-			  for(l1 in 1:k.size){
-			    for(t in 1:block){
-				first[l1,l2,,,,,t] <- first[l1,l2,,,,,t] + d1[[1]][l1,j1,j2,t] *
-							    e1[[1]] * tmp$first[,,,,t]
-
-				second[l1,l2,,,t] <- second[l1,l2,,,t] + d1[[1]][l1,j1,j2,t] *
-							   e1[[1]] * tmp$second[,,t]
-
-				third[l1,l2,t] <- third[l1,l2,t] + d1[[1]][l1,j1,j2,t] *
-							e1[[1]] * tmp$third[t]
-			    }
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second,third=third))
-	}
-
-
-	#first:l1*l2*k*k*k*k*t, second:l1*l2*k*k*t, third:l1*l2*t
-
-	ft_18 <- function(d1,f1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		third <- array(0,dim=c(k.size,k.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    for(j3 in 1:d.size){
-			for(j4 in 1:d.size){
-			  tmp <- I_12_34(d1[[2]][[1]][j1,,],d1[[2]][[2]][j2,,],f1[[2]][[1]][j3,j4,,],f1[[2]][[2]][j3,,],env)
-
-			  for(l1 in 1:k.size){
-			    for(l2 in 1:k.size){
-				for(t in 1:block){
-				  first[l1,l2,,,,,t] <- first[l1,l2,,,,,t] + d1[[1]][l1,j1,j2,t] *
-								f1[[1]][l2,j4,t] * tmp$first[,,,,t]
-
-				  second[l1,l2,,,t] <- second[l1,l2,,,t] + d1[[1]][l1,j1,j2,t] *
-							     f1[[1]][l2,j4,t] * tmp$second[,,t]
-
-				  third[l1,l2,t] <- third[l1,l2,t] + d1[[1]][l1,j1,j2,t] *
-							     f1[[1]][l2,j4,t] * tmp$third[t]
-				}
-			    }
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second,third=third))
-	}
-
-
-	#first:l1*l2*k*k*k*k*t, second:l1*l2*k*k*t, third:l1*l2*t
-
-	ft_19 <- function(e1,e2,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		third <- array(0,dim=c(k.size,k.size,block))
+		first <- array(0,dim=c(k.size,k.size,k.size,k.size))
+		second <- matrix(0,k.size,k.size)
 
 		for(l1 in 1:k.size){
 		  for(l2 in 1:k.size){
-		    for(j1 in 1:d.size){
-			for(j2 in 1:d.size){
-			  tmp <- I_12_34(e1[[2]][[1]][l1,j1,,],e1[[2]][[2]][j1,,],e2[[2]][[1]][l2,j2,,],e2[[2]][[2]][j2,,],env)
+		    tmp <- I_1_2(c1[l1,,],c2[l2,,],env)
 
-			  for(t in 1:block){
-			    first[l1,l2,,,,,t] <- first[l1,l2,,,,,t] + e1[[1]] *
-							  e2[[1]] * tmp$first[,,,,t]
+		    first[l1,l2,,] <- tmp$first[,,block]
 
-			    second[l1,l2,,,t] <- second[l1,l2,,,t] + e1[[1]] *
-							 e2[[1]] * tmp$second[,,t]
-
-			    third[l1,l2,t] <- third[l1,l2,t] + e1[[1]] *
-						    e2[[1]] * tmp$third[t]
-			  }
-			}
-		    }
+		    second[l1,l2] <- tmp$second[block]
 		  }
 		}
 
-		return(list(first=first,second=second,third=third))
+		return(list(first=first,second=second))
 	}
 
 
-	#first:l1*l2*k*k*k*k*t, second:l1*l2*k*k*t, third:l1*l2*t
-
-	ft_20 <- function(e1,f1,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		third <- array(0,dim=c(k.size,k.size,block))
-
-		for(l1 in 1:k.size){
-		  for(j in 1:d.size){
-		    for(j1 in 1:d.size){
-			for(j2 in 1:d.size){
-			  tmp <- I_12_34(e1[[2]][[1]][l1,j,,],e1[[2]][[2]][j,,],f1[[2]][[1]][j1,j2,,],f1[[2]][[2]][j1,,],env)
-
-			  for(l2 in 1:k.size){
-			    for(t in 1:block){
-				first[l1,l2,,,,,t] <- first[l1,l2,,,,,t] + e1[[1]] *
-							    f1[[1]][l2,j2,t] * tmp$first[,,,,t]
-
-				second[l1,l2,,,t] <- second[l1,l2,,,t] + e1[[1]] *
-							   f1[[1]][l2,j2,t] * tmp$second[,,t]
-
-				third[l1,l2,t] <- third[l1,l2,t] + e1[[1]] *
-							f1[[1]][l2,j2,t] * tmp$third[t]
-			    }
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second,third=third))
-	}
-
-
-	#first:l1*l2*k*k*k*k*t, second:l1*l2*k*k*t, third:l1*l2*t
-
-	ft_21 <- function(f1,f2,env){
-
-		d.size <- env$d.size
-		k.size <- env$k.size
-		block <- env$block
-
-		first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size,block))
-		second <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		third <- array(0,dim=c(k.size,k.size,block))
-
-		for(j1 in 1:d.size){
-		  for(j2 in 1:d.size){
-		    for(j3 in 1:d.size){
-			for(j4 in 1:d.size){
-			  tmp <- I_12_34(f1[[2]][[1]][j1,j2,,],f1[[2]][[2]][j1,,],f2[[2]][[1]][j3,j4,,],f2[[2]][[2]][j3,,],env)
-
-			  for(l1 in 1:k.size){
-			    for(l2 in 1:k.size){
-				for(t in 1:block){
-				  first[l1,l2,,,,,t] <- first[l1,l2,,,,,t] + f1[[1]][l1,j2,t] *
-								f2[[1]][l2,j4,t] * tmp$first[,,,,t]
-
-				  second[l1,l2,,,t] <- second[l1,l2,,,t] + f1[[1]][l1,j2,t] *
-							     f2[[1]][l2,j4,t] * tmp$second[,,t]
-
-				  third[l1,l2,t] <- third[l1,l2,t] + f1[[1]][l1,j2,t] *
-							  f2[[1]][l2,j4,t] * tmp$third[t]
-				}
-			    }
-			  }
-			}
-		    }
-		  }
-		}
-
-		return(list(first=first,second=second,third=third))
-	}
-
-
-	#first:l1*l2*k*k*k*k*t, second:l1*l2*k*k*k*t,
-	#third:l1*l2*k*k*t, fourth:l1*l2*k*t, fifth:l1*l2*t
+	#first:l1*l2*k*k*k*k, second:l1*l2*k*k*k,
+	#third:l1*l2*k*k, fourth:l1*l2*k, fifth:l1*l2
 
 	F_tilde1__2 <- function(get_F_tilde1,env){
 
 		k.size <- env$k.size
-		block <- env$block
 
 		temp <- list()
-		temp$first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size,block))
-		temp$second <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,block))
-		temp$third <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
-		temp$fourth <- array(0,dim=c(k.size,k.size,k.size,block))
-		temp$fifth <- array(0,dim=c(k.size,k.size,block))
+		temp$first <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size,k.size))
+		temp$second <- array(0,dim=c(k.size,k.size,k.size,k.size,k.size))
+		temp$third <- array(0,dim=c(k.size,k.size,k.size,k.size))
+		temp$fourth <- array(0,dim=c(k.size,k.size,k.size))
+		temp$fifth <- matrix(0,k.size,k.size)
 
-		calc.range <- c(1:30)
+		calc.range <- c(1:3)
 
-		for(i in 1:7){
-			tmp <- get_F_tilde1[[i]][[1]]
-			n1 <- length(tmp)
-			n2 <- sum(tmp == 0)
+		tmp1 <- get_F_tilde1$result1
 
-			if(n1 == n2){
-				calc.range <- calc.range[calc.range != i]
-			}
+		n1 <- length(tmp1)
+		n2 <- sum(tmp1 == 0)
+
+		if(n1 == n2){
+			calc.range <- calc.range[calc.range != 1]
 		}
 
-		for(i in 8:21){
-			tmp1 <- get_F_tilde1[[i]][[1]]
-			n1 <- length(tmp1)
-			n2 <- sum(tmp1 == 0)
+		tmp2 <- get_F_tilde1$result2[[1]]
 
-			tmp2 <- get_F_tilde1[[i]][[2]]
-			n3 <- length(tmp2)
-			n4 <- sum(tmp2 == 0)
+		n3 <- length(tmp2)
+		n4 <- sum(tmp2 == 0)
 
-			n <- (n1 - n2 != 0) * (n3 - n4 != 0)
+		tmp3 <- get_F_tilde1$result2[[2]]
 
-			if(n == 0){
-				calc.range <- calc.range[calc.range != i]
-			}
+		n5 <- length(tmp3)
+		n6 <- sum(tmp3 == 0)
+
+		n <- (n3 - n4 != 0) * (n5 - n6 != 0)
+
+		if(n == 0){
+			calc.range <- calc.range[calc.range != 2]
 		}
 
-		for(i in 22:30){
-			tmp1 <- get_F_tilde1[[i]][[1]]
-			n1 <- length(tmp1)
-			n2 <- sum(tmp1 == 0)
+		tmp3 <- get_F_tilde1$result3
 
-			tmp2 <- get_F_tilde1[[i]][[2]][[1]]
-			n3 <- length(tmp2)
-			n4 <- sum(tmp2 == 0)
+		n7 <- length(tmp3)
+		n8 <- sum(tmp3 == 0)
 
-			tmp3 <- get_F_tilde1[[i]][[2]][[2]]
-			n5 <- length(tmp3)
-			n6 <- sum(tmp3 == 0)
-
-			n <- (n1 - n2 != 0) * (n3 - n4 != 0) * (n5 - n6 != 0)
-
-			if(n == 0){
-				calc.range <- calc.range[calc.range != i]
-			}
+		if(n7 == n8){
+			calc.range <- calc.range[calc.range != 3]
 		}
 
 		for(i1 in calc.range){
 		  for(i2 in calc.range){
 
-		    tmp1 <- switch(i1,"a","a","a","a","a","a","a","b","b","c",
-					    "b","c","b","c","b","c","b","b","b","b",
-					    "b","d","e","d","e","f","e","d","f","d")
+		    tmp1 <- switch(i1,"a","b","c")
 
-		    tmp2 <- switch(i2,"a","a","a","a","a","a","a","b","b","c",
-					    "b","c","b","c","b","c","b","b","b","b",
-					    "b","d","e","d","e","f","e","d","f","d")
+		    tmp2 <- switch(i2,"a","b","c")
 
 		    tmp <- paste(tmp1,tmp2,sep="")
 
 		    result <- switch(tmp,"aa"=ft_1(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
 						 "ab"=ft_2(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
 						 "ac"=ft_3(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "ad"=ft_4(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "ae"=ft_5(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "af"=ft_6(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
 						 "ba"=ft_2(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "bb"=ft_7(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "bc"=ft_8(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "bd"=ft_9(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "be"=ft_10(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "bf"=ft_11(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
+						 "bb"=ft_4(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
+						 "bc"=ft_5(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
 						 "ca"=ft_3(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "cb"=ft_8(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "cc"=ft_12(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "cd"=ft_13(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "ce"=ft_14(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "cf"=ft_15(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "da"=ft_4(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "db"=ft_9(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "dc"=ft_13(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "dd"=ft_16(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "de"=ft_17(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "df"=ft_18(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "ea"=ft_5(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "eb"=ft_10(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "ec"=ft_14(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "ed"=ft_17(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "ee"=ft_19(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "ef"=ft_20(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env),
-						 "fa"=ft_6(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "fb"=ft_11(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "fc"=ft_15(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "fd"=ft_18(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "fe"=ft_20(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
-						 "ff"=ft_21(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env))
+						 "cb"=ft_5(get_F_tilde1[[i2]],get_F_tilde1[[i1]],env),
+						 "cc"=ft_6(get_F_tilde1[[i1]],get_F_tilde1[[i2]],env))
 
 		    nlist <- length(result)
 
 		    if(nlist != 2 && nlist != 3){
 
-			tmp3 <- 8 - length(dim(result))	#4 or 5
+			tmp3 <- 7 - length(dim(result))	#4 or 5
 
 			temp[[tmp3]] <- temp[[tmp3]] + result
 
 		    }else if(nlist == 2){
 
-			tmp4 <- 8 - length(dim(result[[1]]))	#2 or 3
+			tmp4 <- 7 - length(dim(result[[1]]))	#2 or 3
 			temp[[tmp4]] <- temp[[tmp4]] + result[[1]]
 
-			tmp5 <- 8 - length(dim(result[[2]]))	#4 or 5
+			tmp5 <- 7 - length(dim(result[[2]]))	#4 or 5
 			temp[[tmp5]] <- temp[[tmp5]] + result[[2]]
 
 		    }else{
@@ -4906,10 +4425,9 @@
 	F_tilde1__2_x <- function(l1,l2,x,get_F_tilde1__2,env){
 
 		k.size <- env$k.size
-		block <- env$block
 
-		first <- array(get_F_tilde1__2$first[l1,l2,,,,,],
-				   dim=c(k.size,k.size,k.size,k.size,block))
+		first <- array(get_F_tilde1__2$first[l1,l2,,,,],
+				   dim=c(k.size,k.size,k.size,k.size))
 
 		result1 <- 0
 
@@ -4917,7 +4435,7 @@
 		for(k2 in 1:k.size){
 		    for(k3 in 1:k.size){
 			for(k4 in 1:k.size){
-			  result1 <- result1 + first[k1,k2,k3,k4,block] *
+			  result1 <- result1 + first[k1,k2,k3,k4] *
 					 x[k1] * x[k2] * x[k3] * x[k4]
 			}
 		}
@@ -4925,45 +4443,44 @@
 		}
 
 
-		second <- array(get_F_tilde1__2$second[l1,l2,,,,],
-				    dim=c(k.size,k.size,k.size,block))
+		second <- array(get_F_tilde1__2$second[l1,l2,,,],
+				    dim=c(k.size,k.size,k.size))
 
 		result2 <- 0
 
 		for(k1 in 1:k.size){
 		for(k2 in 1:k.size){
 		    for(k3 in 1:k.size){
-			result2 <- result2 + second[k1,k2,k3,block] *
+			result2 <- result2 + second[k1,k2,k3] *
 				     x[k1] * x[k2] * x[k3]
 		    }
 		  }
 		}
 
 
-		third <- array(get_F_tilde1__2$third[l1,l2,,,],
-				   dim=c(k.size,k.size,block))
+		third <- matrix(get_F_tilde1__2$third[l1,l2,,],
+				    k.size,k.size)
 
 		result3 <- 0
 
 		for(k1 in 1:k.size){
 		for(k2 in 1:k.size){
-		    result3 <- result3 + third[k1,k2,block] *
+		    result3 <- result3 + third[k1,k2] *
 				   x[k1] * x[k2]
 		  }
 		}
 
 
-		fourth <- matrix(get_F_tilde1__2$fourth[l1,l2,,],
-				     k.size,block)
+		fourth <- get_F_tilde1__2$fourth[l1,l2,]
 
 		result4 <- 0
 
 		for(k1 in 1:k.size){
-		  result4 <- result4 + fourth[k1,block] * x[k1]
+		  result4 <- result4 + fourth[k1] * x[k1]
 		}
 
 
-		fifth <- get_F_tilde1__2$fifth[l1,l2,block]
+		fifth <- get_F_tilde1__2$fifth[l1,l2]
 
 		result <- result1 + result2 + result3 + result4 + fifth
 
@@ -6521,9 +6038,9 @@
 		  }
 		}
 
-		first <- second.tmp$first
-		second <- first.tmp
-		third <- second.tmp$second
+		first <- 3 * second.tmp$first
+		second <- 3 * first.tmp
+		third <- 3 * second.tmp$second
 
 		return(list(first=first,second=second,third=third))
 	}
@@ -8878,21 +8395,28 @@
 	x_rho <- function(X.t0,tmp.rho,env){
 
 		d.size <- env$d.size
-		division <- env$division
 		state <- env$state
 		pars <- env$pars
+		block <- env$block
+		my.range <- env$my.range
 
-		result <- array(0,dim=c(d.size,division))
+		result <- array(0,dim=c(d.size,block))
 
 		assign(pars[1],0)
 
+		de.rho <- list()
+
 		for(i in 1:d.size){
-		  tmp <- parse(text=deparse(D(tmp.rho,state[i])))
-		  for(t in 1:division){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[t,d])
-		    }
-		    result[i,t] <- eval(tmp)
+		  de.rho[[i]] <- parse(text=deparse(D(tmp.rho,state[i])))
+		}
+
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
+
+		  for(i in 1:d.size){
+		    result[i,t] <- eval(de.rho[[i]])
 		  }
 		}
 		return(result)
@@ -8904,19 +8428,20 @@
 	e_rho <- function(X.t0,tmp.rho,env){
 
 		d.size <- env$d.size
-		division <- env$division
 		state <- env$state
 		pars <- env$pars
+		block <- env$block
+		my.range <- env$my.range
 
-		result <- array(0,dim=c(division))
+		result <- array(0,dim=c(block))
 
 		assign(pars[1],0)
 
 		tmp <- parse(text=deparse(D(tmp.rho,pars[1])))
 
-		for(t in 1:division){
+		for(t in 1:block){
 		  for(d in 1:d.size){
-		    assign(state[d],X.t0[t,d])
+		    assign(state[d],X.t0[my.range[t],d])
 		  }
 		  result[t] <- eval(tmp)
 		}
@@ -8930,25 +8455,37 @@
 	x1_x2_rho <- function(X.t0,tmp.rho,env){
 
 		d.size <- env$d.size
-		division <- env$division
 		state <- env$state
 		pars <- env$pars
+		block <- env$block
+		my.range <- env$my.range
 
-		result <- array(0,dim=c(d.size,d.size,division))
+		result <- array(0,dim=c(d.size,d.size,block))
 
 		assign(pars[1],0)
 
+		dxdx.rho <- list()
+
 		for(i1 in 1:d.size){
+		  dxdx.rho[[i1]] <- list()
+
 		  for(i2 in 1:d.size){
-		    tmp <- parse(text=deparse(D(D(tmp.rho,state[i2]),state[i1])))
-		    for(t in 1:division){
-			for(d in 1:d.size){
-			  assign(state[d],X.t0[t,d])
-			}
-			result[i1,i2,t] <- eval(tmp)
+		    dxdx.rho[[i1]][[i2]] <- parse(text=deparse(D(D(tmp.rho,state[i2]),state[i1])))
+		  }
+		}
+
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
+
+		  for(i1 in 1:d.size){
+		    for(i2 in 1:d.size){
+			result[i1,i2,t] <- eval(dxdx.rho[[i1]][[i2]])
 		    }
 		  }
 		}
+
 		return(result)
 	}
 
@@ -8958,23 +8495,31 @@
 	x_e_rho <- function(X.t0,tmp.rho,env){
 
 		d.size <- env$d.size
-		division <- env$division
 		state <- env$state
 		pars <- env$pars
+		block <- env$block
+		my.range <- env$my.range
 
-		result <- array(0,dim=c(d.size,division))
+		result <- array(0,dim=c(d.size,block))
 
 		assign(pars[1],0)
 
+		dxde.rho <- list()
+
 		for(i in 1:d.size){
-		  tmp <- parse(text=deparse(D(D(tmp.rho,pars[1]),state[i])))
-		  for(t in 1:division){
-		    for(d in 1:d.size){
-			assign(state[d],X.t0[t,d])
-		    }
-		    result[i,t] <- eval(tmp)
+		  dxde.rho[[i]] <- parse(text=deparse(D(D(tmp.rho,pars[1]),state[i])))
+		}
+
+		for(t in 1:block){
+		  for(d in 1:d.size){
+		    assign(state[d],X.t0[my.range[t],d])
+		  }
+
+		  for(i in 1:d.size){
+		    result[i,t] <- eval(dxde.rho[[i]])
 		  }
 		}
+
 		return(result)
 	}
 
@@ -8984,21 +8529,25 @@
 	e_e_rho <- function(X.t0,tmp.rho,env){
 
 		d.size <- env$d.size
-		division <- env$division
 		state <- env$state
 		pars <- env$pars
+		block <- env$block
+		my.range <- env$my.range
 
-		result <- array(0,dim=c(division))
+		result <- real(block)
 
 		assign(pars[1],0)
 
 		tmp <- parse(text=deparse(D(D(tmp.rho,pars[1]),pars[1])))
-		for(t in 1:division){
+
+		for(t in 1:block){
 		  for(d in 1:d.size){
-		    assign(state[d],X.t0[t,d])
+		    assign(state[d],X.t0[my.range[t],d])
 		  }
+
 		  result[t] <- eval(tmp)
 		}
+
 		return(result)
 	}
 
@@ -9007,12 +8556,13 @@
 
 	scH_0_1 <- function(get_Y_D,get_e_rho,get_x_rho,env){
 
-		division <- env$division
 		d.size <- env$d.size
+		block <- env$block
 
-		result <- -I0(get_e_rho,env)[division]
+		result <- - I0(get_e_rho,env)[block]
+
 		for(i in 1:d.size){
-		  result <- result - I0(get_x_rho[i,] * get_Y_D[i,],env)[division]
+		  result <- result - I0(get_x_rho[i,] * get_Y_D[i,],env)[block]
 		}
 
 		return(result)
@@ -9024,15 +8574,22 @@
 	scH_1_1 <- function(tmpY,get_Y_e_V,get_x_rho,env){
 
 		d.size <- env$d.size
-		division <- env$division
+		block <- env$block
 
-		coef <- array(0,dim=c(d.size,division))
+		coef <- array(0,dim=c(d.size,block))
 
 		for(j in 1:d.size){
-		  tmp <- double(division)
-		  for(t in 1:division){
+		  tmp <- double(block)
+
+		  for(t in 1:block){
 		    tmp[t] <- get_x_rho[,t] %*% tmpY[,j,t]
 		  }
+
+#‚Ç‚¿‚ç‚ª‚Í‚â‚¢‚©H
+#		  for(i in 1:d.size){
+#		    tmp <- tmp + get_x_rho[i,] * tmpY[i,j,]
+#		  }
+
 		  coef[j,] <- I0(tmp,env)
 		}
 
@@ -9047,14 +8604,14 @@
 	scH_1_2 <- function(get_scH_1_1,env){
 
 		r.size <- env$r.size
-		division <- env$division
+		block <- env$block
 
-		result <- array(0,dim=c(r.size,division))
+		result <- array(0,dim=c(r.size,block))
 
 		coef <- get_scH_1_1$coef
 		integrand <- get_scH_1_1$integrand
 
-		for(t in 1:division){
+		for(t in 1:block){
 		  for(r in 1:r.size){
 		    result[r,t] <- integrand[,r,t] %*% coef[,t]
 		  }
@@ -9069,38 +8626,38 @@
 		k.size <- env$k.size
 		d.size <- env$d.size
 		r.size <- env$r.size
-		division <- env$division
+		block <- env$block
 
-		coef1 <- get_F_tilde1$result1[[1]][,division]
-		coef2 <- get_F_tilde1$result2[[1]][,division]
-		coef3 <- get_F_tilde1$result3[[1]][,division]
-		coef4 <- get_F_tilde1$result4[[1]][,division]
-		coef5 <- get_F_tilde1$result5[[1]][,division]
-		coef6 <- get_F_tilde1$result6[[1]][,division]
-		coef7 <- get_F_tilde1$result7[[1]][,division]
-		coef8 <- array(get_F_tilde1$result8[[1]][,,division],dim=c(k.size,d.size))
-		coef9 <- array(get_F_tilde1$result9[[1]][,,division],dim=c(k.size,d.size))
+		coef1 <- get_F_tilde1$result1[[1]][,block]
+		coef2 <- get_F_tilde1$result2[[1]][,block]
+		coef3 <- get_F_tilde1$result3[[1]][,block]
+		coef4 <- get_F_tilde1$result4[[1]][,block]
+		coef5 <- get_F_tilde1$result5[[1]][,block]
+		coef6 <- get_F_tilde1$result6[[1]][,block]
+		coef7 <- get_F_tilde1$result7[[1]][,block]
+		coef8 <- array(get_F_tilde1$result8[[1]][,,block],dim=c(k.size,d.size))
+		coef9 <- array(get_F_tilde1$result9[[1]][,,block],dim=c(k.size,d.size))
 		coef10 <- get_F_tilde1$result10[[1]]
-		coef11 <- array(get_F_tilde1$result11[[1]][,,division],dim=c(k.size,d.size))
+		coef11 <- array(get_F_tilde1$result11[[1]][,,block],dim=c(k.size,d.size))
 		coef12 <- get_F_tilde1$result12[[1]]
-		coef13 <- array(get_F_tilde1$result13[[1]][,,division],dim=c(k.size,d.size))
+		coef13 <- array(get_F_tilde1$result13[[1]][,,block],dim=c(k.size,d.size))
 		coef14 <- get_F_tilde1$result14[[1]]
-		coef15 <- array(get_F_tilde1$result15[[1]][,,division],dim=c(k.size,d.size))
+		coef15 <- array(get_F_tilde1$result15[[1]][,,block],dim=c(k.size,d.size))
 		coef16 <- get_F_tilde1$result16[[1]]
-		coef17 <- array(get_F_tilde1$result17[[1]][,,division],dim=c(k.size,d.size))
-		coef18 <- array(get_F_tilde1$result18[[1]][,,division],dim=c(k.size,d.size))
-		coef19 <- array(get_F_tilde1$result19[[1]][,,division],dim=c(k.size,d.size))
-		coef20 <- array(get_F_tilde1$result20[[1]][,,division],dim=c(k.size,d.size))
-		coef21 <- array(get_F_tilde1$result21[[1]][,,division],dim=c(k.size,d.size))
-		coef22 <- array(get_F_tilde1$result22[[1]][,,,division],dim=c(k.size,d.size,d.size))
+		coef17 <- array(get_F_tilde1$result17[[1]][,,block],dim=c(k.size,d.size))
+		coef18 <- array(get_F_tilde1$result18[[1]][,,block],dim=c(k.size,d.size))
+		coef19 <- array(get_F_tilde1$result19[[1]][,,block],dim=c(k.size,d.size))
+		coef20 <- array(get_F_tilde1$result20[[1]][,,block],dim=c(k.size,d.size))
+		coef21 <- array(get_F_tilde1$result21[[1]][,,block],dim=c(k.size,d.size))
+		coef22 <- array(get_F_tilde1$result22[[1]][,,,block],dim=c(k.size,d.size,d.size))
 		coef23 <- get_F_tilde1$result23[[1]]
-		coef24 <- array(get_F_tilde1$result24[[1]][,,,division],dim=c(k.size,d.size,d.size))
+		coef24 <- array(get_F_tilde1$result24[[1]][,,,block],dim=c(k.size,d.size,d.size))
 		coef25 <- get_F_tilde1$result25[[1]]
-		coef26 <- array(get_F_tilde1$result26[[1]][,,division],dim=c(k.size,d.size))
+		coef26 <- array(get_F_tilde1$result26[[1]][,,block],dim=c(k.size,d.size))
 		coef27 <- get_F_tilde1$result27[[1]]
-		coef28 <- array(get_F_tilde1$result28[[1]][,,,division],dim=c(k.size,d.size,d.size))
-		coef29 <- array(get_F_tilde1$result29[[1]][,,division],dim=c(k.size,d.size))
-		coef30 <- array(get_F_tilde1$result30[[1]][,,,division],dim=c(k.size,d.size,d.size))
+		coef28 <- array(get_F_tilde1$result28[[1]][,,,block],dim=c(k.size,d.size,d.size))
+		coef29 <- array(get_F_tilde1$result29[[1]][,,block],dim=c(k.size,d.size))
+		coef30 <- array(get_F_tilde1$result30[[1]][,,,block],dim=c(k.size,d.size,d.size))
 
 		integrand1 <- get_F_tilde1$result1[[2]]
 		integrand2 <- get_F_tilde1$result2[[2]] 
@@ -9133,18 +8690,18 @@
 		integrand29 <- get_F_tilde1$result29[[2]]
 		integrand30 <- get_F_tilde1$result30[[2]]
 
-		coef <- get_scH_1_1$coef[,division]
+		coef <- get_scH_1_1$coef[,block]
 		integrand <- get_scH_1_1$integrand
 
 ##modified
 		obj1 <- coef1 + coef2 + coef3 + coef4 + coef5 + coef6 + coef7
 		obj2 <- coef10 * integrand10 + coef12 * integrand12 +
 			  coef14 * integrand14 + coef16 * integrand16  
-		obj3 <- array(0,dim=c(k.size,r.size,division))     
+		obj3 <- array(0,dim=c(k.size,r.size,block))     
 
 		result0 <- obj1 * get_scH_0_1         
 
-		result1 <- array(0,dim=c(k.size,k.size,division))
+		result1 <- array(0,dim=c(k.size,k.size,block))
 		result3 <- list()
 
 		for(l in 1:k.size){
@@ -9154,7 +8711,7 @@
 
 		  tmp1 <- obj2[l,,]
 
-		  tmp2 <- array(0,dim=c(r.size,division))
+		  tmp2 <- array(0,dim=c(r.size,block))
 
 		  for(j in 1:d.size){
 		    tmp2 <- tmp2 + coef8[l,j] * integrand8[j,,] +
@@ -9174,7 +8731,7 @@
 		  tmp3 <- get_scH_0_1 * (tmp1 + tmp2) +
 			    obj1[l] * (obj3[l,,] + get_scH_1_2)
 
-		  result1[l,,] <- I_1(array(tmp3,dim=c(r.size,division)),env)
+		  result1[l,,] <- I_1(array(tmp3,dim=c(r.size,block)),env)
 		  result3[[l]] <- I_1_2(tmp1 + tmp2,obj3[l,,] + get_scH_1_2,env)
 
 		}
@@ -9184,8 +8741,8 @@
 
 		for(l in 1:k.size){
 
-		  result2[[l]] <- list(first=array(0,dim=c(k.size,k.size,division)),second=double(division))
-		  result4[[l]] <- list(first=array(0,dim=c(k.size,k.size,k.size,division)),second=array(0,dim=c(k.size,division)))
+		  result2[[l]] <- list(first=array(0,dim=c(k.size,k.size,block)),second=double(block))
+		  result4[[l]] <- list(first=array(0,dim=c(k.size,k.size,k.size,block)),second=array(0,dim=c(k.size,block)))
 
 		  for(j1 in 1:d.size){
 		    tmp23.1 <- I_12(get_scH_0_1 * integrand23[[1]][l,j1,,],integrand23[[2]][j1,,],env)
@@ -9212,12 +8769,12 @@
 									       coef25 * tmp25.2$second +
 									       coef27 * tmp27.2$second
 
-		    obj22 <- array(0,dim=c(r.size,division))
-		    obj24 <- array(0,dim=c(r.size,division))
-		    obj26 <- array(0,dim=c(r.size,division))
-		    obj28 <- array(0,dim=c(r.size,division))
-		    obj29 <- array(0,dim=c(r.size,division))
-		    obj30 <- array(0,dim=c(r.size,division))
+		    obj22 <- array(0,dim=c(r.size,block))
+		    obj24 <- array(0,dim=c(r.size,block))
+		    obj26 <- array(0,dim=c(r.size,block))
+		    obj28 <- array(0,dim=c(r.size,block))
+		    obj29 <- array(0,dim=c(r.size,block))
+		    obj30 <- array(0,dim=c(r.size,block))
  
 		    for(j2 in 1:d.size){
 		      obj22 <- obj22 + coef22[l,j1,j2] * integrand22[[2]][j2,,]
@@ -9229,12 +8786,12 @@
 		      obj29 <- obj29 + coef29[l,j2] * integrand29[[1]][j1,j2,,]
 		    }
 
-		    tmp22.1 <- I_12(get_scH_0_1 * integrand22[[1]][j1,,],array(obj22,dim=c(r.size,division)),env)
-		    tmp24.1 <- I_12(get_scH_0_1 * integrand24[[1]][j1,,],array(obj24,dim=c(r.size,division)),env)
-		    tmp28.1 <- I_12(get_scH_0_1 * integrand28[[1]][j1,,],array(obj28,dim=c(r.size,division)),env)
-		    tmp30.1 <- I_12(get_scH_0_1 * integrand30[[1]][j1,,],array(obj30,dim=c(r.size,division)),env)
-		    tmp26.1 <- I_12(get_scH_0_1 * array(obj26,dim=c(r.size,division)),integrand26[[2]][j1,,],env)
-		    tmp29.1 <- I_12(get_scH_0_1 * array(obj29,dim=c(r.size,division)),integrand29[[2]][j1,,],env)
+		    tmp22.1 <- I_12(get_scH_0_1 * integrand22[[1]][j1,,],array(obj22,dim=c(r.size,block)),env)
+		    tmp24.1 <- I_12(get_scH_0_1 * integrand24[[1]][j1,,],array(obj24,dim=c(r.size,block)),env)
+		    tmp28.1 <- I_12(get_scH_0_1 * integrand28[[1]][j1,,],array(obj28,dim=c(r.size,block)),env)
+		    tmp30.1 <- I_12(get_scH_0_1 * integrand30[[1]][j1,,],array(obj30,dim=c(r.size,block)),env)
+		    tmp26.1 <- I_12(get_scH_0_1 * array(obj26,dim=c(r.size,block)),integrand26[[2]][j1,,],env)
+		    tmp29.1 <- I_12(get_scH_0_1 * array(obj29,dim=c(r.size,block)),integrand29[[2]][j1,,],env)
 
 		    result2[[l]]$first <- result2[[l]]$first + tmp22.1$first +
 									     tmp29.1$first +
@@ -9250,12 +8807,12 @@
 									       tmp28.1$second +
 									       tmp30.1$second
                        
-		    tmp22.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand22[[1]][j1,,],array(obj22,dim=c(r.size,division)),env)
-		    tmp24.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand24[[1]][j1,,],array(obj24,dim=c(r.size,division)),env)
-		    tmp28.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand28[[1]][j1,,],array(obj28,dim=c(r.size,division)),env)
-		    tmp30.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand30[[1]][j1,,],array(obj30,dim=c(r.size,division)),env)
-		    tmp26.2 <- I_1_23(get_scH_1_2 + obj3[l,,],array(obj26,dim=c(r.size,division)),integrand26[[2]][j1,,],env)
-		    tmp29.2 <- I_1_23(get_scH_1_2 + obj3[l,,],array(obj29,dim=c(r.size,division)),integrand29[[2]][j1,,],env)
+		    tmp22.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand22[[1]][j1,,],array(obj22,dim=c(r.size,block)),env)
+		    tmp24.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand24[[1]][j1,,],array(obj24,dim=c(r.size,block)),env)
+		    tmp28.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand28[[1]][j1,,],array(obj28,dim=c(r.size,block)),env)
+		    tmp30.2 <- I_1_23(get_scH_1_2 + obj3[l,,],integrand30[[1]][j1,,],array(obj30,dim=c(r.size,block)),env)
+		    tmp26.2 <- I_1_23(get_scH_1_2 + obj3[l,,],array(obj26,dim=c(r.size,block)),integrand26[[2]][j1,,],env)
+		    tmp29.2 <- I_1_23(get_scH_1_2 + obj3[l,,],array(obj29,dim=c(r.size,block)),integrand29[[2]][j1,,],env)
 
 		    result4[[l]]$first <- result4[[l]]$first + tmp22.2$first +
 									     tmp29.2$first +
@@ -9280,18 +8837,18 @@
 
 	F_tilde1H1_x <- function(l,x,get_F_tilde1H1,env){
 
-		division <- env$division
-                  
+		block <- env$block
+
 		result0 <- get_F_tilde1H1$result0
 		result1 <- get_F_tilde1H1$result1
 		result2 <- get_F_tilde1H1$result2
 		result3 <- get_F_tilde1H1$result3
 		result4 <- get_F_tilde1H1$result4
 
-		result <- result0[l] + I_1_x(x,result1[l,,],env)[division] +
-					     I_12_x(x,result2[[l]],env)[division] +
-					     I_1_2_x(x,result3[[l]],env)[division] +
-					     I_1_23_x(x,result4[[l]],env)[division]
+		result <- result0[l] + I_1_x(x,result1[l,,],env)[block] +
+					     I_12_x(x,result2[[l]],env)[block] +
+					     I_1_2_x(x,result3[[l]],env)[block] +
+					     I_1_23_x(x,result4[[l]],env)[block]
 
 		return(result)
 
@@ -9308,7 +8865,7 @@
 		d.size <- env$d.size
 		k.size <- env$k.size
 		r.size <- env$r.size
-		division <- env$division
+		block <- env$block
 
 		coef <- get_scH_1_1$coef
 		integrand <- get_scH_1_1$integrand
@@ -9320,15 +8877,15 @@
 		result5 <- list()         #2mathcal{H}_{1;1}mathcal{H}_{1;2}
 		result6 <- list()         #2mathcal{H}_{1;2}mathcal{H}_{0;1}
 
-		result2[[1]] <- matrix(coef[,division],d.size,1) %*% matrix(coef[,division],1,d.size)
+		result2[[1]] <- matrix(coef[,block],d.size,1) %*% matrix(coef[,block],1,d.size)
 		result3[[1]] <- 1
-		result4[[1]] <- 2 * get_scH_0_1 * coef[,division]
-		result5[[1]] <- 2 * coef[,division]
+		result4[[1]] <- 2 * get_scH_0_1 * coef[,block]
+		result5[[1]] <- 2 * coef[,block]
 		result6[[1]] <- 2 * get_scH_0_1
 
 		result2[[2]] <- array(list(),dim=c(d.size,d.size))
 		result3[[2]] <- I_1_2(get_scH_1_2,get_scH_1_2,env)
-		result4[[2]] <- array(0,dim=c(d.size,k.size,division))
+		result4[[2]] <- array(0,dim=c(d.size,k.size,block))
 		result5[[2]] <- list()
 		result6[[2]] <- I_1(get_scH_1_2,env)
 
@@ -9388,7 +8945,7 @@
 
 		k.size <- env$k.size
 		d.size <- env$d.size
-		division <- env$division
+		block <- env$block
 
 		result1_1 <- get_H2_1$result1
 		result2_1 <- get_H2_1$result2
@@ -9406,13 +8963,13 @@
 		H2_1_x <- result1_1 + result3_1[[1]] * I_1_2_x(x,result3_1[[2]],env) +
 			    result6_1[[1]] * I_1_x(x,as.matrix(result6_1[[2]]),env)
            
-#		H2_2_x <- I0(result2_3[[1]],env)[division]
-		H2_2_x <- I0(result3_2[[1]],env)[division]
+#		H2_2_x <- I0(result2_3[[1]],env)[block]
+		H2_2_x <- I0(result3_2[[1]],env)[block]
 		H2_3_x <- 0
 
-		first1_2 <- array(result1_2[[2]]$first,dim=c(d.size,d.size,k.size,k.size,division))
-		second1_2 <- array(result1_2[[2]]$second,dim=c(d.size,d.size,k.size,division))
-		third1_2 <- array(result1_2[[2]]$third,dim=c(d.size,d.size,division))
+		first1_2 <- array(result1_2[[2]]$first,dim=c(d.size,d.size,k.size,k.size,block))
+		second1_2 <- array(result1_2[[2]]$second,dim=c(d.size,d.size,k.size,block))
+		third1_2 <- array(result1_2[[2]]$third,dim=c(d.size,d.size,block))
 
 		first2_2 <- result2_2[[2]]$first
 		second2_2 <- result2_2[[2]]$second
@@ -9422,22 +8979,22 @@
 
 		for(i in 1:d.size){
 		  for(j in 1:d.size){
-		    H2_1_x <- H2_1_x + result2_1[[1]][i,j] * I_1_2_x(x,result2_1[[2]][i,j][[1]],env)[division]
+		    H2_1_x <- H2_1_x + result2_1[[1]][i,j] * I_1_2_x(x,result2_1[[2]][i,j][[1]],env)[block]
 
 		    tmp <- list(first=first1_2[i,j,,,],second=third1_2[i,j,])
                
 		    integrand1 <-  I_1_x(x,t(as.matrix(second1_2[i,j,,])),env) + I_12_x(x,tmp,env)           
                
-		    H2_2_x <- H2_2_x + I0(result1_2[[1]][i,j,] * integrand1,env)[division]
+		    H2_2_x <- H2_2_x + I0(result1_2[[1]][i,j,] * integrand1,env)[block]
 		  }
- 		  H2_1_x <- H2_1_x + result4_1[[1]][i] * I_1_2_x(x,result5_1[[2]][[i]],env)[division] +
-					   result5_1[[1]][i] * I_1_x(x,t(as.matrix(result4_1[[2]][i,,])),env)[division]
+ 		  H2_1_x <- H2_1_x + result4_1[[1]][i] * I_1_2_x(x,result5_1[[2]][[i]],env)[block] +
+					   result5_1[[1]][i] * I_1_x(x,t(as.matrix(result4_1[[2]][i,,])),env)[block]
 
 		  integrand2 <- result2_2[[1]][i,] * (second2_2[i,]+I_1_x(x,t(as.matrix(first2_2[i,,])),env))
 
-		  H2_2_x <- H2_2_x + I0(integrand2,env)[division]
+		  H2_2_x <- H2_2_x + I0(integrand2,env)[block]
             
-		  H2_3_x <- H2_3_x + I0(H2_3coef[i,] * get_E0_bar_x[i,],env)[division]
+		  H2_3_x <- H2_3_x + I0(H2_3coef[i,] * get_E0_bar_x[i,],env)[block]
 		}
 
 		result <- H2_1_x/2-H2_2_x/2-H2_3_x/2
@@ -9596,24 +9153,12 @@
 			ztmp <- seq(mu-7*sqrt(Sigma),mu+7*sqrt(Sigma),length=1000)
 			dt <- ztmp[2] - ztmp[1]
 
-			p2tmp <- c()
-
 			p2tmp <- gz_p2(ztmp)
 
 			result <- sum(p2tmp) * dt
 
-
-#tmp0 <- seq(mu-5*sqrt(Sigma),mu+5*sqrt(Sigma),length=1000)
-#dist2 <- p2_z(tmp0)
-#dist2 <- rbind(tmp0,dist2)
-#plot(t(dist2))
-
-#			result <- integrate(gz_p2,-Inf,Inf)$value
-#			result <- integrate(gz_p2,mu-5*sqrt(Sigma),mu+5*sqrt(Sigma))$value
-
 		}else if(2 <= k.size || k.size <= 20){
 
-			set.seed(123)
 			lambda <- eigen(Sigma)$values
 			matA <- eigen(Sigma)$vector
 
@@ -9623,25 +9168,6 @@
 			  return( tmp  )
 			}
 
-			my.x <- NULL
-			for(k in 1:k.size){
-				max <- 7*sqrt(lambda[k])
-				min <- -7*sqrt(lambda[k])
-				tmp.x <- seq(min,max,length=1000)
-				samp <- sample(1000,20)
-				my.x <- rbind(my.x,tmp.x[samp])
-			}
-
-			est.points <- my.x
-			width <- diff(tmp.x)
-
-			result <- 0
-			for(i in 1:(ncol(est.points)-1)){
-				result <- result + gz_p2(est.points[,i])*(width[i]^k.size)
-			}
-
-
-##ˆÈ‰º‚ÌC³‚Ì•û‚ª‚æ‚¢‚©H
 			my.x <- matrix(0,k.size,20^k.size)
 			dt <- 1
 
