@@ -23,8 +23,8 @@ phi.test <- function(yuima, H0, H1, phi, print=FALSE,...){
      H1 <- coef(qmle(yuima, ...))
         est <- TRUE
     }
-	g0 <- exp(quasiloglvec(yuima=yuima, param=H0, print=print, env))
-	g1 <- exp(quasiloglvec(yuima=yuima, param=H1, print=print, env))
+	g0 <- quasiloglvec(yuima=yuima, param=H0, print=print, env)
+	g1 <- quasiloglvec(yuima=yuima, param=H1, print=print, env)
     y <- exp(g1-g0)
     div <- mean(phi(y), na.rm=TRUE)
     stat <- 2*sum(phi(y), na.rm=TRUE)

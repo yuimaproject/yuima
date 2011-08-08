@@ -27,7 +27,7 @@ phi.test(yuima, H0, H1, phi, print=FALSE,...)
 \author{The YUIMA Project Team}
 \examples{
 model<- setModel(drift="t1*(t2-x)",diffusion="t3")
-T<-15
+T<-10
 n<-1000
 sampling <- setSampling(Terminal=T,n=n)
 yuima<-setYuima(model=model, sampling=sampling)
