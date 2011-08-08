@@ -24,14 +24,14 @@ phi.test(yuima, H0, H1, phi=log, print=FALSE,...)
 }
 \author{The YUIMA Project Team}
 \examples{
-model<- setModel(drift="t1*(t2-x)",diffusion="t3*x")
-T<-10
+model<- setModel(drift="t1*(t2-x)",diffusion="t3")
+T<-15
 n<-1000
 sampling <- setSampling(Terminal=T,n=n)
 yuima<-setYuima(model=model, sampling=sampling)
 
-h0 <- list(t1=0.8, t2=0.2, t3=0.5)
-X <- simulate(yuima,xinit=10,true=h0)
+h0 <- list(t1=0.3, t2=1, t3=0.25)
+X <- simulate(yuima, xinit=1, true=h0)
 h1 <- list(t1=0.3, t2=0.2, t3=0.1)
 
 phi1 <- function(x) 1-x+x*log(x)
