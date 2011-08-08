@@ -3,13 +3,13 @@
 \title{Phi-divergence test statistic for stochastic differential equations}
 \description{Phi-divergence test statistic for stochastic differential equations.}
 \usage{
-phi.test(yuima, H0, H1, phi=log, print=FALSE,...)
+phi.test(yuima, H0, H1, phi, print=FALSE,...)
 }
 \arguments{
   \item{yuima}{a yuima object.}
   \item{H0}{a named list of parameter under H0.}
   \item{H1}{a named list of parameter under H1.}
-  \item{phi}{the phi function to be used in the test.}
+  \item{phi}{the phi function to be used in the test. See Details.}
   \item{print}{you can see a progress of the estimation when print is \code{TRUE}.}
   \item{...}{passed to \code{\link{qmle}} function.}
 }
@@ -18,6 +18,8 @@ phi.test(yuima, H0, H1, phi=log, print=FALSE,...)
   \code{phi.test} executes a Phi-divergence test. If \code{H1} is not specified
   this hypothesis is filled with the QMLE estimates.
   
+  If \code{phi} is missing, then \code{phi(x)=1-x+x*log(x)} and the
+  Phi-divergence statistic corresponds to the likelihood ratio test statistic.
 }
 \value{
   \item{ans}{an obkect of class \code{phitest}.}

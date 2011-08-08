@@ -1,6 +1,11 @@
 
-phi.test <- function(yuima, H0, H1, phi=log, print=FALSE,...){
+phi.test <- function(yuima, H0, H1, phi, print=FALSE,...){
     
+    phiname <- deparse(substitute(phi))
+    if(missing(phi)){
+        phi <- function(x) 1-x+x*log(x)
+        phiname <- "1-x+x*log(x)"
+    }
 	d.size <- yuima@model@equation.number
 	n <- length(yuima)[1]
 	
@@ -20,10 +25,11 @@ phi.test <- function(yuima, H0, H1, phi=log, print=FALSE,...){
     }
 	g0 <- exp(quasiloglvec(yuima=yuima, param=H0, print=print, env))
 	g1 <- exp(quasiloglvec(yuima=yuima, param=H1, print=print, env))
-    div <- mean(phi(exp(g1-g0)), na.rm=TRUE)
-    stat <- 2*sum(phi(exp(g1-g0)), na.rm=TRUE)
+    y <- exp(g1-g0)
+    div <- mean(phi(y), na.rm=TRUE)
+    stat <- 2*sum(phi(y), na.rm=TRUE)
     df <- length(H0)
-    val <- list(div=div, stat=stat, H0=H0, H1=H1, phi=deparse(substitute(phi)), pvalue=1-pchisq(stat, df=df), df=df,est=est)
+    val <- list(div=div, stat=stat, H0=H0, H1=H1, phi=phiname, phi=phi, pvalue=1-pchisq(stat, df=df), df=df,est=est)
     attr(val, "class") <- "phitest"
     return( val )
 }
@@ -35,7 +41,7 @@ print.phitest <- function(x,...){
     symnum(x$pvalue, corr = FALSE, na = FALSE, 
     cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
     symbols = c("***", "**", "*", ".", " "))->Signif
-    cat(sprintf("Phi-Divergence test statistic based on phi function '%s'\n",x$phi) )
+    cat(sprintf("Phi-Divergence test statistic based on phi = '%s'\n",x$phi) )
     nm <- names(x$H0)
     cat("H0: ")
     cat(sprintf("%s = %s", nm, format(x$H0,digits=3,nsmall=3)))
