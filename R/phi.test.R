@@ -18,10 +18,10 @@ phi.test <- function(yuima, H0, H1, phi=log, print=FALSE,...){
      H1 <- coef(qmle(yuima, ...))
         est <- TRUE
     }
-	g0 <- quasiloglvec(yuima=yuima, param=H0, print=print, env)
-	g1 <- quasiloglvec(yuima=yuima, param=H1, print=print, env)
-    div <- mean(phi(g1-g0), na.rm=TRUE)
-    stat <- 2*sum(phi(g1-g0), na.rm=TRUE)
+	g0 <- exp(quasiloglvec(yuima=yuima, param=H0, print=print, env))
+	g1 <- exp(quasiloglvec(yuima=yuima, param=H1, print=print, env))
+    div <- mean(phi(exp(g1-g0)), na.rm=TRUE)
+    stat <- 2*sum(phi(exp(g1-g0)), na.rm=TRUE)
     df <- length(H0)
     val <- list(div=div, stat=stat, H0=H0, H1=H1, phi=deparse(substitute(phi)), pvalue=1-pchisq(stat, df=df), df=df,est=est)
     attr(val, "class") <- "phitest"
