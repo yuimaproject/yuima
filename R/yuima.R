@@ -2,7 +2,7 @@ yuima.stop <- function(x)
 stop(sprintf("\nYUIMA: %s\n", x))
 
 yuima.warn <- function(x) 
-   cat(sprintf("\nYUIMA: %s\n", x))
+   warning(sprintf("\nYUIMA: %s\n", x))
 
 ## Constructor and Initializer of class 'yuima'
 
