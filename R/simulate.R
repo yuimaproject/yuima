@@ -1,6 +1,6 @@
 ## We have splitted the simulate function into blocks to allow for future 
 ## methods to be added. S.M.I. & A.B.
-## Interface to simulate() changed to match the S3 generic funciton in the 
+## Interface to simulate() changed to match the S3 generic function in the 
 ## package stats
 ## added an environment to let R find the proper values defined in the main
 ## body of the function, which in turn calls different simulation methods
