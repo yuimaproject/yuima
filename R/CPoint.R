@@ -41,13 +41,13 @@ CPointOld <- function(yuima, param1, param2, print=FALSE, plot=FALSE){
 	d.size <- yuima@model@equation.number
 
 	env <- new.env()
-	assign("X",  as.matrix(onezoo(yuima)), env=env)
-	assign("deltaX",  matrix(0, n-1, d.size), env=env)
+	assign("X",  as.matrix(onezoo(yuima)), envir=env)
+	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
 	for(t in 1:(n-1))
 	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
 
 	QL1 <- pminusquasilogl(yuima=yuima, param=param1, print=print, env)
 	QL2 <- pminusquasilogl(yuima=yuima, param=param2, print=print, env)
@@ -307,13 +307,13 @@ CPoint <- function(yuima, param1, param2, print=FALSE, symmetrized=FALSE, plot=F
 	d.size <- yuima@model@equation.number
 	
 	env <- new.env()
-	assign("X",  as.matrix(onezoo(yuima)), env=env)
-	assign("deltaX",  matrix(0, n-1, d.size), env=env)
+	assign("X",  as.matrix(onezoo(yuima)), envir=env)
+	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
 	for(t in 1:(n-1))
 	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
 	
 	QL1 <- NULL
 	QL2 <- NULL

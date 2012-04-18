@@ -20,18 +20,18 @@ drift.term <- function(yuima, theta, env){
 	
 	drift <- matrix(0,n,d.size)
 	tmp.env <- new.env()
-	assign(yuima@model@time.variable, env$time, env=tmp.env)
+	assign(yuima@model@time.variable, env$time, envir=tmp.env)
 
 	
 	for(i in 1:length(theta)){
-		assign(names(theta)[i],theta[[i]], env=tmp.env)
+		assign(names(theta)[i],theta[[i]], envir=tmp.env)
 	}
 	
 	for(d in 1:d.size){
-		assign(modelstate[d], env$X[,d], env=tmp.env)
+		assign(modelstate[d], env$X[,d], envir=tmp.env)
 	}
 	for(d in 1:d.size){
-		drift[,d] <- eval(DRIFT[d], env=tmp.env)
+		drift[,d] <- eval(DRIFT[d], envir=tmp.env)
 	}
 
 	return(drift)  
@@ -46,19 +46,19 @@ diffusion.term <- function(yuima, theta, env){
 #	n <- length(yuima)[1]
 	n <- dim(env$X)[1]
     tmp.env <- new.env()
-	assign(yuima@model@time.variable, env$time, env=tmp.env)
+	assign(yuima@model@time.variable, env$time, envir=tmp.env)
 	diff <- array(0, dim=c(d.size, r.size, n))
 	for(i in 1:length(theta)){
-		assign(names(theta)[i],theta[[i]],env=tmp.env)
+		assign(names(theta)[i],theta[[i]],envir=tmp.env)
 	}
 
 	for(d in 1:d.size){
-		assign(modelstate[d], env$X[,d], env=tmp.env)
+		assign(modelstate[d], env$X[,d], envir=tmp.env)
 	}
 
 	for(r in 1:r.size){
 		for(d in 1:d.size){
-			diff[d, r, ] <- eval(DIFFUSION[[d]][r], env=tmp.env)
+			diff[d, r, ] <- eval(DIFFUSION[[d]][r], envir=tmp.env)
 		}
 	}
 	return(diff)
@@ -169,13 +169,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(onezoo(yuima)), env=env)
-	assign("deltaX",  matrix(0, n-1, d.size), env=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+	assign("X",  as.matrix(onezoo(yuima)), envir=env)
+	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
 	for(t in 1:(n-1))
 	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
+	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
 
 	f <- function(p) {
         mycoef <- as.list(p)
@@ -401,13 +401,13 @@ quasilogl <- function(yuima, param, print=FALSE){
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(yuima:::onezoo(yuima)), env=env)
-	assign("deltaX",  matrix(0, n-1, d.size), env=env)
+	assign("X",  as.matrix(yuima:::onezoo(yuima)), envir=env)
+	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
 	for(t in 1:(n-1))
 	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
 
 	-minusquasilogl(yuima=yuima, param=param, print=print, env)
 }
@@ -685,13 +685,13 @@ lower, upper, joint=FALSE, ...){
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(onezoo(yuima)), env=env)
-	assign("deltaX",  matrix(0, n-1, d.size), env=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+	assign("X",  as.matrix(onezoo(yuima)), envir=env)
+	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
 	for(t in 1:(n-1))
     env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
     
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
+	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
     
 	f <- function(p) {
         mycoef <- as.list(p)

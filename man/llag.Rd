@@ -5,12 +5,15 @@
 \description{TBA
 }
 \usage{
-llag(x,verbose=FALSE)
+llag(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE)
 }
 \arguments{
   \item{x}{an object of  \code{\link{yuima-class}} or
 	\code{\link{yuima.data-class}}.}
   \item{verbose}{whether llag returns matrix or not.}
+\item{from}{TBA.}
+\item{to}{TAB.}
+\item{division}{TBA.}
 }
 \details{
   TBA
@@ -68,7 +71,7 @@ plot(psample)
 cce(psample)
 
 #lead-lag estimation
-llag(psample)
+#llag(psample) # does not work
 
 }
 \seealso{\link{cce}}

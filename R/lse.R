@@ -65,12 +65,12 @@ lse <- function(yuima, start, lower, upper, method="BFGS", ...){
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(onezoo(yuima)), env=env)
-	assign("deltaX",  matrix(0, n-1, d.size), env=env)
+	assign("X",  as.matrix(onezoo(yuima)), envir=env)
+	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
 	for(t in 1:(n-1))
 	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
+	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
 	
 ##objective function
 	f <-function(theta){

@@ -10,13 +10,13 @@ phi.test <- function(yuima, H0, H1, phi, print=FALSE,...){
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(yuima:::onezoo(yuima)), env=env)
-	assign("deltaX",  matrix(0, n-1, d.size), env=env)
+	assign("X",  as.matrix(yuima:::onezoo(yuima)), envir=env)
+	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
 	for(t in 1:(n-1))
 	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
-	assign("h", deltat(yuima@data@zoo.data[[1]]), env=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), env=env) 
+	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
+	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
     est <- FALSE
     if(missing(H1)){
      cat("\nestimating parameters via QMLE...\n")
