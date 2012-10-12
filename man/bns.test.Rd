@@ -1,4 +1,5 @@
 \name{bns.test}
+\alias{bns.test}
 \alias{bns.test,list-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -10,7 +11,7 @@ Barndorff-Nielsen and Shephard's Test for the Presence of Jumps Using Bipower Va
 Tests the presence of jumps using the statistic proposed in Barndorff-Nielsen and Shephard (2004,2006) for each components.
 }
 \usage{
-bns.test(yuima, r = rep(1, 4), type = c("standard","log","ratio"), adj = TRUE)
+bns.test(yuima, r = rep(1, 4), type = "standard", adj = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

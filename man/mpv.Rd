@@ -1,4 +1,5 @@
 \name{mpv}
+\alias{mpv}
 \alias{mpv,list-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
