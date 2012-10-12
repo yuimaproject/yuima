@@ -1,7 +1,8 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package (unstable version)
-Version: 0.1.197Date: 2012-10-05
+Version: 0.1.197
+Date: 2012-10-05
 Depends: methods, zoo, stats4, utils
 Suggests: cubature, mvtnorm
 Author: YUIMA Project Team.
@@ -10,3 +11,4 @@ Description: The YUIMA Project for Simulation and Inference
  for Stochastic Differential Equations.
 License: GPL-2
 URL: http://R-Forge.R-project.org/projects/yuima/
+
