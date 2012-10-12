@@ -87,9 +87,9 @@ yuima <- setYuima(model = model, sampling = yuima.samp)
 yuima <- simulate(yuima)
 plot(yuima)
 
-mpv(yuima) # true value is 1/3
-mpv(yuima,1) # true value is 1/2
-mpv(yuima,rep(2/3,3)) # true value is 1/3
+\dontrun{mpv(yuima)} # true value is 1/3
+\dontrun{mpv(yuima,1)} # true value is 1/2
+\dontrun{mpv(yuima,rep(2/3,3))} # true value is 1/3
 
 # multi-dimensional case
 ## Model: dXkt=t*dWk_t (k=1,2,3).
@@ -102,7 +102,7 @@ yuima <- setYuima(model = model, sampling = yuima.samp)
 yuima <- simulate(yuima)
 plot(yuima)
 
-mpv(yuima,list(c(1,1),1,rep(2/3,3))) # true varue is c(1/3,1/2,1/3)
+\dontrun{mpv(yuima,list(c(1,1),1,rep(2/3,3)))} # true varue is c(1/3,1/2,1/3)
 
 }
 

@@ -93,11 +93,11 @@ yuima <- setYuima(model = model, sampling = yuima.samp)
 yuima <- simulate(yuima)
 plot(yuima) # The path seems to involve some jumps
 
-bns.test(yuima) # standard type
+\dontrun{bns.test(yuima)} # standard type
 
-bns.test(yuima,type="log") # log type
+\dontrun{bns.test(yuima,type="log")} # log type
 
-bns.test(yuima,type="ratio") # ratio type
+\dontrun{bns.test(yuima,type="ratio")} # ratio type
 
 # multi-dimensional case
 ## Model: dXkt=t*dWk_t (k=1,2,3) (no jump case).
@@ -110,7 +110,7 @@ yuima <- setYuima(model = model, sampling = yuima.samp)
 yuima <- simulate(yuima)
 plot(yuima)
 
-bns.test(yuima)
+\dontrun{bns.test(yuima)}
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
