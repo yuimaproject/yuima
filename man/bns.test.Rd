@@ -21,11 +21,11 @@ an object of  \code{\link{yuima-class}} or \code{\link{yuima.data-class}}.
 }
   \item{r}{
 %%     ~~Describe \code{r} here~~
-a vector of non-negative numbers or a list of vectors of non-negative numbers.
+a vector of non-negative numbers or a list of vectors of non-negative numbers. Theoritically, it is necessary that \code{sum(r)=4} and \code{max(r)<2}.
 }
   \item{type}{
 %%     ~~Describe \code{type} here~~
-type of test statistics to use. \code{standard} is default.
+type of the test statistic to use. \code{standard} is default.
 }
   \item{adj}{
 %%     ~~Describe \code{adj} here~~
@@ -46,6 +46,7 @@ A list with the same length as the \code{zoo.data} of \code{yuima}. Each compone
 \item{statistic}{the value of the test statistic of the corresponding component of the \code{zoo.data} of \code{yuima}.}
 \item{p.value}{an approximate p-value for the test of the corresponding component.}
 \item{method}{the character string \dQuote{\code{Barndorff-Nielsen and Shephard jump test}}.}
+\item{data.name}{the character string \dQuote{\code{xi}}, where \code{i} is the number of the component.}
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -93,11 +94,11 @@ yuima <- setYuima(model = model, sampling = yuima.samp)
 yuima <- simulate(yuima)
 plot(yuima) # The path seems to involve some jumps
 
-\dontrun{bns.test(yuima)} # standard type
+bns.test(yuima) # standard type
 
-\dontrun{bns.test(yuima,type="log")} # log type
+bns.test(yuima,type="log") # log type
 
-\dontrun{bns.test(yuima,type="ratio")} # ratio type
+bns.test(yuima,type="ratio") # ratio type
 
 # multi-dimensional case
 ## Model: dXkt=t*dWk_t (k=1,2,3) (no jump case).
@@ -110,7 +111,7 @@ yuima <- setYuima(model = model, sampling = yuima.samp)
 yuima <- simulate(yuima)
 plot(yuima)
 
-\dontrun{bns.test(yuima)}
+bns.test(yuima)
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
