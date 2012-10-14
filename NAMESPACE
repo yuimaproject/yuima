@@ -71,6 +71,8 @@ export(subsampling)
 export(cce)
 export(llag)
 export(poisson.random.sampling)
+export(mpv)
+export(bns.test)
 
 export(get.zoo.data)
 
