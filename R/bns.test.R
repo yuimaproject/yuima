@@ -18,7 +18,7 @@ setMethod("bns.test",signature(yuima="yuima.data"),
             
             bns.stat_standard <- function(yuima,r=rep(1,4)){
               
-              JV <- mpv(yuima,2)-mpv(yuima)
+              JV <- mpv(yuima,r=2)-mpv(yuima,r=c(1,1))
               IQ <- mpv(yuima,r)
               
               return(JV/sqrt((pi^2/4+pi-5)*IQ))
@@ -26,8 +26,8 @@ setMethod("bns.test",signature(yuima="yuima.data"),
             
             bns.stat_ratio <- function(yuima,r=rep(1,4),adj=TRUE){
               
-              bpv <- mpv(yuima)
-              RJ <- 1-bpv/mpv(yuima,2)
+              bpv <- mpv(yuima,r=c(1,1))
+              RJ <- 1-bpv/mpv(yuima,r=2)
               avar <- mpv(yuima,r)/bpv^2
               
               if(adj){
@@ -39,8 +39,8 @@ setMethod("bns.test",signature(yuima="yuima.data"),
             
             bns.stat_log <- function(yuima,r=rep(1,4),adj=TRUE){
               
-              bpv <- mpv(yuima)
-              RJ <- log(mpv(yuima,2)/bpv)
+              bpv <- mpv(yuima,r=c(1,1))
+              RJ <- log(mpv(yuima,r=2)/bpv)
               avar <- mpv(yuima,r)/bpv^2
               
               if(adj){

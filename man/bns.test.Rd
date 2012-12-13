@@ -21,7 +21,7 @@ an object of  \code{\link{yuima-class}} or \code{\link{yuima.data-class}}.
 }
   \item{r}{
 %%     ~~Describe \code{r} here~~
-a vector of non-negative numbers or a list of vectors of non-negative numbers. Theoritically, it is necessary that \code{sum(r)=4} and \code{max(r)<2}.
+a vector of non-negative numbers or a list of vectors of non-negative numbers. Theoretically, it is necessary that \code{sum(r)=4} and \code{max(r)<2}.
 }
   \item{type}{
 %%     ~~Describe \code{type} here~~
@@ -29,7 +29,7 @@ type of the test statistic to use. \code{standard} is default.
 }
   \item{adj}{
 %%     ~~Describe \code{adj} here~~
-logical; if \code{TRUE}, the muximum adjustment suggested in Barndorff-Nielsen and Shephard (2004) is applied to the test statistic when \code{type} is equal to either \dQuote{\code{log}} or \dQuote{\code{ratio}}.
+logical; if \code{TRUE}, the maximum adjustment suggested in Barndorff-Nielsen and Shephard (2004) is applied to the test statistic when \code{type} is equal to either \dQuote{\code{log}} or \dQuote{\code{ratio}}.
 }
 }
 \details{
@@ -68,7 +68,7 @@ The YUIMA Project Team
 }
 \note{
 %%  ~~further notes~~
-Theoritically, this test may be invalid if sampling is irregular.
+Theoretically, this test may be invalid if sampling is irregular.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
@@ -81,7 +81,7 @@ Theoritically, this test may be invalid if sampling is irregular.
 
 set.seed(123)
 
-# one-dimensional case
+# One-dimensional case
 ## Model: dXt=t*dWt+t*dzt, 
 ## where zt is a compound Poisson process with intensity 5 and jump sizes distribution N(0,0.1).
 
@@ -100,7 +100,7 @@ bns.test(yuima,type="log") # log type
 
 bns.test(yuima,type="ratio") # ratio type
 
-# multi-dimensional case
+# Multi-dimensional case
 ## Model: dXkt=t*dWk_t (k=1,2,3) (no jump case).
 
 model <- setModel(drift=c(0,0,0),diffusion=diag("t",3),time.variable="t",

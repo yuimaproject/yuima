@@ -125,9 +125,12 @@ setMethod( "llag", "yuima.data", function(x,from=FALSE,to=FALSE,division=FALSE,v
   
 		mat <- cbind(y[2:(n-1)],tmp[2:(n-1)])
 		
-		idx <- abs(mat[,2])==max(abs(mat[,2]))
-		mlag <- mat[,1][idx][1] # make the first timing of max or min
-		cov <- mat[,2][idx][1]
+		#idx <- abs(mat[,2])==max(abs(mat[,2]))
+		#mlag <- mat[,1][idx][1] # make the first timing of max or min
+		#cov <- mat[,2][idx][1]
+		idx <- which.max(abs(mat[,2]))
+		mlag <- mat[,1][idx] # make the first timing of max or min
+		cov <- mat[,2][idx]
 		return(list(lag=-mlag,cov=cov))
 	}
 	
@@ -151,7 +154,7 @@ setMethod( "llag", "yuima.data", function(x,from=FALSE,to=FALSE,division=FALSE,v
 	if(verbose==TRUE){
 		return(list(lagcce=theta,covmat=covmat,cormat=cormat))
 	}else{
-		return(list(lagcce=theta,covmat=covmat,cormat=cormat))
+		return(theta)
 	}
 })
   

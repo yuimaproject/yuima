@@ -71,6 +71,7 @@ export(subsampling)
 export(cce)
 export(llag)
 export(poisson.random.sampling)
+export(noisy.sampling)
 export(mpv)
 export(bns.test)
 

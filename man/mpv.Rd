@@ -4,14 +4,14 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
-Realized Multipower variation
+Realized Multipower Variation
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 The function returns the realized MultiPower Variation (mpv), defined in Barndorff-Nielsen and Shephard (2004), for each components.
 }
 \usage{
-mpv(yuima, r = c(1, 1))
+mpv(yuima, r = 2, normalize = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,6 +23,7 @@ an object of  \code{\link{yuima-class}} or \code{\link{yuima.data-class}}.
 %%     ~~Describe \code{r} here~~
 a vector of non-negative numbers or a list of vectors of non-negative numbers. 
 }
+\item{normalize}{logical. See `Details'.}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -30,13 +31,13 @@ Let \code{d} be the number of the components of the \code{zoo.data} of \code{yui
 
 Let \eqn{X^i_{t_0},X^i_{t_1},\dots,X^i_{t_n}} be the observation data of the \eqn{i}-th component (i.e. the \eqn{i}-th component of the \code{zoo.data} of \code{yuima}).
 
-When \eqn{r} is a \eqn{k}-dimentional vector of non-negative numbers, \code{mpv(yuima,r)} is defined as the \code{d}-dimntional vector with \code{i}-th element equal to
+When \eqn{r} is a \eqn{k}-dimensional vector of non-negative numbers, \code{mpv(yuima,r,normalize=TRUE)} is defined as the \code{d}-dimensional vector with \code{i}-th element equal to
 \deqn{\mu_{r[1]}^{-1}\cdots\mu_{r[k]}^{-1}n^{\frac{r[1]+\cdots+r[k]}{2}-1}\sum_{j=1}^{n-k+1}|\Delta X^i_{t_{j}}|^{r[1]}|\Delta X^i_{t_{j+1}}|^{r[2]}\cdots|\Delta X^i_{t_{j+k-1}}|^{r[k]},}
-where \eqn{\mu_p} is the p-th absolute moment of the standard normal distribution and  \eqn{\Delta X^i_{t_{j}}=X^i_{t_j}-X^i_{t_{j-1}}}.
+where \eqn{\mu_p} is the p-th absolute moment of the standard normal distribution and \eqn{\Delta X^i_{t_{j}}=X^i_{t_j}-X^i_{t_{j-1}}}. If \code{normalize} is \code{FALSE} the result is not multiplied by \eqn{\mu_{r[1]}^{-1}\cdots\mu_{r[k]}^{-1}}.
 
-When \eqn{r} is a list of vectors of non-negative numbers, \code{mpv(yuima,r)} is defined as the \code{d}-dimntional vector with \code{i}-th element equal to
+When \eqn{r} is a list of vectors of non-negative numbers, \code{mpv(yuima,r,normalize=FALSE)} is defined as the \code{d}-dimensional vector with \code{i}-th element equal to
 \deqn{\mu_{r^i_1}^{-1}\cdots\mu_{r^i_{k_i}}^{-1}n^{\frac{r^i_1+\cdots+r^i_{k_i}}{2}-1}\sum_{j=1}^{n-k_i+1}|\Delta X^i_{t_{j}}|^{r^i_1}|\Delta X^i_{t_{j+1}}|^{r^i_2}\cdots|\Delta X^i_{t_{j+k_i-1}}|^{r^i_{k_i}},}
-where \eqn{r^i_1,\dots,r^i_{k_i}} is the \code{i}-th component of \code{r}.
+where \eqn{r^i_1,\dots,r^i_{k_i}} is the \code{i}-th component of \code{r}. If \code{normalize} is \code{FALSE} the result is not multiplied by \eqn{\mu_{r^i_1}^{-1}\cdots\mu_{r^i_{k_i}}^{-1}}.
 }
 \value{
 %%  ~Describe the value returned
@@ -74,7 +75,7 @@ The YUIMA Project Team
 
 set.seed(123)
 
-# one-dimensional case
+# One-dimensional case
 ## Model: dXt=t*dWt+t*dzt, 
 ## where zt is a compound Poisson process with intensity 5 and jump sizes distribution N(0,0.1). 
 
@@ -91,7 +92,7 @@ mpv(yuima) # true value is 1/3
 mpv(yuima,1) # true value is 1/2
 mpv(yuima,rep(2/3,3)) # true value is 1/3
 
-# multi-dimensional case
+# Multi-dimensional case
 ## Model: dXkt=t*dWk_t (k=1,2,3).
 
 model <- setModel(drift=c(0,0,0),diffusion=diag("t",3),time.variable="t",
