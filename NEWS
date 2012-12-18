@@ -1,3 +1,4 @@
 2012/10/05: add mpv.R, bns.test.R, mpv.Rd, bns.test.Rd
 2012/12/13: add noisy.sampling.R, noisy.sampling.Rd
             modify bns.test.R, cce.R, llag.R, mpv.R, bns.test.Rd, cce.Rd, llag.Rd, mpv.Rd
+2012/12/19: modify cce.R

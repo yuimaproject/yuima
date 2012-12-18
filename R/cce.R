@@ -468,7 +468,7 @@ local_univ_threshold <- function(data,coef=3){
       #  rho[i] <- coef2*2*log(length(x))*BPV(x[(i-K):(i-1)])/(K-2)
       #}
       rho[-(1:K)] <- coef2*2*log(n)*
-        rollapply(x[-n],width=K,FUN="BPV",align="left")/(K-2)
+        rollapply(x[-n],width=K,FUN=BPV,align="left")/(K-2)
     }else{
       #rho <- coef2*(mad(diff(as.numeric(x)))/0.6745)^2
       rho <- coef2*(mad(diff(x))/0.6745)^2
