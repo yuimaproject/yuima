@@ -21,7 +21,8 @@ setGeneric("noisy.sampling",
 
 setMethod("noisy.sampling",signature(x="yuima"),
           function(x,var.adj=0,rng="rnorm",mean.adj=0,...,end.coef=0,n,order.adj=0,znoise)
-            noisy.sampling(x@data,var.adj,rng,mean.adj,...,end.coef,n,order.adj,znoise=znoise))
+            noisy.sampling(x@data,var.adj=var.adj,rng=rng,mean.adj=mean.adj,...,
+                           end.coef=end.coef,n=n,order.adj=order.adj,znoise=znoise))
 
 setMethod("noisy.sampling",signature(x="yuima.data"),
           function(x,var.adj=0,rng="rnorm",mean.adj=0,...,

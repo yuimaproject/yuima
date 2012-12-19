@@ -2192,11 +2192,14 @@ setMethod("cce",signature(x="yuima"),
                    opt.method="BFGS",vol.init=NA,covol.init=NA,
                    nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
                    frequency=300,avg=TRUE,threshold,utime)
-            cce(x@data,method,theta,kn,g,refreshing,cwise,
-                 delta,adj,K,c.two,J,c.multi,kernel,H,c.RK,
-                 eta,m,ftregion,opt.method,vol.init,covol.init,
-                 nvar.init,ncov.init,...,mn,alpha,
-                 frequency,avg,threshold,utime=utime))
+            cce(x@data,method=method,theta=theta,kn=kn,g=g,refreshing=refreshing,
+                cwise=cwise,delta=delta,adj=adj,K=K,c.two=c.two,J=J,
+                c.multi=c.multi,kernel=kernel,H=H,c.RK=c.RK,eta=eta,m=m,
+                ftregion=ftregion,opt.method=opt.method,vol.init=vol.init,
+                covol.init=covol.init,nvar.init=nvar.init,
+                ncov.init=ncov.init,...,mn=mn,alpha=alpha,
+                frequency=frequency,avg=avg,threshold=threshold,
+                utime=utime))
 
 setMethod("cce",signature(x="yuima.data"),
           function(x,method="HY",theta,kn,g=function(x)min(x,1-x),
