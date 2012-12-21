@@ -322,7 +322,9 @@ RV.sparse <- function(zdata,frequency=1200,utime){
 Omega_BNHLS <- function(zdata,sec=120,utime){
   
   #q <- ceiling(sec/mean(diff(as.numeric(time(zdata))*utime)))
-  q <- ceiling(sec*(length(zdata)-1)/utime)
+  #q <- ceiling(sec*(length(zdata)-1)/utime)
+  ztime <- as.numeric(time(zdata))
+  q <- ceiling(sec*(length(zdata)-1)/(utime*(tail(ztime,n=1)-head(ztime,n=1))))
   obj <- diff(as.numeric(zdata),lag=q)
   n <- length(obj)
   
@@ -2048,7 +2050,8 @@ SRC <- function(data,frequency=300,avg=TRUE,utime){
       grid <- grid+rep(1,n.sparse)
       if(grid[n.sparse]>Terminal){
         grid <- grid[-n.sparse]
-        I <- I[,-n.sparse]
+        #I <- I[,-n.sparse]
+        I <- as.matrix(I[,-n.sparse])
         n.sparse <- n.sparse-1
       }
     }
@@ -2142,7 +2145,8 @@ SBPC <- function(data,frequency=300,avg=TRUE,utime){
       grid <- grid+rep(1,n.sparse)
       if(grid[n.sparse]>Terminal){
         grid <- grid[-n.sparse]
-        I <- I[,-n.sparse]
+        #I <- I[,-n.sparse]
+        I <- as.matrix(I[,-n.sparse])
         n.sparse <- n.sparse-1
       }
     }
