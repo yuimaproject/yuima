@@ -11,7 +11,8 @@ Noisy Observation Generator
 Generates a new observation data contaminated by noise.
 }
 \usage{
-noisy.sampling(x, var.adj = 0, rng = "rnorm", mean.adj = 0, \dots, end.coef = 0, n, order.adj = 0, znoise)
+noisy.sampling(x, var.adj = 0, rng = "rnorm", mean.adj = 0, \dots, 
+               end.coef = 0, n, order.adj = 0, znoise)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

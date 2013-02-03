@@ -34,7 +34,7 @@ logical; if \code{TRUE}, the maximum adjustment suggested in Barndorff-Nielsen a
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
-For the \code{i}-th component, the test statistic is equal to the \code{i}-the component of \code{sqrt(n)*(mpv(yuima,2)-mpv(yuima,c(1,1)))/sqrt(vartheta*mpv(yuima,r))} when \code{type="standard"}, \code{sqrt(n)*log(mpv(yuima,2)/mpv(yuima,c(1,1)))/sqrt(vartheta*mpv(yuima,r)/mpv(yuima,c(1,1))^2)} when \code{type="log"} and \code{sqrt(n)*(1-mpv(yuima,c(1,1))/mpv(yuima,2))/sqrt(vartheta*mpv(yuima,r)/mpv(yuima,c(1,1))^2)} when \code{type="ratio"}. Here, \code{n} is equal to the length of the \code{i}-th component of the \code{zoo.data} of \code{yuima} minus 1 and \code{vartheta} is \code{pi^2/4+pi-5}. When \code{adj=TRUE}, \code{mpv(yuima,r)[i]/mpv(yuima,c(1,1))^2)[i]} is replaced with 1 if it is less than 1.
+For the \code{i}-th component, the test statistic is equal to the \code{i}-th component of \code{sqrt(n)*(mpv(yuima,2)-mpv(yuima,c(1,1)))/sqrt(vartheta*mpv(yuima,r))} when \code{type="standard"}, \code{sqrt(n)*log(mpv(yuima,2)/mpv(yuima,c(1,1)))/sqrt(vartheta*mpv(yuima,r)/mpv(yuima,c(1,1))^2)} when \code{type="log"} and \code{sqrt(n)*(1-mpv(yuima,c(1,1))/mpv(yuima,2))/sqrt(vartheta*mpv(yuima,r)/mpv(yuima,c(1,1))^2)} when \code{type="ratio"}. Here, \code{n} is equal to the length of the \code{i}-th component of the \code{zoo.data} of \code{yuima} minus 1 and \code{vartheta} is \code{pi^2/4+pi-5}. When \code{adj=TRUE}, \code{mpv(yuima,r)[i]/mpv(yuima,c(1,1))^2)[i]} is replaced with 1 if it is less than 1.
 }
 \value{
 %%  ~Describe the value returned

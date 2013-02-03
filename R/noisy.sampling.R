@@ -3,18 +3,6 @@
 #          function for adding noise
 ###############################################################
 
-# sqrt of a matrix
-
-matsqrt <- function(A){
-  
-  tmp <- svd(A)
-  
-  return(tmp$u%*%diag(sqrt(tmp$d))%*%t(tmp$v))
-  
-}
-
-# main body
-
 setGeneric("noisy.sampling",
            function(x,var.adj=0,rng="rnorm",mean.adj=0,...,end.coef=0,n,order.adj=0,znoise)
            standardGeneric("noisy.sampling"))
@@ -44,7 +32,7 @@ setMethod("noisy.sampling",signature(x="yuima.data"),
             result <- vector(d.size,mode="list")
             
             if(any(var.adj!=0)){ # exogenous noise is present
-              rn <- n^(order.adj/2)*matrix(do.call(rng,list(d.size*samp.size,...)),d.size,samp.size)-mean.adj
+              rn <- n^(order.adj/2)*(matrix(do.call(rng,list(d.size*samp.size,...)),d.size,samp.size)-mean.adj)
               if(is.list(var.adj)){
                 total.noise <- matrix(0,d.size,samp.size)
                 for(d in 1:d.size){
@@ -53,7 +41,8 @@ setMethod("noisy.sampling",signature(x="yuima.data"),
                 }
               }else{
                 if(d.size>1){
-                  total.noise <- matsqrt(as.matrix(var.adj))%*%rn
+                  tmp <- svd(as.matrix(var.adj))
+                  total.noise <- (tmp$u%*%diag(sqrt(tmp$d))%*%t(tmp$v))%*%rn
                 }else{
                   total.noise <- sqrt(var.adj)*rn
                 }

@@ -23,6 +23,9 @@ refresh_sampling <- function(data){
     #ser.times <- vector(d.size, mode="list")
     #ser.times <- lapply(data,time)
     ser.times <- lapply(lapply(data,"time"),"as.numeric")
+	for(d in 1:d.size){
+	  ser.times[[d]] <- round(ser.times[[d]],digits=15)
+	}
     ser.lengths <- sapply(data,"length")
     ser.samplings <- vector(d.size, mode="list")
     refresh.times <- c()
@@ -103,6 +106,9 @@ refresh_sampling.PHY <- function(data){
   if(d.size>1){
     
     ser.times <- lapply(lapply(data,"time"),"as.numeric")
+	for(d in 1:d.size){
+	  ser.times[[d]] <- round(ser.times[[d]],digits=15)
+	}
     ser.lengths <- sapply(data,"length")    
     refresh.times <- max(sapply(ser.times,"[",1))
     ser.samplings <- vector(d.size,mode="list")
@@ -161,9 +167,12 @@ refresh_sampling.PHY <- function(data){
 
 Bibsynchro <- function(x,y){
   
-  xtime <- as.numeric(time(x))
-  ytime <- as.numeric(time(y))
-  
+#  xtime <- as.numeric(time(x))
+#  ytime <- as.numeric(time(y))
+
+  xtime <- round(as.numeric(time(x)),digits=15)
+  ytime <- round(as.numeric(time(y)),digits=15)
+
   xlength <- length(xtime)
   ylength <- length(ytime)
   
@@ -288,7 +297,8 @@ Bibsynchro <- function(x,y){
 RV.sparse <- function(zdata,frequency=1200,utime){
   
   znum <- as.numeric(zdata)
-  ztime <- as.numeric(time(zdata))*utime
+#  ztime <- as.numeric(time(zdata))*utime
+  ztime <- round(as.numeric(time(zdata))*utime,digits=15)
   n.size <- length(zdata)
   end <- ztime[n.size]
   
@@ -323,7 +333,8 @@ Omega_BNHLS <- function(zdata,sec=120,utime){
   
   #q <- ceiling(sec/mean(diff(as.numeric(time(zdata))*utime)))
   #q <- ceiling(sec*(length(zdata)-1)/utime)
-  ztime <- as.numeric(time(zdata))
+#  ztime <- as.numeric(time(zdata))
+  ztime <- round(as.numeric(time(zdata)),digits=15)
   q <- ceiling(sec*(length(zdata)-1)/(utime*(tail(ztime,n=1)-head(ztime,n=1))))
   obj <- diff(as.numeric(zdata),lag=q)
   n <- length(obj)
@@ -503,8 +514,9 @@ HY <- function(data) {
   for(i in 1:n.series){
     # set data and time index
     ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-    ser.times[[i]] <- as.numeric(time(data[[i]]))
-    # set difference of the data 
+#    ser.times[[i]] <- as.numeric(time(data[[i]]))
+    ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
+   # set difference of the data 
     ser.diffX[[i]] <- diff( ser.X[[i]] )
   }
   
@@ -558,13 +570,14 @@ HY <- function(data) {
 ## g: a real-valued function on [0,1] (a weight function)
 ## delta: a positive number
 
-MRC <- function(data,theta,kn,g,delta=0,adj=TRUE,utime){
+MRC <- function(data,theta,kn,g,delta=0,adj=TRUE){
   
   n.series <- length(data)
   
-  if(missing(theta)&&missing(kn))
-    theta <- selectParam.pavg(data,utime=utime,a.theta=151/80640,
-                              b.theta=1/96,c.theta=1/6)
+  #if(missing(theta)&&missing(kn))
+  #  theta <- selectParam.pavg(data,utime=utime,a.theta=151/80640,
+  #                            b.theta=1/96,c.theta=1/6)
+  if(missing(theta)) theta <- 1
   
   cmat <- matrix(0, n.series, n.series)  # cov
   
@@ -602,13 +615,14 @@ MRC <- function(data,theta,kn,g,delta=0,adj=TRUE,utime){
 ## g: a real-valued function on [0,1] (a weight function)
 ## refreshing: a logical value (if TRUE we use the refreshed data)
 
-PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE,utime){
+PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
   
   n.series <- length(data)
   
-  if(missing(theta)&&missing(kn))
-    theta <- selectParam.pavg(data,utime=utime,a.theta=7585/1161216,
-                              b.theta=151/20160,c.theta=1/24)
+  #if(missing(theta)&&missing(kn))
+  #  theta <- selectParam.pavg(data,utime=utime,a.theta=7585/1161216,
+  #                            b.theta=151/20160,c.theta=1/24)
+  if(missing(theta)) theta <- 0.15
     
   cmat <- matrix(0, n.series, n.series)  # cov
   
@@ -632,6 +646,9 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE,utime){
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
+			  for(d in 1:n.series){
+				ser.times[[d]] <- round(ser.times[[d]],digits=15)
+			  }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -694,6 +711,9 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE,utime){
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
+			  for(d in 1:n.series){
+				ser.times[[d]] <- round(ser.times[[d]],digits=15)
+			  }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -767,7 +787,8 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE,utime){
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-        ser.times[[i]] <- as.numeric(time(data[[i]]))
+#        ser.times[[i]] <- as.numeric(time(data[[i]]))
+        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
         
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )
@@ -830,6 +851,10 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE,utime){
             # set data and time index
             ser.X <- lapply(dat,"as.numeric")
             ser.times <- lapply(lapply(dat,"time"),"as.numeric")
+			for(d in 1:n.series){
+			  ser.times[[d]] <- round(ser.times[[d]],digits=15)
+			}
+
             # set difference of the data
             ser.diffX <- lapply(ser.X,"diff")
             
@@ -887,7 +912,8 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE,utime){
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-        ser.times[[i]] <- as.numeric(time(data[[i]]))
+#        ser.times[[i]] <- as.numeric(time(data[[i]]))
+        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
         
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )    
@@ -1288,7 +1314,9 @@ THY <- function(data,threshold) {
   for(i in 1:n.series){
     # set data and time index
     ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-    ser.times[[i]] <- as.numeric(time(data[[i]]))
+#    ser.times[[i]] <- as.numeric(time(data[[i]]))
+    ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
+
     # set difference of the data with truncation
     ser.diffX[[i]] <- diff( ser.X[[i]] )
     
@@ -1352,13 +1380,14 @@ THY <- function(data,threshold) {
 ## refreshing: a logical value (if TRUE we use the refreshed data)
 
 PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
-                 cwise=TRUE,utime,coef=3.5,epsilon=0){
+                 cwise=TRUE,eps=0.2){
   
   n.series <- length(data)
   
-  if(missing(theta)&&missing(kn))
-    theta <- selectParam.pavg(data,utime=utime,a.theta=7585/1161216,
-                              b.theta=151/20160,c.theta=1/24)
+  #if(missing(theta)&&missing(kn))
+  #  theta <- selectParam.pavg(data,utime=utime,a.theta=7585/1161216,
+  #                            b.theta=151/20160,c.theta=1/24)
+  if(missing(theta)) theta <- 0.15
   
   cmat <- matrix(0, n.series, n.series)  # cov
   
@@ -1382,6 +1411,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
+              for(d in 1:n.series){
+                ser.times[[d]] <- round(ser.times[[d]],digits=15)
+              }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -1398,29 +1430,25 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               
               # thresholding
               if(missing(threshold)){
-                tmp.theta <- coef*c(theta[i,i],theta[j,j])*2
+
                 for(ii in 1:2){
                   
-                  #r <- max(diff(ser.times[[ii]]))
-                  #if(!is.numeric(time(dat[[ii]]))){
-                  #  r <- r/(tail(ser.times[[ii]],n=1)-head(ser.times[[ii]],n=1))
-                  #}
-                  #K <- ceiling(sqrt(1/r))
-                  #K <- ceiling(sqrt(ser.num.barX[ii]))
-                  K <- ceiling(ser.num.barX[ii]^(1/4))
+                  K <- ceiling(ser.num.barX[ii]^(3/4))
                   
-                  if((K+kn)<ser.num.barX[ii]){
-                    rho <- double(ser.num.barX[ii])
-                    rho[1:(K+kn)] <- log(K+kn)^(1+epsilon)*(mad(ser.barX[[ii]][1:(K+kn)])/0.6745)^2              
-                    obj <- abs(ser.barX[[ii]])
-                    for(jj in (K+kn+1):ser.num.barX[ii]){
-                      rho[jj] <- obj[(jj-K-kn):(jj-1-kn)]%*%obj[(jj-K):(jj-1)]
-                    }
-                    rho <- tmp.theta[ii]*rho
-                    rho[-(1:(K+kn))] <- log(ser.num.barX[ii])^(1+epsilon)*(pi/2)*rho[-(1:(K+kn))]/K
+                  obj0 <- abs(ser.barX[[ii]])
+                  obj1 <- (pi/2)*obj0[1:(ser.num.barX[ii]-kn)]*obj0[-(1:kn)]
+                  if(min(K,ser.num.barX[ii]-1)<2*kn){
+                    #v.hat <- (median(obj0)/0.6745)^2
+                    v.hat <- mean(obj1)
                   }else{
-                    rho <- tmp.theta[ii]*log(ser.num.barX[ii])^(1+epsilon)*(mad(ser.barX[[ii]])/0.6745)^2
+                    v.hat <- double(ser.num.barX[ii])
+                    #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+                    v.hat[-(1:K)] <- rollmean(obj1[1:(ser.num.barX[ii]-2*kn)],k=K-2*kn+1,align="left")
+                    v.hat[1:K] <- v.hat[K+1]
                   }
+                  #rho <- 2*log(ser.num.barX[ii])*
+                  #  (median(abs(ser.barX[[ii]])/sqrt(v.hat))/0.6745)^2*v.hat
+                  rho <- 2*log(ser.num.barX[ii])^(1+eps)*v.hat
                   ser.barX[[ii]][ser.barX[[ii]]^2>rho] <- 0
                 }
               }else if(is.numeric(threshold)){
@@ -1465,30 +1493,23 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               
               # thresholding
               if(missing(threshold)){
-                tmp.theta <- coef*theta[i,i]*2
-                #Xtimes <- time(data[[i]])
-                #if(is.numeric(Xtimes)){
-                #  r <- max(diff(Xtimes))
-                #}else{
-                #  Xtimes <- as.numeric(Xtimes)
-                #  r <- max(diff(Xtimes))/(tail(Xtimes,n=1)-head(Xtimes,n=1))
-                #}
-                #K <- ceiling(sqrt(1/r))
-                #K <- ceiling(sqrt(num.barX))
-                K <- ceiling(num.barX^(1/4))
+                K <- ceiling(num.barX^(3/4))
+                #K <- ceiling(kn^(3/2))
                 
-                if((K+kn)<num.barX){
-                  rho <- double(num.barX)
-                  rho[1:(K+kn)] <- log(K+kn)^(1+epsilon)*(mad(barX[1:(K+kn)])/0.6745)^2              
-                  obj <- abs(barX)
-                  for(jj in (K+kn+1):num.barX){
-                    rho[jj] <- obj[(jj-K-kn):(jj-1-kn)]%*%obj[(jj-K):(jj-1)]
-                  }
-                  rho <- tmp.theta*rho
-                  rho[-(1:(K+kn))] <- log(num.barX)^(1+epsilon)*(pi/2)*rho[-(1:(K+kn))]/K
+                obj0 <- abs(barX)
+                obj1 <- (pi/2)*obj0[1:(num.barX-kn)]*obj0[-(1:kn)]
+                if(min(K,num.barX-1)<2*kn){
+                  #v.hat <- (median(obj0)/0.6745)^2
+                  v.hat <- mean(obj1)
                 }else{
-                  rho <- tmp.theta*log(num.barX)^(1+epsilon)*(mad(barX)/0.6745)^2
+                  v.hat <- double(num.barX)
+                  #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+                  v.hat[-(1:K)] <- rollmean(obj1[1:(num.barX-2*kn)],k=K-2*kn+1,align="left")
+                  v.hat[1:K] <- v.hat[K+1]
                 }
+                #rho <- 2*log(num.barX)*
+                #  (median(abs(barX)/sqrt(v.hat))/0.6745)^2*v.hat
+                rho <- 2*log(num.barX)^(1+eps)*v.hat
                 barX[barX^2>rho] <- 0
               }else if(is.numeric(threshold)){
                 threshold <- matrix(threshold,1,n.series)
@@ -1523,6 +1544,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
+              for(d in 1:n.series){
+                ser.times[[d]] <- round(ser.times[[d]],digits=15)
+              }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -1535,23 +1559,24 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               
               # thresholding
               if(missing(threshold)){
-                tmp.theta <- 2*coef*knij/sqrt(ser.numX)
                 for(ii in 1:2){
                   
-                  K <- ceiling(sqrt(ser.num.barX[ii]))
+                  K <- ceiling(ser.num.barX[ii]^(3/4))
                   
-                  if((K+knij)<ser.num.barX[ii]){
-                    rho <- double(ser.num.barX[ii])
-                    rho[1:(K+knij)] <- log(K+knij)^(1+epsilon)*(mad(ser.barX[[ii]][1:(K+knij)])/0.6745)^2              
-                    obj <- abs(ser.barX[[ii]])
-                    for(jj in (K+knij+1):ser.num.barX[ii]){
-                      rho[jj] <- obj[(jj-K-knij):(jj-1-knij)]%*%obj[(jj-K):(jj-1)]
-                    }
-                    rho <- tmp.theta[ii]*rho
-                    rho[-(1:(K+knij+1))] <- log(ser.num.barX[ii])^(1+epsilon)*(pi/2)*rho[-(1:(K+knij))]/K
+                  obj0 <- abs(ser.barX[[ii]])
+                  obj1 <- (pi/2)*obj0[1:(ser.num.barX[ii]-knij)]*obj0[-(1:knij)]
+                  if(min(K,ser.num.barX[ii]-1)<2*knij){
+                    #v.hat <- (median(obj0)/0.6745)^2
+                    v.hat <- mean(obj1)
                   }else{
-                    rho <- tmp.theta[ii]*log(ser.num.barX[ii])^(1+epsilon)*(mad(ser.barX[[ii]])/0.6745)^2
+                    v.hat <- double(ser.num.barX[ii])
+                    #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+                    v.hat[-(1:K)] <- rollmean(obj1[1:(ser.num.barX[ii]-2*knij)],k=K-2*knij+1,align="left")
+                    v.hat[1:K] <- v.hat[K+1]
                   }
+                  #rho <- 2*log(ser.num.barX[ii])*
+                  #  (median(abs(ser.barX[[ii]])/sqrt(v.hat))/0.6745)^2*v.hat
+                  rho <- 2*log(ser.num.barX[ii])^(1+eps)*v.hat
                   ser.barX[[ii]][ser.barX[[ii]]^2>rho] <- 0
                 }
               }else if(is.numeric(threshold)){
@@ -1595,21 +1620,23 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               # thresholding
               if(missing(threshold)){
                 
-                tmp.theta <- 2*coef*kni/sqrt(length(data[[i]])-1)
-                K <- ceiling(sqrt(num.barX))
+                K <- ceiling(num.barX^(3/4))
+                #K <- ceiling(kn^(3/2))
                 
-                if((K+kni)<num.barX){
-                  rho <- double(num.barX)
-                  rho[1:(K+kni)] <- log(K+kni)^(1+epsilon)*(mad(barX[1:(K+kni)])/0.6745)^2              
-                  obj <- abs(barX)
-                  for(jj in (K+kni+1):num.barX){
-                    rho[jj] <- obj[(jj-K-kni):(jj-1-kni)]%*%obj[(jj-K):(jj-1)]
-                  }
-                  rho <- tmp.theta*rho
-                  rho[-(1:(K+kni))] <- log(num.barX)^(1+epsilon)*(pi/2)*rho[-(1:(K+kni))]/K
+                obj0 <- abs(barX)
+                obj1 <- (pi/2)*obj0[1:(num.barX-kni)]*obj0[-(1:kni)]
+                if(min(K,num.barX-1)<2*kni){
+                  #v.hat <- (median(obj0)/0.6745)^2
+                  v.hat <- mean(obj1)
                 }else{
-                  rho <- tmp.theta*log(num.barX)^(1+epsilon)*(mad(barX)/0.6745)^2
+                  v.hat <- double(num.barX)
+                  #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+                  v.hat[-(1:K)] <- rollmean(obj1[1:(num.barX-2*kni)],k=K-2*kni+1,align="left")
+                  v.hat[1:K] <- v.hat[K+1]
                 }
+                #rho <- 2*log(num.barX)*
+                #  (median(abs(barX)/sqrt(v.hat))/0.6745)^2*v.hat
+                rho <- 2*log(num.barX)^(1+eps)*v.hat
                 barX[barX^2>rho] <- 0
               }else if(is.numeric(threshold)){
                 threshold <- matrix(threshold,1,n.series)
@@ -1650,7 +1677,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-        ser.times[[i]] <- as.numeric(time(data[[i]]))
+#        ser.times[[i]] <- as.numeric(time(data[[i]]))
+        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
+        
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )
       }
@@ -1670,36 +1699,23 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
           ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
           ser.num.barX[i] <- length(ser.barX[[i]])
           
-          #r <- max(diff(ser.times[[i]],lag=kn-1))
-          #if(!is.numeric(time(data[[i]]))){
-          #r <- r/ser.num.barX[i]
-          #  r <- r/(tail(ser.times[[i]],n=1)-head(ser.times[[i]],n=1))
-          #}
-          #K <- ceiling(sqrt(1/r))
-          K <- ceiling(sqrt(ser.num.barX[i]))
+          K <- ceiling(ser.num.barX[i]^(3/4))
           
-          if((K+kn)<ser.num.barX[i]){
-            rho <- double(ser.num.barX[i])
-            rho[1:(K+kn)] <- log(K+kn)^(1+epsilon)*(mad(ser.barX[[i]][1:(K+kn)])/0.6745)^2
-            #rho[1:(K+kn)] <- coef*2*log(K+kn)*(mad(ser.barX[[i]][1:(K+kn)])/0.6745)^2
-            obj <- abs(ser.barX[[i]])
-            for(j in (K+kn+1):ser.num.barX[i]){
-              #rho[j] <- 9*2*log(ser.num.barX[i])*(pi/2)*
-              #  obj[(j-K-kn):(j-1-kn)]%*%obj[(j-K):(j-1)]/K
-              rho[j] <- obj[(j-K-kn):(j-1-kn)]%*%obj[(j-K):(j-1)]
-              #rho[j] <- coef*2*log(ser.num.barX[i])*(pi/2)*
-              #            obj[(j-K-kn):(j-1-kn)]%*%obj[(j-K):(j-1)]/K
-            }
-            rho <- coef*rho
-            rho[-(1:(K+kn))] <- log(ser.num.barX[i])^(1+epsilon)*(pi/2)*rho[-(1:(K+kn))]/K
-            #rho[-(1:K+kn)] <- 9*2*log(ser.num.barX[i])*
-            #                  rollapply(ser.barX[[i]][-ser.num.barX[i]],
-            #                            width=K,FUN="BPV",lag=kn,align="left")/K
+          obj0 <- abs(ser.barX[[i]])
+          obj1 <- (pi/2)*obj0[1:(ser.num.barX[i]-kn)]*obj0[-(1:kn)]
+          if(min(K,ser.num.barX[i]-1)<2*kn){
+            #v.hat <- (median(obj0)/0.6745)^2
+            v.hat <- mean(obj1)
           }else{
-            rho <- coef*log(ser.num.barX[i])^(1+epsilon)*(mad(ser.barX[[i]])/0.6745)^2
-            #rho <- coef*2*log(ser.num.barX[i])*(mad(ser.barX[[i]])/0.6745)^2
+            v.hat <- double(ser.num.barX[i])
+            #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+            v.hat[-(1:K)] <- rollmean(obj1[1:(ser.num.barX[i]-2*kn)],k=K-2*kn+1,align="left")
+            v.hat[1:K] <- v.hat[K+1]
           }
-          ser.barX[[i]][ser.barX[[i]]^2>rho] <- 0
+          #rho <- 2*log(ser.num.barX[ii])*
+          #  (median(abs(ser.barX[[ii]])/sqrt(v.hat))/0.6745)^2*v.hat
+          rho <- 2*log(ser.num.barX[i])^(1+eps)*v.hat
+          ser.barX[[ii]][ser.barX[[i]]^2>rho] <- 0
         }
       }else if(is.numeric(threshold)){
         threshold <- matrix(threshold,1,n.series)
@@ -1791,6 +1807,10 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             # set data and time index
             ser.X <- lapply(dat,"as.numeric")
             ser.times <- lapply(lapply(dat,"time"),"as.numeric")
+            for(d in 1:n.series){
+              ser.times[[d]] <- round(ser.times[[d]],digits=15)
+            }
+            
             # set difference of the data
             ser.diffX <- lapply(ser.X,"diff")
             
@@ -1805,23 +1825,25 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             
             # thresholding
             if(missing(threshold)){
-              tmp.theta <- 2*coef*knij/sqrt(sum(sapply(dat,"length"))-2)
+              
               for(ii in 1:2){
                 
-                K <- ceiling(sqrt(ser.num.barX[ii]))
+                K <- ceiling(ser.num.barX[ii]^(3/4))
                 
-                if((K+knij)<ser.num.barX[ii]){
-                  rho <- double(ser.num.barX[ii])
-                  rho[1:(K+knij)] <- log(K+knij)^(1+epsilon)*(mad(ser.barX[[ii]][1:(K+knij)])/0.6745)^2
-                  obj <- abs(ser.barX[[ii]])
-                  for(jj in (K+knij+1):ser.num.barX[ii]){
-                    rho[jj] <- obj[(jj-K-knij):(jj-1-knij)]%*%obj[(jj-K):(jj-1)]
-                  }
-                  rho <- tmp.theta*rho
-                  rho[-(1:(K+knij))] <- log(ser.num.barX[ii])^(1+epsilon)*(pi/2)*rho[-(1:(K+knij))]/K
+                obj0 <- abs(ser.barX[[ii]])
+                obj1 <- (pi/2)*obj0[1:(ser.num.barX[ii]-knij)]*obj0[-(1:knij)]
+                if(min(K,ser.num.barX[ii]-1)<2*knij){
+                  #v.hat <- (median(obj0)/0.6745)^2
+                  v.hat <- mean(obj1)
                 }else{
-                  rho <- tmp.theta*log(ser.num.barX[ii])^(1+epsilon)*(mad(ser.barX[[ii]])/0.6745)^2
+                  v.hat <- double(ser.num.barX[ii])
+                  #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+                  v.hat[-(1:K)] <- rollmean(obj1[1:(ser.num.barX[ii]-2*knij)],k=K-2*knij+1,align="left")
+                  v.hat[1:K] <- v.hat[K+1]
                 }
+                #rho <- 2*log(ser.num.barX[ii])*
+                #  (median(abs(ser.barX[[ii]])/sqrt(v.hat))/0.6745)^2*v.hat
+                rho <- 2*log(ser.num.barX[ii])^(1+eps)*v.hat
                 ser.barX[[ii]][ser.barX[[ii]]^2>rho] <- 0
               }
             }else if(is.numeric(threshold)){
@@ -1866,21 +1888,23 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             # thrsholding
             if(missing(threshold)){
               
-              tmp.theta <- 2*coef*kni/sqrt(length(data[[i]])-1)
-              K <- ceiling(sqrt(num.barX))
+              K <- ceiling(num.barX^(3/4))
+              #K <- ceiling(kn^(3/2))
               
-              if((K+kni)<num.barX){
-                rho <- double(num.barX)
-                rho[1:(K+kni)] <- log(K+kni)^(1+epsilon)*(mad(barX[1:(K+kni)])/0.6745)^2              
-                obj <- abs(barX)
-                for(jj in (K+kni+1):num.barX){
-                  rho[jj] <- obj[(jj-K-kni):(jj-1-kni)]%*%obj[(jj-K):(jj-1)]
-                }
-                rho <- tmp.theta*rho
-                rho[-(1:(K+kni))] <- log(num.barX)^(1+epsilon)*(pi/2)*rho[-(1:(K+kni))]/K
+              obj0 <- abs(barX)
+              obj1 <- (pi/2)*obj0[1:(num.barX-kni)]*obj0[-(1:kni)]
+              if(min(K,num.barX-1)<2*kni){
+                #v.hat <- (median(obj0)/0.6745)^2
+                v.hat <- mean(obj1)
               }else{
-                rho <- tmp.theta*log(num.barX)^(1+epsilon)*(mad(barX)/0.6745)^2
+                v.hat <- double(num.barX)
+                #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+                v.hat[-(1:K)] <- rollmean(obj1[1:(num.barX-2*kni)],k=K-2*kni+1,align="left")
+                v.hat[1:K] <- v.hat[K+1]
               }
+              #rho <- 2*log(num.barX)*
+              #  (median(abs(barX)/sqrt(v.hat))/0.6745)^2*v.hat
+              rho <- 2*log(num.barX)^(1+eps)*v.hat
               barX[barX^2>rho] <- 0
             }else if(is.numeric(threshold)){
               threshold <- matrix(threshold,1,n.series)
@@ -1908,7 +1932,8 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-        ser.times[[i]] <- as.numeric(time(data[[i]]))
+#        ser.times[[i]] <- as.numeric(time(data[[i]]))
+        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
         
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )    
@@ -1929,27 +1954,29 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       
       # pre-averaging and thresholding
       if(missing(threshold)){
-        coef <- 2*kn/sqrt(sum(ser.numX)-n.series)
+        
         for(i in 1:n.series){
           
           ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
           ser.num.barX[i] <- length(ser.barX[[i]])
           
-          K <- ceiling(sqrt(ser.num.barX[i]))
+          K <- ceiling(ser.num.barX[i]^(3/4))
           
-          if((K+kn)<ser.num.barX[i]){
-            rho <- double(ser.num.barX[i])
-            rho[1:(K+kn)] <- log(K+kn)^(1+epsilon)*(mad(ser.barX[[i]][1:(K+kn)])/0.6745)^2
-            obj <- abs(ser.barX[[i]])
-            for(j in (K+kn+1):ser.num.barX[i]){
-              rho[j] <- obj[(j-K-kn):(j-1-kn)]%*%obj[(j-K):(j-1)]
-            }
-            rho <- coef*rho
-            rho[-(1:(K+kn))] <- log(ser.num.barX[i])^(1+epsilon)*(pi/2)*rho[-(1:(K+kn))]/K
+          obj0 <- abs(ser.barX[[i]])
+          obj1 <- (pi/2)*obj0[1:(ser.num.barX[i]-kn)]*obj0[-(1:kn)]
+          if(min(K,ser.num.barX[i]-1)<2*kn){
+            #v.hat <- (median(obj0)/0.6745)^2
+            v.hat <- mean(obj1)
           }else{
-            rho <- coef*log(ser.num.barX[i])^(1+epsilon)*(mad(ser.barX[[i]])/0.6745)^2
+            v.hat <- double(ser.num.barX[i])
+            #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
+            v.hat[-(1:K)] <- rollmean(obj1[1:(ser.num.barX[i]-2*kn)],k=K-2*kn+1,align="left")
+            v.hat[1:K] <- v.hat[K+1]
           }
-          ser.barX[[i]][ser.barX[[i]]^2>rho] <- 0
+          #rho <- 2*log(ser.num.barX[ii])*
+          #  (median(abs(ser.barX[[ii]])/sqrt(v.hat))/0.6745)^2*v.hat
+          rho <- 2*log(ser.num.barX[i])^(1+eps)*v.hat
+          ser.barX[[ii]][ser.barX[[i]]^2>rho] <- 0
         }
       }else if(is.numeric(threshold)){
         threshold <- matrix(threshold,1,n.series)
@@ -2020,7 +2047,8 @@ SRC <- function(data,frequency=300,avg=TRUE,utime){
   for(d in 1:d.size){
     # set data and time index
     ser.X[[d]] <- as.numeric(data[[d]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
+#    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
+    ser.times[[d]] <- round(as.numeric(time(data[[d]]))*utime,digits=15)
     ser.numX[d] <- length(ser.X[[d]])
   }
   
@@ -2051,8 +2079,8 @@ SRC <- function(data,frequency=300,avg=TRUE,utime){
       if(grid[n.sparse]>Terminal){
         grid <- grid[-n.sparse]
         #I <- I[,-n.sparse]
-        I <- as.matrix(I[,-n.sparse])
         n.sparse <- n.sparse-1
+        I <- matrix(I[,-n.sparse],d.size,n.sparse)
       }
     }
     
@@ -2115,7 +2143,8 @@ SBPC <- function(data,frequency=300,avg=TRUE,utime){
   for(d in 1:d.size){
     # set data and time index
     ser.X[[d]] <- as.numeric(data[[d]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
+#    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
+    ser.times[[d]] <- round(as.numeric(time(data[[d]]))*utime,digits=15)
     ser.numX[d] <- length(ser.X[[d]])
   }
   
@@ -2146,8 +2175,8 @@ SBPC <- function(data,frequency=300,avg=TRUE,utime){
       if(grid[n.sparse]>Terminal){
         grid <- grid[-n.sparse]
         #I <- I[,-n.sparse]
-        I <- as.matrix(I[,-n.sparse])
         n.sparse <- n.sparse-1
+        I <- matrix(I[,-n.sparse],d.size,n.sparse)
       }
     }
     
@@ -2232,8 +2261,8 @@ for(i in 1:d.size){
 
 switch(method,
        "HY"="<-"(cmat,HY(data)),
-       "PHY"="<-"(cmat,PHY(data,theta,kn,g,refreshing,cwise,utime)),
-       "MRC"="<-"(cmat,MRC(data,theta,kn,g,delta,avg,utime)),
+       "PHY"="<-"(cmat,PHY(data,theta,kn,g,refreshing,cwise)),
+       "MRC"="<-"(cmat,MRC(data,theta,kn,g,delta,adj)),
        "TSCV"="<-"(cmat,TSCV(data,K,c.two,J,adj,utime)),  
        "GME"="<-"(cmat,GME(data,c.multi,utime)),
        "RK"="<-"(cmat,RK(data,kernel,H,c.RK,eta,m,ftregion,utime)),
@@ -2242,7 +2271,7 @@ switch(method,
        "SIML"="<-"(cmat,SIML(data,mn,alpha)),
        "THY"="<-"(cmat,THY(data,threshold)),
        "PTHY"="<-"(cmat,PTHY(data,theta,kn,g,threshold,
-                             refreshing,cwise,utime)),
+                             refreshing,cwise)),
        "SRC"="<-"(cmat,SRC(data,frequency,avg,utime)),
        "SBPC"="<-"(cmat,SBPC(data,frequency,avg,utime)))
 

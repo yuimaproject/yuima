@@ -12,7 +12,11 @@ This function estimates the covariance between two Ito processes when they are o
 irregularly sampled one-dimensional data as a special case.
 }
 \usage{
-cce(x, method="HY", theta, kn, g=function(x)min(x,1-x), refreshing = TRUE, cwise = TRUE, delta = 0, adj = TRUE, K, c.two, J = 1, c.multi, kernel, H, c.RK, eta = 3/5, m = 2, ftregion = 0, opt.method = "BFGS", vol.init = NA, covol.init = NA, nvar.init = NA, ncov.init = NA, ..., mn, alpha = 0.4, frequency = 300, avg = TRUE, threshold, utime)
+cce(x, method="HY", theta, kn, g=function(x)min(x,1-x), refreshing = TRUE,
+    cwise = TRUE, delta = 0, adj = TRUE, K, c.two, J = 1, c.multi, kernel, H,
+    c.RK, eta = 3/5, m = 2, ftregion = 0, opt.method = "BFGS", vol.init = NA,
+    covol.init = NA, nvar.init = NA, ncov.init = NA, ..., mn, alpha = 0.4,
+    frequency = 300, avg = TRUE, threshold, utime)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,7 +30,7 @@ the method to be used. See `Details'.
 }
   \item{theta}{
 %%     ~~Describe \code{theta} here~~
-a numeric vector or matrix. If it is a matrix, each of its components   indicates the tuning parameter which determines the pre-averaging window lengths \code{kn} to be used for estimating the corresponding component. If it is a numeric vector, it is converted to a matrix as \code{(C+t(C))/2}, where \code{C=matrix(theta,d,d)} and \code{d=dim(x)}. The default value is the numeric vector each of whose components is the roughly estimated optimal value in the sense of the minimizer of the theoretical asymptotic variance of the estimator of the corresponding diagonal component. The theoretical asymptotic variance is considered in the standard case and given in Christensen et al. (2011) for the method \code{"PHY"} and Christensen et al. (2010) for the method \code{"MRC"} respectively.  
+a numeric vector or matrix. If it is a matrix, each of its components   indicates the tuning parameter which determines the pre-averaging window lengths \code{kn} to be used for estimating the corresponding component. If it is a numeric vector, it is converted to a matrix as \code{(C+t(C))/2}, where \code{C=matrix(theta,d,d)} and \code{d=dim(x)}. The default value is \code{0.15} for the method \code{"PHY"} or \code{"PTHY"} following Christensen et al. (2011), while it is \code{1} for the method \code{"MRC"} following Christensen et al. (2010). 
 }
   \item{kn}{
 %%     ~~Describe \code{kn} here~~
@@ -149,15 +153,15 @@ It extracts the \code{data} slot when applied to a an object of \code{\link{yuim
 Typical usages are
 \preformatted{
 cce(x)
-cce(x,method="PHY",theta,kn,g,refreshing=TRUE,cwise=TRUE,utime)
-cce(x,method="MRC",theta,kn,g,delta=0,avg=TRUE,utime)
+cce(x,method="PHY",theta,kn,g,refreshing=TRUE,cwise=TRUE)
+cce(x,method="MRC",theta,kn,g,delta=0,avg=TRUE)
 cce(x,method="TSCV",K,c.two,J=1,adj=TRUE,utime)
 cce(x,method="GME",c.multi,utime)
 cce(x,method="RK",kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime)
 cce(x,method="QMLE",opt.method="BFGS",vol.init=NULL,covol.init=NULL,nvar.init=NULL,ncov.init=NULL,\dots,utime)
 cce(x,method="SIML",mn,alpha=0.4)
 cce(x,method="THY",threshold)
-cce(x,method="PTHY",theta,kn,g,threshold,refreshing=TRUE,cwise=TRUE,utime)
+cce(x,method="PTHY",theta,kn,g,threshold,refreshing=TRUE,cwise=TRUE)
 cce(x,method="SRC",frequency=300,avg=TRUE,utime)
 cce(x,method="SBPC",frequency=300,avg=TRUE,utime)
 }

@@ -83,7 +83,7 @@ plot(psample)
 cce(psample)
 
 #lead-lag estimation
-#llag(psample) # does not work
+llag(psample)
 
 }
 \seealso{\link{cce}}

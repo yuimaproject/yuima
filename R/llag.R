@@ -6,13 +6,21 @@
 #setMethod( "llag", "yuima", function(x,verbose=FALSE) llag(x@data,verbose=verbose ))
 #setMethod( "llag", "yuima.data", function(x,verbose=FALSE) {
 
+#setGeneric( "llag",
+#		function(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE)
+#		standardGeneric("llag") )
+#setMethod( "llag", "yuima",
+#		function(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE)
+#		llag(x@data,from=FALSE,to=FALSE,division=FALSE,verbose=verbose ))
+#setMethod( "llag", "yuima.data", function(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE) {
+
 setGeneric( "llag",
-		function(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE)
+		function(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE)
 		standardGeneric("llag") )
 setMethod( "llag", "yuima",
-		function(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE)
-		llag(x@data,from=FALSE,to=FALSE,division=FALSE,verbose=verbose ))
-setMethod( "llag", "yuima.data", function(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE) {
+		function(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE)
+		llag(x@data,from=-Inf,to=Inf,division=FALSE,verbose=verbose ))
+setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE) {
 
 
 	if(!is(x)=="yuima.data"){
@@ -119,8 +127,8 @@ setMethod( "llag", "yuima.data", function(x,from=FALSE,to=FALSE,division=FALSE,v
 		y <- seq(-num2-tmptheta,num1-tmptheta,length=n)
 		tmp <- real(n)
 
-		for(i in 2:(n-1)){
-			tmp[i] <- lagccep(datp,y[i])
+		for(i.tmp in 2:(n-1)){
+			tmp[i.tmp] <- lagccep(datp,y[i.tmp])
 		}
   
 		mat <- cbind(y[2:(n-1)],tmp[2:(n-1)])
