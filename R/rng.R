@@ -78,7 +78,7 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     sqrt.L <- svd(Lambda)
     sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
     
-    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(tau,length(beta)),x,length(beta))) * (Lambda %*% t(matrix(eta,x,length(beta))))
+    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(sqrt(tau),length(beta)),x,length(beta))) * (sqrt.L %*% t(matrix(eta,x,length(beta))))
     X <- z
     return(X)
   }
@@ -212,7 +212,8 @@ rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
   eta <- rnorm(x*length(beta))
   sqrt.L <- svd(Lambda)
   sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
-  z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(tau,length(beta)),x,length(beta))) * (Lambda %*% t(matrix(eta,x,length(beta))))
+
+  z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(sqrt(tau),length(beta)),x,length(beta))) * (sqrt.L %*% t(matrix(eta,x,length(beta))))
   X <- z
   return(X)
 }
