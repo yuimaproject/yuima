@@ -1184,6 +1184,10 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
         idx <- d.size*(i-1)-(i-1)*i/2+(j-i)
         
         dat <- refresh_sampling(list(data[[i]],data[[j]]))
+        dattime <- apply(do.call("rbind",lapply(dat,"time")),2,"max")
+        dat[[1]] <- zoo(as.numeric(dat[[1]]),dattime)
+        dat[[2]] <- zoo(as.numeric(dat[[2]]),dattime)
+        
         dat1 <- dat[[1]]+dat[[2]]
         dat2 <- dat[[1]]-dat[[2]]
         
@@ -1195,10 +1199,10 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
         Omega1 <- ncov.init[1,idx]
         Omega2 <- ncov.init[2,idx]
         
-        if(is.na(Sigma1)) Sigma1 <- RV.sparse(dat1,frequency=1200,utime=23400)
-        if(is.na(Sigma2)) Sigma2 <- RV.sparse(dat2,frequency=1200,utime=23400)
-        if(is.na(Omega1)) Omega1 <- Omega_BNHLS(dat1,sec=120,utime=23400)
-        if(is.na(Omega2)) Omega2 <- Omega_BNHLS(dat2,sec=120,utime=23400)
+        if(is.na(Sigma1)) Sigma1 <- RV.sparse(dat1,frequency=1200,utime=utime)
+        if(is.na(Sigma2)) Sigma2 <- RV.sparse(dat2,frequency=1200,utime=utime)
+        if(is.na(Omega1)) Omega1 <- Omega_BNHLS(dat1,sec=120,utime=utime)
+        if(is.na(Omega2)) Omega2 <- Omega_BNHLS(dat2,sec=120,utime=utime)
         
         #par1 <- optim(par1,fn=ql.ks(dat1),method=opt.method)
         #par2 <- optim(par2,fn=ql.ks(dat2),method=opt.method)
@@ -1217,8 +1221,8 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
         Sigma <- vol.init[i]
         Omega <- nvar.init[i]
         
-        if(is.na(Sigma)) Sigma <- RV.sparse(data[[i]],frequency=1200,utime=23400)
-        if(is.na(Omega)) Omega <- Omega_BNHLS(data[[i]],sec=120,utime=23400)
+        if(is.na(Sigma)) Sigma <- RV.sparse(data[[i]],frequency=1200,utime=utime)
+        if(is.na(Omega)) Omega <- Omega_BNHLS(data[[i]],sec=120,utime=utime)
         
         #cmat[i,i] <- optim(par,fn=ql.ks(data[[i]]),method=opt.method)
         cmat[i,i] <- constrOptim(theta=c(Sigma,Omega),f=ql$n.ql,grad=ql$gr,
