@@ -369,13 +369,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 #	 
 	 if(!HaveDriftHess & (length(drift.par)>0)){
 	  #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
-     hess2 <- optimHess(coef[drift.par], fDrift, NULL, conDrift)
+     hess2 <- optimHess(coef[drift.par], fDrift, NULL, control=conDrift)
 	  HESS[drift.par,drift.par] <- hess2	 
 	 }
 
 	 if(!HaveDiffHess  & (length(diff.par)>0)){
 		 #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
-	   hess1 <- optimHess(coef[diff.par], fDiff, NULL, conDiff)
+	   hess1 <- optimHess(coef[diff.par], fDiff, NULL, control=conDiff)
 		 HESS[diff.par,diff.par] <- hess1	 
 	 }
 	 	 
@@ -905,13 +905,13 @@ mydots$fn <- NULL
     #	 
     if(!HaveDriftHess & (length(drift.par)>0)){
         #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
-        hess2 <- optimHess(coef[drift.par], fDrift, NULL, conDrift)
+        hess2 <- optimHess(coef[drift.par], fDrift, NULL, control=conDrift)
         HESS[drift.par,drift.par] <- hess2	 
     }
     
     if(!HaveDiffHess  & (length(diff.par)>0)){
         #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
-        hess1 <- optimHess(coef[diff.par], fDiff, NULL, conDiff)
+        hess1 <- optimHess(coef[diff.par], fDiff, NULL, control=conDiff)
         HESS[diff.par,diff.par] <- hess1	 
     }
     
