@@ -214,7 +214,7 @@
 		if(n == 0){
 			first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
 			second <- array(0,dim=c(k.size,k.size,block))
-			third <- real(block)
+			third <- double(block)
 
 			return(list(first=first,second=second,third=third))
 		}
@@ -496,7 +496,7 @@
 		second <- - second1 - second2 - second3 - second4 - second5 - second6
 
 
-		third1 <- real(block)
+		third1 <- double(block)
 
 		for(t in 1:block){
 		  for(k3 in 1:k.size){
@@ -508,7 +508,7 @@
 		}
 
 
-		third2 <- real(block)
+		third2 <- double(block)
 
 		for(t in 1:block){
 		  for(k2 in 1:k.size){
@@ -519,7 +519,7 @@
 		  }
 		}
 
-		third3 <- real(block)
+		third3 <- double(block)
 
 
 		d.size <- env$d.size
@@ -582,7 +582,7 @@
 		r.size <- env$r.size
 		block <- env$block
 
-		result <- real(block)
+		result <- double(block)
 
 		n1 <- length(b1)
 		n2 <- sum(b1 == 0)
@@ -618,7 +618,7 @@
 
 		tmp <- b1b2(b1,b2,env)
 
-		result <- real(block)
+		result <- double(block)
 
 		for(t in 1:block){
 			result[t] <- tmp %*% Diff[t,] * delta
@@ -634,7 +634,7 @@
 		block <- env$block
 		Diff <- env$Diff
 
-		result <- real(block)
+		result <- double(block)
 
 		n1 <- length(f)
 		n2 <- sum(f == 0)
@@ -731,7 +731,7 @@
 
 		if(n == 0){
 			first <- array(0,dim=c(k.size,k.size,block))
-			second <- real(block)
+			second <- double(block)
 
 			return(list(first=first,second=second))
 		}
@@ -784,7 +784,7 @@
 		}
 
 
-		second <- real(block)
+		second <- double(block)
 
 		for(t in 1:block){
 		  for(k1 in 1:k.size){
@@ -832,7 +832,7 @@
 
 		if(n == 0){
 			first <- array(0,dim=c(k.size,k.size,block))
-			second <- real(block)
+			second <- double(block)
 
 			return(list(first=first,second=second))
 		}
@@ -1089,7 +1089,7 @@
 		if(n == 0){
 			first <- array(0,dim=c(k.size,k.size,k.size,k.size,block))
 			second <- array(0,dim=c(k.size,k.size,block))
-			third <- real(block)
+			third <- double(block)
 
 			return(list(first=first,second=second,third=third))
 		}
@@ -2002,7 +2002,7 @@
 			  for(j1 in 1:d.size){
 			    for(j2 in 1:d.size){
 				tmp1 <- b1_b2(get_Y_e_V[j1,,],get_Y_e_V[j2,,],env)
-				tmp2 <- real(block)
+				tmp2 <- double(block)
 
 				for(t in 2:block){
 				  tmp2[t] <- (get_Y_x1_x2_V0[i1,i2,j,] * 
@@ -2014,7 +2014,7 @@
 			    }
 			  }
 
-			  tmp3 <- real(block)
+			  tmp3 <- double(block)
 
 			  for(t in 2:block){
 			    tmp3[t] <- (get_Y_x1_x2_V0[i1,i2,j,] * get_Y_D[i1,] *
@@ -2024,7 +2024,7 @@
 			  second.tmp[i,j,] <- second.tmp[i,j,] + tmp3
 			}
 
-			tmp4 <- real(block)
+			tmp4 <- double(block)
 
 			for(t in 2:block){
 			  tmp4[t] <- (get_Y_x_e_V0[i1,j,] * 
@@ -2034,7 +2034,7 @@
 			third.tmp[i,j,] <- third.tmp[i,j,] + tmp4
 		    }
 
-		    tmp5 <- real(block)
+		    tmp5 <- double(block)
 
 		    for(t in 2:block){
 			tmp5[t] <- get_Y_e_e_V0[j,] %*% Diff[t,] * delta
@@ -2158,7 +2158,7 @@
 		    for(j2 in 1:d.size){
 			for(j in 1:d.size){
 
-			  tmp2 <- real(block)
+			  tmp2 <- double(block)
 
 			  for(i1 in 1:d.size){
 			    for(i2 in 1:d.size){
@@ -3023,7 +3023,7 @@
 			for(j1 in 1:d.size){
 			  for(j2 in 1:d.size){
 			    tmp1 <- b1_b2(get_Y_e_V[j1,,],get_Y_e_V[j2,,],env)
-			    tmp2 <- real(block)
+			    tmp2 <- double(block)
 
 			    for(t in 2:block){
 				tmp2[t] <- (get_x1_x2_f0[l,i1,i2,] * 
@@ -3035,7 +3035,7 @@
 			  }
 			}
 
-			tmp3 <- real(block)
+			tmp3 <- double(block)
 
 			for(t in 2:block){
 			  tmp3[t] <- (get_x1_x2_f0[l,i1,i2,] * get_Y_D[i1,] *
@@ -3045,7 +3045,7 @@
 			second[l,] <- second[l,] + tmp3
 		    }
 
-		    tmp4 <- real(block)
+		    tmp4 <- double(block)
 
 		    for(t in 2:block){
 			tmp4[t] <- (get_x_e_f0[l,i1,] * 
@@ -3055,7 +3055,7 @@
 		    third[l,] <- third[l,] + 2 * tmp4
 		  }
 
-		  tmp5 <- real(block)
+		  tmp5 <- double(block)
 
 		  for(t in 2:block){
 		    tmp5[t] <- get_e_e_f0[l,] %*% Diff[t,] * delta
@@ -3133,7 +3133,7 @@
 		  for(j1 in 1:d.size){
 		    for(j2 in 1:d.size){
 
-			tmp2 <- real(block)
+			tmp2 <- double(block)
 			tmp3 <- matrix(0,r.size,block)
 
 			for(i1 in 1:d.size){
@@ -3180,8 +3180,8 @@
 		  for(j1 in 1:d.size){
 		    for(j2 in 1:d.size){
 
-			tmp2 <- real(block)
-			tmp3 <- real(1)
+			tmp2 <- double(block)
+			tmp3 <- double(1)
 
 			for(i1 in 1:d.size){
 			  for(i2 in 1:d.size){
@@ -3391,7 +3391,7 @@
 		r.size <- env$r.size
 		k.size <- env$k.size
 
-		result <- real(d.size)
+		result <- double(d.size)
 
 		for(i in 1:d.size){
 		  first.tmp <- list()
@@ -3420,7 +3420,7 @@
 
 		result1 <- get_E0_t$first
 
-		first <- real(k.size)
+		first <- double(k.size)
 
 		for(l in 1:k.size){
 		  for(i in 1:d.size){
@@ -3444,7 +3444,7 @@
 		  for(j2 in 1:d.size){
 		    for(j1 in 1:d.size){
 
-			tmp3 <- real(block)
+			tmp3 <- double(block)
 
 			for(i in 1:d.size){
 			  tmp2 <- get_x_f0[l,i,] * result2.coef[i,j1,j2,]
@@ -3474,7 +3474,7 @@
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 
-		    tmp6 <- real(block)
+		    tmp6 <- double(block)
 
 		    for(i in 1:d.size){
 			tmp5 <- get_x_f0[l,i,] * result4.coef[i,j1,]
@@ -3517,7 +3517,7 @@
 
 		for(l in 1:k.size){
 		  for(j in 1:d.size){
-		    tmp9 <- real(block)
+		    tmp9 <- double(block)
 
 		    for(i in 1:d.size){
 			tmp8 <- get_x_f0[l,i,] * result6.coef[i,j,]
@@ -3917,7 +3917,7 @@
 
 		result1 <- get_E0_t$first
 
-		first <- real(k.size)
+		first <- double(k.size)
 
 		for(l in 1:k.size){
 		  for(i in 1:d.size){
@@ -3937,7 +3937,7 @@
 		  for(j1 in 1:d.size){
 		    for(j2 in 1:d.size){
 
-			tmp3 <- real(1)
+			tmp3 <- double(1)
 
 			for(i in 1:d.size){
 			  tmp2 <- get_x_F[l,i,block] * result2.coef[i,j1,j2,block]
@@ -3960,7 +3960,7 @@
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 
-		    tmp5 <- real(1)
+		    tmp5 <- double(1)
 
 		    for(i in 1:d.size){
 			tmp4 <- get_x_F[l,i,block] * result3.coef[i,j1,block]
@@ -3992,7 +3992,7 @@
 		for(l in 1:k.size){
 		  for(j in 1:d.size){
 
-		    tmp7 <- real(1)
+		    tmp7 <- double(1)
 
 		    for(i in 1:d.size){
 			tmp6 <- get_x_F[l,i,block] * result4.coef[i,j,block]
@@ -4030,7 +4030,7 @@
 		k.size <- env$k.size
 		block <- env$block
 
-		first <- real(k.size)
+		first <- double(k.size)
 
 		for(l in 1:k.size){
 		  for(i1 in 1:d.size){
@@ -4041,7 +4041,7 @@
 		  }
 		}
 
-		second <- real(k.size)
+		second <- double(k.size)
 
 		for(l in 1:k.size){
 		  for(i in 1:d.size){
@@ -4057,7 +4057,7 @@
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 
-		    tmp1 <- real(1)
+		    tmp1 <- double(1)
 
 		    for(i1 in 1:d.size){
 			for(i2 in 1:d.size){
@@ -4077,7 +4077,7 @@
 		for(l in 1:k.size){
 		  for(j in 1:d.size){
 
-		    tmp2 <- real(1)
+		    tmp2 <- double(1)
 
 		    for(i in 1:d.size){
 			tmp2 <- tmp2 + 2 * get_x_e_F[l,i,block] * tmpY[i,j,block]
@@ -4093,13 +4093,13 @@
 		sixth[[1]] <- array(0,dim=c(k.size,d.size,r.size,block))
 		sixth[[2]] <- get_Y_e_V
 
-		seventh <- real(k.size)
+		seventh <- double(k.size)
 
 		for(l in 1:k.size){
 		  for(j1 in 1:d.size){
 		    for(j2 in 1:d.size){
 
-			tmp3 <- real(1)
+			tmp3 <- double(1)
 
 			for(i1 in 1:d.size){
 			  for(i2 in 1:d.size){
@@ -4537,7 +4537,7 @@
 			}
 		}
 
-		second <- real(block)
+		second <- double(block)
 
 		tmp4 <- c2 * tmp1$second
 
@@ -4757,7 +4757,7 @@
 
 		  for(j in 1:d.size){
 
-		    tmp2 <- real(block)
+		    tmp2 <- double(block)
 
 		    for(i3 in 1:d.size){
 			for(i4 in 1:d.size){
@@ -4791,7 +4791,7 @@
 			    for(j2 in 1:d.size){
 				for(j4 in 1:d.size){
 
-				  tmp4 <- real(block)
+				  tmp4 <- double(block)
 
 				  for(i1 in 1:d.size){
 				    for(i2 in 1:d.size){
@@ -4925,7 +4925,7 @@
 			    for(j2 in 1:d.size){
 				for(j4 in 1:d.size){
 
-				  tmp18 <- real(block)
+				  tmp18 <- double(block)
 
 				  for(i1 in 1:d.size){
 				    for(i2 in 1:d.size){
@@ -5070,7 +5070,7 @@
 
 		  for(j in 1:d.size){
 
-		    tmp2 <- real(block)
+		    tmp2 <- double(block)
 
 		    for(i3 in 1:d.size){
 
@@ -5104,7 +5104,7 @@
 			  for(j2 in 1:d.size){
 			    for(j3 in 1:d.size){
 
-				tmp4 <- real(block)
+				tmp4 <- double(block)
 
 				for(i1 in 1:d.size){
 				  for(i2 in 1:d.size){
@@ -5223,7 +5223,7 @@
 
 		  for(j in 1:d.size){
 
-		    tmp2 <- real(block)
+		    tmp2 <- double(block)
 
 		    for(i1 in 1:d.size){
 			for(i2 in 1:d.size){
@@ -5253,7 +5253,7 @@
 		  for(j in 1:d.size){
 		    for(j3 in 1:d.size){
 
-			tmp4 <- real(block)
+			tmp4 <- double(block)
 
 			for(i1 in 1:d.size){
 			  for(i2 in 1:d.size){
@@ -5289,7 +5289,7 @@
 		    for(j2 in 1:d.size){
 			for(j3 in 1:d.size){
 
-			  tmp7 <- real(block)
+			  tmp7 <- double(block)
 
 			  for(i1 in 1:d.size){
 			    for(i2 in 1:d.size){
@@ -5332,7 +5332,7 @@
 			for(j2 in 1:d.size){
 			  for(j3 in 1:d.size){
 
-			    tmp10 <- real(block)
+			    tmp10 <- double(block)
 
 			    for(i1 in 1:d.size){
 				for(i2 in 1:d.size){
@@ -5395,7 +5395,7 @@
 
 		  for(j in 1:d.size){
 
-		    tmp2 <- real(block)
+		    tmp2 <- double(block)
 
 		    for(i1 in 1:d.size){
 			for(i2 in 1:d.size){
@@ -5422,7 +5422,7 @@
 		  for(j in 1:d.size){
 		    for(j2 in 1:d.size){
 
-			tmp4 <- real(block)
+			tmp4 <- double(block)
 
 			for(i1 in 1:d.size){
 			  for(i2 in 1:d.size){
@@ -5457,7 +5457,7 @@
 		    for(j1 in 1:d.size){
 			for(j2 in 1:d.size){
 
-			  tmp7 <- real(block)
+			  tmp7 <- double(block)
 
 			  for(i1 in 1:d.size){
 			    for(i2 in 1:d.size){
@@ -5514,7 +5514,7 @@
 
 		  for(j in 1:d.size){
 
-		    tmp2 <- real(block)
+		    tmp2 <- double(block)
 
 		    for(i1 in 1:d.size){
 
@@ -5540,7 +5540,7 @@
 		  for(j in 1:d.size){
 		    for(j1 in 1:d.size){
 
-			tmp4 <- real(block)
+			tmp4 <- double(block)
 
 			for(i1 in 1:d.size){
 
@@ -5664,7 +5664,7 @@
 			  for(j2 in 1:d.size){
 			    for(j3 in 1:d.size){
 
-				tmp5 <- real(block)
+				tmp5 <- double(block)
 
 				for(i1 in 1:d.size){
 				  for(i2 in 1:d.size){
@@ -6282,7 +6282,7 @@
 		  for(j2 in 1:d.size){
 		    for(j4 in 1:d.size){
 
-			tmp2 <- real(block)
+			tmp2 <- double(block)
 
 			for(i1 in 1:d.size){
 			  for(i2 in 1:d.size){
@@ -6311,7 +6311,7 @@
 		    for(i3 in 1:d.size){
 			for(i4 in 1:d.size){
 
-			  tmp4 <- real(block)
+			  tmp4 <- double(block)
 
 			  for(j4 in 1:d.size){
 			    tmp4 <- tmp4 + 2 * get_Y_D[i3,] * tmpY[i4,j4,] *
@@ -6361,7 +6361,7 @@
 		  for(i3 in 1:d.size){
 		    for(i4 in 1:d.size){
 
-			tmp6 <- real(block)
+			tmp6 <- double(block)
 
 			for(j4 in 1:d.size){
 			  tmp6 <- tmp6 + 2 * get_Y_D[i3,] * tmpY[i4,j4,] *
@@ -6515,7 +6515,7 @@
 			for(i3 in 1:d.size){
 			  for(i4 in 1:d.size){
 
-			    tmp14 <- real(block)
+			    tmp14 <- double(block)
 
 			    for(j4 in 1:d.size){
 
@@ -6555,7 +6555,7 @@
 		    for(i3 in 1:d.size){
 			for(i4 in 1:d.size){
 
-			  tmp16 <- real(block)
+			  tmp16 <- double(block)
 
 			  for(j4 in 1:d.size){
 
@@ -6843,7 +6843,7 @@
 		    break
 		  }
 
-		  tmp1 <- real(block)
+		  tmp1 <- double(block)
 
 		  for(i in 1:d.size){
 		    tmp1 <- tmp1 + h.tmp[l,i,] * get_e_t[i,]
@@ -6868,7 +6868,7 @@
 		    for(j2 in 1:d.size){
 			for(i in 1:d.size){
 			  for(j in 1:d.size){
-			    tmp3 <- real(block)
+			    tmp3 <- double(block)
 
 			    for(i1 in 1:d.size){
 				for(i2 in 1:d.size){
@@ -6969,7 +6969,7 @@
 
 		  for(j1 in 1:d.size){
 
-		    tmp9 <- real(block)
+		    tmp9 <- double(block)
 
 		    for(i in 1:d.size){
 			for(j in 1:d.size){
@@ -7850,7 +7850,7 @@
 			for(j3 in 1:d.size){
 			  for(i3 in 1:d.size){
 
-			    tmp4 <- real(block)
+			    tmp4 <- double(block)
 
 			    for(i1 in 1:d.size){
 				for(i2 in 1:d.size){
@@ -8534,7 +8534,7 @@
 		block <- env$block
 		my.range <- env$my.range
 
-		result <- real(block)
+		result <- double(block)
 
 		assign(pars[1],0)
 
@@ -9086,8 +9086,8 @@
 
 		  first <- sum(tmp1)/2
 
-		  tmp2 <- real(k.size)
-		  tmp3 <- real(k.size) #added
+		  tmp2 <- double(k.size)
+		  tmp3 <- double(k.size) #added
 
 		  for(l in 1:k.size){
 

@@ -23,9 +23,6 @@ refresh_sampling <- function(data){
     #ser.times <- vector(d.size, mode="list")
     #ser.times <- lapply(data,time)
     ser.times <- lapply(lapply(data,"time"),"as.numeric")
-	for(d in 1:d.size){
-	  ser.times[[d]] <- round(ser.times[[d]],digits=15)
-	}
     ser.lengths <- sapply(data,"length")
     ser.samplings <- vector(d.size, mode="list")
     refresh.times <- c()
@@ -106,9 +103,6 @@ refresh_sampling.PHY <- function(data){
   if(d.size>1){
     
     ser.times <- lapply(lapply(data,"time"),"as.numeric")
-	for(d in 1:d.size){
-	  ser.times[[d]] <- round(ser.times[[d]],digits=15)
-	}
     ser.lengths <- sapply(data,"length")    
     refresh.times <- max(sapply(ser.times,"[",1))
     ser.samplings <- vector(d.size,mode="list")
@@ -167,12 +161,9 @@ refresh_sampling.PHY <- function(data){
 
 Bibsynchro <- function(x,y){
   
-#  xtime <- as.numeric(time(x))
-#  ytime <- as.numeric(time(y))
-
-  xtime <- round(as.numeric(time(x)),digits=15)
-  ytime <- round(as.numeric(time(y)),digits=15)
-
+  xtime <- as.numeric(time(x))
+  ytime <- as.numeric(time(y))
+  
   xlength <- length(xtime)
   ylength <- length(ytime)
   
@@ -297,8 +288,7 @@ Bibsynchro <- function(x,y){
 RV.sparse <- function(zdata,frequency=1200,utime){
   
   znum <- as.numeric(zdata)
-#  ztime <- as.numeric(time(zdata))*utime
-  ztime <- round(as.numeric(time(zdata))*utime,digits=15)
+  ztime <- as.numeric(time(zdata))*utime
   n.size <- length(zdata)
   end <- ztime[n.size]
   
@@ -333,8 +323,7 @@ Omega_BNHLS <- function(zdata,sec=120,utime){
   
   #q <- ceiling(sec/mean(diff(as.numeric(time(zdata))*utime)))
   #q <- ceiling(sec*(length(zdata)-1)/utime)
-#  ztime <- as.numeric(time(zdata))
-  ztime <- round(as.numeric(time(zdata)),digits=15)
+  ztime <- as.numeric(time(zdata))
   q <- ceiling(sec*(length(zdata)-1)/(utime*(tail(ztime,n=1)-head(ztime,n=1))))
   obj <- diff(as.numeric(zdata),lag=q)
   n <- length(obj)
@@ -370,7 +359,7 @@ selectParam.pavg <- function(data,utime,frequency=1200,sec=120,
   if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
   
   NS <- sapply(data,FUN=NSratio_BNHLS,frequency=frequency,sec=sec,utime=utime)
-  coef <- (b.theta+sqrt(b.theta+3*a.theta*c.theta))/a.theta
+  coef <- (b.theta+sqrt(b.theta^2+3*a.theta*c.theta))/a.theta
   
   return(sqrt(coef*NS))
 }
@@ -435,9 +424,10 @@ selectParam_BNHLS <- function(yuima,method,utime=1,frequency=1200,sec=120,kappa=
 BPV <- function(x,lag=1){
   
   n <- length(x)-1
-  obj <- abs(diff(as.numeric(x)))
+  dt <- diff(as.numeric(time(x)))
+  obj <- abs(diff(as.numeric(x)))/sqrt(dt)
   
-  result <- (pi/2)*obj[1:(n-lag)]%*%obj[(1+lag):n]
+  result <- (pi/2)*(obj[1:(n-lag)]*dt[1:(n-lag)])%*%obj[(1+lag):n]
   
   return(result)
   
@@ -446,17 +436,20 @@ BPV <- function(x,lag=1){
 ## local univaersal thresholding method
 ### data: a list of zoos  coef: a positive number
 
-local_univ_threshold <- function(data,coef=3){
+local_univ_threshold <- function(data,coef=5,eps=0.1){
   
   d.size <- length(data)
   
-  result <- vector(d.size,mode="list")
+  result <- vector(d.size,mode="list") 
   
   for(d in 1:d.size){
     
-    #x <- data[[d]]
-    x <- as.numeric(data[[d]])
-    n <- length(x)
+    x <- data[[d]]
+    #x <- as.numeric(data[[d]])
+    n <- length(x)-1
+    dt <- diff(as.numeric(time(x)))
+    obj <- abs(diff(as.numeric(x)))/sqrt(dt)
+    #dx <- diff(as.numeric(x))
     
     #xtime <- time(x)
     #xtime <- time(data[[d]])
@@ -469,25 +462,38 @@ local_univ_threshold <- function(data,coef=3){
     #}
     #K <- ceiling(sqrt(1/r))
     #K <- max(ceiling(sqrt(1/r)),3)
-    K <- max(ceiling(sqrt(n)),3)
+    K <- max(ceiling(n^0.5),3)
     
     coef2 <- coef^2
-    rho <- double(n)
+    rho <- double(n+1)
+    
+    #tmp <- coef2*sum(dx^2)*n^(eps-1)
+    #tmp <- double(n+1)
+    #tmp[-(1:(K-1))] <- coef2*n^eps*rollmean(dx^2,k=K-1,align="left")
+    #tmp[1:(K-1)] <- tmp[K]
+    #dx[dx^2>tmp[-(n+1)]] <- 0
     
     if(K<n){
       #rho[1:K] <- coef2*(mad(diff(as.numeric(x)[1:(K+1)]))/0.6745)^2
-      rho[1:K] <- coef2*2*log(K)*(mad(diff(x[1:(K+1)]))/0.6745)^2
+      #rho[1:K] <- coef2*2*log(K)*(mad(diff(x[1:(K+1)]))/0.6745)^2
       #for(i in (K+1):n){
       #  rho[i] <- coef2*2*log(length(x))*BPV(x[(i-K):(i-1)])/(K-2)
       #}
-      rho[-(1:K)] <- coef2*2*log(n)*
-        rollapply(x[-n],width=K,FUN=BPV,align="left")/(K-2)
+      #rho[-(1:K)] <- coef2*2*log(n)^(1+eps)*
+      # #rollapply(x[-n],width=K,FUN=BPV,align="left")/(K-2)
+      rho[-(1:(K-1))] <- coef2*n^eps*(pi/2)*
+        rollmean((obj*dt)[-n]*obj[-1],k=K-2,align="left")
+      #rho[-(1:(K-1))] <- coef2*n^eps*rollmean(dx^2,k=K-1,align="left")
+      rho[1:(K-1)] <- rho[K]
     }else{
       #rho <- coef2*(mad(diff(as.numeric(x)))/0.6745)^2
-      rho <- coef2*(mad(diff(x))/0.6745)^2
+      #rho <- coef2*(mad(diff(x))/0.6745)^2
+      #rho <- coef2*2*log(n)^(1+eps)*BPV(x)
+      rho <- coef2*n^(eps-1)*BPV(x)
+      #rho <- coef2*sum(dx^2)*n^(eps-1)
     }
     
-    result[[d]] <- rho[-1]
+    result[[d]] <- rho[-(n+1)]
     
   }
   
@@ -514,9 +520,8 @@ HY <- function(data) {
   for(i in 1:n.series){
     # set data and time index
     ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#    ser.times[[i]] <- as.numeric(time(data[[i]]))
-    ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
-   # set difference of the data 
+    ser.times[[i]] <- as.numeric(time(data[[i]]))
+    # set difference of the data 
     ser.diffX[[i]] <- diff( ser.X[[i]] )
   }
   
@@ -527,7 +532,8 @@ HY <- function(data) {
     for(j in i:n.series){ 
       I <- rep(1,n.series)
       #Checking Starting Point
-      repeat{
+      #repeat{
+      while((I[i]<length(ser.times[[i]])) && (I[j]<length(ser.times[[j]]))){
         if(ser.times[[i]][I[i]] >= ser.times[[j]][I[j]+1]){
           I[j] <- I[j]+1   
         }else if(ser.times[[i]][I[i]+1] <= ser.times[[j]][I[j]]){
@@ -620,7 +626,7 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
   n.series <- length(data)
   
   #if(missing(theta)&&missing(kn))
-  #  theta <- selectParam.pavg(data,utime=utime,a.theta=7585/1161216,
+  #  theta <- selectParam.pavg(data,a.theta=7585/1161216,
   #                            b.theta=151/20160,c.theta=1/24)
   if(missing(theta)) theta <- 0.15
     
@@ -646,9 +652,6 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
-			  for(d in 1:n.series){
-				ser.times[[d]] <- round(ser.times[[d]],digits=15)
-			  }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -711,9 +714,6 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
-			  for(d in 1:n.series){
-				ser.times[[d]] <- round(ser.times[[d]],digits=15)
-			  }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -787,8 +787,7 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#        ser.times[[i]] <- as.numeric(time(data[[i]]))
-        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
+        ser.times[[i]] <- as.numeric(time(data[[i]]))
         
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )
@@ -851,10 +850,6 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
             # set data and time index
             ser.X <- lapply(dat,"as.numeric")
             ser.times <- lapply(lapply(dat,"time"),"as.numeric")
-			for(d in 1:n.series){
-			  ser.times[[d]] <- round(ser.times[[d]],digits=15)
-			}
-
             # set difference of the data
             ser.diffX <- lapply(ser.X,"diff")
             
@@ -912,8 +907,7 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#        ser.times[[i]] <- as.numeric(time(data[[i]]))
-        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
+        ser.times[[i]] <- as.numeric(time(data[[i]]))
         
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )    
@@ -1184,7 +1178,9 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
         idx <- d.size*(i-1)-(i-1)*i/2+(j-i)
         
         dat <- refresh_sampling(list(data[[i]],data[[j]]))
-        dattime <- apply(do.call("rbind",lapply(dat,"time")),2,"max")
+        dattime <- apply(do.call("rbind",
+                                 lapply(lapply(dat,"time"),"as.numeric")),
+                                 2,"max")
         dat[[1]] <- zoo(as.numeric(dat[[1]]),dattime)
         dat[[2]] <- zoo(as.numeric(dat[[2]]),dattime)
         
@@ -1198,7 +1194,7 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
         Sigma2 <- covol.init[2,idx]
         Omega1 <- ncov.init[1,idx]
         Omega2 <- ncov.init[2,idx]
-        
+      
         if(is.na(Sigma1)) Sigma1 <- RV.sparse(dat1,frequency=1200,utime=utime)
         if(is.na(Sigma2)) Sigma2 <- RV.sparse(dat2,frequency=1200,utime=utime)
         if(is.na(Omega1)) Omega1 <- Omega_BNHLS(dat1,sec=120,utime=utime)
@@ -1228,6 +1224,7 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
         cmat[i,i] <- constrOptim(theta=c(Sigma,Omega),f=ql$n.ql,grad=ql$gr,
                                  method=opt.method,
                                  ui=diag(2),ci=0,...)$par[1]
+        
       }
     }
   }
@@ -1301,7 +1298,7 @@ THY <- function(data,threshold) {
   n.series <- length(data)
   
   if(missing(threshold)){
-    threshold <- local_univ_threshold(data)
+    threshold <- local_univ_threshold(data,coef=5,eps=0.1)
   }else if(is.numeric(threshold)){
     threshold <- matrix(threshold,1,n.series)
   }
@@ -1318,9 +1315,7 @@ THY <- function(data,threshold) {
   for(i in 1:n.series){
     # set data and time index
     ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#    ser.times[[i]] <- as.numeric(time(data[[i]]))
-    ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
-
+    ser.times[[i]] <- as.numeric(time(data[[i]]))
     # set difference of the data with truncation
     ser.diffX[[i]] <- diff( ser.X[[i]] )
     
@@ -1389,7 +1384,7 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
   n.series <- length(data)
   
   #if(missing(theta)&&missing(kn))
-  #  theta <- selectParam.pavg(data,utime=utime,a.theta=7585/1161216,
+  #  theta <- selectParam.pavg(data,a.theta=7585/1161216,
   #                            b.theta=151/20160,c.theta=1/24)
   if(missing(theta)) theta <- 0.15
   
@@ -1415,9 +1410,6 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
-              for(d in 1:n.series){
-                ser.times[[d]] <- round(ser.times[[d]],digits=15)
-              }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -1548,9 +1540,6 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               # set data and time index
               ser.X <- lapply(dat,"as.numeric")
               ser.times <- lapply(lapply(dat,"time"),"as.numeric")
-              for(d in 1:n.series){
-                ser.times[[d]] <- round(ser.times[[d]],digits=15)
-              }
               
               # set difference of the data
               ser.diffX <- lapply(ser.X,"diff")
@@ -1681,9 +1670,7 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#        ser.times[[i]] <- as.numeric(time(data[[i]]))
-        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
-        
+        ser.times[[i]] <- as.numeric(time(data[[i]]))
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )
       }
@@ -1811,10 +1798,6 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             # set data and time index
             ser.X <- lapply(dat,"as.numeric")
             ser.times <- lapply(lapply(dat,"time"),"as.numeric")
-            for(d in 1:n.series){
-              ser.times[[d]] <- round(ser.times[[d]],digits=15)
-            }
-            
             # set difference of the data
             ser.diffX <- lapply(ser.X,"diff")
             
@@ -1936,8 +1919,7 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       for(i in 1:n.series){
         # set data and time index
         ser.X[[i]] <- as.numeric(data[[i]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#        ser.times[[i]] <- as.numeric(time(data[[i]]))
-        ser.times[[i]] <- round(as.numeric(time(data[[i]])),digits=15)
+        ser.times[[i]] <- as.numeric(time(data[[i]]))
         
         # set difference of the data 
         ser.diffX[[i]] <- diff( ser.X[[i]] )    
@@ -2051,8 +2033,7 @@ SRC <- function(data,frequency=300,avg=TRUE,utime){
   for(d in 1:d.size){
     # set data and time index
     ser.X[[d]] <- as.numeric(data[[d]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
-    ser.times[[d]] <- round(as.numeric(time(data[[d]]))*utime,digits=15)
+    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
     ser.numX[d] <- length(ser.X[[d]])
   }
   
@@ -2147,8 +2128,7 @@ SBPC <- function(data,frequency=300,avg=TRUE,utime){
   for(d in 1:d.size){
     # set data and time index
     ser.X[[d]] <- as.numeric(data[[d]]) # we need to transform data into numeric to avoid problem with duplicated indexes below
-#    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
-    ser.times[[d]] <- round(as.numeric(time(data[[d]]))*utime,digits=15)
+    ser.times[[d]] <- as.numeric(time(data[[d]]))*utime
     ser.numX[d] <- length(ser.X[[d]])
   }
   

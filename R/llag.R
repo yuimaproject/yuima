@@ -125,7 +125,7 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,verb
 		}
 
 		y <- seq(-num2-tmptheta,num1-tmptheta,length=n)
-		tmp <- real(n)
+		tmp <- double(n)
 
 		for(i.tmp in 2:(n-1)){
 			tmp[i.tmp] <- lagccep(datp,y[i.tmp])
