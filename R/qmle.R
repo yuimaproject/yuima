@@ -204,7 +204,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 HaveDiffHess <- FALSE
 	 if(length(start)){
 		if(JointOptim){ ### joint optimization
-			if(length(start)>1){ #Â multidimensional optim
+			if(length(start)>1){ #Â?multidimensional optim
 				oout <- optim(start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
 				HESS <- oout$hessian
 				HaveDriftHess <- TRUE
@@ -368,12 +368,14 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 #	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
 #	 
 	 if(!HaveDriftHess & (length(drift.par)>0)){
-	  hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
+	  #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
+     hess2 <- optimHess(coef[drift.par], fDrift, NULL, conDrift)
 	  HESS[drift.par,drift.par] <- hess2	 
 	 }
 
 	 if(!HaveDiffHess  & (length(diff.par)>0)){
-		 hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
+		 #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
+	   hess1 <- optimHess(coef[diff.par], fDiff, NULL, conDiff)
 		 HESS[diff.par,diff.par] <- hess1	 
 	 }
 	 	 
@@ -720,7 +722,7 @@ lower, upper, joint=FALSE, ...){
     HaveDiffHess <- FALSE
     if(length(start)){
 		if(JointOptim){ ### joint optimization
-			if(length(start)>1){ #Â multidimensional optim
+			if(length(start)>1){ #Â?multidimensional optim
 				oout <- nlminb(start, fj, lower=lower, upper=upper)
                 print(oout)
 				HESS <- oout$hessian
@@ -902,12 +904,14 @@ mydots$fn <- NULL
     #	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
     #	 
     if(!HaveDriftHess & (length(drift.par)>0)){
-        hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
+        #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
+        hess2 <- optimHess(coef[drift.par], fDrift, NULL, conDrift)
         HESS[drift.par,drift.par] <- hess2	 
     }
     
     if(!HaveDiffHess  & (length(diff.par)>0)){
-        hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
+        #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
+        hess1 <- optimHess(coef[diff.par], fDiff, NULL, conDiff)
         HESS[diff.par,diff.par] <- hess1	 
     }
     
