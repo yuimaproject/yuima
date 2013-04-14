@@ -103,7 +103,9 @@ bns.test(yuima,type="ratio") # ratio type
 # Multi-dimensional case
 ## Model: dXkt=t*dWk_t (k=1,2,3) (no jump case).
 
-model <- setModel(drift=c(0,0,0),diffusion=diag("t",3),time.variable="t",
+diff.matrix <- diag(3)
+diag(diff.matrix) <- c("t","t","t")
+model <- setModel(drift=c(0,0,0),diffusion=diff.matrix,time.variable="t",
                   solve.variable=c("x1","x2","x3"))
 
 yuima.samp <- setSampling(Terminal = 1, n = 390) 
