@@ -65,8 +65,8 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,verb
 		to <- c(to,rep(Inf,d.size - length(to)))
 	}
 
-	if(length(division) == 1){
-		division <- rep(division,d.size)
+	if(length(division) != d.size){
+		division <- c(division,rep(FALSE,d.size - length(division)))
 	}
 
 	find_lag <- function(i,j){

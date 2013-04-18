@@ -5,7 +5,7 @@
 \description{Estimate the lead-lag parameters of discretely observed processes by maximizing the shifted Hayashi-Yoshida covariation contrast functions, following Hoffmann et al. (2010).
 }
 \usage{
-llag(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE)
+llag(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE)
 }
 \arguments{
   \item{x}{an object of  \code{\link{yuima-class}} or
@@ -22,7 +22,7 @@ Let \eqn{Xi_{ti_0},Xi_{ti_1},\dots,Xi_{ti_n(i)}} be the observation data of the 
 
 The shifted Hayashi-Yoshida covariation contrast function \eqn{Uij(\theta)} of the observations \eqn{Xi} and \eqn{Xj} \eqn{(i<j)} is defined by the same way as in Hoffmann et al. (2010). The lead-lag parameter \eqn{\theta_ij} is defined as a maximizer of \eqn{|Uij(\theta)|}. \eqn{Uij(\theta)} is evaluated on each points of the finite grid 
 \deqn{a, a+(b-a)/(N-1), \dots, a+(N-2)(b-a)/(N-1), b,}
-where \eqn{a,b} and \eqn{N} are the \eqn{(d(i-1)-(i-1)i/2+(j-i))}-th components of \code{from}, \code{to} and \code{division} respectively. Thus \eqn{\theta_ij} belongs to this grid. If there exist more than two maximizers, the lowest one is selected. If the corresponding component of \code{from} (resp. \code{to}) is \code{FALSE}, \eqn{a=-(tj_n(j)-ti_0)} (resp. \eqn{b=ti_n(i)-tj_0}) is used, while if the corresponding component of \code{division} is \code{FALSE}, \eqn{N=round(2max(n(i),n(j)))+1} is used. Missing components are filled with \code{FALSE}. The default value \code{FALSE} means that all components are \code{FALSE}.
+where \eqn{a,b} and \eqn{N} are the \eqn{(d(i-1)-(i-1)i/2+(j-i))}-th components of \code{from}, \code{to} and \code{division} respectively. Thus \eqn{\theta_ij} belongs to this grid. If there exist more than two maximizers, the lowest one is selected. If the corresponding component of \code{from} (resp. \code{to}) is \code{-Inf} (resp. \code{Inf}), \eqn{a=-(tj_n(j)-ti_0)} (resp. \eqn{b=ti_n(i)-tj_0}) is used, while if the corresponding component of \code{division} is \code{FALSE}, \eqn{N=round(2max(n(i),n(j)))+1} is used. Missing components are filled with \code{-Inf} (resp. \code{Inf}, \code{FALSE}). The default value \code{-Inf} (resp. \code{Inf}, \code{FALSE}) means that all components are \code{-Inf} (resp. \code{Inf}, \code{FALSE}).
 
 The estimated lead-lag parameters are returned as the skew-symmetric matrix \eqn{(\theta_ij)_{i,j=1,\dots,d}}. If \code{verbose} is \code{TRUE}, the covariance matrix \eqn{(Uij(\theta_ij))_{i,j=1,\dots,d}} corresponding to the estimated lead-lag parameters and the corresponding correlation matrix are also returned.
 }
