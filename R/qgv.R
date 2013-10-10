@@ -222,6 +222,11 @@ return(obj)
 
 }
 
+
 print.qgv<-function(x,...){
-x
+    tmp <- rbind(x$coefficients, diag(x$vcov))
+    rownames(tmp) <- c("Estimate", "Std. Error")
+    cat("\nFractional OU estimation\n")
+    print(tmp)
 }
+
