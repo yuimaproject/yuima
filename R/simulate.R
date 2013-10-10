@@ -13,7 +13,7 @@ subsampling <- function(x,y) return(x)
 
 setGeneric("simulate",
 	function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, 
-		increment.W=NULL, increment.L=NULL, methodfGn="WoodChan", 
+		increment.W=NULL, increment.L=NULL, hurst, methodfGn="WoodChan", 
 		sampling=sampling, subsampling=subsampling, ...
 #		Initial = 0, Terminal = 1, n = 100, delta, 
 #		grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
@@ -26,7 +26,7 @@ setGeneric("simulate",
 setMethod("simulate", "yuima.model",
  function(object, nsim=1, seed=NULL, xinit, true.parameter, 
 	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
-	methodfGn="WoodChan",
+	hurst, methodfGn="WoodChan",
 	sampling, subsampling,
 #Initial = 0, Terminal = 1, n = 100, delta, 
 #	grid, random = FALSE, sdelta=as.numeric(NULL), 
@@ -42,19 +42,20 @@ setMethod("simulate", "yuima.model",
 	 } else {
 	  tmpsamp <- sampling
 	 }
-     tmpyuima <- setYuima(model=object, sampling=tmpsamp) 		 
+     tmpyuima <- setYuima(model=object, sampling=tmpsamp) 	
+     
 	 out <- simulate(tmpyuima, nsim=nsim, seed=seed, xinit=xinit, 
 						true.parameter=true.parameter, 
 						space.discretized=space.discretized, 
 						increment.W=increment.W, increment.L=increment.L,
-						methodfGn=methodfGn, subsampling=subsampling)
+						hurst=hurst,methodfGn=methodfGn, subsampling=subsampling)
 	return(out)	
 })
 
 setMethod("simulate", "yuima",
  function(object, nsim=1, seed=NULL, xinit, true.parameter, 
 	space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
-	methodfGn="WoodChan",
+	hurst,methodfGn="WoodChan",
 	sampling, subsampling,
 	Initial = 0, Terminal = 1, n = 100, delta, 
 	grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
@@ -66,9 +67,20 @@ setMethod("simulate", "yuima",
   yuima <- object
 				
   if(missing(yuima)){
-    yuima.warn("yuima object is missing.")
-    return(NULL)
+      yuima.warn("yuima object is missing.")
+      return(NULL)
   }
+  
+  tmphurst<-yuima@model@hurst      
+        
+  if(!missing(hurst)){
+      yuima@model@hurst=hurst
+  }      
+        
+  if (is.na(yuima@model@hurst)){
+      yuima.warn("Specify the hurst parameter.")
+      return(NULL)
+  }      
 
 	tmpsamp <- NULL
 	if(is.null(yuima@sampling)){
@@ -178,6 +190,8 @@ setMethod("simulate", "yuima",
   if(space.discretized){   	  
 	  ##:: using Space-discretized Euler-Maruyama method	  
 	  yuima@data <- space.discretized(xinit, yuima, yuimaEnv)
+      
+      yuima@model@hurst<-tmphurst
 	  return(yuima)  
   }
 	
@@ -215,6 +229,8 @@ setMethod("simulate", "yuima",
  for(i in 1:length(yuima@data@zoo.data)) 
 		index(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid[[1]]  ## to be fixed
   yuima@model@xinit <- xinit
+  yuima@model@hurst <-tmphurst
+        
   if(missing(subsampling))
 		return(yuima)
   subsampling(yuima, subsampling)
