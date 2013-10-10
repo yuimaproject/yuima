@@ -223,5 +223,5 @@ return(obj)
 }
 
 print.qgv<-function(x,...){
-print(x)
+x
 }

@@ -74,7 +74,7 @@ mmfrac <- function(yuima,...){
 }
 
 print.mmfrac<-function(x,...){
-print(x)
+x
 }
 
 
