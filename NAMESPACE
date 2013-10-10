@@ -105,9 +105,18 @@ export(CPoint)
 export(qmleR)
 export(qmleL)
 
+export(qgv)
+export(mmfrac)
+
+
+
 export(cbind.yuima)
 
 S3method(print, phitest)
+S3method(print, qgv)
+S3method(print, mmfrac)
+
 S3method(toLatex, yuima)
 S3method(toLatex, yuima.model)
+
 
