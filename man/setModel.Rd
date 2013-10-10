@@ -29,11 +29,11 @@ jump.variable = "z", time.variable = "t", solve.variable, xinit)
 \arguments{
   \item{drift}{a vector of \code{expression}s (the default value is 0 when 
     \code{drift=NULL}).}
-  \item{diffusion}{a matrix of \code{expression}s (the default value is 1 when
+  \item{diffusion}{a matrix of \code{expression}s (the default value is 0 when
    \code{diffusion=NULL}).}
   \item{hurst}{the Hurst parameter of the gaussian noise. If \code{h=0.5}, the default,
   the process is Wiener otherwise it is fractional Brownian motion with that precise value
-   of the Hurst index.}
+   of the Hurst index. Can be set to \code{NA} for further specification.}
   \item{jump.coeff}{a matrix of \code{expression}s for the jump component.}
   \item{measure}{Levy measure for jump variables.}
   \item{measure.type}{type specification for Levy measures.}

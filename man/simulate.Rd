@@ -4,7 +4,7 @@
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
 simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = FALSE, 
- increment.W = NULL, increment.L = NULL, methodfGn = "WoodChan",
+ increment.W = NULL, increment.L = NULL, hurst, methodfGn = "WoodChan",
  	sampling=sampling, subsampling=subsampling, ...)
 }
 \arguments{
@@ -20,6 +20,7 @@ simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = F
 	package \code{stats}.}
   \item{seed}{Not used yet. Included only to match the standard genenirc in 
 	package \code{stats}.}
+  \item{hurst}{value of Hurst parameter for simulation of the fGn. Overrides the specified hurst slot.}
   \item{methodfGn}{simulation methods for fractional Gaussian noise.}
   \item{...}{passed to \code{\link{setSampling}} to create a sampling}
   \item{sampling}{a \code{\link{yuima.sampling-class}} object.}

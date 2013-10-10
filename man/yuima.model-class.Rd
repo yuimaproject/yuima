@@ -19,7 +19,7 @@
      coefficient (a matrix).}
     \item{\code{hurst}:}{the Hurst parameter of the gaussian noise. If 
 	 \code{h=0.5}, the process is Wiener otherwise it is fractional Brownian 
-	 motion with that precise value of the Hurst index.}
+	 motion with that precise value of the Hurst index. Can be set to \code{NA} for further specification.}
     \item{\code{jump.coeff}:}{a matrix of \code{expression}s for the jump 
 	 component.}
     \item{\code{measure}:}{Levy measure for jump variables.}
