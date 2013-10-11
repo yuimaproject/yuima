@@ -43,9 +43,6 @@ qgv<- function(yuima, filter.type="Daubechies", order=2, a=NULL){
     
     isfOU<-(bxx && bt) && (dbx && dbt)
 
-    if(isfOU){yuima.warn("It is fOU")} #To be deleted
-    
-    
     if (!is.na(yuima@model@hurst)){
         yuima.warn("No Hurst exponent will be estimated")
         Hconst<-TRUE
@@ -199,8 +196,6 @@ qgv<- function(yuima, filter.type="Daubechies", order=2, a=NULL){
         
         if((!Hconst)&(H>0)){
         sdH<-sqrt(sigma1)/sqrt(N)
-            yuima.warn("sdH computed") #to be deleted
-            
         }
             
         if ((H>0)&(H<1)&(!bconst)){
