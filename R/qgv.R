@@ -1,7 +1,7 @@
 ##:: function qgv
 ##:: Estimating the local Hölder exponent of the path and the constant
 
-qgv<- function(yuima, filter.type="Daubechies", order=2, a=NULL, ...){
+qgv<- function(yuima, filter.type="Daubechies", order=2, a=NULL){
 
 	call <- match.call()
 	
