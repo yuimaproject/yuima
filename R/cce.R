@@ -25,64 +25,82 @@ refresh_sampling <- function(data){
     ser.times <- lapply(lapply(data,"time"),"as.numeric")
     ser.lengths <- sapply(data,"length")
     ser.samplings <- vector(d.size, mode="list")
-    refresh.times <- c()
+    #refresh.times <- c()
     
-    tmp <- sapply(ser.times,"[",1)    
-    refresh.times[1] <- max(tmp)
-    
-    I <- rep(1,d.size)
-    
-    for(d in 1:d.size){
-      #ser.samplings[[d]][1] <- max(which(ser.times[[d]]<=refresh.times[1]))
-      while(!(ser.times[[d]][I[d]+1]>refresh.times[1])){
-        I[d] <- I[d]+1
-        if((I[d]+1)>ser.lengths[d]){
-          break
-        }
-      }
-      ser.samplings[[d]][1] <- I[d]
-    }
-    
-    i <- 1
-    
-    #while(all(sapply(ser.samplings,"[",i)<ser.lengths)){
-    while(all(I<ser.lengths)){
+    if(0){
+      tmp <- sapply(ser.times,"[",1)    
+      refresh.times[1] <- max(tmp)
       
-      J <- I
-      tmp <- double(d.size)
+      I <- rep(1,d.size)
       
       for(d in 1:d.size){
-        #tmp[d] <- ser.times[[d]][min(which(ser.times[[d]]>refresh.times[i]))
-        repeat{
-          J[d] <- J[d] + 1
-          tmp[d] <- ser.times[[d]][J[d]]
-          if((!(J[d]<ser.lengths))||(tmp[d]>refresh.times[i])){
-            break
-          }
-        }
-      }
-      
-      i <- i+1
-      
-      refresh.times[i] <- max(tmp)
-      
-      for(d in 1:d.size){
-        #ser.samplings[[d]][i] <- max(which(ser.times[[d]]<=refresh.times[i]))
-        while(!(ser.times[[d]][I[d]+1]>refresh.times[i])){
+        #ser.samplings[[d]][1] <- max(which(ser.times[[d]]<=refresh.times[1]))
+        while(!(ser.times[[d]][I[d]+1]>refresh.times[1])){
           I[d] <- I[d]+1
           if((I[d]+1)>ser.lengths[d]){
             break
           }
         }
-        ser.samplings[[d]][i] <- I[d]
+        ser.samplings[[d]][1] <- I[d]
       }
       
+      i <- 1
+      
+      #while(all(sapply(ser.samplings,"[",i)<ser.lengths)){
+      while(all(I<ser.lengths)){
+        
+        J <- I
+        tmp <- double(d.size)
+        
+        for(d in 1:d.size){
+          #tmp[d] <- ser.times[[d]][min(which(ser.times[[d]]>refresh.times[i]))
+          repeat{
+            J[d] <- J[d] + 1
+            tmp[d] <- ser.times[[d]][J[d]]
+            if((!(J[d]<ser.lengths))||(tmp[d]>refresh.times[i])){
+              break
+            }
+          }
+        }
+        
+        i <- i+1
+        
+        refresh.times[i] <- max(tmp)
+        
+        for(d in 1:d.size){
+          #ser.samplings[[d]][i] <- max(which(ser.times[[d]]<=refresh.times[i]))
+          while(!(ser.times[[d]][I[d]+1]>refresh.times[i])){
+            I[d] <- I[d]+1
+            if((I[d]+1)>ser.lengths[d]){
+              break
+            }
+          }
+          ser.samplings[[d]][i] <- I[d]
+        }
+        
+      }
     }
+    
+    MinL <- min(ser.lengths)
+    
+    refresh.times <- double(MinL)
+    refresh.times[1] <- max(sapply(ser.times,"[",1))
+    
+    idx <- matrix(.C("refreshsampling",
+                     as.integer(d.size),
+                     integer(d.size),
+                     as.double(unlist(ser.times)),
+                     as.double(refresh.times),
+                     as.integer(append(ser.lengths,0,after=0)),
+                     min(sapply(ser.times,FUN="tail",n=1)),
+                     as.integer(MinL),
+                     result=integer(d.size*MinL))$result,ncol=d.size)
     
     result <- vector(d.size, mode="list")
     
     for(d in 1:d.size){
-      result[[d]] <- data[[d]][ser.samplings[[d]]]
+      #result[[d]] <- data[[d]][ser.samplings[[d]]]
+      result[[d]] <- data[[d]][idx[,d]]
     }
     
     return(result)
@@ -104,48 +122,70 @@ refresh_sampling.PHY <- function(data){
     
     ser.times <- lapply(lapply(data,"time"),"as.numeric")
     ser.lengths <- sapply(data,"length")    
-    refresh.times <- max(sapply(ser.times,"[",1))
+    #refresh.times <- max(sapply(ser.times,"[",1))
     ser.samplings <- vector(d.size,mode="list")
     
-    for(d in 1:d.size){
-      ser.samplings[[d]][1] <- 1
-    }
-    
-    I <- rep(1,d.size)
-    i <- 1
-    
-    while(all(I<ser.lengths)){
-      
-      flag <- integer(d.size)
-      
+    if(0){
       for(d in 1:d.size){
-        while(I[d]<ser.lengths[d]){
-          I[d] <- I[d]+1
-          if(ser.times[[d]][I[d]]>refresh.times[i]){
-            flag[d] <- 1
-            ser.samplings[[d]][i+1] <- I[d]
-            break
+        ser.samplings[[d]][1] <- 1
+      }
+      
+      I <- rep(1,d.size)
+      i <- 1
+      
+      while(all(I<ser.lengths)){
+        
+        flag <- integer(d.size)
+        
+        for(d in 1:d.size){
+          while(I[d]<ser.lengths[d]){
+            I[d] <- I[d]+1
+            if(ser.times[[d]][I[d]]>refresh.times[i]){
+              flag[d] <- 1
+              ser.samplings[[d]][i+1] <- I[d]
+              break
+            }
           }
         }
-      }
-      
-      if(any(flag<rep(1,d.size))){
-        break
-      }else{
-        i <- i+1
-        tmp <- double(d.size)
-        for(d in 1:d.size){
-          tmp[d] <- ser.times[[d]][ser.samplings[[d]][i]]
+        
+        if(any(flag<rep(1,d.size))){
+          break
+        }else{
+          i <- i+1
+          tmp <- double(d.size)
+          for(d in 1:d.size){
+            tmp[d] <- ser.times[[d]][ser.samplings[[d]][i]]
+          }
+          refresh.times <- append(refresh.times,max(tmp))
         }
-        refresh.times <- append(refresh.times,max(tmp))
+        
       }
-      
     }
+    
+    MinL <- min(ser.lengths)
+    
+    refresh.times <- double(MinL)
+    refresh.times[1] <- max(sapply(ser.times,"[",1))
+    
+    obj <- .C("refreshsamplingphy",
+              as.integer(d.size),
+              integer(d.size),
+              as.double(unlist(ser.times)),
+              rtimes=as.double(refresh.times),
+              as.integer(append(ser.lengths,0,after=0)),
+              min(sapply(ser.times,FUN="tail",n=1)),
+              as.integer(MinL),
+              Samplings=integer(d.size*(MinL+1)),
+              rNum=integer(1))
+    
+    refresh.times <- obj$rtimes[1:obj$rNum]
+    idx <- matrix(obj$Samplings,ncol=d.size)
     
     result <- vector(d.size, mode="list")
     
     for(d in 1:d.size){
-      result[[d]] <- data[[d]][ser.samplings[[d]]]
+      #result[[d]] <- data[[d]][ser.samplings[[d]]]
+      result[[d]] <- data[[d]][idx[,d]]
     }
     
     return(list(data=result,refresh.times=refresh.times))
@@ -166,116 +206,147 @@ Bibsynchro <- function(x,y){
   
   xlength <- length(xtime)
   ylength <- length(ytime)
+  N.max <- max(xlength,ylength)
   
-  mu <- c()
-  w <- c()
-  q <- c()
-  r <- c()
-  
-  if(xtime[1]<ytime[1]){
-    I <- 1
-    while(xtime[I]<ytime[1]){
-      I <- I+1
-      if(!(I<xlength)){
+  if(0){
+    mu <- integer(N.max)
+    w <- integer(N.max)
+    q <- integer(N.max)
+    r <- integer(N.max)
+    
+    if(xtime[1]<ytime[1]){
+      I <- 1
+      while(xtime[I]<ytime[1]){
+        I <- I+1
+        if(!(I<xlength)){
+          break
+        }
+      }
+      #mu0 <- min(which(ytime[1]<=xtime))
+      mu0 <- I
+      if(ytime[1]<xtime[mu0]){
+        #q[1] <- mu0-1
+        q[1] <- mu0
+      }else{
+        #q[1] <- mu0
+        q[1] <- mu0+1
+      }
+      r[1] <- 2
+    }else if(xtime[1]>ytime[1]){
+      I <- 1
+      while(xtime[I]<ytime[1]){
+        I <- I+1
+        if(!(I<xlength)){
+          break
+        }
+      }
+      #w0 <- min(which(xtime[1]<=ytime))
+      w0 <- I
+      q[1] <- 2
+      if(xtime[1]<ytime[w0]){
+        #r[1] <- w0-1
+        r[1] <- w0
+      }else{
+        #r[1] <- w0
+        r[1] <- w0+1
+      }
+    }else{
+      q[1] <- 2
+      r[1] <- 2
+    }
+    
+    i <- 1
+    
+    repeat{
+      #while((q[i]<xlength)&&(r[i]<ylength)){
+      if(xtime[q[i]]<ytime[r[i]]){
+        #tmp <- which(ytime[r[i]]<=xtime)
+        #if(identical(all.equal(tmp,integer(0)),TRUE)){
+        #  break
+        #}
+        #mu[i] <- min(tmp)
+        if(xtime[xlength]<ytime[r[i]]){
+          break
+        }
+        I <- q[i]
+        while(xtime[I]<ytime[r[i]]){
+          I <- I+1
+        }
+        mu[i] <- I
+        w[i] <- r[i]
+        if(ytime[r[i]]<xtime[mu[i]]){
+          #q[i+1] <- mu[i]-1
+          q[i+1] <- mu[i]
+        }else{
+          #q[i+1] <- mu[i]
+          q[i+1] <- mu[i]+1
+        }
+        r[i+1] <- r[i]+1
+      }else if(xtime[q[i]]>ytime[r[i]]){
+        #tmp <- which(xtime[q[i]]<=ytime)
+        #if(identical(all.equal(tmp,integer(0)),TRUE)){
+        #  break
+        #}
+        if(xtime[q[i]]>ytime[ylength]){
+          break
+        }
+        mu[i] <- q[i]
+        #w[i] <- min(tmp)
+        I <- r[i]
+        while(xtime[q[i]]>ytime[I]){
+          I <- I+1
+        }
+        w[i] <- I
+        q[i+1] <- q[i]+1
+        if(xtime[q[i]]<ytime[w[i]]){
+          #r[i+1] <- w[i]-1
+          r[i+1] <- w[i]
+        }else{
+          #r[i+1] <- w[i]
+          r[i+1] <- w[i]+1
+        }
+      }else{
+        mu[i] <- q[i]
+        w[i] <- r[i]
+        q[i+1] <- q[i]+1
+        r[i+1] <- r[i]+1
+      }
+      
+      i <- i+1
+      
+      if((q[i]>=xlength)||(r[i]>=ylength)){
         break
       }
+      
     }
-    #mu0 <- min(which(ytime[1]<=xtime))
-    mu0 <- I
-    if(ytime[1]<xtime[mu0]){
-      q[1] <- mu0-1
-    }else{
-      q[1] <- mu0
-    }
-    r[1] <- 1
-  }else if(xtime[1]>ytime[1]){
-    I <- 1
-    while(xtime[I]<ytime[1]){
-      I <- I+1
-      if(!(I<xlength)){
-        break
-      }
-    }
-    #w0 <- min(which(xtime[1]<=ytime))
-    w0 <- I
-    q[1] <- 1
-    if(xtime[1]<ytime[w0]){
-      r[1] <- w0-1
-    }else{
-      r[1] <- w0
-    }
-  }else{
-    q[1] <- 1
-    r[1] <- 1
+    
+    mu[i] <- q[i]
+    w[i] <- r[i]
   }
   
-  i <- 1
+  sdata <- .C("bibsynchro",
+              as.double(xtime),
+              as.double(ytime),
+              as.integer(xlength),
+              as.integer(ylength),
+              mu=integer(N.max),
+              w=integer(N.max),
+              q=integer(N.max),
+              r=integer(N.max),
+              Num=integer(1))
   
-  #repeat{
-  while((q[i]<xlength)&&(r[i]<ylength)){
-    if(xtime[q[i]]<ytime[r[i]]){
-      #tmp <- which(ytime[r[i]]<=xtime)
-      #if(identical(all.equal(tmp,integer(0)),TRUE)){
-      #  break
-      #}
-      #mu[i] <- min(tmp)
-      if(xtime[xlength]<ytime[r[i]]){
-        break
-      }
-      I <- q[i]
-      while(xtime[I]<ytime[r[i]]){
-        I <- I+1
-      }
-      mu[i] <- I
-      w[i] <- r[i]
-      if(ytime[r[i]]<xtime[mu[i]]){
-        q[i+1] <- mu[i]-1
-      }else{
-        q[i+1] <- mu[i]
-      }
-      r[i+1] <- r[i]+1
-    }else if(xtime[q[i]]>ytime[r[i]]){
-      #tmp <- which(xtime[q[i]]<=ytime)
-      #if(identical(all.equal(tmp,integer(0)),TRUE)){
-      #  break
-      #}
-      if(xtime[q[i]]>ytime[ylength]){
-        break
-      }
-      mu[i] <- q[i]
-      #w[i] <- min(tmp)
-      I <- r[i]
-      while(xtime[q[i]]>ytime[I]){
-        I <- I+1
-      }
-      w[i] <- I
-      q[i+1] <- q[i]+1
-      if(xtime[q[i]]<ytime[w[i]]){
-        r[i+1] <- w[i]-1
-      }else{
-        r[i+1] <- w[i]
-      }
-    }else{
-      mu[i] <- q[i]
-      w[i] <- r[i]
-      q[i+1] <- q[i]+1
-      r[i+1] <- r[i]+1
-    }
-    
-    i <- i+1
-    
-    #if((q[i]>xlength)||(r[i]>ylength)){
-    #  break
-    #}
-    
-  }
+  Num <- sdata$Num
   
-  return(list(xg=as.numeric(x)[mu[1:(i-1)]],
-              xl=as.numeric(x)[q[1:(i-1)]],
-              ygamma=as.numeric(y)[w[1:(i-1)]],
-              ylambda=as.numeric(y)[r[1:(i-1)]],
-              num.data=i-1))
-  
+  #return(list(xg=as.numeric(x)[mu[1:i]],
+  #            xl=as.numeric(x)[q[1:i]-1],
+  #            ygamma=as.numeric(y)[w[1:i]],
+  #            ylambda=as.numeric(y)[r[1:i]-1],
+  #            num.data=i))
+  return(list(xg=as.numeric(x)[sdata$mu[1:Num]+1],
+              xl=as.numeric(x)[sdata$q[1:Num]],
+              ygamma=as.numeric(y)[sdata$w[1:Num]+1],
+              ylambda=as.numeric(y)[sdata$r[1:Num]],
+              num.data=Num))
 }
 
 
@@ -295,28 +366,41 @@ RV.sparse <- function(zdata,frequency=1200,utime){
   grid <- seq(ztime[1],end,by=frequency)
   n.sparse <- length(grid)
   
-  result <- double(frequency)
+  #result <- double(frequency)
   #result <- 0
-  I <- rep(1,n.sparse)
+  #I <- rep(1,n.sparse)
   
-  for(t in 1:frequency){
-    for(i in 1:n.sparse){
-      while((ztime[I[i]+1]<=grid[i])&&(I[i]<n.size)){
-        I[i] <- I[i]+1
-      }
-    }
-    result[t] <- sum(diff(znum[I])^2)
+  #for(t in 1:frequency){
+  #  for(i in 1:n.sparse){
+  #    while((ztime[I[i]+1]<=grid[i])&&(I[i]<n.size)){
+  #      I[i] <- I[i]+1
+  #    }
+  #  }
+  #  result[t] <- sum(diff(znum[I])^2)
     #result <- result+sum(diff(znum[I])^2)
-    grid <- grid+rep(1,n.sparse)
-    if(grid[n.sparse]>end){
-      grid <- grid[-n.sparse]
-      I <- I[-n.sparse]
-      n.sparse <- n.sparse-1
-    }
-  }
+  #  grid <- grid+rep(1,n.sparse)
+  #  if(grid[n.sparse]>end){
+  #    grid <- grid[-n.sparse]
+  #    I <- I[-n.sparse]
+  #    n.sparse <- n.sparse-1
+  #  }
+  #}
+  
+  K <- floor(end-grid[n.sparse]) + 1
+  
+  zmat <- matrix(.C("ctsubsampling",as.double(znum),as.double(ztime),
+                    as.integer(frequency),as.integer(n.sparse),
+                    as.integer(n.size),as.double(grid),
+                    result=double(frequency*n.sparse))$result,
+                 n.sparse,frequency)
+  
+  result <- double(frequency)
+  result[1:K] <- colSums(diff(zmat[,1:K])^2)
+  result[-(1:K)] <- colSums(diff(zmat[-n.sparse,-(1:K)])^2)
   
   return(mean(result))
   #return(result/frequency)
+  #return(znum[I])
 }
 
 Omega_BNHLS <- function(zdata,sec=120,utime){
@@ -530,33 +614,37 @@ HY <- function(data) {
   cmat <- matrix(0, n.series, n.series)  # cov
   for(i in 1:n.series){
     for(j in i:n.series){ 
-      I <- rep(1,n.series)
+      #I <- rep(1,n.series)
       #Checking Starting Point
       #repeat{
-      while((I[i]<length(ser.times[[i]])) && (I[j]<length(ser.times[[j]]))){
-        if(ser.times[[i]][I[i]] >= ser.times[[j]][I[j]+1]){
-          I[j] <- I[j]+1   
-        }else if(ser.times[[i]][I[i]+1] <= ser.times[[j]][I[j]]){
-          I[i] <- I[i]+1   
-        }else{
-          break
-        }
-      }
+      #while((I[i]<length(ser.times[[i]])) && (I[j]<length(ser.times[[j]]))){
+      #  if(ser.times[[i]][I[i]] >= ser.times[[j]][I[j]+1]){
+      #    I[j] <- I[j]+1   
+      #  }else if(ser.times[[i]][I[i]+1] <= ser.times[[j]][I[j]]){
+      #    I[i] <- I[i]+1   
+      #  }else{
+      #    break
+      #  }
+      #}
       
       
       #Main Component
       if(i!=j){
-        while((I[i]<length(ser.times[[i]])) && (I[j]<length(ser.times[[j]]))) {
-          cmat[j,i] <- cmat[j,i] + (ser.diffX[[i]])[I[i]]*(ser.diffX[[j]])[I[j]]
-          if(ser.times[[i]][I[i]+1]>ser.times[[j]][I[j]+1]){
-            I[j] <- I[j] + 1
-          }else if(ser.times[[i]][I[i]+1]<ser.times[[j]][I[j]+1]){
-            I[i] <- I[i] +1
-          }else{
-            I[i] <- I[i]+1
-            I[j] <- I[j]+1
-          }
-        }
+        #while((I[i]<length(ser.times[[i]])) && (I[j]<length(ser.times[[j]]))) {
+        #  cmat[j,i] <- cmat[j,i] + (ser.diffX[[i]])[I[i]]*(ser.diffX[[j]])[I[j]]
+        #  if(ser.times[[i]][I[i]+1]>ser.times[[j]][I[j]+1]){
+        #    I[j] <- I[j] + 1
+        #  }else if(ser.times[[i]][I[i]+1]<ser.times[[j]][I[j]+1]){
+        #    I[i] <- I[i] +1
+        #  }else{
+        #    I[i] <- I[i]+1
+        #    I[j] <- I[j]+1
+        #  }
+        #}
+        cmat[j,i] <- .C("HayashiYoshida",as.integer(length(ser.times[[i]])),
+                        as.integer(length(ser.times[[j]])),as.double(ser.times[[i]]),
+                        as.double(ser.times[[j]]),as.double(ser.diffX[[i]]),
+                        as.double(ser.diffX[[j]]),value=double(1))$value
       }else{
         cmat[i,j] <- sum(ser.diffX[[i]]^2)
       }
@@ -588,10 +676,12 @@ MRC <- function(data,theta,kn,g,delta=0,adj=TRUE){
   cmat <- matrix(0, n.series, n.series)  # cov
   
   # synchronize the data and take the differences
-  diffX <- lapply(lapply(refresh_sampling(data),"as.numeric"),"diff")
-  diffX <- do.call("rbind",diffX) # transform to matrix
+  #diffX <- lapply(lapply(refresh_sampling(data),"as.numeric"),"diff")
+  #diffX <- do.call("rbind",diffX) # transform to matrix
+  diffX <- diff(do.call("cbind",lapply(refresh_sampling(data),"as.numeric")))
   
-  Num <- ncol(diffX)
+  #Num <- ncol(diffX)
+  Num <- nrow(diffX)
   
   if(missing(kn)) kn <- max(floor(mean(theta)*Num^(1/2+delta)),2)
   
@@ -599,15 +689,17 @@ MRC <- function(data,theta,kn,g,delta=0,adj=TRUE){
   psi2.kn <- sum(weight^2)
   
   # pre-averaging
-  myfunc <- function(dx)rollapplyr(dx,width=kn-1,FUN="%*%",weight)
-  barX <- apply(diffX,1,FUN=myfunc)
+  #myfunc <- function(dx)rollapplyr(dx,width=kn-1,FUN="%*%",weight)
+  #barX <- apply(diffX,1,FUN=myfunc)
+  barX <- filter(diffX,filter=rev(weight),method="c",sides=1)[(kn-1):Num,]
   
   cmat <- (Num/(Num-kn+2))*t(barX)%*%barX/psi2.kn
   
   if(delta==0){
     psi1.kn <- kn^2*sum(diff(c(0,weight,0))^2)
     scale <- psi1.kn/(theta^2*psi2.kn*2*Num)
-    cmat <- cmat-scale*diffX%*%t(diffX)
+    #cmat <- cmat-scale*diffX%*%t(diffX)
+    cmat <- cmat-scale*t(diffX)%*%diffX
     if(adj) cmat <- cmat/(1-scale)
   }
   
@@ -661,23 +753,36 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
               weight <- sapply((1:(kn-1))/kn,g)
               psi.kn <- sum(weight)
               
-              ser.barX <- list(rollapplyr(ser.diffX[[1]],width=kn-1,FUN="%*%",weight),
-                               rollapplyr(ser.diffX[[2]],width=kn-1,FUN="%*%",weight))
+              #ser.barX <- list(rollapplyr(ser.diffX[[1]],width=kn-1,FUN="%*%",weight),
+              #                 rollapplyr(ser.diffX[[2]],width=kn-1,FUN="%*%",weight))
+              ser.barX <- list(filter(ser.diffX[[1]],rev(weight),method="c",
+                                      sides=1)[(kn-1):length(ser.diffX[[1]])],
+                               filter(ser.diffX[[2]],rev(weight),method="c",
+                                      sides=1)[(kn-1):length(ser.diffX[[2]])])
               
               ser.num.barX <- sapply(ser.barX,"length")-1
               
               # core part of cce
-              start <- kn+1
-              end <- 1
-              for(k in 1:ser.num.barX[1]){
-                while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-kn)<ser.num.barX[2])){
-                  start <- start + 1
-                }
-                while((ser.times[[1]][k+kn]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
-                  end <- end + 1
-                }
-                cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-kn):end])
-              }
+              #start <- kn+1
+              #end <- 1
+              #for(k in 1:ser.num.barX[1]){
+              #  while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-kn)<ser.num.barX[2])){
+              #    start <- start + 1
+              #  }
+              #  while((ser.times[[1]][k+kn]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
+              #    end <- end + 1
+              #  }
+              #  cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-kn):end])
+              #}
+              cmat[i,j] <- .C("pHayashiYoshida",
+                              as.integer(kn),
+                              as.integer(ser.num.barX[1]),
+                              as.integer(ser.num.barX[2]),
+                              as.double(ser.times[[1]]),
+                              as.double(ser.times[[2]]),
+                              as.double(ser.barX[[1]]),
+                              as.double(ser.barX[[2]]),
+                              value=double(1))$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -691,9 +796,13 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
               weight <- sapply((1:(kn-1))/kn,g)
               psi.kn <- sum(weight)
               
-              barX <- rollapplyr(diffX,width=kn-1,FUN="%*%",weight)
+              #barX <- rollapplyr(diffX,width=kn-1,FUN="%*%",weight)
+              barX <- filter(diffX,rev(weight),method="c",
+                             sides=1)[(kn-1):length(diffX)]
               tmp <- barX[-length(barX)]
-              cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+              #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+              cmat[i,j] <- tmp%*%rollsum(c(double(kn-1),tmp,double(kn-1)),
+                                         k=2*(kn-1)+1)/(psi.kn)^2
               
             }
           }
@@ -723,23 +832,36 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
               weight <- sapply((1:(knij-1))/knij,g)
               psi.kn <- sum(weight)
               
-              ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
-                               rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+              #ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
+              #                 rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+              ser.barX <- list(filter(ser.diffX[[1]],rev(weight),method="c",
+                                      sides=1)[(knij-1):length(ser.diffX[[1]])],
+                               filter(ser.diffX[[2]],rev(weight),method="c",
+                                      sides=1)[(knij-1):length(ser.diffX[[2]])])
               
               ser.num.barX <- sapply(ser.barX,"length")-1
               
               # core part of cce
-              start <- knij+1
-              end <- 1
-              for(k in 1:ser.num.barX[1]){
-                while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
-                  start <- start + 1
-                }
-                while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
-                  end <- end + 1
-                }
-                cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
-              }
+              #start <- knij+1
+              #end <- 1
+              #for(k in 1:ser.num.barX[1]){
+              #  while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
+              #    start <- start + 1
+              #  }
+              #  while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
+              #    end <- end + 1
+              #  }
+              #  cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
+              #}
+              cmat[i,j] <- .C("pHayashiYoshida",
+                              as.integer(knij),
+                              as.integer(ser.num.barX[1]),
+                              as.integer(ser.num.barX[2]),
+                              as.double(ser.times[[1]]),
+                              as.double(ser.times[[2]]),
+                              as.double(ser.barX[[1]]),
+                              as.double(ser.barX[[2]]),
+                              value=double(1))$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -752,12 +874,15 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
               weight <- sapply((1:(kni-1))/kni,g)
               psi.kn <- sum(weight)
               
-              barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+              #barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+              barX <- filter(diffX,rev(weight),method="c",
+                             sides=1)[(kni-1):length(diffX)]
               tmp <- barX[-length(barX)]
               
               # core part of cce
-              cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
-              
+              #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+              cmat[i,j] <- tmp%*%rollsum(c(double(kni-1),tmp,double(kni-1)),
+                                         k=2*(kni-1)+1)/(psi.kn)^2
             }
           }
         }
@@ -793,7 +918,9 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
         ser.diffX[[i]] <- diff( ser.X[[i]] )
         
         # pre-averaging
-        ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+        #ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+        ser.barX[[i]] <- filter(ser.diffX[[i]],rev(weight),method="c",
+                                sides=1)[(kn-1):length(ser.diffX[[i]])]
         ser.num.barX[i] <- length(ser.barX[[i]])-1
       }
       
@@ -802,21 +929,32 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
       for(i in 1:n.series){
         for(j in i:n.series){ 
           if(i!=j){
-            start <- kn+1
-            end <- 1
-            for(k in 1:ser.num.barX[i]){
-              while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
-                start <- start + 1
-              }
-              while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
-                end <- end + 1
-              }
-              cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
-            }
+            #start <- kn+1
+            #end <- 1
+            #for(k in 1:ser.num.barX[i]){
+            #  while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
+            #    start <- start + 1
+            #  }
+            #  while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
+            #    end <- end + 1
+            #  }
+            #  cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
+            #}
+            cmat[i,j] <- .C("pHayashiYoshida",
+                            as.integer(kn),
+                            as.integer(ser.num.barX[i]),
+                            as.integer(ser.num.barX[j]),
+                            as.double(ser.times[[i]]),
+                            as.double(ser.times[[j]]),
+                            as.double(ser.barX[[i]]),
+                            as.double(ser.barX[[j]]),
+                            value=double(1))$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
-            cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE) 
+            #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE)
+            cmat[i,j] <- tmp%*%rollsum(c(double(kn-1),tmp,double(kn-1)),
+                                       k=2*(kn-1)+1) 
           }
         }
       }
@@ -856,8 +994,12 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
             # pre-averaging
             knij <- min(kn[i,j],sapply(ser.X,"length")) # kn must be less than the numbers of the observations
             weight <- sapply((1:(knij-1))/knij,g)
-            ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
-                             rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+            #ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
+            #                 rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+            ser.barX <- list(filter(ser.diffX[[1]],rev(weight),method="c",
+                                    sides=1)[(knij-1):length(ser.diffX[[1]])],
+                             filter(ser.diffX[[2]],rev(weight),method="c",
+                                    sides=1)[(knij-1):length(ser.diffX[[2]])])
             
             ser.num.barX <- sapply(ser.barX,"length")-1
             psi.kn <- sum(weight)
@@ -865,15 +1007,24 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
             # core part of cce
             start <- knij+1
             end <- 1
-            for(k in 1:ser.num.barX[1]){
-              while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
-                start <- start + 1
-              }
-              while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
-                end <- end + 1
-              }
-              cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
-            }
+            #for(k in 1:ser.num.barX[1]){
+            #  while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
+            #    start <- start + 1
+            #  }
+            #  while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
+            #    end <- end + 1
+            #  }
+            #  cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
+            #}
+            cmat[i,j] <- .C("pHayashiYoshida",
+                            as.integer(knij),
+                            as.integer(ser.num.barX[1]),
+                            as.integer(ser.num.barX[2]),
+                            as.double(ser.times[[1]]),
+                            as.double(ser.times[[2]]),
+                            as.double(ser.barX[[1]]),
+                            as.double(ser.barX[[2]]),
+                            value=double(1))$value
             
             cmat[i,j] <- cmat[i,j]/(psi.kn^2)
             cmat[j,i] <- cmat[i,j]
@@ -887,9 +1038,13 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
             weight <- sapply((1:(kni-1))/kni,g)
             psi.kn <- sum(weight)
             
-            barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+            #barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+            barX <- filter(diffX,rev(weight),method="c",
+                           sides=1)[(kni-1):length(diffX)]
             tmp <- barX[-length(barX)]
-            cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+            #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+            cmat[i,j] <- tmp%*%rollsum(c(double(kni-1),tmp,double(kni-1)),
+                                       k=2*(kni-1)+1)/(psi.kn)^2
             
           }
         }
@@ -925,7 +1080,9 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
       psi.kn <- sum(weight)
       
       for(i in 1:n.series){
-        ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+        #ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+        ser.barX[[i]] <- filter(ser.diffX[[i]],rev(weight),method="c",
+                                sides=1)[(kn-1):length(ser.diffX[[i]])]
       }
       
       ser.num.barX <- sapply(ser.barX,"length")-1
@@ -936,21 +1093,32 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
       for(i in 1:n.series){
         for(j in i:n.series){ 
           if(i!=j){
-            start <- kn+1
-            end <- 1
-            for(k in 1:ser.num.barX[i]){
-              while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
-                start <- start + 1
-              }
-              while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
-                end <- end + 1
-              }
-              cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
-            }
+            #start <- kn+1
+            #end <- 1
+            #for(k in 1:ser.num.barX[i]){
+            #  while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
+            #    start <- start + 1
+            #  }
+            #  while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
+            #    end <- end + 1
+            #  }
+            #  cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
+            #}
+            cmat[i,j] <- .C("pHayashiYoshida",
+                            as.integer(kn),
+                            as.integer(ser.num.barX[i]),
+                            as.integer(ser.num.barX[j]),
+                            as.double(ser.times[[i]]),
+                            as.double(ser.times[[j]]),
+                            as.double(ser.barX[[i]]),
+                            as.double(ser.barX[[j]]),
+                            value=double(1))$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
-            cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE) 
+            #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE)
+            cmat[i,j] <- tmp%*%rollsum(c(double(kn-1),tmp,double(kn-1)),
+                                       k=2*(kn-1)+1)
           }
         }
       }
@@ -971,8 +1139,10 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
 
 TSCV <- function(data,K,c.two,J=1,adj=TRUE,utime){
     
-  X <- do.call("rbind",lapply(refresh_sampling(data),"as.numeric"))
-  N <- ncol(X)
+  #X <- do.call("rbind",lapply(refresh_sampling(data),"as.numeric"))
+  #N <- ncol(X)
+  X <- do.call("cbind",lapply(refresh_sampling(data),"as.numeric"))
+  N <- nrow(X)
   
   if(missing(K)){
     if(missing(c.two)) c.two <- selectParam.TSCV(data,utime=utime)
@@ -981,8 +1151,10 @@ TSCV <- function(data,K,c.two,J=1,adj=TRUE,utime){
   
   scale <- (N-K+1)*J/(K*(N-J+1))
   
-  diffX1 <- apply(X,1,"diff",lag=K)
-  diffX2 <- apply(X,1,"diff",lag=J)
+  #diffX1 <- apply(X,1,"diff",lag=K)
+  #diffX2 <- apply(X,1,"diff",lag=J)
+  diffX1 <- diff(X,lag=K)
+  diffX2 <- diff(X,lag=J)
   
   cmat <- t(diffX1)%*%diffX1/K-scale*t(diffX2)%*%diffX2/J
   if(adj) cmat <- cmat/(1-scale)
@@ -1085,9 +1257,11 @@ RK <- function(data,kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime){
   d <- length(data)
   
   tmp <- lapply(refresh_sampling(data),"as.numeric")
-  tmp <- do.call("rbind",tmp)
+  #tmp <- do.call("rbind",tmp)
+  tmp <- do.call("cbind",tmp)
   
-  n <- max(c(ncol(tmp)-2*m+1,2))
+  #n <- max(c(ncol(tmp)-2*m+1,2))
+  n <- max(c(nrow(tmp)-2*m+1,2))
   
   # if missing H, we select it following Barndorff-Nielsen et al.(2011)
   if(missing(H)){
@@ -1095,26 +1269,30 @@ RK <- function(data,kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime){
     H <- mean(c.RK)*n^eta
   }
   
-  X <- matrix(0,d,n+1)
+  #X <- matrix(0,d,n+1)
+  X <- matrix(0,n+1,d)
   
   #X[,1] <- apply(matrix(tmp[,1:m],d,m),1,"sum")/m
-  X[,1] <- apply(matrix(tmp[,1:m],d,m),1,"mean")
-  X[,2:n] <- tmp[,(m+1):(m+n-1)]
+  #X[,1] <- apply(matrix(tmp[,1:m],d,m),1,"mean")
+  X[1,] <- colMeans(matrix(tmp[1:m,],m,d))
+  #X[,2:n] <- tmp[,(m+1):(m+n-1)]
+  X[2:n,] <- tmp[(m+1):(m+n-1),]
   #X[,n+1] <- apply(matrix(tmp[,(n+m):(n+2*m-1)],d,m),1,"sum")/m
-  X[,n+1] <- apply(matrix(tmp[,(n+m):(n+2*m-1)],d,m),1,"mean")
+  #X[,n+1] <- apply(matrix(tmp[,(n+m):(n+2*m-1)],d,m),1,"mean")
+  X[n+1,] <- colMeans(matrix(tmp[(n+m):(n+2*m-1),],m,d))
   
   cc <- floor(ftregion*H) # flat-top region
   Kh <- rep(1,cc)
   Kh <- append(Kh,sapply(((cc+1):(n-1))/H,kernel))
   h.size <- max(which(Kh!=0))
   
-  diffX <- apply(X,1,FUN="diff")
+  #diffX <- apply(X,1,FUN="diff")
+  diffX <- diff(X)
   Gamma <- array(0,dim=c(h.size+1,d,d))
   for(h in 1:(h.size+1))
     Gamma[h,,] <- t(diffX)[,h:n]%*%diffX[1:(n-h+1),]
 
   cmat <- matrix(0,d,d)
-  
   for (i in 1:d){
     cmat[,i] <- kernel(0)*Gamma[1,,i]+
       Kh[1:h.size]%*%(Gamma[-1,,i]+Gamma[-1,i,])
@@ -1264,7 +1442,8 @@ SIML <- function(data,mn,alpha=0.4){
   #Z <- data[-1,]-matrix(1,n.size,1)%*%matrix(data[1,],1,d.size)
   #Z <- sqrt(n.size)*t(P)%*%solve(C)%*%Z
   
-  diff.Y <- apply(data,2,"diff")
+  #diff.Y <- apply(data,2,"diff")
+  diff.Y <- diff(data)
   
   #Z <- matrix(0,n.size,d.size)
   #for(j in 1:n.size){
@@ -1333,32 +1512,36 @@ THY <- function(data,threshold) {
   cmat <- matrix(0, n.series, n.series)  # cov
   for(i in 1:n.series){
     for(j in i:n.series){ 
-      I <- rep(1,n.series)
+      #I <- rep(1,n.series)
       #Checking Starting Point
-      repeat{
-        if(ser.times[[i]][I[i]] >= ser.times[[j]][I[j]+1]){
-          I[j] <- I[j]+1	 
-        }else if(ser.times[[i]][I[i]+1] <= ser.times[[j]][I[j]]){
-          I[i] <- I[i]+1	 
-        }else{
-          break
-        }
-      }
+      #repeat{
+      #  if(ser.times[[i]][I[i]] >= ser.times[[j]][I[j]+1]){
+      #    I[j] <- I[j]+1	 
+      #  }else if(ser.times[[i]][I[i]+1] <= ser.times[[j]][I[j]]){
+      #    I[i] <- I[i]+1	 
+      #  }else{
+      #    break
+      #  }
+      #}
       
       
       #Main Component
       if(i!=j){
-        while((I[i]<length(ser.times[[i]])) && (I[j]<length(ser.times[[j]]))) {
-          cmat[j,i] <- cmat[j,i] + (ser.diffX[[i]])[I[i]]*(ser.diffX[[j]])[I[j]]
-          if(ser.times[[i]][I[i]+1]>ser.times[[j]][I[j]+1]){
-            I[j] <- I[j] + 1
-          }else if(ser.times[[i]][I[i]+1]<ser.times[[j]][I[j]+1]){
-            I[i] <- I[i] +1
-          }else{
-            I[i] <- I[i]+1
-            I[j] <- I[j]+1
-          }
-        }
+        #while((I[i]<length(ser.times[[i]])) && (I[j]<length(ser.times[[j]]))) {
+        #  cmat[j,i] <- cmat[j,i] + (ser.diffX[[i]])[I[i]]*(ser.diffX[[j]])[I[j]]
+        #  if(ser.times[[i]][I[i]+1]>ser.times[[j]][I[j]+1]){
+        #    I[j] <- I[j] + 1
+        #  }else if(ser.times[[i]][I[i]+1]<ser.times[[j]][I[j]+1]){
+        #    I[i] <- I[i] +1
+        #  }else{
+        #    I[i] <- I[i]+1
+        #    I[j] <- I[j]+1
+        #  }
+        #}
+        cmat[j,i] <- .C("HayashiYoshida",as.integer(length(ser.times[[i]])),
+                        as.integer(length(ser.times[[j]])),as.double(ser.times[[i]]),
+                        as.double(ser.times[[j]]),as.double(ser.diffX[[i]]),
+                        as.double(ser.diffX[[j]]),value=double(1))$value
       }else{
         cmat[i,j] <- sum(ser.diffX[[i]]^2)
       }
@@ -1419,8 +1602,12 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               weight <- sapply((1:(kn-1))/kn,g)
               psi.kn <- sum(weight)
               
-              ser.barX <- list(rollapplyr(ser.diffX[[1]],width=kn-1,FUN="%*%",weight),
-                               rollapplyr(ser.diffX[[2]],width=kn-1,FUN="%*%",weight))
+              #ser.barX <- list(rollapplyr(ser.diffX[[1]],width=kn-1,FUN="%*%",weight),
+              #                 rollapplyr(ser.diffX[[2]],width=kn-1,FUN="%*%",weight))
+              ser.barX <- list(filter(ser.diffX[[1]],rev(weight),method="c",
+                                      sides=1)[(kn-1):length(ser.diffX[[1]])],
+                               filter(ser.diffX[[2]],rev(weight),method="c",
+                                      sides=1)[(kn-1):length(ser.diffX[[2]])])
               
               ser.num.barX <- sapply(ser.barX,"length")
               
@@ -1459,17 +1646,26 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               ser.num.barX <- ser.num.barX-1
               
               # core part of cce
-              start <- kn+1
-              end <- 1
-              for(k in 1:ser.num.barX[1]){
-                while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-kn)<ser.num.barX[2])){
-                  start <- start + 1
-                }
-                while((ser.times[[1]][k+kn]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
-                  end <- end + 1
-                }
-                cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-kn):end])
-              }
+              #start <- kn+1
+              #end <- 1
+              #for(k in 1:ser.num.barX[1]){
+              #  while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-kn)<ser.num.barX[2])){
+              #    start <- start + 1
+              #  }
+              #  while((ser.times[[1]][k+kn]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
+              #    end <- end + 1
+              #  }
+              #  cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-kn):end])
+              #}
+              cmat[i,j] <- .C("pHayashiYoshida",
+                              as.integer(kn),
+                              as.integer(ser.num.barX[1]),
+                              as.integer(ser.num.barX[2]),
+                              as.double(ser.times[[1]]),
+                              as.double(ser.times[[2]]),
+                              as.double(ser.barX[[1]]),
+                              as.double(ser.barX[[2]]),
+                              value=double(1))$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -1484,7 +1680,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               weight <- sapply((1:(kn-1))/kn,g)
               psi.kn <- sum(weight)
               
-              barX <- rollapplyr(diffX,width=kn-1,FUN="%*%",weight)
+              #barX <- rollapplyr(diffX,width=kn-1,FUN="%*%",weight)
+              barX <- filter(diffX,rev(weight),method="c",
+                             sides=1)[(kn-1):length(diffX)]
               num.barX <- length(barX)
               
               # thresholding
@@ -1515,7 +1713,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               }
               
               tmp <- barX[-num.barX]
-              cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+              #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+              cmat[i,j] <- tmp%*%rollsum(c(double(kn-1),tmp,double(kn-1)),
+                                         k=2*(kn-1)+1)/(psi.kn)^2
               
             }
           }
@@ -1545,8 +1745,12 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               ser.diffX <- lapply(ser.X,"diff")
               
               # pre-averaging
-              ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
-                               rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+              #ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
+              #                 rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+              ser.barX <- list(filter(ser.diffX[[1]],rev(weight),method="c",
+                                      sides=1)[(knij-1):length(ser.diffX[[1]])],
+                               filter(ser.diffX[[2]],rev(weight),method="c",
+                                      sides=1)[(knij-1):length(ser.diffX[[2]])])
               
               ser.num.barX <- sapply(ser.barX,"length")
               
@@ -1584,17 +1788,26 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               ser.num.barX <- ser.num.barX-1
               
               # core part of cce
-              start <- knij+1
-              end <- 1
-              for(k in 1:ser.num.barX[1]){
-                while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
-                  start <- start + 1
-                }
-                while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
-                  end <- end + 1
-                }
-                cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
-              }
+              #start <- knij+1
+              #end <- 1
+              #for(k in 1:ser.num.barX[1]){
+              #  while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
+              #    start <- start + 1
+              #  }
+              #  while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
+              #    end <- end + 1
+              #  }
+              #  cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
+              #}
+              cmat[i,j] <- .C("pHayashiYoshida",
+                              as.integer(knij),
+                              as.integer(ser.num.barX[1]),
+                              as.integer(ser.num.barX[2]),
+                              as.double(ser.times[[1]]),
+                              as.double(ser.times[[2]]),
+                              as.double(ser.barX[[1]]),
+                              as.double(ser.barX[[2]]),
+                              value=double(1))$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -1607,7 +1820,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               weight <- sapply((1:(kni-1))/kni,g)
               psi.kn <- sum(weight)
               
-              barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+              #barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+              barX <- filter(diffX,rev(weight),method="c",
+                             sides=1)[(kni-1):length(diffX)]
               num.barX <- length(barX)
               
               # thresholding
@@ -1639,7 +1854,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
               }
               
               tmp <- barX[-num.barX]
-              cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+              #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+              cmat[i,j] <- tmp%*%rollsum(c(double(kni-1),tmp,double(kni-1)),
+                                         k=2*(kni-1)+1)/(psi.kn)^2
               
             }
           }
@@ -1677,7 +1894,7 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       
       # thresholding
       if(missing(threshold)){
-        coef <- 2*coef*kn/sqrt(ser.numX)
+        #coef <- 2*coef*kn/sqrt(ser.numX)
         for(i in 1:n.series){
           
           #ser.num.barX[i] <- ser.numX[i]-kn+2
@@ -1687,7 +1904,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
           #  ser.barX[[i]][j] <- sapply((1:(kn-1))/kn,g)%*%ser.diffX[[i]][j:(j+kn-2)]
           #}
           
-          ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          #ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          ser.barX[[i]] <- filter(ser.diffX[[i]],rev(weight),method="c",
+                                  sides=1)[(kn-1):length(ser.diffX[[i]])]
           ser.num.barX[i] <- length(ser.barX[[i]])
           
           K <- ceiling(ser.num.barX[i]^(3/4))
@@ -1700,13 +1919,14 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
           }else{
             v.hat <- double(ser.num.barX[i])
             #v.hat[1:K] <- (median(obj0[1:K])/0.6745)^2
-            v.hat[-(1:K)] <- rollmean(obj1[1:(ser.num.barX[i]-2*kn)],k=K-2*kn+1,align="left")
+            v.hat[-(1:K)] <- rollmean(obj1[1:(ser.num.barX[i]-2*kn)],
+                                      k=K-2*kn+1,align="left")
             v.hat[1:K] <- v.hat[K+1]
           }
           #rho <- 2*log(ser.num.barX[ii])*
           #  (median(abs(ser.barX[[ii]])/sqrt(v.hat))/0.6745)^2*v.hat
           rho <- 2*log(ser.num.barX[i])^(1+eps)*v.hat
-          ser.barX[[ii]][ser.barX[[i]]^2>rho] <- 0
+          ser.barX[[i]][ser.barX[[i]]^2>rho] <- 0
         }
       }else if(is.numeric(threshold)){
         threshold <- matrix(threshold,1,n.series)
@@ -1721,7 +1941,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
           #    ser.barX[[i]][j] <- tmp
           #  }
           #}
-          ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          #ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          ser.barX[[i]] <- filter(ser.diffX[[i]],rev(weight),method="c",
+                                  sides=1)[(kn-1):length(ser.diffX[[i]])]
           ser.num.barX[i] <- length(ser.barX[[i]])
           ser.barX[[i]][ser.barX[[i]]^2>threshold[i]] <- 0
         }
@@ -1737,7 +1959,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
           #    ser.barX[[i]][j] <- tmp
           #  }
           #}
-          ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          #ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          ser.barX[[i]] <- filter(ser.diffX[[i]],rev(weight),method="c",
+                                  sides=1)[(kn-1):length(ser.diffX[[i]])]
           ser.num.barX[i] <- length(ser.barX[[i]])
           ser.barX[[i]][ser.barX[[i]]^2>threshold[[i]][1:ser.num.barX[i]]] <- 0
         }
@@ -1750,21 +1974,32 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       for(i in 1:n.series){
         for(j in i:n.series){ 
           if(i!=j){
-            start <- kn+1
-            end <- 1
-            for(k in 1:ser.num.barX[i]){
-              while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
-                start <- start + 1
-              }
-              while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
-                end <- end + 1
-              }
-              cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
-            }
+            #start <- kn+1
+            #end <- 1
+            #for(k in 1:ser.num.barX[i]){
+            #  while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
+            #    start <- start + 1
+            #  }
+            #  while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
+            #    end <- end + 1
+            #  }
+            #  cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
+            #}
+            cmat[i,j] <- .C("pHayashiYoshida",
+                            as.integer(kn),
+                            as.integer(ser.num.barX[i]),
+                            as.integer(ser.num.barX[j]),
+                            as.double(ser.times[[i]]),
+                            as.double(ser.times[[j]]),
+                            as.double(ser.barX[[i]]),
+                            as.double(ser.barX[[j]]),
+                            value=double(1))$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
-            cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE) 
+            #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE)
+            cmat[i,j] <- tmp%*%rollsum(c(double(kn-1),tmp,double(kn-1)),
+                                       k=2*(kn-1)+1) 
           }
         }
       }
@@ -1806,8 +2041,12 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             weight <- sapply((1:(knij-1))/knij,g)
             psi.kn <- sum(weight)
             
-            ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
-                             rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+            #ser.barX <- list(rollapplyr(ser.diffX[[1]],width=knij-1,FUN="%*%",weight),
+            #                 rollapplyr(ser.diffX[[2]],width=knij-1,FUN="%*%",weight))
+            ser.barX <- list(filter(ser.diffX[[1]],rev(weight),method="c",
+                                    sides=1)[(knij-1):length(ser.diffX[[1]])],
+                             filter(ser.diffX[[2]],rev(weight),method="c",
+                                    sides=1)[(knij-1):length(ser.diffX[[2]])])
             ser.num.barX <- sapply(ser.barX,"length")
             
             # thresholding
@@ -1845,17 +2084,26 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             ser.num.barX <- ser.num.barX-1
             
             # core part of cce
-            start <- knij+1
-            end <- 1
-            for(k in 1:ser.num.barX[1]){
-              while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
-                start <- start + 1
-              }
-              while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
-                end <- end + 1
-              }
-              cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
-            }
+            #start <- knij+1
+            #end <- 1
+            #for(k in 1:ser.num.barX[1]){
+            #  while(!(ser.times[[1]][k]<ser.times[[2]][start])&&((start-knij)<ser.num.barX[2])){
+            #    start <- start + 1
+            #  }
+            #  while((ser.times[[1]][k+knij]>ser.times[[2]][end+1])&&(end<ser.num.barX[2])){
+            #    end <- end + 1
+            #  }
+            #  cmat[i,j] <- cmat[i,j] + ser.barX[[1]][k]*sum(ser.barX[[2]][(start-knij):end])
+            #}
+            cmat[i,j] <- .C("pHayashiYoshida",
+                            as.integer(knij),
+                            as.integer(ser.num.barX[1]),
+                            as.integer(ser.num.barX[2]),
+                            as.double(ser.times[[1]]),
+                            as.double(ser.times[[2]]),
+                            as.double(ser.barX[[1]]),
+                            as.double(ser.barX[[2]]),
+                            value=double(1))$value
             
             cmat[i,j] <- cmat[i,j]/(psi.kn^2)
             cmat[j,i] <- cmat[i,j]
@@ -1869,7 +2117,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             weight <- sapply((1:(kni-1))/kni,g)
             psi.kn <- sum(weight)
             
-            barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+            #barX <- rollapplyr(diffX,width=kni-1,FUN="%*%",weight)
+            barX <- filter(diffX,rev(weight),method="c",
+                           sides=1)[(kni-1):length(diffX)]
             num.barX <- length(barX)
             
             # thrsholding
@@ -1901,7 +2151,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
             }
             
             tmp <- barX[-num.barX]
-            cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+            #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kni-1)+1,FUN="sum",partial=TRUE)/(psi.kn)^2
+            cmat[i,j] <- tmp%*%rollsum(c(double(kni-1),tmp,double(kni-1)),
+                                       k=2*(kni-1)+1)/(psi.kn)^2
             
           }
         }
@@ -1943,7 +2195,9 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
         
         for(i in 1:n.series){
           
-          ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          #ser.barX[[i]] <- rollapplyr(ser.diffX[[i]],width=kn-1,FUN="%*%",weight)
+          ser.barX[[i]] <- filter(ser.diffX[[i]],rev(weight),method="c",
+                                  sides=1)[(kn-1):length(ser.diffX[[i]])]
           ser.num.barX[i] <- length(ser.barX[[i]])
           
           K <- ceiling(ser.num.barX[i]^(3/4))
@@ -1962,7 +2216,7 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
           #rho <- 2*log(ser.num.barX[ii])*
           #  (median(abs(ser.barX[[ii]])/sqrt(v.hat))/0.6745)^2*v.hat
           rho <- 2*log(ser.num.barX[i])^(1+eps)*v.hat
-          ser.barX[[ii]][ser.barX[[i]]^2>rho] <- 0
+          ser.barX[[i]][ser.barX[[i]]^2>rho] <- 0
         }
       }else if(is.numeric(threshold)){
         threshold <- matrix(threshold,1,n.series)
@@ -1987,21 +2241,32 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
       for(i in 1:n.series){
         for(j in i:n.series){ 
           if(i!=j){
-            start <- kn+1
-            end <- 1
-            for(k in 1:ser.num.barX[i]){
-              while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
-                start <- start + 1
-              }
-              while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
-                end <- end + 1
-              }
-              cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
-            }
+            #start <- kn+1
+            #end <- 1
+            #for(k in 1:ser.num.barX[i]){
+            #  while(!(ser.times[[i]][k]<ser.times[[j]][start])&&((start-kn)<ser.num.barX[j])){
+            #    start <- start + 1
+            #  }
+            #  while((ser.times[[i]][k+kn]>ser.times[[j]][end+1])&&(end<ser.num.barX[j])){
+            #    end <- end + 1
+            #  }
+            #  cmat[i,j] <- cmat[i,j] + ser.barX[[i]][k]*sum(ser.barX[[j]][(start-kn):end])
+            #}
+            cmat[i,j] <- .C("pHayashiYoshida",
+                            as.integer(kn),
+                            as.integer(ser.num.barX[i]),
+                            as.integer(ser.num.barX[j]),
+                            as.double(ser.times[[i]]),
+                            as.double(ser.times[[j]]),
+                            as.double(ser.barX[[i]]),
+                            as.double(ser.barX[[j]]),
+                            value=double(1))$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
-            cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE) 
+            #cmat[i,j] <- tmp%*%rollapply(tmp,width=2*(kn-1)+1,FUN="sum",partial=TRUE) 
+            cmat[i,j] <- tmp%*%rollsum(c(double(kn-1),tmp,double(kn-1)),
+                                       k=2*(kn-1)+1)
           }
         }
       }
@@ -2042,49 +2307,75 @@ SRC <- function(data,frequency=300,avg=TRUE,utime){
   
   grid <- seq(Init,Terminal,by=frequency)
   n.sparse <- length(grid)
-  I <- matrix(1,d.size,n.sparse)
+  #I <- matrix(1,d.size,n.sparse)
+  
+  K <- floor(Terminal-grid[n.sparse]) + 1
+  
+  sdiff1 <- array(0,dim=c(d.size,n.sparse-1,K))
+  sdiff2 <- array(0,dim=c(d.size,n.sparse-2,frequency-K))
+  
+  for(d in 1:d.size){
+    
+    subsample <- matrix(.C("ctsubsampling",as.double(ser.X[[d]]),
+                           as.double(ser.times[[d]]),
+                           as.integer(frequency),as.integer(n.sparse),
+                           as.integer(ser.numX[d]),as.double(grid),
+                           result=double(frequency*n.sparse))$result,
+                        n.sparse,frequency)
+    
+    sdiff1[d,,] <- diff(subsample[,1:K])
+    sdiff2[d,,] <- diff(subsample[-n.sparse,-(1:K)])
+    
+  }
   
   if(avg){
     
-    cmat <- matrix(0,d.size,d.size)
+    #cmat <- matrix(0,d.size,d.size)
     
-    for(t in 1:frequency){
-      sdiff <- matrix(0,d.size,n.sparse-1)
-      for(d in 1:d.size){
-        for(i in 1:n.sparse){
-          while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
-            I[d,i] <- I[d,i]+1
-          }
-        }
-        sdiff[d,] <- diff(ser.X[[d]][I[d,]])
-      }
-      cmat <- cmat + sdiff%*%t(sdiff)
+    #for(t in 1:frequency){
+    #  sdiff <- matrix(0,d.size,n.sparse-1)
+    #  for(d in 1:d.size){
+    #    for(i in 1:n.sparse){
+    #      while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
+    #        I[d,i] <- I[d,i]+1
+    #      }
+    #    }
+    #    sdiff[d,] <- diff(ser.X[[d]][I[d,]])
+    #  }
+    #  cmat <- cmat + sdiff%*%t(sdiff)
       
-      grid <- grid+rep(1,n.sparse)
-      if(grid[n.sparse]>Terminal){
-        grid <- grid[-n.sparse]
+    #  grid <- grid+rep(1,n.sparse)
+    #  if(grid[n.sparse]>Terminal){
+    #    grid <- grid[-n.sparse]
         #I <- I[,-n.sparse]
-        n.sparse <- n.sparse-1
-        I <- matrix(I[,-n.sparse],d.size,n.sparse)
-      }
-    }
+    #    n.sparse <- n.sparse-1
+    #    I <- matrix(I[,-n.sparse],d.size,n.sparse)
+    #  }
+    #}
     
-    cmat <- cmat/frequency
+    #cmat <- cmat/frequency
+    cmat <- matrix(rowMeans(cbind(apply(sdiff1,3,FUN=function(x) x %*% t(x)),
+                                  apply(sdiff2,3,FUN=function(x) x %*% t(x)))),
+                   d.size,d.size)
     
   }else{
     
-    sdiff <- matrix(0,d.size,n.sparse-1)
-    for(d in 1:d.size){
-      for(i in 1:n.sparse){
-        while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
-          I[d,i] <- I[d,i]+1
-        }
-      }
-      sdiff[d,] <- diff(ser.X[[d]][I[d,]])
+    #sdiff <- matrix(0,d.size,n.sparse-1)
+    #for(d in 1:d.size){
+    #  for(i in 1:n.sparse){
+    #    while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
+    #      I[d,i] <- I[d,i]+1
+    #    }
+    #  }
+    #  sdiff[d,] <- diff(ser.X[[d]][I[d,]])
+    #}
+    
+    #cmat <- sdiff%*%t(sdiff)
+    if(K>0){
+      cmat <- sdiff1[,,1]%*%t(sdiff1[,,1])
+    }else{
+      cmat <- sdiff2[,,1]%*%t(sdiff2[,,1])
     }
-    
-    cmat <- sdiff%*%t(sdiff)
-    
   }
   
   return(cmat)
@@ -2137,49 +2428,75 @@ SBPC <- function(data,frequency=300,avg=TRUE,utime){
   
   grid <- seq(Init,Terminal,by=frequency)
   n.sparse <- length(grid)
-  I <- matrix(1,d.size,n.sparse)
+  #I <- matrix(1,d.size,n.sparse)
+  
+  K <- floor(Terminal-grid[n.sparse]) + 1
+  
+  sdata1 <- array(0,dim=c(d.size,n.sparse,K))
+  sdata2 <- array(0,dim=c(d.size,n.sparse-1,frequency-K))
+  
+  for(d in 1:d.size){
+    
+    subsample <- matrix(.C("ctsubsampling",as.double(ser.X[[d]]),
+                           as.double(ser.times[[d]]),
+                           as.integer(frequency),as.integer(n.sparse),
+                           as.integer(ser.numX[d]),as.double(grid),
+                           result=double(frequency*n.sparse))$result,
+                        n.sparse,frequency)
+    
+    sdata1[d,,] <- subsample[,1:K]
+    sdata2[d,,] <- subsample[-n.sparse,-(1:K)]
+    
+  }
   
   if(avg){
     
     cmat <- matrix(0,d.size,d.size)
     
-    for(t in 1:frequency){
-      sdata <- matrix(0,d.size,n.sparse)
-      for(d in 1:d.size){
-        for(i in 1:n.sparse){
-          while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
-            I[d,i] <- I[d,i]+1
-          }
-        }
-        sdata[d,] <- ser.X[[d]][I[d,]]
-      }
-      cmat <- cmat + BPC(sdata)
+    #for(t in 1:frequency){
+    #  sdata <- matrix(0,d.size,n.sparse)
+    #  for(d in 1:d.size){
+    #    for(i in 1:n.sparse){
+    #      while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
+    #        I[d,i] <- I[d,i]+1
+    #      }
+    #    }
+    #    sdata[d,] <- ser.X[[d]][I[d,]]
+    #  }
+    #  cmat <- cmat + BPC(sdata)
       
-      grid <- grid+rep(1,n.sparse)
-      if(grid[n.sparse]>Terminal){
-        grid <- grid[-n.sparse]
+    #  grid <- grid+rep(1,n.sparse)
+    #  if(grid[n.sparse]>Terminal){
+    #    grid <- grid[-n.sparse]
         #I <- I[,-n.sparse]
-        n.sparse <- n.sparse-1
-        I <- matrix(I[,-n.sparse],d.size,n.sparse)
-      }
-    }
+    #    n.sparse <- n.sparse-1
+    #    I <- matrix(I[,-n.sparse],d.size,n.sparse)
+    #  }
+    #}
     
-    cmat <- cmat/frequency
+    #cmat <- cmat/frequency
+    cmat <- matrix(rowMeans(cbind(apply(sdata1,3,FUN=BPC),
+                                  apply(sdata2,3,FUN=BPC))),
+                   d.size,d.size)
     
   }else{
     
-    sdata <- matrix(0,d.size,n.sparse)
-    for(d in 1:d.size){
-      for(i in 1:n.sparse){
-        while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
-          I[d,i] <- I[d,i]+1
-        }
-      }
-      sdata[d,] <- ser.X[[d]][I[d,]]
+    #sdata <- matrix(0,d.size,n.sparse)
+    #for(d in 1:d.size){
+    #  for(i in 1:n.sparse){
+    #    while((ser.times[[d]][I[d,i]+1]<=grid[i])&&(I[d,i]<ser.numX[d])){
+    #      I[d,i] <- I[d,i]+1
+    #    }
+    #  }
+    #  sdata[d,] <- ser.X[[d]][I[d,]]
+    #}
+    
+    #cmat <- BPC(sdata)
+    if(K>0){
+      cmat <- BPC(sdata1[,,1])
+    }else{
+      cmat <- BPC(sdata2[,,1])
     }
-    
-    cmat <- BPC(sdata)
-    
   }
   
   return(cmat)
@@ -2198,7 +2515,7 @@ setGeneric("cce",
                     kernel,H,c.RK,eta=3/5,m=2,ftregion=0,
                     opt.method="BFGS",vol.init=NA,covol.init=NA,
                     nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
-                    frequency=300,avg=TRUE,threshold,utime)
+                    frequency=300,avg=TRUE,threshold,utime,psd=FALSE)
              standardGeneric("cce"))
 
 setMethod("cce",signature(x="yuima"),
@@ -2208,7 +2525,7 @@ setMethod("cce",signature(x="yuima"),
                    kernel,H,c.RK,eta=3/5,m=2,ftregion=0,
                    opt.method="BFGS",vol.init=NA,covol.init=NA,
                    nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
-                   frequency=300,avg=TRUE,threshold,utime)
+                   frequency=300,avg=TRUE,threshold,utime,psd=FALSE)
             cce(x@data,method=method,theta=theta,kn=kn,g=g,refreshing=refreshing,
                 cwise=cwise,delta=delta,adj=adj,K=K,c.two=c.two,J=J,
                 c.multi=c.multi,kernel=kernel,H=H,c.RK=c.RK,eta=eta,m=m,
@@ -2216,7 +2533,7 @@ setMethod("cce",signature(x="yuima"),
                 covol.init=covol.init,nvar.init=nvar.init,
                 ncov.init=ncov.init,...,mn=mn,alpha=alpha,
                 frequency=frequency,avg=avg,threshold=threshold,
-                utime=utime))
+                utime=utime,psd=psd))
 
 setMethod("cce",signature(x="yuima.data"),
           function(x,method="HY",theta,kn,g=function(x)min(x,1-x),
@@ -2225,7 +2542,7 @@ setMethod("cce",signature(x="yuima.data"),
                    kernel,H,c.RK,eta=3/5,m=2,ftregion=0,
                    opt.method="BFGS",vol.init=NA,covol.init=NA,
                    nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
-                   frequency=300,avg=TRUE,threshold,utime){
+                   frequency=300,avg=TRUE,threshold,utime,psd=FALSE){
           
 data <- get.zoo.data(x)
 d.size <- length(data)
@@ -2243,6 +2560,8 @@ for(i in 1:d.size){
   
 }
 
+cmat <- NULL
+
 switch(method,
        "HY"="<-"(cmat,HY(data)),
        "PHY"="<-"(cmat,PHY(data,theta,kn,g,refreshing,cwise)),
@@ -2258,6 +2577,14 @@ switch(method,
                              refreshing,cwise)),
        "SRC"="<-"(cmat,SRC(data,frequency,avg,utime)),
        "SBPC"="<-"(cmat,SBPC(data,frequency,avg,utime)))
+
+if(is.null(cmat))
+  stop("method is not available")
+
+if(psd){
+  tmp <- svd(cmat%*%cmat)
+  cmat <- tmp$u%*%diag(sqrt(tmp$d))%*%t(tmp$v)
+}
 
 if(d.size>1){
   if(all(diag(cmat)>0)){

@@ -11,3 +11,5 @@
 2013/04/14: modify qmle.R
 2013/04/14: modify adaBayes.R
 2013/04/14: modify bns.test.Rd, mpv.Rd
+2013/10/28: add cce_functions.c
+            modify cce.R, llag.R, sim.euler.R, bns.test.Rd, cce.Rd, llag.Rd, mpv.Rd, noisy.sampling.Rd

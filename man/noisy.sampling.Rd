@@ -1,6 +1,8 @@
 \name{noisy.sampling}
 \alias{noisy.sampling}
 \alias{noisy.sampling,list-method}
+\alias{noisy.sampling,yuima-method}
+\alias{noisy.sampling,yuima.data-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~

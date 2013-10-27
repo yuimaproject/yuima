@@ -1,6 +1,8 @@
 \name{mpv}
 \alias{mpv}
 \alias{mpv,list-method}
+\alias{mpv,yuima-method}
+\alias{mpv,yuima.data-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~

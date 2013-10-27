@@ -16,7 +16,7 @@ cce(x, method="HY", theta, kn, g=function(x)min(x,1-x), refreshing = TRUE,
     cwise = TRUE, delta = 0, adj = TRUE, K, c.two, J = 1, c.multi, kernel, H,
     c.RK, eta = 3/5, m = 2, ftregion = 0, opt.method = "BFGS", vol.init = NA,
     covol.init = NA, nvar.init = NA, ncov.init = NA, ..., mn, alpha = 0.4,
-    frequency = 300, avg = TRUE, threshold, utime)
+    frequency = 300, avg = TRUE, threshold, utime, psd = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -94,7 +94,7 @@ a positive integer indicating the number of the end points to be jittered.
 }
   \item{ftregion}{
 %%     ~~Describe \code{ftregion} here~~
-a non-negative number indicating the length of the flat-top region. \code{ftregion=0} (the default) means that a non-flat-top realized kernel studied in Barndorff-Nielsen et al.(2011) is used. \code{ftregion=1/H} means that a flat-top realized kernel studied in Barndorff-Nielsen et al. (2008) is used. See Varneskov (2011) for other values. 
+a non-negative number indicating the length of the flat-top region. \code{ftregion=0} (the default) means that a non-flat-top realized kernel studied in Barndorff-Nielsen et al. (2011) is used. \code{ftregion=1/H} means that a flat-top realized kernel studied in Barndorff-Nielsen et al. (2008) is used. See Varneskov (2011) for other values. 
 }
   \item{opt.method}{
 %%     ~~Describe \code{opt.method} here~~
@@ -138,11 +138,14 @@ logical. If \code{TRUE}, the averaged subsampling estimator is calculated. Other
 }
   \item{threshold}{
 %%     ~~Describe \code{threshold} here~~
-a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in \code{threshold} are recycled if there are two few elements in \code{threshold}. The default value is TBA.
+a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in \code{threshold} are recycled if there are two few elements in \code{threshold}. The default value is determined following Koike (2013a) (for the method \code{"THY"}) and Koike (2013b) (for the method \code{"PTHY"}).
 }
   \item{utime}{
 %%     ~~Describe \code{utime} here~~
 a positive number indicating what seconds the unit time means. The default value is 23400 (this means 6.5 hours) if the time indices of the (first component) of \code{x} is numeric, otherwise 1.
+}
+\item{psd}{
+logical. If \code{TRUE}, the estimated covariance matrix \code{C} is converted to \code{(C\%*\%C)^(1/2)} for ensuring the positive semi-definiteness.
 }
 }
 \details{
@@ -152,18 +155,18 @@ It extracts the \code{data} slot when applied to a an object of \code{\link{yuim
 
 Typical usages are
 \preformatted{
-cce(x)
-cce(x,method="PHY",theta,kn,g,refreshing=TRUE,cwise=TRUE)
-cce(x,method="MRC",theta,kn,g,delta=0,avg=TRUE)
-cce(x,method="TSCV",K,c.two,J=1,adj=TRUE,utime)
-cce(x,method="GME",c.multi,utime)
-cce(x,method="RK",kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime)
-cce(x,method="QMLE",opt.method="BFGS",vol.init=NULL,covol.init=NULL,nvar.init=NULL,ncov.init=NULL,\dots,utime)
-cce(x,method="SIML",mn,alpha=0.4)
-cce(x,method="THY",threshold)
-cce(x,method="PTHY",theta,kn,g,threshold,refreshing=TRUE,cwise=TRUE)
-cce(x,method="SRC",frequency=300,avg=TRUE,utime)
-cce(x,method="SBPC",frequency=300,avg=TRUE,utime)
+cce(x,psd=FALSE)
+cce(x,method="PHY",theta,kn,g,refreshing=TRUE,cwise=TRUE,psd=FALSE)
+cce(x,method="MRC",theta,kn,g,delta=0,avg=TRUE,psd=FALSE)
+cce(x,method="TSCV",K,c.two,J=1,adj=TRUE,utime,psd=FALSE)
+cce(x,method="GME",c.multi,utime,psd=FALSE)
+cce(x,method="RK",kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime,psd=FALSE)
+cce(x,method="QMLE",opt.method="BFGS",vol.init=NULL,covol.init=NULL,nvar.init=NULL,ncov.init=NULL,\dots,utime,psd=FALSE)
+cce(x,method="SIML",mn,alpha=0.4,psd=FALSE)
+cce(x,method="THY",threshold,psd=FALSE)
+cce(x,method="PTHY",theta,kn,g,threshold,refreshing=TRUE,cwise=TRUE,psd=FALSE)
+cce(x,method="SRC",frequency=300,avg=TRUE,utime,psd=FALSE)
+cce(x,method="SBPC",frequency=300,avg=TRUE,utime,psd=FALSE)
 }
 
 The default method is method \code{"HY"}, which is an implementation of the Hayashi-Yoshida estimator proposed in Hayashi and Yoshida (2005).
@@ -260,6 +263,14 @@ Hayashi, T. and Yoshida, N. (2005)
 Hayashi, T. and Yoshida, N. (2008)
   Asymptotic normality of a covariance estimator for nonsynchronously observed diffusion processes, 
   \emph{Annals of the Institute of Statistical Mathematics}, \bold{60}, no. 2, 367--406.
+  
+Koike, Y. (2013a)
+  An estimator for the cumulative co-volatility of asynchronously observed semimartingales with jumps,
+  To apper in \emph{Scandinavian Journal of Statistics}.
+  
+Koike, Y. (2013b)
+  Estimation of integrated covariances in the simultaneous presence of nonsynchronicity, microstructure noise and jumps,
+  arXiv:1302.5202.
 
 Kunitomo, N. and Sato, S. (2008)
   Separating information maximum likelihood estimation of realized volatility and covariance with micro-market noise,

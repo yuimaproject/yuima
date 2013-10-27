@@ -140,7 +140,8 @@ euler<-function(xinit,yuima,dW,env){
         return(eval(sdeModel@measure$df$expr))
       }
       #lambda <- integrate(sdeModel@measure$df$func, 0, Inf)$value * eta0
-      lambda <- integrate(tmp.expr, 0, Inf)$value * eta0
+      #lambda <- integrate(tmp.expr, 0, Inf)$value * eta0 ##bug:2013/10/28
+      lambda <- integrate(tmp.expr, -Inf, Inf)$value * eta0
       
       ##:: lambda = nu() (p6)
       N_sharp <- rpois(1,Terminal*eta0)	##:: Po(Ne)

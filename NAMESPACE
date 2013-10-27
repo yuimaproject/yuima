@@ -119,4 +119,5 @@ S3method(print, mmfrac)
 S3method(toLatex, yuima)
 S3method(toLatex, yuima.model)
 
+useDynLib(yuima)
 

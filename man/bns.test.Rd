@@ -1,5 +1,7 @@
 \name{bns.test}
 \alias{bns.test}
+\alias{bns.test,yuima-method}
+\alias{bns.test,yuima.data-method}
 \alias{bns.test,list-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
