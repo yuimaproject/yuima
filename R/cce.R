@@ -388,9 +388,13 @@ RV.sparse <- function(zdata,frequency=1200,utime){
   
   K <- floor(end-grid[n.sparse]) + 1
   
-  zmat <- matrix(.C("ctsubsampling",as.double(znum),as.double(ztime),
-                    as.integer(frequency),as.integer(n.sparse),
-                    as.integer(n.size),as.double(grid),
+  zmat <- matrix(.C("ctsubsampling",
+                    as.double(znum),
+                    as.double(ztime),
+                    as.integer(frequency),
+                    as.integer(n.sparse),
+                    as.integer(n.size),
+                    as.double(grid),
                     result=double(frequency*n.sparse))$result,
                  n.sparse,frequency)
   
@@ -683,7 +687,9 @@ MRC <- function(data,theta,kn,g,delta=0,adj=TRUE){
   #Num <- ncol(diffX)
   Num <- nrow(diffX)
   
-  if(missing(kn)) kn <- max(floor(mean(theta)*Num^(1/2+delta)),2)
+  if(missing(kn)) kn <- floor(mean(theta)*Num^(1/2+delta))
+  
+  kn <- min(max(kn,2),Num+1)
   
   weight <- sapply((1:(kn-1))/kn,g)
   psi2.kn <- sum(weight^2)
@@ -1192,12 +1198,20 @@ GME <- function(data,c.multi,utime){
         
         alpha <- 12*(1:M)^2/(M^3-M)-6*(1:M)/(M^2-1)-6*(1:M)/(M^3-M)
         
-        tmp <- double(M)
+        #tmp <- double(M)
         
-        for(m in 1:M){
-          tmp[m] <- sum((sdata$xg[m:N]-sdata$xl[1:(N-m+1)])*
-            (sdata$ygamma[m:N]-sdata$ylambda[1:(N-m+1)]))
-        }
+        #for(m in 1:M){
+        #  tmp[m] <- (sdata$xg[m:N]-sdata$xl[1:(N-m+1)])%*%
+        #    (sdata$ygamma[m:N]-sdata$ylambda[1:(N-m+1)])
+        #}
+        tmp <- .C("msrc",
+                  as.integer(M),
+                  as.integer(N),
+                  as.double(sdata$xg),
+                  as.double(sdata$xl),
+                  as.double(sdata$ygamma),
+                  as.double(sdata$ylambda),
+                  result=double(M))$result
         
         cmat[i,j] <- (alpha/(1:M))%*%tmp
         
@@ -1213,12 +1227,20 @@ GME <- function(data,c.multi,utime){
         
         alpha <- 12*(1:M)^2/(M^3-M)-6*(1:M)/(M^2-1)-6*(1:M)/(M^3-M)
         
-        tmp <- double(M)
+        #tmp <- double(M)
         
-        for(m in 1:M){
+        #for(m in 1:M){
           #tmp[m] <- sum((X[m:N]-X[1:(N-m+1)])^2)
-          tmp[m] <- sum(diff(X,lag=m)^2)
-        }
+        #  tmp[m] <- sum(diff(X,lag=m)^2)
+        #}
+        tmp <- .C("msrc",
+                  as.integer(M),
+                  as.integer(N),
+                  as.double(X),
+                  as.double(X),
+                  as.double(X),
+                  as.double(X),
+                  result=double(M))$result
         
         cmat[i,j] <- (alpha/(1:M))%*%tmp
         
@@ -1287,10 +1309,12 @@ RK <- function(data,kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime){
   h.size <- max(which(Kh!=0))
   
   #diffX <- apply(X,1,FUN="diff")
-  diffX <- diff(X)
-  Gamma <- array(0,dim=c(h.size+1,d,d))
-  for(h in 1:(h.size+1))
-    Gamma[h,,] <- t(diffX)[,h:n]%*%diffX[1:(n-h+1),]
+  #diffX <- diff(X)
+  #Gamma <- array(0,dim=c(h.size+1,d,d))
+  #for(h in 1:(h.size+1))
+  #  Gamma[h,,] <- t(diffX)[,h:n]%*%diffX[1:(n-h+1),]
+  Gamma <- acf(diff(X),lag.max=h.size,type="covariance",
+               plot=FALSE,demean=FALSE)$acf*n
 
   cmat <- matrix(0,d,d)
   for (i in 1:d){
@@ -1316,8 +1340,10 @@ ql.xiu <- function(zdata){
   
   z <- double(n)
   for(k in 1:n){
-    z[k] <- sqrt(2/(n+1/2))*cos(pi*((2*k-1)/(2*n+1))*(1:n-1/2))%*%diffX
+    z[k] <- cos(pi*((2*k-1)/(2*n+1))*(1:n-1/2))%*%diffX
   }
+  z <- sqrt(2/(n+1/2))*z
+  #z <- sqrt(2/(n+1/2))*cos(pi*((2*(1:n)-1)/(2*n+1))%o%(1:n-1/2))%*%diffX
   z2 <- inv.difft*z^2
   
   n.ql <- function(v){
@@ -1450,12 +1476,15 @@ SIML <- function(data,mn,alpha=0.4){
   #  pj <- sqrt(2/(n.size+1/2))*cos((2*pi/(2*n.size+1))*(j-1/2)*(1:n.size-1/2))
   #  Z[j,] <- matrix(pj,1,n.size)%*%diff.Y
   #}
-  Z <- matrix(0,mn,d.size)
-  for(j in 1:mn){
-    pj <- sqrt(2/(n.size+1/2))*cos((2*pi/(2*n.size+1))*(j-1/2)*(1:n.size-1/2))
-    Z[j,] <- matrix(pj,1,n.size)%*%diff.Y
-  }
-  Z <- sqrt(n.size)*Z
+  #Z <- matrix(0,mn,d.size)
+  #for(j in 1:mn){
+  #  pj <- sqrt(2/(n.size+1/2))*cos((2*pi/(2*n.size+1))*(j-1/2)*(1:n.size-1/2))
+  #  Z[j,] <- matrix(pj,1,n.size)%*%diff.Y
+  #}
+  #Z <- sqrt(n.size)*Z
+  Z <- sqrt(n.size)*
+    sqrt(2/(n.size+1/2))*cos((2*pi/(2*n.size+1))*(1:mn-1/2)%o%(1:n.size-1/2))%*%
+    diff.Y
   
   cmat <- matrix(0,d.size,d.size)
   for(k in 1:mn){
@@ -2543,7 +2572,7 @@ setMethod("cce",signature(x="yuima.data"),
                    opt.method="BFGS",vol.init=NA,covol.init=NA,
                    nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
                    frequency=300,avg=TRUE,threshold,utime,psd=FALSE){
-          
+            
 data <- get.zoo.data(x)
 d.size <- length(data)
 

@@ -1,13 +1,14 @@
 #include <Rinternals.h>
 
-void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse, int *n, double *grid, double *result)
+void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse,
+                   int *n, double *grid, double *result)
 {
   int t, i, k;
-   
+  
   for(t = 0; t < *frequency; t++){
+    k = 1;
     for(i = 0; i < *nsparse; i++){
-        k = 1;
-      while((ztime[k]<=grid[i])&&(k<*n)){
+      while((ztime[k]<=grid[i])&&(k < *n)){
         k++;
       }
       result[(*nsparse)*t+i] += znum[k-1];
@@ -251,6 +252,20 @@ void pHayashiYoshida(int *kn, int *xlength, int *ylength,
       *value += barX[k] * barY[l];
     }
   }
+}
+
+
+void msrc(int *M, int *N, double *xg, double *xl, double *ygamma, double *ylambda,
+          double *result)
+{
+  int m, i;
+  
+  for(m = 0; m < *M; m++) {
+    for(i = m; i < *N; i++){
+      result[m] += (xg[i] - xl[i-m]) * (ygamma[i] - ylambda[i-m]);
+    }
+  }
+  
 }
 
 
