@@ -58,6 +58,7 @@ export(setModel) ## builds sde model
 export(setData)
 export(setSampling)
 export(setCharacteristic)
+export(setCarma)
 
 export(dim)
 export(length)

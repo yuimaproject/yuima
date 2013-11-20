@@ -22,11 +22,11 @@ setMethod("poisson.random.sampling", "yuima.data",
               Elength <- T*n*rate[i]
 
               ## make random numbers following exponential distribution
-              Time <- diffinv(rexp(Elength,r=deltat*n*rate[i]))
+              Time <- diffinv(rexp(Elength,rate=deltat*n*rate[i]))
               # make up a deficit
               while(Time[length(Time)]< Num){
                 # adding random numbers (by 10% of Elength)
-                Time2 <- diffinv(rexp(trunc(Elength/10+1),r=deltat*n*rate[i]))+Time[length(Time)]
+                Time2 <- diffinv(rexp(trunc(Elength/10+1),rate=deltat*n*rate[i]))+Time[length(Time)]
                 # restrain duplication
                 Time <- append(Time,Time2[-1])
               }

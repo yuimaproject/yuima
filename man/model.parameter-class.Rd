@@ -16,7 +16,9 @@
 		the jump coefficient.}
     \item{\code{measure}:}{A vector of names of parameters belonging to 
 		the Levy measure.}
-    \item{\code{all}:}{A vector of names of all the parameters found in the 
+    \item{\code{xinit}:}{A vector of names of parameters belonging to
+		the initial condition.}
+    \item{\code{all}:}{A vector of names of all the parameters found in the
 	components of the model.}
     \item{\code{common}:}{A vector of names of the parameters in common among
 	 drift, diffusion, jump and measure term.}

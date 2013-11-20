@@ -5,13 +5,15 @@ setMethod("initialize", "model.parameter",
                    diffusion,
                    drift,
                    jump,
-                   measure){
+                   measure,
+                   xinit){
             .Object@all <- all
             .Object@common <- common
             .Object@diffusion <- diffusion
             .Object@drift <- drift
             .Object@jump <- jump
             .Object@measure <- measure
+            .Object@xinit <- xinit
             return(.Object)
           })
 
@@ -57,7 +59,7 @@ setMethod("initialize", "yuima.model",
 ## set yuima model from SDE
 setModel <- function(drift=NULL,
                      diffusion=NULL,
-					 hurst=0.5,
+                     hurst=0.5,
                      jump.coeff=character(),
                      measure=list(),
                      measure.type=character(),
@@ -88,152 +90,154 @@ setModel <- function(drift=NULL,
     if( !length(jump.coeff) || !length(measure) ){
       yuima.warn("measure type isn't matched with jump term.")
       return(NULL)
-    }else if(length(jump.coeff)!=1){
-      yuima.warn("multi dimentional jump term is not supported yet.")
-      return(NULL)
-    }
-    
-    if(measure.type=="CP"){ ##::CP
-      if(length(measure)!=2){
-        yuima.warn(paste("length of measure must be two on type", measure.type, "."))
-        return(NULL)
-      }
+   # }else 
+      #       if(length(jump.coeff)!=1){
+      #        yuima.warn("multi dimentional jump term is not supported yet.")
+      # 
+      #         return(NULL)
+      #     }
       
-      if(!is.list(measure)){          
-        measure <- list(intensity=measure[1], df=measure[2])
-      }else{
-        if(length(measure[[1]])!=1 || length(measure[[2]])!=1){
-          yuima.warn("multi dimentional jump term is not supported yet.")
-          return(NULL)
-        }
-        ##::naming measure list ########
-        tmpc <- names(measure)
-        if(is.null(tmpc)){
-          names(measure) <- c("intensity", "df")
-        }else{
-          whichint <- match("intensity", tmpc)            
-          whichdf <- match("df", tmpc)
-          if(!is.na(whichint)){
-            if(names(measure)[-whichint]=="" || names(measure)[-whichint]=="df"){
-              names(measure)[-whichint] <- "df"
-            }else{
-              yuima.warn("names of measure are incorrect.")
-              return(NULL)
-            }
-          }else if(!is.na(whichdf)){
-            if(names(measure)[-whichdf]=="" || names(measure)[-whichdf]=="intensity"){
-              names(measure)[-whichdf] <- "intensity"
-            }else{
-              yuima.warn("names of measure are incorrect.")
-              return(NULL)
-            }
-          }else{
-            yuima.warn("names of measure are incorrect.")
-            return(NULL)
-          }
-        }
-        ##::end naming measure list ########
-      }
-      
-      ##::check df name ####################
-      tmp <- regexpr("\\(", measure$df)[1]
-      measurefunc <- substring(measure$df, 1, tmp-1)
-      if(!is.na(match(measurefunc, codelist))){
-        yuima.warn(paste("distribution function", measurefunc, "should be defined as type code."))
-        return(NULL)
-      }else if(is.na(match(measurefunc, CPlist))){
-        warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type CP.\n"))
-      }
-      MEASURE$df$func <- eval(parse(text=measurefunc))
-      MEASURE$df$expr <- parse(text=measure$df)
-      MEASURE$intensity <- parse(text=measure$intensity)
-      
-      measure.par <- unique( c( all.vars(MEASURE$intensity), all.vars(MEASURE$df$expr) ) ) 
-      ##measure.par$intensity <- unique(all.vars(MEASURE$intensity))
-      ##::end check df name ####################
-      ##::end CP
-    }else if(measure.type=="code"){ ##::code
-      if(length(measure)!=1){
-        yuima.warn(paste("length of measure must be one on type", measure.type, "."))
-        return(NULL)
-      }
-      
-      if(!is.list(measure)){
-        measure <- list(df=measure)
-      }else{
-        if(length(measure[[1]])!=1){
-          yuima.warn("multi dimentional jump term is not supported yet.")
-          return(NULL)
-        }
-        ##::naming measure list #############
-        if(is.null(names(measure)) || names(measure)=="df"){
-          names(measure) <- "df"
-        }else{
-          yuima.warn("name of measure is incorrect.")
-          return(NULL)
-        }
-        ##::end naming measure list #############
-      }
-      
-      ##::check df name ####################
-      tmp <- regexpr("\\(", measure$df)[1]
-      measurefunc <- substring(measure$df, 1, tmp-1)
-      if(!is.na(match(measurefunc, CPlist))){
-        yuima.warn(paste("\ndistribution function", measurefunc, "should be defined as type CP."))
-        return(NULL)
-      }else if(is.na(match(measurefunc, codelist))){
-        warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type code.\n"))
-      }
-      ##MEASURE$df$func <- eval(parse(text=measurefunc))
-      MEASURE$df$expr <- parse(text=measure$df)
-      
-      measure.par <- unique(all.vars(MEASURE$df$expr))
-      ##::end check df name ####################
-      ##::end code
-    }else if(measure.type=="density"){ ##::density
-      if(length(measure)!=1){
-        yuima.warn(paste("length of measure must be one on type", measure.type, "."))
-        return(NULL)
-      }
-      
-      if(!is.list(measure)){
-        measure <- list(df=measure)
-      }else{
-        if(length(measure[[1]])!=1){
-          yuima.warn("multi dimentional jump term is not supported yet.")
+    }else if(measure.type=="CP"){ ##::CP
+        if(length(measure)!=2){
+          yuima.warn(paste("length of measure must be two on type", measure.type, "."))
           return(NULL)
         }
         
-        ##::naming measure list #############
-        if(is.null(names(measure))){
-          names(measure) <- "df"
-        }else if(names(measure)!="density" && names(measure)!="df"){
-          yuima.warn("name of measure is incorrect.")
+        if(!is.list(measure)){          
+          measure <- list(intensity=measure[1], df=measure[2])
+        }else{
+          if(length(measure[[1]])!=1 || length(measure[[2]])!=1){
+            yuima.warn("multi dimentional jump term is not supported yet.")
+            return(NULL)
+          }
+          ##::naming measure list ########
+          tmpc <- names(measure)
+          if(is.null(tmpc)){
+            names(measure) <- c("intensity", "df")
+          }else{
+            whichint <- match("intensity", tmpc)            
+            whichdf <- match("df", tmpc)
+            if(!is.na(whichint)){
+              if(names(measure)[-whichint]=="" || names(measure)[-whichint]=="df"){
+                names(measure)[-whichint] <- "df"
+              }else{
+                yuima.warn("names of measure are incorrect.")
+                return(NULL)
+              }
+            }else if(!is.na(whichdf)){
+              if(names(measure)[-whichdf]=="" || names(measure)[-whichdf]=="intensity"){
+                names(measure)[-whichdf] <- "intensity"
+              }else{
+                yuima.warn("names of measure are incorrect.")
+                return(NULL)
+              }
+            }else{
+              yuima.warn("names of measure are incorrect.")
+              return(NULL)
+            }
+          }
+          ##::end naming measure list ########
+        }
+        
+        ##::check df name ####################
+        tmp <- regexpr("\\(", measure$df)[1]
+        measurefunc <- substring(measure$df, 1, tmp-1)
+        if(!is.na(match(measurefunc, codelist))){
+          yuima.warn(paste("distribution function", measurefunc, "should be defined as type code."))
+          return(NULL)
+        }else if(is.na(match(measurefunc, CPlist))){
+          warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type CP.\n"))
+        }
+        MEASURE$df$func <- eval(parse(text=measurefunc))
+        MEASURE$df$expr <- parse(text=measure$df)
+        MEASURE$intensity <- parse(text=measure$intensity)
+        
+        measure.par <- unique( c( all.vars(MEASURE$intensity), all.vars(MEASURE$df$expr) ) ) 
+        ##measure.par$intensity <- unique(all.vars(MEASURE$intensity))
+        ##::end check df name ####################
+        ##::end CP
+      }else if(measure.type=="code"){ ##::code
+        if(length(measure)!=1){
+          yuima.warn(paste("length of measure must be one on type", measure.type, "."))
           return(NULL)
         }
-        ##::end naming measure list #############
-      }
-      
-      ##::check df name ####################
-      tmp <- regexpr("\\(", measure[[names(measure)]])[1]
-      measurefunc <- substring(measure[[names(measure)]], 1, tmp-1)
-      if(!is.na(match(measurefunc, CPlist))){
-        yuima.warn(paste("distribution function", measurefunc, "should be defined as type CP."))
+        
+        if(!is.list(measure)){
+          measure <- list(df=measure)
+        }else{
+          if(length(measure[[1]])!=1){
+            yuima.warn("multi dimentional jump term is not supported yet.")
+            return(NULL)
+          }
+          ##::naming measure list #############
+          if(is.null(names(measure)) || names(measure)=="df"){
+            names(measure) <- "df"
+          }else{
+            yuima.warn("name of measure is incorrect.")
+            return(NULL)
+          }
+          ##::end naming measure list #############
+        }
+        
+        ##::check df name ####################
+        tmp <- regexpr("\\(", measure$df)[1]
+        measurefunc <- substring(measure$df, 1, tmp-1)
+        if(!is.na(match(measurefunc, CPlist))){
+          yuima.warn(paste("\ndistribution function", measurefunc, "should be defined as type CP."))
+          return(NULL)
+        }else if(is.na(match(measurefunc, codelist))){
+          warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type code.\n"))
+        }
+        ##MEASURE$df$func <- eval(parse(text=measurefunc))
+        MEASURE$df$expr <- parse(text=measure$df)
+        
+        measure.par <- unique(all.vars(MEASURE$df$expr))
+        ##::end check df name ####################
+        ##::end code
+      }else if(measure.type=="density"){ ##::density
+        if(length(measure)!=1){
+          yuima.warn(paste("length of measure must be one on type", measure.type, "."))
+          return(NULL)
+        }
+        
+        if(!is.list(measure)){
+          measure <- list(df=measure)
+        }else{
+          if(length(measure[[1]])!=1){
+            yuima.warn("multi dimentional jump term is not supported yet.")
+            return(NULL)
+          }
+          
+          ##::naming measure list #############
+          if(is.null(names(measure))){
+            names(measure) <- "df"
+          }else if(names(measure)!="density" && names(measure)!="df"){
+            yuima.warn("name of measure is incorrect.")
+            return(NULL)
+          }
+          ##::end naming measure list #############
+        }
+        
+        ##::check df name ####################
+        tmp <- regexpr("\\(", measure[[names(measure)]])[1]
+        measurefunc <- substring(measure[[names(measure)]], 1, tmp-1)
+        if(!is.na(match(measurefunc, CPlist))){
+          yuima.warn(paste("distribution function", measurefunc, "should be defined as type CP."))
+          return(NULL)
+        }else if(!is.na(match(measurefunc, codelist))){
+          yuima.warn(paste("distribution function", measurefunc, "should be defined as type code."))
+          return(NULL)
+        }
+        MEASURE[[names(measure)]]$func <- eval(parse(text=measurefunc))
+        MEASURE[[names(measure)]]$expr <- parse(text=measure[[names(measure)]])
+        
+        measure.par <- unique(all.vars(MEASURE[[names(measure)]]$expr))
+        ##::end check df name ####################
+        ##::end density
+      }else{ ##::else
+        yuima.warn(paste("measure type", measure.type, "isn't supported."))
         return(NULL)
-      }else if(!is.na(match(measurefunc, codelist))){
-        yuima.warn(paste("distribution function", measurefunc, "should be defined as type code."))
-        return(NULL)
       }
-      MEASURE[[names(measure)]]$func <- eval(parse(text=measurefunc))
-      MEASURE[[names(measure)]]$expr <- parse(text=measure[[names(measure)]])
-      
-      measure.par <- unique(all.vars(MEASURE[[names(measure)]]$expr))
-      ##::end check df name ####################
-      ##::end density
-    }else{ ##::else
-      yuima.warn(paste("measure type", measure.type, "isn't supported."))
-      return(NULL)
-    }
     n.eqn3 <- 1
     n.jump <- 1
   }
@@ -267,14 +271,14 @@ setModel <- function(drift=NULL,
     n.eqn2 <- n.eqn1
     n.noise <- 1
   }
-
+  
   ## TBC
   n.eqn3 <- n.eqn1
   
   if(!length(measure)){
     n.eqn3 <- n.eqn1
   }
-
+  
   if(n.eqn1 != n.eqn2 || n.eqn1 != n.eqn3){
     yuima.warn("Malformed model, number of equations in the drift and diffusion do not match.")
     return(NULL)
@@ -282,7 +286,8 @@ setModel <- function(drift=NULL,
   n.eqn <- n.eqn1
   
   if(is.null(xinit)){
-    xinit <- numeric(n.eqn)
+    # xinit <- numeric(n.eqn)
+    xinit <- character(n.eqn)
   }else if(length(xinit) != n.eqn){
     if(length(xinit)==1){
       xinit <- rep(xinit, n.eqn)
@@ -303,11 +308,15 @@ setModel <- function(drift=NULL,
   
   loc.drift <- matrix(drift, n.eqn, n.drf)
   loc.diffusion <- matrix(diffusion, n.eqn, n.noise)
+  # Modification starting point 6/11
+  loc.xinit<-matrix(xinit,n.eqn,n.drf)
   
   ##:: allocate vectors
   DRIFT <- vector(n.eqn, mode="expression")
   DIFFUSION <- vector(n.eqn, mode="list")
   JUMP <- vector(n.eqn, mode="expression")
+  # Modification starting point 6/11
+  XINIT<-vector(n.eqn, mode = "expression")
   
   ##:: function to make expression from drift characters
   pre.proc <- function(x){
@@ -322,6 +331,8 @@ setModel <- function(drift=NULL,
   ##:: make expressions of drifts and diffusions
   for(i in 1:n.eqn){
     DRIFT[i] <- pre.proc(loc.drift[i,])
+    # Modification starting point 6/11
+    XINIT[i]<-pre.proc(loc.xinit[i, ])  
     for(j in 1:n.noise){
       expr <- parse(text=loc.diffusion[i,j])
       if(length(expr)==0){
@@ -334,6 +345,9 @@ setModel <- function(drift=NULL,
   
   ##:: get parameters in drift expression
   drift.par <- unique(all.vars(DRIFT))
+  # Modification starting point 6/11
+  xinit.par <- unique(all.vars(XINIT))
+  
   drift.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable, solve.variable), drift.par)))
   if(length(drift.idx)>0){
     drift.par <- drift.par[-drift.idx]
@@ -345,7 +359,7 @@ setModel <- function(drift=NULL,
   if(length(diff.idx)>0){
     diff.par <- diff.par[-diff.idx]
   }
-
+  
   ##:: get parameters in jump expression
   J.flag <- FALSE
   jump.par <- unique(all.vars(JUMP))
@@ -356,7 +370,7 @@ setModel <- function(drift=NULL,
   if(length(jump.idx)>0){
     jump.par <- jump.par[-jump.idx]
   }
-
+  
   ##:: get parameters in measure expression
   measure.idx <- as.numeric(na.omit(match(c(state.variable, time.variable, jump.variable, solve.variable), measure.par)))
   if(length(measure.idx)>0){
@@ -369,26 +383,44 @@ setModel <- function(drift=NULL,
   ##common <- unique(c(diff.par[id1], drift.par[id2]))
   common <- c(drift.par, diff.par)
   common <- common[duplicated(common)]
+  
+  common1<-common
+  # modification 06/11 common1 contains only 
+  # parameters that appear in both drift and diffusion terms.   
+  
+  # Modification 06/11 common contains only parameters that appear 
+  # in drift, diff, Jump and xinit      
+  if (length(xinit)) {
+    common <- c(common, xinit.par)
+    common <- common[duplicated(common)]
+    common <- c(common, xinit.par)
+    common <- common[duplicated(common)]
+  }
+  
+  
   if(length(measure)){
     common <- c(common, jump.par)
     common <- common[duplicated(common)]
     common <- c(common, measure.par)
     common <- common[duplicated(common)]
   }
-  all.par <- unique(c(drift.par, diff.par, jump.par, measure.par))
-    
+  #   all.par <- unique(c(drift.par, diff.par, jump.par, measure.par))
+  all.par <- unique(c(drift.par, diff.par, jump.par, measure.par, xinit.par))
+  
   ##:: instanciate class
   tmppar <- new("model.parameter",
                 all= all.par,
-                common= common,
+                #                 common= common,
+                common= common1,
                 diffusion= diff.par,
                 drift= drift.par,
                 jump= jump.par,
-                measure= measure.par)
+                measure= measure.par,
+                xinit=xinit.par)
   tmp <- new("yuima.model",
              drift= DRIFT,
              diffusion= DIFFUSION,
-			 hurst=as.numeric(hurst),
+             hurst=as.numeric(hurst),
              jump.coeff=JUMP,
              measure= MEASURE,
              measure.type= measure.type,
@@ -405,9 +437,9 @@ setModel <- function(drift=NULL,
                length(tmppar@drift),
                length(tmppar@jump),
                length(tmppar@measure)
-               ),
+             ),
              solve.variable= solve.variable,
-             xinit= xinit,
+             xinit= XINIT,
              J.flag <- J.flag)
   return(tmp)
 }

@@ -9,7 +9,9 @@ setClass("model.parameter",representation(all="character",
                                           diffusion="character",
                                           drift="character",
                                           jump="character",
-                                          measure="character"
+                                          measure="character",
+# Insert parameters for starting conditions                                           
+                                          xinit="character"
                                           )
          )
 
@@ -28,7 +30,8 @@ setClass("yuima.model",representation(drift="expression",
                                       equation.number="numeric",
                                       dimension="numeric",
                                       solve.variable="character",
-                                      xinit="numeric",
+#                                       xinit="numeric",
+                                      xinit="expression",
                                       J.flag="logical"
                                       )
          )
