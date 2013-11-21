@@ -190,7 +190,7 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                   value=double(length(grid[[num]])),PACKAGE="yuima")$value
         
         idx <- which.max(abs(tmp))
-        mlag <- -grid[idx] # make the first timing of max or min
+        mlag <- -grid[[num]][idx] # make the first timing of max or min
         cov <- tmp[idx]
         
         theta[i,j] <- mlag
@@ -198,7 +198,7 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
         theta[j,i] <- -mlag
         covmat[j,i] <- covmat[i,j]
         
-        crosscov[[num]] <- zoo(tmp,grid)
+        crosscov[[num]] <- zoo(tmp,grid[[num]])
       }
     }
   }
