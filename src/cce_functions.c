@@ -1,14 +1,13 @@
 #include <Rinternals.h>
 
-void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse,
-                   int *n, double *grid, double *result)
+void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse, int *n, double *grid, double *result)
 {
   int t, i, k;
-  
+   
   for(t = 0; t < *frequency; t++){
-    k = 1;
     for(i = 0; i < *nsparse; i++){
-      while((ztime[k]<=grid[i])&&(k < *n)){
+        k = 1;
+      while((ztime[k]<=grid[i])&&(k<*n)){
         k++;
       }
       result[(*nsparse)*t+i] += znum[k-1];
@@ -20,16 +19,18 @@ void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse,
 
 
 void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
-                     int *Lengths, double *MinTime, int *MinL,
+                     int *Lengths, int *D, double *MinTime, int *MinL,
                      int *Samplings)
 {
   int d, i, J;
   double Tmp;
   
   for(d = 0; d < *Dim; d++) {
-    while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[0]){
+    /*while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[0]){*/
+    while(Times[D[d] + (I[d]+1)] <= rtimes[0]){
       I[d]++;
-      if((I[d]+1) >= Lengths[d + 1]){
+      /*if((I[d]+1) >= Lengths[d + 1]){*/
+      if((I[d]+1) >= Lengths[d]){
         break;
       }
     }
@@ -45,9 +46,11 @@ void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
     for(d = 0; d < *Dim; d++) {
       Tmp = rtimes[i];
       J = I[d];
-      while((J < (Lengths[d + 1]-1)) && (Tmp <= rtimes[i])) {
+      /*while((J < (Lengths[d + 1]-1)) && (Tmp <= rtimes[i])) {*/
+      while((J < (Lengths[d]-1)) && (Tmp <= rtimes[i])) {
         J++;
-        Tmp = Times[Lengths[d] * d + J];
+        /*Tmp = Times[Lengths[d] * d + J];*/
+        Tmp = Times[D[d] + J];
       }
       if(Tmp > rtimes[i + 1])
         rtimes[i + 1] = Tmp;
@@ -56,9 +59,11 @@ void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
     i++;
       
     for(d = 0; d < *Dim; d++) {
-      while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[i]){
+      /*while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[i]){*/
+      while(Times[D[d] + (I[d]+1)] <= rtimes[i]){
         I[d]++;
-        if((I[d]+1) >= Lengths[d + 1]){
+        /*if((I[d]+1) >= Lengths[d + 1]){*/
+        if((I[d]+1) >= Lengths[d]){
           break;
         }
       }
@@ -70,7 +75,7 @@ void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
 
 
 void refreshsamplingphy(int *Dim, int* I, double *Times, double *rtimes,
-                        int *Lengths, double *MinTime, int *MinL,
+                        int *Lengths, int *D, double *MinTime, int *MinL,
                         int *Samplings, int *rNum)
 {
   int d, i;
@@ -83,11 +88,14 @@ void refreshsamplingphy(int *Dim, int* I, double *Times, double *rtimes,
   for(i = 0; rtimes[i] < *MinTime; i++) {
     rtimes[i + 1] = rtimes[i];
     for(d = 0; d < *Dim; d++) {
-      while(I[d] < (Lengths[d + 1] - 1)){
+      /*while(I[d] < (Lengths[d + 1] - 1)){*/
+      while(I[d] < (Lengths[d] - 1)){
         I[d]++;
-        if(Times[Lengths[d] * d + I[d]] > rtimes[i]){
+        /*if(Times[Lengths[d] * d + I[d]] > rtimes[i]){*/
+        if(Times[D[d] + I[d]] > rtimes[i]){
           Samplings[(*MinL + 1) * d + (i + 1)] = I[d] + 1;
-          Tmp = Times[Lengths[d] * d + I[d]];
+          /*Tmp = Times[Lengths[d] * d + I[d]];*/
+          Tmp = Times[D[d] + I[d]];
           if(rtimes[i + 1] < Tmp){
             rtimes[i + 1] = Tmp; 
           }
@@ -100,9 +108,11 @@ void refreshsamplingphy(int *Dim, int* I, double *Times, double *rtimes,
   *rNum = i + 1;
   
   for(d = 0; d < *Dim; d++) {
-    while(I[d] < (Lengths[d + 1] -1)){
+    /*while(I[d] < (Lengths[d + 1] -1)){*/
+    while(I[d] < (Lengths[d] -1)){
       I[d]++;
-      if(Times[Lengths[d] * d + I[d]] > rtimes[i]){
+      /*if(Times[Lengths[d] * d + I[d]] > rtimes[i]){*/
+      if(Times[D[d] + I[d]] > rtimes[i]){
         Samplings[(*MinL + 1) * d + (i + 1)] = I[d] + 1;
         break;
       }
@@ -252,20 +262,6 @@ void pHayashiYoshida(int *kn, int *xlength, int *ylength,
       *value += barX[k] * barY[l];
     }
   }
-}
-
-
-void msrc(int *M, int *N, double *xg, double *xl, double *ygamma, double *ylambda,
-          double *result)
-{
-  int m, i;
-  
-  for(m = 0; m < *M; m++) {
-    for(i = m; i < *N; i++){
-      result[m] += (xg[i] - xl[i-m]) * (ygamma[i] - ylambda[i-m]);
-    }
-  }
-  
 }
 
 

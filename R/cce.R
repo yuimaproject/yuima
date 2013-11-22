@@ -86,12 +86,22 @@ refresh_sampling <- function(data){
     refresh.times <- double(MinL)
     refresh.times[1] <- max(sapply(ser.times,"[",1))
     
+    #idx <- matrix(.C("refreshsampling",
+    #                 as.integer(d.size),
+    #                 integer(d.size),
+    #                 as.double(unlist(ser.times)),
+    #                 as.double(refresh.times),
+    #                 as.integer(append(ser.lengths,0,after=0)),
+    #                 min(sapply(ser.times,FUN="tail",n=1)),
+    #                 as.integer(MinL),
+    #                 result=integer(d.size*MinL))$result,ncol=d.size)
     idx <- matrix(.C("refreshsampling",
                      as.integer(d.size),
                      integer(d.size),
                      as.double(unlist(ser.times)),
                      as.double(refresh.times),
-                     as.integer(append(ser.lengths,0,after=0)),
+                     as.integer(ser.lengths),
+                     as.integer(diffinv(ser.lengths[-d.size],xi=0)),
                      min(sapply(ser.times,FUN="tail",n=1)),
                      as.integer(MinL),
                      result=integer(d.size*MinL))$result,ncol=d.size)
@@ -167,12 +177,23 @@ refresh_sampling.PHY <- function(data){
     refresh.times <- double(MinL)
     refresh.times[1] <- max(sapply(ser.times,"[",1))
     
+    #obj <- .C("refreshsamplingphy",
+    #          as.integer(d.size),
+    #          integer(d.size),
+    #          as.double(unlist(ser.times)),
+    #          rtimes=as.double(refresh.times),
+    #          as.integer(append(ser.lengths,0,after=0)),
+    #          min(sapply(ser.times,FUN="tail",n=1)),
+    #          as.integer(MinL),
+    #          Samplings=integer(d.size*(MinL+1)),
+    #          rNum=integer(1))
     obj <- .C("refreshsamplingphy",
               as.integer(d.size),
               integer(d.size),
               as.double(unlist(ser.times)),
               rtimes=as.double(refresh.times),
-              as.integer(append(ser.lengths,0,after=0)),
+              as.integer(ser.lengths),
+              as.integer(diffinv(ser.lengths[-d.size],xi=0)),
               min(sapply(ser.times,FUN="tail",n=1)),
               as.integer(MinL),
               Samplings=integer(d.size*(MinL+1)),
