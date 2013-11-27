@@ -4,7 +4,7 @@ import("methods")
 importFrom("graphics", "plot")
 importFrom("zoo")
 importFrom(stats, confint)
-
+importFrom(stats4)
 
 importFrom(utils, toLatex)
 
