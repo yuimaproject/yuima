@@ -18,7 +18,9 @@ exportClasses("yuima",
               "yuima.sampling",
               "yuima.characteristic",
               "yuima.model",
-              "model.parameter"
+              "model.parameter",
+	      "yuima.carma",
+	      "carma.info"
               )
 
 exportMethods(
@@ -119,6 +121,7 @@ S3method(print, mmfrac)
 
 S3method(toLatex, yuima)
 S3method(toLatex, yuima.model)
+S3method(toLatex, yuima.carma)
 
 useDynLib(yuima)
 

@@ -1,18 +1,80 @@
-# Carma_Model<-setClass("Carma_Model",
-#                       slots = c(Cogarch_Model_Log="logical",
-#                                 Under_Lev="yuima.model"),
-#                       prototype=list(Cogarch_Model_Log = FALSE,
-#                                      Under_Lev=NULL),
-#                       contains= "yuima")
-#ma.par, ar.par, lin.par=NULL  is.null
-#state Variable consistente con Yuima.????
-# Inserire Solve Variable???
-# ... che mi serve per passare gli stessi parametri di setModel
-# per i ... guardare qmle
-# call<-matchcall()
-# mydots guardare
-setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Carma.var="v",Latent.var="x", ...){
-# We use the same parametrization as in Brockwell[2000] 
+setMethod("initialize", "carma.info",
+          function(.Object,
+                   p=numeric(),
+                   q=numeric(),
+                   loc.par=character(),
+                   scale.par=character(),
+                   ar.par=character(),
+                   ma.par=character(),
+                   lin.par=character(),
+                   Carma.var=character(),
+                   Latent.var=character(),
+                   XinExpr=logical()){
+            .Object@p <- p
+            .Object@q <- q
+            .Object@loc.par <- loc.par
+            .Object@scale.par <- scale.par
+            .Object@ar.par <- ar.par
+            .Object@ma.par <- ma.par
+            .Object@lin.par <- lin.par
+            .Object@Carma.var <- Carma.var
+            .Object@Latent.var <- Latent.var
+            .Object@XinExpr <- XinExpr
+            return(.Object)
+          })
+
+setMethod("initialize", "yuima.carma",
+          function(.Object,
+                   info = new(carma.info),
+                   drift = expression() ,
+                   diffusion = list() ,
+                   hurst = 0.5,
+                   jump.coeff = expression(),
+                   measure=list(),
+                   measure.type=character(),
+                   parameter = new("model.parameter"),
+                   state.variable = "x",
+                   jump.variable = "z",
+                   time.variable = "t",
+                   noise.number = numeric(),
+                   equation.number = numeric(),
+                   dimension = numeric(),
+                   solve.variable = character(),
+                   xinit = expression(),
+                   J.flag = logical()){
+            .Object@info <- info
+            .Object@drift <- drift
+            .Object@diffusion <- diffusion
+            .Object@hurst <- hurst  	   
+            .Object@jump.coeff <- jump.coeff
+            .Object@measure <- measure
+            .Object@measure.type <- measure.type
+            .Object@parameter <- parameter
+            .Object@state.variable <- state.variable
+            .Object@jump.variable <- jump.variable
+            .Object@time.variable <- time.variable
+            .Object@noise.number <- noise.number
+            .Object@equation.number <- equation.number
+            .Object@dimension <- dimension
+            .Object@solve.variable <- solve.variable
+            .Object@xinit <- xinit
+            .Object@J.flag <- J.flag
+            return(.Object)
+          })
+
+
+setCarma<-function(p,
+                   q,
+                   loc.par=NULL,
+                   scale.par=NULL,
+                   ar.par="a",
+                   ma.par="b",
+                   lin.par=NULL,
+                   Carma.var="v",
+                   Latent.var="x",
+                   XinExpr=FALSE,
+                   ...){
+# We use the same parametrization as in Brockwell (2000) 
   
 # mydots$Carma.var= V
 # mydots$Latent.var= X ?????  
@@ -25,6 +87,12 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
   # q  is the number of the autoregressive coefficient \beta
                      
 #Default parameters
+  if (is.null(scale.par)){
+    ma.par1<-ma.par
+  } else{
+    ma.par1<-paste(scale.par,ma.par,sep="*")
+  }
+  
   
   call <- match.call()
   quadratic_variation<-FALSE
@@ -40,6 +108,7 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
 #   jump.variable <- "z" 
 #   time.variable <- "t"
 #   mydots$xinit<- NULL
+  
   if (is.null(mydots$hurst)){
     mydots$hurst<-0.5
   }
@@ -51,24 +120,27 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
   if(is.null(mydots$jump.variable)){
     mydots$jump.variable<-"z"
   }
-  
-#   if(is.null(mydots$Carma.var)){
-#     Carma.var<-"V"
+    
+#   if(is.null(mydots$xinit)){ 
+#     if(is.null(mydots$XinExpr)){
+#       mydots$xinit<-as.character(0*c(1:p))
+#     }else{  
+#       if(mydots$XinExpr==TRUE){
+#         Int.Var<-paste(Latent.var,"0",sep="")
+#         mydots$xinit<-paste(Int.Var,c(0:(p-1)),sep="")
+#       }
+#     }
 #   } else{
-#     Carma.var<-mydots$Carma.var
+#     dummy<-as.character(mydots$xinit)
+#     mydots$xinit<-dummy[-1]
 #   }
   
-#   if(is.null(mydots$Latent.var)){
-#     Latent.var<-"X"
-#   } else{
-#     Latent.var<-mydots$Latent.var
-#   }
   
   if(is.null(mydots$xinit)){ 
-    if(is.null(mydots$XinExpr)){
+    if(XinExpr==FALSE){
       mydots$xinit<-as.character(0*c(1:p))
     }else{  
-      if(mydots$XinExpr==TRUE){
+      if(XinExpr==TRUE){
         Int.Var<-paste(Latent.var,"0",sep="")
         mydots$xinit<-paste(Int.Var,c(0:(p-1)),sep="")
       }
@@ -84,20 +156,21 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
     
   beta_coeff0<-paste("-",ar.par,sep="")
   beta_coeff<-paste(beta_coeff0,p:1,sep="")
-  coeff_alpha<-c(paste(ma.par,0:q,sep=""),as.character(matrix(0,1,p-q-1)))
+  coeff_alpha<-c(paste(ma.par1,0:q,sep=""),as.character(matrix(0,1,p-q-1)))
   fin_alp<-length(coeff_alpha)
-  # We built the drift condition   
   
   Y_coeff<-paste(Latent.var,0:(p-1),sep="")
   fin_Y<-length(Y_coeff)
   V1<-paste(coeff_alpha,Y_coeff,sep="*")
   V2<-paste(V1,collapse="+")
-#   alpha0<-paste(ma.par,0,sep="")
+#   alpha0<-paste(ma.par1,0,sep="")
+  
   if(is.null(loc.par)){
-    V<-paste("(",V2,")",collapse="")
+    Vt<-V2
+    V<-paste0("(",V2,")",collapse="")
   } else {
     Vt<-paste(loc.par,V2,sep="+") 
-    V<-paste("(",Vt,")",collapse="")
+    V<-paste0("(",Vt,")",collapse="")
   }
   drift_last_cond<-paste(paste(beta_coeff,Y_coeff,sep="*"),collapse="")
   # Drift condition for the dV_{t}   
@@ -119,28 +192,41 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
     if (is.null(lin.par)){ 
       diffusion_Carma<-matrix(c(coeff_alpha[fin_alp],as.character(matrix(0,(p-1),1)),"1"),(p+1),1)
       #     Latent.var<-Y_coeff
-      Model_Carma1<-setModel(drift=drift_Carma, 
+      Model_Carma<-setModel(drift=drift_Carma, 
                              diffusion=diffusion_Carma,
                              hurst=mydots$hurst, 
                              state.variable=c(Carma.var,Y_coeff),  
                              solve.variable=c(Carma.var,Y_coeff),
-                             xinit=c(V,mydots$xinit))
-      if(length(Model_Carma1)==0){
+                             xinit=c(Vt,mydots$xinit))
+      #25/11
+#       
+#       carma.info<-new("carma.info",
+#                       p=p,
+#                       q=q,
+#                       loc.par="character",
+#                       scale.par="character",
+#                       ar.par=ar.par,
+#                       ma.par=ma.par,
+#                       Carma.var=Carma.var,
+#                       Latent.var=Latent.var,
+#                       XinExpr=XinExpr)
+      if(length(Model_Carma)==0){
         stop("Yuima model was not built") 
       } else { 
-        return(Model_Carma1)
+      #     return(Model_Carma1)
       }
     } else{
       if(ma.par==lin.par){
         first_term<-paste(coeff_alpha[fin_alp],V,sep="*")
         diffusion_Carma<-matrix(c(first_term,as.character(matrix(0,(p-1),1)),V),(p+1),1)  
-        Model_Carma1<-setModel(drift=drift_Carma, 
+
+        Model_Carma<-setModel(drift=drift_Carma, 
                                diffusion=diffusion_Carma,
                                hurst=mydots$hurst, 
                                state.variable=c(Carma.var,Y_coeff),  
                                solve.variable=c(Carma.var,Y_coeff),
-                               xinit=c(V,mydots$xinit))
-        return(Model_Carma1)
+                               xinit=c(Vt,mydots$xinit))
+#         return(Model_Carma1)
       }else{ 
 #         coeff_gamma<-c(paste(lin.par,1:p,sep=""),as.character(matrix(0,1,p-q)))
         coeff_gamma<-c(paste(lin.par,1:p,sep=""))
@@ -152,14 +238,21 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
         first_term<-paste(coeff_alpha[fin_alp],Gamma,sep="*")
         
         diffusion_Carma<-matrix(c(first_term,as.character(matrix(0,(p-1),1)),Gamma),(p+1),1)  
-        Model_Carma1<-setModel(drift=drift_Carma, 
+#         Model_Carma1<-setModel(drift=drift_Carma, 
+#                                diffusion=diffusion_Carma,
+#                                hurst=mydots$hurst, 
+#                                state.variable=c(Carma.var,Y_coeff),  
+#                                solve.variable=c(Carma.var,Y_coeff),
+#                                xinit=c(V,mydots$xinit))
+
+        Model_Carma<-setModel(drift=drift_Carma, 
                                diffusion=diffusion_Carma,
                                hurst=mydots$hurst, 
                                state.variable=c(Carma.var,Y_coeff),  
                                solve.variable=c(Carma.var,Y_coeff),
-                               xinit=c(V,mydots$xinit))
+                               xinit=c(Vt,mydots$xinit))
         
-        return(Model_Carma1)
+#         return(Model_Carma1)
       }
       
     }                      
@@ -196,6 +289,18 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
         
         # jump_Carma<-matrix(c(coeff_alpha[fin_alp],as.character(matrix(0,(q-1),1)),"1"),(q+1),1)
         jump_Carma<-c(coeff_alpha[fin_alp],as.character(matrix(0,(p-1),1)),"1")
+#         Model_Carma<-setModel(drift=drift_Carma, 
+#                               diffusion = NULL, 
+#                               hurst=mydots$hurst, 
+#                               jump.coeff=jump_Carma,
+#                               measure=eval(mydots$measure),
+#                               measure.type=mydots$measure.type, 
+#                               jump.variable=mydots$jump.variable, 
+#                               time.variable=mydots$time.variable,
+#                               state.variable=c(Carma.var,Y_coeff),  
+#                               solve.variable=c(Carma.var,Y_coeff),
+#                               xinit=c(V,mydots$xinit))
+#         
         Model_Carma<-setModel(drift=drift_Carma, 
                               diffusion = NULL, 
                               hurst=mydots$hurst, 
@@ -206,8 +311,8 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
                               time.variable=mydots$time.variable,
                               state.variable=c(Carma.var,Y_coeff),  
                               solve.variable=c(Carma.var,Y_coeff),
-                              xinit=c(V,mydots$xinit))
-        return(Model_Carma)
+                              xinit=c(Vt,mydots$xinit))
+  #      return(Model_Carma)
       } else {
         if (quadratic_variation==FALSE ){
         # Selecting Quadratic_Variation==FALSE and specifying the Heteroskedatic.param in the model, 
@@ -258,8 +363,8 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
                               time.variable=mydots$time.variable,
                               state.variable=c(Carma.var,Y_coeff),  
                               solve.variable=c(Carma.var,Y_coeff),
-                              c(V,mydots$xinit))
-        return(Model_Carma)
+                              xinit=c(Vt,mydots$xinit))
+   #     return(Model_Carma)
          if(quadratic_variation==TRUE){
 #           
                 stop("Work in Progress: Implementation of CARMA model for CoGarch. 
@@ -287,5 +392,44 @@ setCarma<-function(p,q,loc.par=NULL,ar.par="beta",ma.par="alpha",lin.par=NULL,Ca
       } 
     }
     
-  }  
+  }
+  # 25/11
+  if(is.null(loc.par)){loc.par<-character()}
+  if(is.null(scale.par)){scale.par<-character()}
+  if(is.null(lin.par)){lin.par<-character()}
+  
+  
+  carmainfo<-new("carma.info",
+                  p=p,
+                  q=q,
+                  loc.par=loc.par,
+                  scale.par=scale.par,
+                  ar.par=ar.par,
+                  ma.par=ma.par,
+                  lin.par=lin.par,
+                  Carma.var=Carma.var,
+                  Latent.var=Latent.var,
+                  XinExpr=XinExpr)
+  
+  Model_Carma1<-new("yuima.carma",
+                    info=carmainfo,
+                    drift=Model_Carma@drift,            
+                    diffusion =Model_Carma@diffusion,
+                    hurst=Model_Carma@hurst,
+                    jump.coeff=Model_Carma@jump.coeff,
+                    measure=Model_Carma@measure,
+                    measure.type=Model_Carma@measure.type,
+                    parameter=Model_Carma@parameter,
+                    state.variable=Model_Carma@state.variable,
+                    jump.variable=Model_Carma@jump.variable,
+                    time.variable=Model_Carma@time.variable,
+                    noise.number =  Model_Carma@noise.number,
+                    equation.number = Model_Carma@equation.number,
+                    dimension = Model_Carma@dimension, 
+                    solve.variable=Model_Carma@solve.variable,
+                    xinit=Model_Carma@xinit,
+                    J.flag = Model_Carma@J.flag
+                    )
+  
+  return(Model_Carma1)
 }

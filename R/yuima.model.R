@@ -1,12 +1,31 @@
+# setMethod("initialize", "model.parameter",
+#           function(.Object,
+#                    all,
+#                    common,
+#                    diffusion,
+#                    drift,
+#                    jump,
+#                    measure,
+#                    xinit){
+#             .Object@all <- all
+#             .Object@common <- common
+#             .Object@diffusion <- diffusion
+#             .Object@drift <- drift
+#             .Object@jump <- jump
+#             .Object@measure <- measure
+#             .Object@xinit <- xinit
+#             return(.Object)
+#           })
+
 setMethod("initialize", "model.parameter",
           function(.Object,
-                   all,
-                   common,
-                   diffusion,
-                   drift,
-                   jump,
-                   measure,
-                   xinit){
+                   all = character(),
+                   common = character(),
+                   diffusion = character(),
+                   drift = character(),
+                   jump = character(),
+                   measure = character(),
+                   xinit = character()){
             .Object@all <- all
             .Object@common <- common
             .Object@diffusion <- diffusion
@@ -17,27 +36,67 @@ setMethod("initialize", "model.parameter",
             return(.Object)
           })
 
+# setMethod("initialize", "yuima.model",
+#           function(.Object,
+#                    drift ,
+#                    diffusion,
+# 				           hurst,
+#                    jump.coeff,
+#                    measure,
+#                    measure.type,
+#                    parameter,
+#                    state.variable,
+#                    jump.variable,
+#                    time.variable,
+#                    noise.number,
+#                    equation.number,
+#                    dimension,
+#                    solve.variable,
+#                    xinit,
+#                    J.flag){
+#             .Object@drift <- drift
+#             .Object@diffusion <- diffusion
+# 			.Object@hurst <- hurst		   
+#             .Object@jump.coeff <- jump.coeff
+#             .Object@measure <- measure
+#             .Object@measure.type <- measure.type
+#             .Object@parameter <- parameter
+#             .Object@state.variable <- state.variable
+#             .Object@jump.variable <- jump.variable
+#             .Object@time.variable <- time.variable
+#             .Object@noise.number <- noise.number
+#             .Object@equation.number <- equation.number
+#             .Object@dimension <- dimension
+#             .Object@solve.variable <- solve.variable
+#             .Object@xinit <- xinit
+#             .Object@J.flag <- J.flag
+#             return(.Object)
+#           })
+
+# 23/11 we need to provide the default values for the yuima.model object class 
+# in order to construct a new class that inherits from yuima.model class   
+
 setMethod("initialize", "yuima.model",
           function(.Object,
-                   drift,
-                   diffusion,
-				   hurst,
-                   jump.coeff,
-                   measure,
-                   measure.type,
-                   parameter,
-                   state.variable,
-                   jump.variable,
-                   time.variable,
-                   noise.number,
-                   equation.number,
-                   dimension,
-                   solve.variable,
-                   xinit,
-                   J.flag){
+                   drift = expression() ,
+                   diffusion = list() ,
+                   hurst = 0.5,
+                   jump.coeff = expression(),
+                   measure=list(),
+                   measure.type=character(),
+                   parameter = new("model.parameter"),
+                   state.variable = "x",
+                   jump.variable = "z",
+                   time.variable = "t",
+                   noise.number = numeric(),
+                   equation.number = numeric(),
+                   dimension = numeric(),
+                   solve.variable = character(),
+                   xinit = expression(),
+                   J.flag = logical()){
             .Object@drift <- drift
             .Object@diffusion <- diffusion
-			.Object@hurst <- hurst		   
+            .Object@hurst <- hurst		   
             .Object@jump.coeff <- jump.coeff
             .Object@measure <- measure
             .Object@measure.type <- measure.type
@@ -53,6 +112,7 @@ setMethod("initialize", "yuima.model",
             .Object@J.flag <- J.flag
             return(.Object)
           })
+
 
 ## setModel
 ## setter of class 'yuima.model'
@@ -314,7 +374,6 @@ setModel <- function(drift=NULL,
   ##:: allocate vectors
   DRIFT <- vector(n.eqn, mode="expression")
   DIFFUSION <- vector(n.eqn, mode="list")
-  JUMP <- vector(n.eqn, mode="expression")
   # Modification starting point 6/11
   XINIT<-vector(n.eqn, mode = "expression")
   
@@ -327,21 +386,46 @@ setModel <- function(drift=NULL,
     }
     parse(text=paste(sprintf("(%s)", x), collapse="+"))
   }
+  ##22/11:: function to simplify expression in drift, diffusion, jump and xinit characters
+  yuima.Simplifyobj<-function(x){
+    dummy<-yuima.Simplify(x)
+    dummy1<-yuima.Simplify(dummy)
+    dummy2<-as.character(dummy1)
+    res<-parse(text=paste0("(",dummy2,")",collapse=NULL))
+    return(res)
+  }
+
+  if (length(jump.coeff)==0){
+    JUMP <- parse(text=jump.coeff)
+  }else{
+    JUMP <- vector(n.eqn, mode="expression")
+  }
   
   ##:: make expressions of drifts and diffusions
   for(i in 1:n.eqn){
     DRIFT[i] <- pre.proc(loc.drift[i,])
+    # 22/11 Simplify expressions
+    DRIFT[i] <- yuima.Simplifyobj(DRIFT[i])
     # Modification starting point 6/11
-    XINIT[i]<-pre.proc(loc.xinit[i, ])  
+    XINIT[i]<-pre.proc(loc.xinit[i, ])
+    XINIT[i]<- yuima.Simplifyobj(XINIT[i])
     for(j in 1:n.noise){
       expr <- parse(text=loc.diffusion[i,j])
       if(length(expr)==0){
         expr <- expression(0)  # expr must have something
       }
-      DIFFUSION[[i]][j] <- expr
+#       DIFFUSION[[i]][j] <- expr  
+      #22/11
+      DIFFUSION[[i]][j] <- yuima.Simplifyobj(expr)
+    }
+#22/11     
+    if (length(JUMP)>0){
+      JUMP[i] <- parse(text=jump.coeff[i])
+      JUMP[i] <- yuima.Simplifyobj(JUMP[i])
     }
   }
-  JUMP <- parse(text=jump.coeff)
+
+ #
   
   ##:: get parameters in drift expression
   drift.par <- unique(all.vars(DRIFT))

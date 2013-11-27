@@ -4,8 +4,170 @@ toLatex.yuima <- function (object, ...)
     mod <- NULL
     if (class(object) == "yuima.model") 
 	mod <- object
+    if (class(object) == "yuima.carma") 
+  mod <- object
     if (class(object) == "yuima") 
 	mod <- object@model
+    if(class(mod) =="yuima.carma" && length(mod@info@lin.par)==0 ) 
+      { yuima.warn("")
+        n.eq <- mod@equation.number
+        info <- mod@info
+        noise.var<-"W"
+        # We construc the system that describes the CARMA(p,q) process
+        
+        if (!length(mod@jump.variable)==0){noise.var <- mod@jump.variable}
+        dr <- paste("\\left\\{\\begin{array}{l} \n")
+        main.con <- info@ma.par
+        if(length(info@loc.par)==0 && !length(info@scale.par)==0){
+          main.con<-paste(info@scale.par,"* \\ ", info@ma.par)
+        }
+        
+        if(!length(info@loc.par)==0 && length(info@scale.par)==0){
+          main.con<-paste(info@scale.par,"* \\ ", info@ma.par)
+        }
+        
+        if(!length(info@loc.par)==0 && !length(info@scale.par)==0){
+          main.con<-paste(info@loc.par,"+ \\ ",info@scale.par,"* \\ ", info@ma.par)
+        }
+        
+        dr <- paste(dr, info@Carma.var,
+                    "\\left(", sprintf("%s", mod@time.variable),"\\right) = ",main.con, "'" , 
+                   info@Latent.var,"\\left(", sprintf("%s", mod@time.variable),"\\right) \\\\ \n")
+        
+        
+        
+        dr <- paste(dr, sprintf("d%s", info@Latent.var),
+                     "\\left(", sprintf("%s", mod@time.variable),"\\right)",
+                     "=","A",info@Latent.var,
+                      "\\left(", sprintf("%s", mod@time.variable),"\\right)",
+                      sprintf("d%s", mod@time.variable),
+                     "+ e",sprintf("d%s", noise.var),"\\left(",
+                     mod@time.variable, "\\right) \\\\ \n")
+        dr<- paste(dr, "\\end{array}\\right.")
+        body <- paste("%%% Copy and paste the following output in your LaTeX file")
+        body <- c(body, paste("$$"))
+        body <- c(body, dr)
+        body <- c(body, paste("$$"))
+        # Vector Latent Variable.
+        
+        body <- c(body, paste("$$"))
+        latent.lab0<-paste(info@Latent.var,0:(info@p-1),sep="_")
+        if(length(latent.lab0)==1){latent.lab<-latent.lab0}
+        if(length(latent.lab0)==2){
+          latent.lab0[1]<-paste(latent.lab0[1],"(",mod@time.variable,")",",\\ ",sep="")
+          latent.lab0[2]<-paste(latent.lab0[2],"(",mod@time.variable,")",sep="")
+          latent.lab<-latent.lab0
+        }
+        if(length(latent.lab0)>2){
+          latent.lab<-paste(latent.lab0[1],"(",mod@time.variable,")",
+                            ",\\ ","\\ldots \\ ",
+                            ",\\ ",tail(latent.lab0,n=1),
+                            "(",mod@time.variable,")")
+        }
+        latent.lab<-paste(latent.lab,collapse="") 
+        X<-paste(info@Latent.var,"(",mod@time.variable,")",
+                 "=\\left[",latent.lab,
+                 "\\right]'")
+        body <- c(body, X)
+        body <- c(body, paste("$$"))
+        # Vector Moving Average Coefficient.
+        body <- c(body, paste("$$"))
+        
+        #b.nozeros <-c(0:info@q)
+        
+        ma.lab0<-paste(paste(info@ma.par,0:(info@q),sep="_"),collapse=", \\ ")
+        
+        
+        if(length(ma.lab0)==1){ma.lab1<-ma.lab0}
+        if(length(ma.lab0)==2){
+          ma.lab0[1]<-paste(ma.lab0[1],",\\ ",sep="")
+      #    ma.lab0[2]<-paste(ma.lab0[2],"(",mod@time.variable,")",sep="")
+          ma.lab1<-ma.lab0
+        }
+        if(length(ma.lab0)>2){
+          ma.lab1<-paste(ma.lab0[1],
+                            ",\\ ","\\ldots",
+                            " \\ , \\ ",tail(ma.lab0,n=1))
+        }
+        
+        
+        numb.zero<-(info@p-(info@q+1))
+        if (numb.zero==0){ma.lab <- ma.lab1}
+        if (numb.zero>0&&numb.zero<=2){
+          zeros<- 0*c(1:numb.zero)
+          zero.el <- paste(zeros, collapse=", \\ ")
+          ma.lab <- paste(ma.lab1," ,\\ ", zero.el)
+        }
+         if (numb.zero>2 ){
+           ma.lab <- paste(ma.lab1," ,\\ 0, \\ \\ldots \\ , \\ 0")
+         }         
+        Vector.ma <- paste(info@ma.par,"=","\\left[",ma.lab,"\\right]'")
+        body <- c(body, Vector.ma)
+        body <- c(body, paste("$$"))
+        
+        # e vector
+        body <- c(body, paste("$$"))
+        
+        noise.coef<-mod@diffusion
+        vect.e0 <- substr(tail(noise.coef,n=1), 13, nchar(tail(noise.coef,n=1)) -2)
+        if (!length(mod@jump.variable)==0){
+          noise.coef <- mod@jump.coeff
+          vect.e0 <- substr(tail(noise.coef,n=1), 2, nchar(tail(noise.coef,n=1)) -1)
+        }
+        
+        if (info@p==1){vect.e <- vect.e0}
+        if (info@p==2){vect.e <- paste("0, \\ ",vect.e0)}
+        if (info@p==3){vect.e <- paste("0, \\ 0, \\ ",vect.e0)}
+        if (info@p>3){vect.e <- paste("0, \\ \\ldots \\ , \\ 0, \\  ",vect.e0)}
+        
+        coeff.e<- paste("e","=","\\left[",  vect.e , "\\right]'")
+        
+        body <- c(body, coeff.e)
+        body <- c(body, paste("$$"))
+        # Matrix A        
+        body <- c(body, paste("$$"))
+        
+        if(info@p==1){
+          cent.col<-"c"
+          last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+        }
+        
+        if(info@p==2){
+          cent.col<-"cc"
+          Up.A <-" 0 & 1 \\\\ \n"
+          last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+        }
+        
+        if(info@p==3){
+          cent.col<-"ccc"
+          Up.A <-" 0 & 1 & 0 \\\\ \n 0 & 0 & 1 \\\\ \n"
+          last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+          
+        }
+        
+        if(info@p>3){
+          cent.col<-"cccc"
+          Up.A <-" 0 & 1 & \\ldots & 0 \\\\ \n \\vdots & \\vdots & \\ddots & \\vdots \\\\ \n 0 & 0 & \\ldots & 1 \\\\ \n"
+          dummy.ar<-paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_")
+          last.A <- paste(dummy.ar[1]," & ", dummy.ar[2]," & \\ldots &", tail(dummy.ar,n=1) )
+        
+        }
+        matrix.A <-paste(Up.A ,last.A," \\\\ \n",sep="")
+        
+        array.start<-paste0("\\begin{array}{",cent.col,"}\n",collapse="")
+        MATR.A<-paste("A ","=","\\left[",array.start,  matrix.A,  "\\end{array}\\right]'" )
+        body <- c(body, MATR.A)
+        body <- c(body, paste("$$"))
+        body <- structure(body, class = "Latex")
+        
+        return(body)
+        mysymb <- c("*", "alpha", "beta", "gamma", "delta", "rho", 
+               "theta","sigma","mu", "sqrt")
+        #     myrepl <- c(" \\cdot ", "\\alpha ", "\\beta ", "\\gamma ", 
+        # 				"\\delta ", "\\rho ", "\\theta ", "\\sqrt ")
+        myrepl <- c(" \\cdot ", "\\alpha ", "\\beta ", "\\gamma ", 
+                    "\\delta ", "\\rho ", "\\theta ","\\sigma","\\mu", "\\sqrt ")
+    } else{
     n.eq <- mod@equation.number
     dr <- paste("\\left(\\begin{array}{c}\n")
     for (i in 1:n.eq) {
@@ -56,7 +218,7 @@ toLatex.yuima <- function (object, ...)
         }
     }
     body <- paste("%%% Copy and paste the following output in your LaTeX file")
-    body <- body <- c(body, paste("$$"))
+    body <- c(body, paste("$$"))
     body <- c(body, paste(st))
     body <- c(body, paste(" = "))
     body <- c(body, paste(dr))
@@ -80,6 +242,7 @@ toLatex.yuima <- function (object, ...)
       bodyaus <- paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 
                                                                                          1),sep="="), "\\\\ \n")
     }
+    
     bodyaus <- paste(bodyaus, "\\end{array}\\right)")
     for (i in 1:ns) {
       bodyaus <- gsub(mysymb[i], myrepl[i], bodyaus, fixed = "TRUE")
@@ -91,8 +254,11 @@ toLatex.yuima <- function (object, ...)
 # 								  mod@xinit)))
     body <- c(body, paste("$$"))
     structure(body, class = "Latex")
+    }
 }
 
 
 
 toLatex.yuima.model <- toLatex.yuima 
+
+toLatex.yuima.carma <- toLatex.yuima

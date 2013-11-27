@@ -3,17 +3,19 @@
 \alias{toLatex}
 \alias{toLatex.yuima}
 \alias{toLatex.yuima.model}
+\alias{toLatex.yuima.carma}
 \description{
-  These methods convert \code{\link{yuima-class}} or
-   \code{\link{yuima.model-class}} objects to character vectors with
+  These methods convert \code{\link{yuima-class}},
+   \code{\link{yuima.model-class}} or \code{\link{yuima.carma-class}} objects to character vectors with
    LaTeX markup.
 }
 \usage{
 \method{toLatex}{yuima}(object,\dots)
 \method{toLatex}{yuima.model}(object,\dots)
+\method{toLatex}{yuima.carma}(object,\dots)
 }
 \arguments{
-  \item{object}{object of a class yuima or yuima.model.}
+  \item{object}{object of a class yuima, yuima.model or yuima.carma.}
   \item{\dots}{currently not used.}
 }
 \details{
@@ -60,5 +62,10 @@ state.variable=c("x1","x2","x3"),
 solve.variable=c("x1","x2","x3") )
 str(cor.mod)
 toLatex(cor.mod)
+
+# A CARMA(p=3,q=1) process.
+carma1<-setCarma(p=3,q=1,loc.par="c",scale.par="s")
+str(carma1)
+toLatex(carma1)
 }
 \keyword{misc}

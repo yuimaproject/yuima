@@ -36,6 +36,27 @@ setClass("yuima.model",representation(drift="expression",
                                       )
          )
 
+# Class 'carma.info'
+setClass("carma.info",
+         representation(p="numeric",
+                        q="numeric",
+                        loc.par="character",
+                        scale.par="character",
+                        ar.par="character",
+                        ma.par="character",
+                        lin.par="character",
+                        Carma.var="character",
+                        Latent.var="character",
+                        XinExpr="logical")
+         )
+
+# Class 'yuima.carma'
+
+setClass("yuima.carma",
+         representation(info="carma.info"),
+         contains="yuima.model")
+
+
 # Class 'yuima.data'
 
 # we want yuimaS4 to use any class of data as input

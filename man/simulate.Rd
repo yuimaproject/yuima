@@ -8,8 +8,8 @@ simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = F
  	sampling=sampling, subsampling=subsampling, ...)
 }
 \arguments{
-  \item{object}{an \code{\link{yuima-class}} or 
-    \code{\link{yuima.model-class}} object.}
+  \item{object}{an \code{\link{yuima-class}}, 
+    \code{\link{yuima.model-class}} or \code{\link{yuima.carma-class}}  object.}
   \item{xinit}{initial value vector of state variables.}
   \item{true.parameter}{named list of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
@@ -37,7 +37,7 @@ fractional Gaussian noise awith/without jumps.
 
 If a \code{\link{yuima-class}} object is passed as input, then the sampling
 information is taken from the slot \code{sampling} of the object.
-If a \code{\link{yuima.model-class}} object or a 
+If a \code{\link{yuima.carma-class}} object, a \code{\link{yuima.model-class}} object or a 
 \code{\link{yuima-class}} object with missing \code{sampling} slot is passed
 as input the \code{sampling} argument is used. If this argument is missing
 then the sampling structure is constructed from \code{Initial}, \code{Terminal},
@@ -299,6 +299,46 @@ plot(result)
 ##  result <- simulate(obj.yuima)	   
 ## plot(result)
 
-}
+# Path-simulation for a Carma(p=2,q=1) model driven by a Brownian motion:
+carma1<-setCarma(p=2,q=1)
+str(carma1)
 
+# Set the sampling scheme
+samp<-setSampling(Terminal=100,n=10000)
+
+# Set the values of the model parameters
+par.carma1<-list(b0=1,b1=2.8,a1=2.66,a2=0.3)
+
+set.seed(123)
+sim.carma1<-simulate(carma1,
+                     true.parameter=par.carma1,
+                     sampling=samp)
+
+plot(sim.carma1)
+
+
+
+# Path-simulation for a Carma(p=2,q=1) model driven by a Compound Poisson process.
+carma1<-setCarma(p=2,
+                 q=1,
+                 measure=list(intensity="1",df=list("dnorm(z, 0, 1)")),
+                 measure.type="CP")
+
+# Set Sampling scheme
+samp<-setSampling(Terminal=100,n=10000)
+
+# Fix carma parameters
+par.carma1<-list(b0=1,
+                 b1=2.8,
+                 a1=2.66,
+                 a2=0.3)
+
+set.seed(123)
+sim.carma1<-simulate(carma1,
+                     true.parameter=par.carma1,
+                     sampling=samp)
+
+plot(sim.carma1)
+
+}
 \keyword{ts}
