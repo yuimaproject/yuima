@@ -65,14 +65,6 @@ diffusion.term <- function(yuima, theta, env){
 }
 
 
-
-
-
-
-
-
-
-
 ### I have rewritten qmle as a version of ml.ql
 ### This function has an interface more similar to mle.
 ### ml.ql is limited in that it uses fixed names for drift and diffusion
@@ -84,6 +76,9 @@ diffusion.term <- function(yuima, theta, env){
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
  lower, upper, joint=FALSE, ...){
 
+  if(is(yuima@model, "yuima.carma")&& length(yuima@model@info@scale.par)!=0){
+    method<-"L-BFGS-B"
+  }
 	call <- match.call()
 	
 	if( missing(yuima))
@@ -96,8 +91,39 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	if( missing(start) ) 
 	 yuima.stop("Starting values for the parameters are missing.")
 
+  #14/12/2013 We modify the QMLE function when the model is a Carma(p,q).
+  # In this case we use a two step procedure:
+  # First) The Coefficient are obtained by QMLE computed using the Kalman Filter.
+  # Second) Using the result in Brockwell, Davis and Yang (2007) we retrieve 
+  # the underlying Levy. The estimated increments are used to find the Lévy parameters.
+
+#   if(is(yuima@model, "yuima.carma")){
+#     yuima.warm("two step procedure for carma(p,q)")
+#     return(null)
+#   }
+#   
+  
 	diff.par <- yuima@model@parameter@diffusion
-	drift.par <- yuima@model@parameter@drift
+	
+#	24/12
+  if(is(yuima@model, "yuima.carma") && length(diff.par)==0
+	   && length(yuima@model@parameter@jump)!=0){
+    diff.par<-yuima@model@parameter@jump
+	}
+  
+  if(is(yuima@model, "yuima.carma") && length(yuima@model@parameter@jump)!=0){
+    yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a Jump process will be implemented as soon as possible ")
+    return(null)
+  }
+  
+  # 24/12
+  if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)>0){
+    yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
+    return(null)    
+  }
+    
+  
+  drift.par <- yuima@model@parameter@drift
 	jump.par <- yuima@model@parameter@jump
 	measure.par <- yuima@model@parameter@measure
 	common.par <- yuima@model@parameter@common
@@ -107,12 +133,20 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 		JointOptim <- TRUE
 		yuima.warn("Drift and diffusion parameters must be different. Doing
 					  joint estimation, asymptotic theory may not hold true.")
+	# 24/12
+#     if(is(yuima@model, "yuima.carma")){
+#            JointOptim <- TRUE
+# 		       yuima.warm("Carma(p.q): The case of common parameters in Drift and Diffusion Term will be implemented as soon as possible,")
+# 		       #return(null)
+# 		     }
 	}
 
-	 
-	if(length(jump.par)+length(measure.par)>0)
-		yuima.stop("Cannot estimate the jump models, yet")
-	
+	 if(!is(yuima@model, "yuima.carma")){
+    	if(length(jump.par)+length(measure.par)>0)
+    		yuima.stop("Cannot estimate the jump models, yet")
+	 }
+  
+  
 	if(!is.list(start))
 		yuima.stop("Argument 'start' must be of list type.")
 
@@ -166,13 +200,24 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 
 	 
 	d.size <- yuima@model@equation.number
+	if (is(yuima@model, "yuima.carma")){
+	  # 24/12
+    d.size <-1
+	}
 	n <- length(yuima)[1]
 	
 	env <- new.env()
 	assign("X",  as.matrix(onezoo(yuima)), envir=env)
 	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
-	for(t in 1:(n-1))
+  if (is(yuima@model, "yuima.carma")){
+    #24/12 If we consider a carma model,
+    # the observations are only the first column of env$X
+	  env$X<-as.matrix(env$X[,1])
+	  env$deltaX<-as.matrix(env$deltaX[,1])
+	}
+  assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
+	
+  for(t in 1:(n-1))
 	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 
 	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
@@ -197,7 +242,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 }
 
 	 oout <- NULL
-     HESS <- matrix(0, length(nm), length(nm))
+   HESS <- matrix(0, length(nm), length(nm))
 	 colnames(HESS) <- nm
 	 rownames(HESS) <- nm
 	 HaveDriftHess <- FALSE
@@ -207,6 +252,12 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			if(length(start)>1){ #Â?multidimensional optim
 				oout <- optim(start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
 				HESS <- oout$hessian
+				if(is(yuima@model,"yuima.carma") && length(yuima@model@info@scale.par)!=0){
+				  b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
+				  idx.b0<-match(b0,rownames(HESS))
+				  HESS<-HESS[-idx.b0,]
+				  HESS<-HESS[,-idx.b0]
+				}
 				HaveDriftHess <- TRUE
 				HaveDiffHess <- TRUE
 			} else { ### one dimensional optim
@@ -283,9 +334,15 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$hessian <- FALSE
 			mydots$upper <- unlist( upper[ nm[idx.drift] ])
 			mydots$lower <- unlist( lower[ nm[idx.drift] ])
-
 			if(length(mydots$par)>1){
+			  if(is(yuima@model, "yuima.carma")&& length(yuima@model@info@scale.par)!=0){
+			    name_b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
+          index_b0<-match(name_b0,nm)
+			    mydots$lower[index_b0]<-1
+          mydots$upper[index_b0]<-1+10^(-7)
+			  }
 			  oout1 <- do.call(optim, args=mydots)
+	#		  oout1 <- optim(mydots$par,f,method = "L-BFGS-B" , lower = mydots$lower, upper = mydots$upper)
 			} else {
 				mydots$f <- mydots$fn
 				mydots$fn <- NULL
@@ -327,9 +384,10 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 coef <- oout$par
 	 control=list()
 	 par <- coef
-	 names(par) <- c(diff.par, drift.par)
-     nm <- c(diff.par, drift.par)
-	 
+  if(!is(yuima@model,"yuima.carma")){
+	  names(par) <- c(diff.par, drift.par)
+       nm <- c(diff.par, drift.par)
+  }
 #	 print(par)
 #	 print(coef)
 	 conDrift <- list(trace = 5, fnscale = 1, 
@@ -370,7 +428,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 if(!HaveDriftHess & (length(drift.par)>0)){
 	  #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
      hess2 <- optimHess(coef[drift.par], fDrift, NULL, control=conDrift)
-	  HESS[drift.par,drift.par] <- hess2	 
+	  HESS[drift.par,drift.par] <- hess2
+     if(is(yuima@model,"yuima.carma") && length(yuima@model@info@scale.par)!=0){
+       b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
+       idx.b0<-match(b0,rownames(HESS))
+       HESS<-HESS[-idx.b0,]
+       HESS<-HESS[,-idx.b0]
+     }
 	 }
 
 	 if(!HaveDiffHess  & (length(diff.par)>0)){
@@ -390,7 +454,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	mycoef[fixed.par] <- fixed
 	
 	min <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
-	
+  
+  dummycov<-matrix(0,length(coef),length(coef))
+  rownames(dummycov)<-names(coef)
+  colnames(dummycov)<-names(coef)
+  dummycov[rownames(vcov),colnames(vcov)]<-vcov
+  vcov<-dummycov
+  
     new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
        vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
        method = method)
@@ -415,14 +485,23 @@ quasilogl <- function(yuima, param, print=FALSE){
 }
 
 
-
-
-
-
 minusquasilogl <- function(yuima, param, print=FALSE, env){
 	
 	diff.par <- yuima@model@parameter@diffusion
-	drift.par <- yuima@model@parameter@drift
+	#  24/12
+	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
+	   && length(yuima@model@parameter@jump)!=0){
+	  diff.par<-yuima@model@parameter@jump
+	}
+	
+	# 24/12
+	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)>0  ){
+	  yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
+	  return(null)    
+	}
+	
+  
+  drift.par <- yuima@model@parameter@drift
 	
 	fullcoef <- NULL
 	
@@ -457,47 +536,81 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	n.theta <- n.theta1+n.theta2
 	
 	d.size <- yuima@model@equation.number
+	
+  
 	n <- length(yuima)[1]
 	
-	
-	drift <- drift.term(yuima, param, env)
-	diff <- diffusion.term(yuima, param, env)
-	
-	QL <- 0
-	
-	pn <- 0
-
-	
-	vec <- env$deltaX-h*drift[-n,]
-
-	K <- -0.5*d.size * log( (2*pi*h) )
-
-	dimB <- dim(diff[, , 1])
-
-	if(is.null(dimB)){  # one dimensional X
-	  for(t in 1:(n-1)){
-		yB <- diff[, , t]^2
-		logdet <- log(yB)
-		pn <- K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB) 
-		QL <- QL+pn
-			
-		}
-	} else {  # multidimensional X
-	 for(t in 1:(n-1)){
-		yB <- diff[, , t] %*% t(diff[, , t])
-		logdet <- log(det(yB))
-		if(is.infinite(logdet) ){ # should we return 1e10?
-			pn <- log(1)
-			yuima.warn("singular diffusion matrix")
-			return(1e10)
-		}else{
-			pn <- K - 0.5*logdet + 
-					  ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]) 
-			QL <- QL+pn
-		}
-	 }
-	}
-
+  
+  if (is(yuima@model, "yuima.carma")){
+	  # 24/12
+	  d.size <-1
+    # We build the two step procedure as described in
+    if(length(yuima@model@info@scale.par)!=0){
+       prova<-as.numeric(param)
+       names(prova)<-fullcoef[oo]
+       param<-prova[c(length(prova):1)]
+       
+       y<-as.numeric(env$X)
+       tt<-env$time
+       p<-yuima@model@info@p
+       a<-param[c(1:p)]
+#        a_names<-names(param[c(1:p)])
+#        names(a)<-a_names
+       b<-param[c((p+1):(length(param)-p+1))]
+#        b_names<-names(param[c((p+1):(length(param)-p+1))])
+#        names(b)<-b_names
+       if(length(b)==1){
+         b<-1
+       } else{ 
+         indx_b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
+         b[indx_b0]<-1
+       }
+       sigma<-tail(param,1)
+       strLog<-yuima.carma.loglik1(y, tt, a, b, sigma)
+       QL<-strLog$loglikCdiag
+      }else {
+        yuima.warn("carma(p,q): the scale parameter is equal to 1. We will implemented as soon as possible")
+        return(NULL)
+    }
+	} else{   
+  	drift <- drift.term(yuima, param, env)
+  	diff <- diffusion.term(yuima, param, env)
+  	
+  	QL <- 0
+  	
+  	pn <- 0
+  
+  	
+  	vec <- env$deltaX-h*drift[-n,]
+  
+  	K <- -0.5*d.size * log( (2*pi*h) )
+  
+  	dimB <- dim(diff[, , 1])
+  
+  	if(is.null(dimB)){  # one dimensional X
+  	  for(t in 1:(n-1)){
+  		yB <- diff[, , t]^2
+  		logdet <- log(yB)
+  		pn <- K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB) 
+  		QL <- QL+pn
+  			
+  		}
+  	} else {  # multidimensional X
+  	 for(t in 1:(n-1)){
+  		yB <- diff[, , t] %*% t(diff[, , t])
+  		logdet <- log(det(yB))
+  		if(is.infinite(logdet) ){ # should we return 1e10?
+  			pn <- log(1)
+  			yuima.warn("singular diffusion matrix")
+  			return(1e10)
+  		}else{
+  			pn <- K - 0.5*logdet + 
+  					  ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]) 
+  			QL <- QL+pn
+  		}
+  	 }
+  	}
+  }
 	
 	
 	if(!is.finite(QL)){
@@ -511,6 +624,133 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	return(as.numeric(-QL))
 	
 }
+
+
+
+
+MatrixA<-function (a) 
+{
+  #Build Matrix A in the state space representation of Carma(p,q) 
+  #given the autoregressive coefficient
+  pp = length(a)
+  af = cbind(rep(0, pp - 1), diag(pp - 1))
+  af = rbind(af, -a[pp:1])
+  return(af)
+}
+
+
+yuima.Vinfinity<-function(elForVInf,v){
+  # We find the infinity stationary variance-covariance matrix
+  A<-elForVInf$A
+  sigma<-elForVInf$sigma
+  p<-dim(A)[1]  
+  matrixV<-matrix(0,p,p)
+  matrixV[upper.tri(matrixV,diag=TRUE)]<-v
+  matrixV[lower.tri(matrixV)]<-matrixV[upper.tri(matrixV)]
+  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
+  
+  RigSid<-l%*%t(l)
+  Matrixobj<-A%*%matrixV+matrixV%*%t(A)+sigma^2*RigSid
+  obj<-sum(Matrixobj^2)
+  obj
+}
+
+
+carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
+  
+  V_inf0<-matrix(diag(rep(1,p)),p,p)
+  
+  A<-MatrixA(a)
+  u<-diff(tt)[1]
+  expA<-as.matrix(expm(A*u))
+  v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
+  elForVInf<-list(A=A,sigma=sigma)
+  
+  V_inf_vect<-nlm(yuima.Vinfinity, v, elForVInf = elForVInf)$estimate
+  V_inf<-matrix(0,p,p)
+  V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
+  V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
+  
+  V_inf[abs(V_inf)<=1.e-06]=0
+  
+  
+  SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
+  
+  statevar0<-matrix(rep(0, p),p,1)
+  Qmatr<-SIGMA_err
+  
+  # set
+  statevar<-statevar0
+  
+  #   SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
+  
+  SigMatr<-Qmatr
+  #SigMatr<-V_inf
+  
+  zc<-matrix(bvector,1,p)
+  loglstar = 0
+  loglstar1 = 0
+  for(t in 1:length(tt)){ 
+    # prediction
+    statevar<-expA%*%statevar
+    SigMatr<-expA%*%SigMatr%*%t(expA)+Qmatr
+    # forecast
+    Uobs<-y[t]-zc%*%statevar
+    sd_2<-zc%*%SigMatr%*%t(zc)
+    
+    #correction
+    Kgain<-SigMatr%*%t(zc)%*%solve(sd_2)
+    #  SigMatr<-SigMatr-Kgain%*%as.numeric(sd_2)%*%t(Kgain)
+    
+    statevar<-statevar+Kgain%*%Uobs
+    SigMatr<-SigMatr-Kgain%*%zc%*%SigMatr
+    # construction of log-likelihood
+    #     loglstar1<-loglstar1+log(dnorm(as.numeric(Uobs), mean = 0, sd = sqrt(as.numeric(sd_2))))
+    #     sdsig<-sqrt(as.numeric(sd_2))
+    term_int<--0.5*(log((2*pi)^(length(Uobs))*det(sd_2))+t(Uobs)%*%solve(sd_2)%*%Uobs)
+    loglstar<-loglstar+term_int
+  }
+  return(list(loglstar=as.numeric(loglstar),s2hat=as.numeric(sd_2)))
+}
+
+
+
+yuima.carma.loglik1<-function (y, tt, a, b, sigma) 
+{
+  #This code compute the LogLik using kalman filter
+  
+  # if(a_0!=0){we need to correct the Y_t for the mean}
+  # if(sigma!=1){we need to write}
+  p <- as.integer(length(a))
+  
+  bvector <- rep(0, p)
+  q <- length(b)
+  bvector <- c(b, rep(0, p - q))
+  
+  
+  sigma<-sigma
+  y<-y
+  
+  xxalt<-carma.kalman(y, tt, p, q, a,bvector,sigma)
+  list(loglikCdiag = xxalt$loglstar,s2hat=xxalt$s2hat)
+}
+
+
+loglik5 <- function(param) {
+  a<-param[1:pp]
+  b <- 1
+  if(qq>0){
+    b<-param[(pp + 1):(pp + qq)]
+  }
+  
+  sigma<-tail(param,n=1)
+  xx <- yuima.carma.loglik1(y, tt, a, b, sigma)
+  
+  return(xx$loglikCdiag)
+}
+
+
+
 
 
 

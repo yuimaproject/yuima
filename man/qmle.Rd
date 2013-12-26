@@ -191,7 +191,63 @@ quasilogl(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0
 ##opt <- ml.ql(yuima, theta2, theta1, h=1/((n)^(2/3)), theta2.lim, theta1.lim, method="Newton")
 ##)
 ##opt@coef
-##}
+##
+
+# carma(p=2,q=0) driven by a brownian motion without location parameter
+
+
+mod0<-setCarma(p=2,                
+               q=0,
+               scale.par="sigma") 
+
+true.parm0 <-list(a1=1.39631,
+                 a2=0.05029,
+                 b0=1,
+                 sigma=0.23)
+
+samp0<-setSampling(Terminal=100,n=250)
+set.seed(123)
+sim0<-simulate(mod0,
+               true.parameter=true.parm0,
+               sampling=samp0)
+
+system.time(
+carmaopt0 <- qmle(sim0, start=list(a1=1.39631,a2=0.05029, 
+                              b0=1,
+                               sigma=0.23))
+)
+
+summary(carmaopt0)
+
+
+
+
+# carma(p=2,q=1) driven by a brownian motion without location parameter
+
+mod1<-setCarma(p=2,                
+               q=1,
+               scale.par="sigma") 
+
+true.parm1 <-list(a1=1.39631,
+                  a2=0.05029,
+                  b0=1,
+                  b1=2,
+                  sigma=0.23)
+
+samp1<-setSampling(Terminal=100,n=250)
+set.seed(123)
+sim1<-simulate(mod1,
+               true.parameter=true.parm1,
+               sampling=samp1)
+
+system.time(
+  carmaopt1 <- qmle(sim1, start=list(a1=1.39631,a2=0.05029, 
+                                     b0=1,b1=2,
+                                     sigma=0.23),joint=TRUE)
+)
+
+summary(carmaopt1)
+}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

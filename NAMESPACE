@@ -3,8 +3,10 @@ import("methods")
 ##importFrom("stats", "end", "time", "start")
 importFrom("graphics", "plot")
 importFrom("zoo")
+importFrom("Matrix")
 importFrom(stats, confint)
 importFrom(stats4)
+
 
 importFrom(utils, toLatex)
 

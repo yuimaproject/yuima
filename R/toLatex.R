@@ -8,8 +8,21 @@ toLatex.yuima <- function (object, ...)
   mod <- object
     if (class(object) == "yuima") 
 	mod <- object@model
-    if(class(mod) =="yuima.carma" && length(mod@info@lin.par)==0 ) 
-      { yuima.warn("")
+    #if(class(mod) =="yuima.carma" && length(mod@info@lin.par)==0 )
+      if(class(mod) =="yuima.carma"  )
+      { 
+#         yuima.warn("")
+        
+        
+        mysymb <- c("*", "alpha", "beta", "gamma", "delta", "rho", 
+                    "theta","sigma","mu", "sqrt")
+        #     myrepl <- c(" \\cdot ", "\\alpha ", "\\beta ", "\\gamma ", 
+        #   			"\\delta ", "\\rho ", "\\theta ", "\\sqrt ")
+        myrepl <- c(" \\cdot ", "\\alpha ", "\\beta ", "\\gamma ", 
+                    "\\delta ", "\\rho ", "\\theta ","\\sigma","\\mu", "\\sqrt ")
+        ns <- length(mysymb)
+        
+        
         n.eq <- mod@equation.number
         info <- mod@info
         noise.var<-"W"
@@ -23,7 +36,7 @@ toLatex.yuima <- function (object, ...)
         }
         
         if(!length(info@loc.par)==0 && length(info@scale.par)==0){
-          main.con<-paste(info@scale.par,"* \\ ", info@ma.par)
+          main.con<-paste(info@loc.par,"+ \\ ", info@ma.par)
         }
         
         if(!length(info@loc.par)==0 && !length(info@scale.par)==0){
@@ -44,6 +57,11 @@ toLatex.yuima <- function (object, ...)
                      "+ e",sprintf("d%s", noise.var),"\\left(",
                      mod@time.variable, "\\right) \\\\ \n")
         dr<- paste(dr, "\\end{array}\\right.")
+#11/12
+        for (i in 1:ns) {
+          dr <- gsub(mysymb[i], myrepl[i], dr, fixed = "TRUE")
+        }
+        
         body <- paste("%%% Copy and paste the following output in your LaTeX file")
         body <- c(body, paste("$$"))
         body <- c(body, dr)
@@ -68,6 +86,11 @@ toLatex.yuima <- function (object, ...)
         X<-paste(info@Latent.var,"(",mod@time.variable,")",
                  "=\\left[",latent.lab,
                  "\\right]'")
+        
+        for (i in 1:ns) {
+          X <- gsub(mysymb[i], myrepl[i], X, fixed = "TRUE")
+        }
+        
         body <- c(body, X)
         body <- c(body, paste("$$"))
         # Vector Moving Average Coefficient.
@@ -75,16 +98,20 @@ toLatex.yuima <- function (object, ...)
         
         #b.nozeros <-c(0:info@q)
         
-        ma.lab0<-paste(paste(info@ma.par,0:(info@q),sep="_"),collapse=", \\ ")
+      #  ma.lab0<-paste(paste(info@ma.par,0:(info@q),sep="_"),collapse=", \\ ")
+        ma.lab0<-paste(info@ma.par,0:(info@q),sep="_")
         
-        
-        if(length(ma.lab0)==1){ma.lab1<-ma.lab0}
-        if(length(ma.lab0)==2){
-          ma.lab0[1]<-paste(ma.lab0[1],",\\ ",sep="")
-      #    ma.lab0[2]<-paste(ma.lab0[2],"(",mod@time.variable,")",sep="")
-          ma.lab1<-ma.lab0
-        }
-        if(length(ma.lab0)>2){
+        #if(length(ma.lab0)==1){ma.lab1<-ma.lab0}
+        if(info@q>=0 && info@q<=1){
+          ma.lab1<-paste(ma.lab0,collapse=", \\ ")}
+        #if(length(ma.lab0)==2){
+#         if(info@q==1){
+#           ma.lab0[1]<-paste(ma.lab0[1],",\\ ",sep="")
+#       #    ma.lab0[2]<-paste(ma.lab0[2],"(",mod@time.variable,")",sep="")
+#           ma.lab1<-ma.lab0
+#         }
+        #if(length(ma.lab0)>2){
+        if(info@q>1){
           ma.lab1<-paste(ma.lab0[1],
                             ",\\ ","\\ldots",
                             " \\ , \\ ",tail(ma.lab0,n=1))
@@ -102,6 +129,11 @@ toLatex.yuima <- function (object, ...)
            ma.lab <- paste(ma.lab1," ,\\ 0, \\ \\ldots \\ , \\ 0")
          }         
         Vector.ma <- paste(info@ma.par,"=","\\left[",ma.lab,"\\right]'")
+        
+        for (i in 1:ns) {
+          Vector.ma <- gsub(mysymb[i], myrepl[i], Vector.ma, fixed = "TRUE")
+        }
+        
         body <- c(body, Vector.ma)
         body <- c(body, paste("$$"))
         
@@ -110,9 +142,32 @@ toLatex.yuima <- function (object, ...)
         
         noise.coef<-mod@diffusion
         vect.e0 <- substr(tail(noise.coef,n=1), 13, nchar(tail(noise.coef,n=1)) -2)
+        vect.e1 <- substr(vect.e0, 2, nchar(vect.e0) -1)
+        dummy.e0<-strsplit(vect.e1,split="+",fixed=TRUE)
+        
+        
         if (!length(mod@jump.variable)==0){
           noise.coef <- mod@jump.coeff
           vect.e0 <- substr(tail(noise.coef,n=1), 2, nchar(tail(noise.coef,n=1)) -1)
+        } else{ 
+          if(length(info@lin.par) != 0){
+                
+            if (info@lin.par != info@ma.par){
+              dummy.e0<-c(dummy.e0[[1]][1], paste(dummy.e0[[1]][(2:length(dummy.e0[[1]]))],
+                                                 "(",mod@time.variable,")",sep=""))
+              dummy.e0<-gsub(info@Latent.var,paste0(info@Latent.var,"_",collapse=""),dummy.e0)
+              dummy.e0<-gsub(info@lin.par,paste0(info@lin.par,"_",collapse=""),dummy.e0)  
+              if(length(dummy.e0)>3){
+                vect.e0<-paste(dummy.e0[1],"+",dummy.e0[2],
+                               "+ \\ldots +",tail(dummy.e0,n=1))
+                vect.e0<-paste("(",vect.e0,")")
+              } else{vect.e0<-paste("(",paste(dummy.e0,collapse="+"),")")}
+            } 
+  #           else{
+  #             yuima.warm("The case of loc.par and scale.par will be implemented as soon as possible")
+  #             return(NULL)
+  #           }
+          }  
         }
         
         if (info@p==1){vect.e <- vect.e0}
@@ -121,6 +176,13 @@ toLatex.yuima <- function (object, ...)
         if (info@p>3){vect.e <- paste("0, \\ \\ldots \\ , \\ 0, \\  ",vect.e0)}
         
         coeff.e<- paste("e","=","\\left[",  vect.e , "\\right]'")
+        
+        for (i in 1:ns) {
+          coeff.e <- gsub(mysymb[i], myrepl[i], coeff.e, fixed = "TRUE")
+        }
+        
+        
+        
         
         body <- c(body, coeff.e)
         body <- c(body, paste("$$"))
@@ -156,17 +218,18 @@ toLatex.yuima <- function (object, ...)
         
         array.start<-paste0("\\begin{array}{",cent.col,"}\n",collapse="")
         MATR.A<-paste("A ","=","\\left[",array.start,  matrix.A,  "\\end{array}\\right]'" )
+        
+        for (i in 1:ns) {
+          MATR.A <- gsub(mysymb[i], myrepl[i], MATR.A, fixed = "TRUE")
+        }
+        
+        
         body <- c(body, MATR.A)
         body <- c(body, paste("$$"))
         body <- structure(body, class = "Latex")
         
         return(body)
-        mysymb <- c("*", "alpha", "beta", "gamma", "delta", "rho", 
-               "theta","sigma","mu", "sqrt")
-        #     myrepl <- c(" \\cdot ", "\\alpha ", "\\beta ", "\\gamma ", 
-        # 				"\\delta ", "\\rho ", "\\theta ", "\\sqrt ")
-        myrepl <- c(" \\cdot ", "\\alpha ", "\\beta ", "\\gamma ", 
-                    "\\delta ", "\\rho ", "\\theta ","\\sigma","\\mu", "\\sqrt ")
+        
     } else{
     n.eq <- mod@equation.number
     dr <- paste("\\left(\\begin{array}{c}\n")
