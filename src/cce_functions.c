@@ -265,6 +265,20 @@ void pHayashiYoshida(int *kn, int *xlength, int *ylength,
 }
 
 
+void msrc(int *M, int *N, double *xg, double *xl, double *ygamma, double *ylambda,
+          double *result)
+{
+  int m, i;
+  
+  for(m = 0; m < *M; m++) {
+    for(i = m; i < *N; i++){
+      result[m] += (xg[i] - xl[i-m]) * (ygamma[i] - ylambda[i-m]);
+    }
+  }
+  
+}
+
+
 void HYcrosscov(int *gridL, int *xL, int *yL, double *grid, double *xtime,
                 double *ytime, double *tmptime, double *dX, double *dY, double *value)
 {
