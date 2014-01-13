@@ -46,7 +46,7 @@ quasilogl(yuima, param, print=FALSE)
 %   parameters. A function ml.pl estimates parameters of the sdeModel by
 %   maximizing the quasi-likelihood.
   \code{qmle} behaves more likely the standard \code{mle} function in \pkg{stats4} and
-  argument \code{method} is one of the methods available in \code{\link{optim}}.
+  argument \code{method} is one of the methods available in \code{\link{optim}}. 
 
   \code{lse} calculates least squares estimators of the drift parameters. This is
   useful for initial guess of \code{qmle} estimation.
@@ -58,6 +58,12 @@ quasilogl(yuima, param, print=FALSE)
 \value{
   \item{QL}{a real value.}
   \item{opt}{a list with components the same as 'optim' function.}
+  \item{carmaopt}{if the model is an object of \code{\link{yuima.carma-class}}, \code{qmle} returns a list containing: 
+  \describe{
+  \item{mle}{contains an object of class \code{mle-class}.}
+  \item{Incr}{contains a vector of estimated noise.}
+  \item{model}{contains an object of class \code{\link{yuima-class}}.}
+  }}
 }
 \author{The YUIMA Project Team}
 \note{
@@ -217,7 +223,7 @@ carmaopt0 <- qmle(sim0, start=list(a1=1.39631,a2=0.05029,
                                sigma=0.23))
 )
 
-summary(carmaopt0)
+summary(carmaopt0$mle)
 
 
 
@@ -225,14 +231,12 @@ summary(carmaopt0)
 # carma(p=2,q=1) driven by a brownian motion without location parameter
 
 mod1<-setCarma(p=2,                
-               q=1,
-               scale.par="sigma") 
+               q=1) 
 
 true.parm1 <-list(a1=1.39631,
                   a2=0.05029,
                   b0=1,
-                  b1=2,
-                  sigma=0.23)
+                  b1=2)
 
 samp1<-setSampling(Terminal=100,n=250)
 set.seed(123)
@@ -242,12 +246,40 @@ sim1<-simulate(mod1,
 
 system.time(
   carmaopt1 <- qmle(sim1, start=list(a1=1.39631,a2=0.05029, 
-                                     b0=1,b1=2,
-                                     sigma=0.23),joint=TRUE)
+                                     b0=1,b1=2),joint=TRUE)
 )
 
-summary(carmaopt1)
+summary(carmaopt1$mle)
+
+# carma(p=2,q=1) driven by a compound poisson process where the jump size is normally distributed.
+
+mod2<-setCarma(p=2,                
+               q=1,
+               measure=list(intensity="1",df=list("dnorm(z, 0, 1)")),
+               measure.type="CP") 
+
+true.parm2 <-list(a1=1.39631,
+                  a2=0.05029,
+                  b0=1,
+                  b1=2)
+
+samp2<-setSampling(Terminal=100,n=250)
+set.seed(123)
+sim2<-simulate(mod2,
+               true.parameter=true.parm2,
+               sampling=samp2)
+
+system.time(
+  carmaopt2 <- qmle(sim2, start=list(a1=1.39631,a2=0.05029, 
+                                     b0=1,b1=2),joint=TRUE)
+)
+
+summary(carmaopt2$mle)
+
+
+
 }
+
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
