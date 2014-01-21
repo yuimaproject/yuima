@@ -75,7 +75,9 @@ diffusion.term <- function(yuima, theta, env){
 
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
  lower, upper, joint=FALSE, ...){
-
+  if(is(yuima@model, "yuima.carma")){
+    NoNeg.Noise<-FALSE
+  }
   if(is(yuima@model, "yuima.carma")&& length(yuima@model@info@scale.par)!=0){
     method<-"L-BFGS-B"
   }
@@ -118,15 +120,24 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
       tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
       measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
       if(!is.na(match(measurefunc,CPlist))){
-        yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a Compound Poisson with no-negative random size will be implemented as soon as possible")
-        return(NULL)
+        yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a Compound Poisson with no-negative random size")
+        NoNeg.Noise<-TRUE 
+        # we need to add a new parameter for the mean of the Noise
+        if((yuima@model@info@q+1)==(yuima@model@info@q+1)){
+          start[["mean.noise"]]<-1
+        }
+  #      return(NULL)
       }
       if(yuima@model@measure.type=="code"){
         tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
         measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
         if(!is.na(match(measurefunc,codelist))){
-          yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a Compound Poisson with no-negative random size will be implemented as soon as possible")
-          return(NULL)
+          yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a non-Negative Levy  will be implemented as soon as possible")
+          NoNeg.Noise<-TRUE
+          if((yuima@model@info@q+1)==(yuima@model@info@q+1)){
+            start[[mean.noise]]<-1
+          }
+          #return(NULL)
         }      
       }
     }
@@ -204,11 +215,32 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     fullcoef<-c(fullcoef, yuima@model@info@loc.par)
     
   }
+
+  if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE)){
+    if((yuima@model@info@q+1)==yuima@model@info@p){
+      mean.noise<-"mean.noise"
+      fullcoef<-c(fullcoef, mean.noise)
+    }
+  }
   
+  if(is(yuima@model,"yuima.carma") && (length(measure.par)>0)){
+   fullcoef<-c(fullcoef, measure.par)
+  }
+
 	npar <- length(fullcoef)
 	
-	fixed.par <- names(fixed)
-
+  
+	fixed.par <- names(fixed) # We use Fixed.par when we consider a Carma with scale parameter
+  if(is(yuima@model,"yuima.carma") && (length(measure.par)>0)){
+    
+    for( j in c(1:length(measure.par))){
+      if(is.na(match(measure.par[j],names(fixed)))){
+        fixed.par <- c(fixed.par,measure.par[j])
+        fixed[measure.par[j]]<-start[measure.par[j]]
+      }
+    }
+    
+  }
 	if (any(!(fixed.par %in% fullcoef))) 
 	 yuima.stop("Some named arguments in 'fixed' are not arguments to the supplied yuima model")
 	
@@ -228,7 +260,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	#01/01
   if(is(yuima@model, "yuima.carma")){
    # if(length(yuima@model@info@scale.par)!=0){
-      idx.xinit <- as.integer(na.omit(match(xinit.par,nm)))
+      idx.xinit <- as.integer(na.omit(match(xinit.par,nm)))# We need to add idx if NoNeg.Noise is TRUE
     #}
   }
   
@@ -254,6 +286,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	}
 	upper <- tmpupper
 
+  
 	 
 	 
 	 
@@ -307,7 +340,9 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 HaveDiffHess <- FALSE
 	 if(length(start)){
 		if(JointOptim){ ### joint optimization
-			if(length(start)>1){ #Â?multidimensional optim
+			if(length(start)>1){ #Â?multidimensional optim # Adjust lower for no negative Noise
+        if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE))
+          if(mean.noise %in% names(lower)){lower[mean.noise]<-10^-7}
 				oout <- optim(start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
 				HESS <- oout$hessian
 				if(is(yuima@model,"yuima.carma") && length(yuima@model@info@scale.par)!=0){
@@ -315,6 +350,18 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 				  idx.b0<-match(b0,rownames(HESS))
 				  HESS<-HESS[-idx.b0,]
 				  HESS<-HESS[,-idx.b0]
+				}
+				if(is(yuima@model,"yuima.carma") && length(yuima@model@parameter@measure)!=0){
+				  for(i in c(1:length(fixed.par))){
+            indx.fixed<-match(fixed.par[i],rownames(HESS))
+            HESS<-HESS[-indx.fixed,]
+				    HESS<-HESS[,-indx.fixed]
+				  }
+          if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE)){
+            idx.noise<-(match(mean.noise,rownames(HESS)))
+            HESS<-HESS[-idx.noise,]
+            HESS<-HESS[,-idx.noise]
+          }
 				}
 				HaveDriftHess <- TRUE
 				HaveDiffHess <- TRUE
@@ -394,7 +441,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$lower <- unlist( lower[ nm[idx.drift] ])
 			if(length(mydots$par)>1){
 			  if(is(yuima@model, "yuima.carma")){
-			    if(length(yuima@model@info@scale.par)!=0){
+			    if(NoNeg.Noise==TRUE){
+            if((yuima@model@info@q+1)==yuima@model@info@p){
+              mydots$lower[names(start["NoNeg.Noise"])]<-10^(-7)
+            }
+             
+			    }
+          if(length(yuima@model@info@scale.par)!=0){
             name_b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
             index_b0<-match(name_b0,nm)
   			    mydots$lower[index_b0]<-1
@@ -462,10 +515,15 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 coef <- oout$par
 	 control=list()
 	 par <- coef
-  if(!is(yuima@model,"yuima.carma")){
-	  names(par) <- c(diff.par, drift.par)
-       nm <- c(diff.par, drift.par)
+  #if(!is(yuima@model,"yuima.carma")){
+	  names(par) <- unique(c(diff.par, drift.par))
+       nm <- unique(c(diff.par, drift.par))
+  if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE)){
+      nm <-c(nm,mean.noise)
+      nm <-c(nm,measure.par)
+      nm<-unique(nm)
   }
+  #}
 #	 print(par)
 #	 print(coef)
 	 conDrift <- list(trace = 5, fnscale = 1, 
@@ -601,8 +659,9 @@ if(!is(yuima@model,"yuima.carma")){
     ttt<-observ@zoo.data[[1]]
     tt<-index(ttt)
     y<-coredata(ttt)
+    if(NoNeg.Noise==TRUE && (info@p==(info@q+1))){final_res@coef[mean.noise]<-mean(y)/tail(ma.par,n=1)*ar.par[1]}
     
-    levy<-yuima.CarmaRecovNoise(y,tt,ar.par,ma.par, loc.par, scale.par, lin.par)
+    levy<-yuima.CarmaRecovNoise(y,tt,ar.par,ma.par, loc.par, scale.par, lin.par, NoNeg.Noise)
     inc.levy<-NULL
     if (!is.null(levy)){
       inc.levy<-diff(t(levy))
@@ -642,8 +701,14 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
 	   && length(yuima@model@parameter@jump)!=0){
 	  diff.par<-yuima@model@parameter@jump
+	  measure.par<-yuima@model@parameter@measure
 	}
 	
+	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
+	   && length(yuima@model@parameter@measure)!=0){
+	  measure.par<-yuima@model@parameter@measure
+	}
+  
 	# 24/12
 	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)>0  ){
 	  yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
@@ -682,6 +747,17 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	    if(length(xinit.par)>0)
 	        fullcoef<-c(fullcoef, xinit.par)
 				}
+  
+  	if(is(yuima@model,"yuima.carma") && (length(yuima@model@parameter@measure)!=0)){
+  	  fullcoef<-c(fullcoef, measure.par)
+  	}
+  if(is(yuima@model,"yuima.carma")){
+  	if("mean.noise" %in% names(param)){
+      mean.noise<-"mean.noise"
+  	  fullcoef<-c(fullcoef, mean.noise)
+      NoNeg.Noise<-TRUE
+  	}
+  }
   
 #	fullcoef <- c(diff.par, drift.par)
 	npar <- length(fullcoef)
@@ -773,6 +849,26 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
           } 
        sigma<-tail(param,1)
          }else {sigma<-1}
+         NoNeg.Noise<-FALSE
+         if(is(yuima@model,"yuima.carma")){
+           if("mean.noise" %in% names(param)){
+             
+             NoNeg.Noise<-TRUE
+           }
+         }
+         if(NoNeg.Noise==TRUE){
+           if (length(b)==p){
+             #mean.noise<-param[mean.noise]
+             # Be useful for carma driven by a no negative levy process
+             mean.y<-mean(y)
+             #mean.y<-mean.noise*tail(b,n=1)/tail(a,n=1)*sigma
+             #param[mean.noise]<-mean.y/(tail(b,n=1)/tail(a,n=1)*sigma)
+           }else{
+             mean.y<-0
+           }
+           y<-y-mean.y
+         }
+         
        strLog<-yuima.carma.loglik1(y, tt, a, b, sigma)
        }else{
          # 01/01
@@ -795,13 +891,19 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
          } else{sigma <- 1}
          loc.par <- yuima@model@info@loc.par
          mu <- param[loc.par]
+# Lines 883:840 work if we have a no negative noise
+        if(is(yuima@model,"yuima.carma")&&(NoNeg.Noise==TRUE)){
+           if (length(b)==p){
+             mean.noise<-param[mean.noise]
+           # Be useful for carma driven by levy process
+             mean.y<-mean.noise*tail(b,n=1)/tail(a,n=1)*sigma
+           }else{
+             mean.y<-0
+           }
+           y<-y-mean.y
+        }
          
-#          if (length(b)==p){
-#          # Be useful for carma driven by levy process
-#            mean.y<-mu*tail(b,n=1)/tail(a,n=1)*sigma
-#          }else{
-#            mean.y<-0
-#          }
+         
          y.start <- y-mu
          
          strLog<-yuima.carma.loglik1(y.start, tt, a, b, sigma)
