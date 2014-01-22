@@ -518,10 +518,14 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   #if(!is(yuima@model,"yuima.carma")){
 	  names(par) <- unique(c(diff.par, drift.par))
        nm <- unique(c(diff.par, drift.par))
-  if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE)){
-      nm <-c(nm,mean.noise)
+  if(is(yuima@model,"yuima.carma") && length(yuima@model@parameter@measure)!=0){
       nm <-c(nm,measure.par)
+      if((NoNeg.Noise==TRUE)){nm <-c(nm,mean.noise)}
+      
       nm<-unique(nm)
+  }
+  if(is(yuima@model,"yuima.carma") && (length(yuima@model@info@loc.par)!=0)){
+    nm <-unique(c(nm,yuima@model@info@loc.par))
   }
   #}
 #	 print(par)
@@ -701,7 +705,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
 	   && length(yuima@model@parameter@jump)!=0){
 	  diff.par<-yuima@model@parameter@jump
-	  measure.par<-yuima@model@parameter@measure
+	 # measure.par<-yuima@model@parameter@measure
 	}
 	
 	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
@@ -891,6 +895,15 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
          } else{sigma <- 1}
          loc.par <- yuima@model@info@loc.par
          mu <- param[loc.par]
+         
+         NoNeg.Noise<-FALSE
+         if(is(yuima@model,"yuima.carma")){
+           if("mean.noise" %in% names(param)){
+             
+             NoNeg.Noise<-TRUE
+           }
+         }
+         
 # Lines 883:840 work if we have a no negative noise
         if(is(yuima@model,"yuima.carma")&&(NoNeg.Noise==TRUE)){
            if (length(b)==p){
