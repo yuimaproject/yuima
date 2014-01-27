@@ -19,7 +19,7 @@
 %ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
-qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, ...)
+qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, Est.Incr=TRUE, ...)
 quasilogl(yuima, param, print=FALSE)
 }
 \arguments{
@@ -39,6 +39,7 @@ quasilogl(yuima, param, print=FALSE)
   \item{start}{initial values to be passed to the optimizer.}
   \item{fixed}{for conditional (quasi)maximum likelihood estimation.}
   \item{joint}{perform joint estimation or two stage estimation? by default \code{joint=FALSE}.}
+  \item{Est.Incr}{If the yuima model is an object of \code{\link{yuima.carma-class}} the \code{qmle} returns an object of \code{\link{yuima.carma.qmle-class}} or object of class \code{mle-class}. By default \code{Est.Incr=TRUE}.}
   \item{...}{passed to \code{\link{optim}} method. See Examples.}
 }
 \details{
@@ -58,12 +59,7 @@ quasilogl(yuima, param, print=FALSE)
 \value{
   \item{QL}{a real value.}
   \item{opt}{a list with components the same as 'optim' function.}
-  \item{carmaopt}{if the model is an object of \code{\link{yuima.carma-class}}, \code{qmle} returns a list containing: 
-  \describe{
-  \item{mle}{contains an object of class \code{mle-class}.}
-  \item{Incr}{contains a vector of estimated noise.}
-  \item{model}{contains an object of class \code{\link{yuima-class}}.}
-  }}
+  \item{carmaopt}{if the model is an object of \code{\link{yuima.carma-class}}, \code{qmle} returns an object \code{\link{yuima.carma.qmle-class}}}
 }
 \author{The YUIMA Project Team}
 \note{
@@ -225,7 +221,8 @@ carmaopt0 <- qmle(sim0, start=list(a1=1.39631,a2=0.05029,
                                sigma=0.23))
 )
 
-summary(carmaopt0$mle)
+summary(carmaopt0)
+
 
 
 
@@ -251,7 +248,9 @@ system.time(
                                      b0=1,b1=2),joint=TRUE)
 )
 
-summary(carmaopt1$mle)
+summary(carmaopt1)
+
+plot(carmaopt1)
 
 # carma(p=2,q=1) driven by a compound poisson process where the jump size is normally distributed.
 
@@ -276,8 +275,39 @@ system.time(
                                      b0=1,b1=2),joint=TRUE)
 )
 
-summary(carmaopt2$mle)
+summary(carmaopt2)
 
+plot(carmaopt2)
+
+# carma(p=2,q=1) driven by a normal inverse gaussian process
+mod3<-setCarma(p=2,q=1,
+               measure=list(df=list("rNIG(z, alpha, beta, delta, mu)")),
+               measure.type="code")
+#
+
+# True param
+true.param3<-list(a1=1.39631,
+                 a2=0.05029,
+                 b0=1,
+                 b1=2,
+                 alpha=1,
+                 beta=0,
+                 delta=1,
+                 mu=0)
+
+samp3<-setSampling(Terminal=100,n=200)
+set.seed(123)
+
+sim3<-simulate(mod3,
+               true.parameter=true.param3,
+               sampling=samp3)
+
+
+carmaopt3<-qmle(sim3,start=true.param3)
+
+summary(carmaopt3)
+
+plot(carmaopt3)
 
 
 }

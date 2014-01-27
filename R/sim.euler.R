@@ -163,6 +163,17 @@ euler<-function(xinit,yuima,dW,env){
       }
       #lambda <- integrate(sdeModel@measure$df$func, 0, Inf)$value * eta0
       #lambda <- integrate(tmp.expr, 0, Inf)$value * eta0 ##bug:2013/10/28
+      
+      dummyList<-as.list(env)
+      lgth.meas<-length(yuima@model@parameter@measure)
+      if(lgth.meas>1){
+        for(i in c(2:lgth.meas)){
+          idx.dummy<-yuima@model@parameter@measure[i]
+          assign(idx.dummy,as.numeric(dummyList[idx.dummy]))
+        }
+      }
+      
+      
       lambda <- integrate(tmp.expr, -Inf, Inf)$value * eta0
       
       ##:: lambda = nu() (p6)
@@ -233,6 +244,14 @@ euler<-function(xinit,yuima,dW,env){
 ##                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
                    rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)")
                    )
+      dummyList<-as.list(env)
+      lgth.meas<-length(yuima@model@parameter@measure)
+      if(lgth.meas!=0){
+        for(i in c(1:lgth.meas)){
+          idx.dummy<-yuima@model@parameter@measure[i]
+          assign(idx.dummy,as.numeric(dummyList[idx.dummy]))
+        }
+      }
       
       if(is.null(dZ)){  ##:: "otherwise"
         cat(paste("Code \"", code, "\" not supported yet.\n", sep=""))

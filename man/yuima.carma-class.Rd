@@ -54,6 +54,7 @@
 	  \code{\link{simulate}}.}
     \item{toLatex}{This method converts an object of \code{yuima.carma-class} to character vectors with LaTeX markup.}
     \item{CarmaRecovNoise}{Recovering underlying Levy. For more information see \code{\link{CarmaRecovNoise}}. }
+    \item{qmle}{Quasi maximum likelihood estimation procedure. For more information see \code{\link{qmle}}. }
   }
 }
 \author{The YUIMA Project Team}

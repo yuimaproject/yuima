@@ -6,6 +6,7 @@ importFrom("zoo")
 importFrom("Matrix")
 importFrom(stats, confint)
 importFrom(stats4)
+importFrom("GeneralizedHyperbolic")
 
 
 importFrom(utils, toLatex)
@@ -22,7 +23,8 @@ exportClasses("yuima",
               "yuima.model",
               "model.parameter",
 	      "yuima.carma",
-	      "carma.info"
+	      "carma.info",
+	      "yuima.carma.qmle"
               )
 
 exportMethods(

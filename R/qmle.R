@@ -74,7 +74,7 @@ diffusion.term <- function(yuima, theta, env){
 
 
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
- lower, upper, joint=FALSE, ...){
+ lower, upper, joint=FALSE, Est.Incr=TRUE, ...){
   if(is(yuima@model, "yuima.carma")){
     NoNeg.Noise<-FALSE
   }
@@ -128,20 +128,21 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
         }
   #      return(NULL)
       }
-      if(yuima@model@measure.type=="code"){
-        tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
-        measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
-        if(!is.na(match(measurefunc,codelist))){
-          yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a non-Negative Levy  will be implemented as soon as possible")
-          NoNeg.Noise<-TRUE
-          if((yuima@model@info@q+1)==(yuima@model@info@q+1)){
-            start[[mean.noise]]<-1
-          }
-          #return(NULL)
-        }      
-      }
+
     }
     
+    if(yuima@model@measure.type=="code"){
+      tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
+      measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
+      if(!is.na(match(measurefunc,codelist))){
+        yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a non-Negative Levy  will be implemented as soon as possible")
+        NoNeg.Noise<-TRUE
+        if((yuima@model@info@q+1)==(yuima@model@info@q+1)){
+          start[[mean.noise]]<-1
+        }
+        #return(NULL)
+      }      
+    }    
     
     
 #     yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a Jump process will be implemented as soon as possible ")
@@ -624,9 +625,21 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 #        vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
 #        method = method)
 #LM 11/01
-  final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
-                 vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                 method = method)
+  if(!is(yuima@model,"yuima.carma")){
+    final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                   vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+                   method = method)
+  }else{ 
+    if(Est.Incr==TRUE){
+    final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                   vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+                   method = method)
+    }else{
+      final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                     vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+                     method = method)
+    }
+  }
   
 if(!is(yuima@model,"yuima.carma")){
     return(final_res)  
@@ -670,12 +683,155 @@ if(!is(yuima@model,"yuima.carma")){
     if (!is.null(levy)){
       inc.levy<-diff(t(levy))
     }
-    carma_final_res<-list(mle=final_res,Incr=inc.levy,model=yuima) 
-    
-#     the best should be to build a new class which extends both the mle and
-#     the yuima class with an added slot that contains the estimated Levy increments
+    # INSERT HERE THE NECESSARY STEPS FOR FINDING THE PARAMETERS OF LEVY
     
     
+    dummycovCarmapar<-vcov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]
+    if(!is.null(loc.par)){
+      dummycovCarmapar<-vcov[unique(c(drift.par,diff.par,info@loc.par)),
+                             unique(c(drift.par,diff.par,info@loc.par))]
+    }
+    dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to adjusted
+    dummycoeffCarmapar<-coef[unique(c(drift.par,diff.par))]
+    if(!is.null(loc.par)){
+      dummycoeffCarmapar<-coef[unique(c(drift.par,diff.par,info@loc.par))]
+    }
+    
+    dummycoeffCarmaNoise<-coef[unique(c(measure.par))]
+    coef<-NULL
+    coef<-c(dummycoeffCarmapar,dummycoeffCarmaNoise)
+    names.par<-c(unique(c(drift.par,diff.par)),unique(c(measure.par)))
+    if(!is.null(loc.par)){
+      names.par<-c(unique(c(drift.par,diff.par,info@loc.par)),unique(c(measure.par)))
+    }
+    names(coef)<-names.par
+    cov<-NULL
+    cov<-matrix(0,length(names.par),length(names.par))
+    rownames(cov)<-names.par
+    colnames(cov)<-names.par
+    if(is.null(loc.par)){
+      cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
+    }else{
+      cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
+    }
+    
+    cov[unique(c(measure.par)),unique(c(measure.par))]<-dummycovCarmaNoise
+    
+    if(length(model@measure.type)!=0){
+      if(model@measure.type=="CP"){
+  #       tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
+  #       measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
+        if(measurefunc=="dnorm"){
+          
+        }
+        if(measurefunc=="dgamma"){
+          
+        }
+        if(measurefunc=="dexp"){
+          
+        }
+      }
+      if(yuima@model@measure.type=="code"){
+  #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rngamma"
+  
+        
+        if(measurefunc=="rIG"){
+  #         result.Levy<-gigFit(inc.levy)
+  #         Inc.Parm<-coef(result.Levy)
+  #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
+        }
+        if(measurefunc=="rNIG"){
+  #         inc.levy
+  #         measure.par
+  #         sapply(gregexpr("\\W+", measurefunc),length)
+  
+          name.func.dummy <- as.character(model@measure$df$expr[1])
+          name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
+          names.measpar<-rev(as.vector(strsplit(name.func,', '))[[1]][-1])
+          valuemeasure<-as.numeric(names.measpar)
+          NaIdx<-which(is.na(valuemeasure))
+          if(length(NaIdx)!=0){
+            yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
+          }
+          
+          inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
+                                    to=yuima@sampling@n[1],
+                                    by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
+                                    )])
+          result.Levy<-nigFit(inc.levy1)      
+          
+          Inc.Parm<-coef(result.Levy)
+          IncVCOV<--solve(nigHessian(inc.levy, param=Inc.Parm))
+  
+          names(Inc.Parm)[NaIdx]<-measure.par
+          #prova<-as.matrix(IncVCOV)
+          rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
+          colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
+          
+          
+          coef<-NULL
+          coef<-c(dummycoeffCarmapar,Inc.Parm)
+          #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
+          #       
+          names.par<-names(coef)
+          cov<-NULL
+          cov<-matrix(0,length(names.par),length(names.par))
+          rownames(cov)<-names.par
+          colnames(cov)<-names.par
+          if(is.null(loc.par)){
+            cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
+          }else{
+            cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
+          }
+          cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
+          
+        }
+        if(measurefunc=="rgamma"){
+  #         result.Levy<-gigFit(inc.levy)
+  #         Inc.Parm<-coef(result.Levy)
+  #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
+          
+        }
+        if(measurefunc=="rbgamma"){
+          
+        }
+        if(measurefunc=="rngamma"){
+          
+        }
+        
+      
+        
+        
+      }
+    }
+#     dummycovCarmapar<-vcov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]
+#     dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to adjusted
+#     dummycoeffCarmapar<-coef[unique(c(drift.par,diff.par))]
+#     dummycoeffCarmaNoise<-coef[unique(c(measure.par))]
+#     coef<-NULL
+#     coef<-c(dummycoeffCarmapar,dummycoeffCarmaNoise)
+#     names.par<-c(unique(c(drift.par,diff.par)),unique(c(measure.par)))
+#     names(coef)<-names.par
+#     cov<-NULL
+#     cov<-matrix(0,length(names.par),length(names.par))
+#     rownames(cov)<-names.par
+#     colnames(cov)<-names.par
+#     cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
+#     cov[unique(c(measure.par)),unique(c(measure.par))]<-dummycovCarmaNoise
+        
+#    carma_final_res<-list(mle=final_res,Incr=inc.levy,model=yuima) 
+    if(Est.Incr==TRUE){
+      # START FROM HERE 24/01
+      carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                     vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
+                     method = method, Incr.Lev = inc.levy,
+                           model = yuima@model)
+    }else{
+      carma_final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+          vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
+          method = method)
+    }
+    return(carma_final_res)    
   }
 }
 
@@ -909,7 +1065,9 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
            if (length(b)==p){
              mean.noise<-param[mean.noise]
            # Be useful for carma driven by levy process
-             mean.y<-mean.noise*tail(b,n=1)/tail(a,n=1)*sigma
+          #   mean.y<-mean.noise*tail(b,n=1)/tail(a,n=1)*sigma
+             mean.y<-mean(y-mu) 
+             
            }else{
              mean.y<-0
            }
@@ -1531,4 +1689,10 @@ mydots$fn <- NULL
     method = method)
 }
 
+# Plot Method for yuima.carma.qmle
+setMethod("plot",signature(x="yuima.carma.qmle"),
+          function(x, ...){
+            plot(x@Incr.Lev, ...)
+          }
+)
 

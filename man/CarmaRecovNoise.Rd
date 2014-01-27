@@ -87,10 +87,9 @@ sim1<-simulate(mod1,
 
 # We estimate the parameter using qmle.
 carmaopt1 <- qmle(sim1, start=true.parm1)
-summary(carmaopt1$mle)
+summary(carmaopt1)
 # Internally qmle uses CarmaRecovNoise. The result is in 
-carmaopt1$Incr->inc.Levy1
-plot(inc.Levy1)
+plot(carmaopt1)
 
 # Ex.3: Carma(p=2,q=1) with scale and location parameters 
 # driven by a Compound Poisson
@@ -118,11 +117,10 @@ sim2<-simulate(mod2,
 # We estimate the Carma and we plot the underlying noise.
 
 carmaopt2 <- qmle(sim2, start=true.parm2)
-summary(carmaopt2$mle)
+summary(carmaopt2)
 
-carmaopt2$Incr->inc.Levy2
 # Increments estimated by CarmaRecovNoise
-plot(inc.Levy2)
+plot(carmaopt2)
 }
 
 

@@ -120,3 +120,12 @@ setClass("yuima", representation(data = "yuima.data",
 								 functional = "yuima.functional"
                                  )
          )
+
+# Class yuima.carma.qmle
+setClass("yuima.carma.qmle",representation(Incr.Lev = "matrix",
+                                           model = "yuima.carma"
+                                           ),
+                            contains="mle"
+         )
+# The yuima.carma.qmle extends the S4 class "mle". It contains three slots: Estimated Levy, 
+# The description of the carma model and the mle.
