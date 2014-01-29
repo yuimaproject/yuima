@@ -281,7 +281,7 @@ plot(carmaopt2)
 
 # carma(p=2,q=1) driven by a normal inverse gaussian process
 mod3<-setCarma(p=2,q=1,
-               measure=list(df=list("rNIG(z, alpha, beta, delta, mu)")),
+               measure=list(df=list("rNIG(z, alpha, beta, delta1, mu)")),
                measure.type="code")
 #
 
@@ -292,7 +292,7 @@ true.param3<-list(a1=1.39631,
                  b1=2,
                  alpha=1,
                  beta=0,
-                 delta=1,
+                 delta1=1,
                  mu=0)
 
 samp3<-setSampling(Terminal=100,n=200)

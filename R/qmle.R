@@ -745,45 +745,47 @@ if(!is(yuima@model,"yuima.carma")){
   #         measure.par
   #         sapply(gregexpr("\\W+", measurefunc),length)
   
-          name.func.dummy <- as.character(model@measure$df$expr[1])
-          name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
-          names.measpar<-rev(as.vector(strsplit(name.func,', '))[[1]][-1])
-          valuemeasure<-as.numeric(names.measpar)
-          NaIdx<-which(is.na(valuemeasure))
-          if(length(NaIdx)!=0){
-            yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
-          }
+  # Delete Dependence of GeneralizedHyperbolic package: 30/01
           
-          inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
-                                    to=yuima@sampling@n[1],
-                                    by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
-                                    )])
-          result.Levy<-nigFit(inc.levy1)      
-          
-          Inc.Parm<-coef(result.Levy)
-          IncVCOV<--solve(nigHessian(inc.levy, param=Inc.Parm))
-  
-          names(Inc.Parm)[NaIdx]<-measure.par
-          #prova<-as.matrix(IncVCOV)
-          rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
-          colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
-          
-          
-          coef<-NULL
-          coef<-c(dummycoeffCarmapar,Inc.Parm)
-          #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
-          #       
-          names.par<-names(coef)
-          cov<-NULL
-          cov<-matrix(0,length(names.par),length(names.par))
-          rownames(cov)<-names.par
-          colnames(cov)<-names.par
-          if(is.null(loc.par)){
-            cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
-          }else{
-            cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
-          }
-          cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
+#           name.func.dummy <- as.character(model@measure$df$expr[1])
+#           name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
+#           names.measpar<-rev(as.vector(strsplit(name.func,', '))[[1]][-1])
+#           valuemeasure<-as.numeric(names.measpar)
+#           NaIdx<-which(is.na(valuemeasure))
+#           if(length(NaIdx)!=0){
+#             yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
+#           }
+#           
+#           inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
+#                                     to=yuima@sampling@n[1],
+#                                     by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
+#                                     )])
+#           result.Levy<-nigFit(inc.levy1)      
+#           
+#           Inc.Parm<-coef(result.Levy)
+#           IncVCOV<--solve(nigHessian(inc.levy, param=Inc.Parm))
+#   
+#           names(Inc.Parm)[NaIdx]<-measure.par
+#           #prova<-as.matrix(IncVCOV)
+#           rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
+#           colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
+#           
+#           
+#           coef<-NULL
+#           coef<-c(dummycoeffCarmapar,Inc.Parm)
+#           #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
+#           #       
+#           names.par<-names(coef)
+#           cov<-NULL
+#           cov<-matrix(0,length(names.par),length(names.par))
+#           rownames(cov)<-names.par
+#           colnames(cov)<-names.par
+#           if(is.null(loc.par)){
+#             cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
+#           }else{
+#             cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
+#           }
+#           cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
           
         }
         if(measurefunc=="rgamma"){
@@ -839,11 +841,25 @@ if(!is(yuima@model,"yuima.carma")){
 quasilogl <- function(yuima, param, print=FALSE){
 
 	d.size <- yuima@model@equation.number
+	if (is(yuima@model, "yuima.carma")){
+	  # 24/12
+	  d.size <-1
+	}
+	
 	n <- length(yuima)[1]
 	
 	env <- new.env()
 	assign("X",  as.matrix(yuima:::onezoo(yuima)), envir=env)
 	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+  
+	if (is(yuima@model, "yuima.carma")){
+	  #24/12 If we consider a carma model,
+	  # the observations are only the first column of env$X
+	  env$X<-as.matrix(env$X[,1])
+	  env$deltaX<-as.matrix(env$deltaX[,1])
+	}
+	
+  
 	for(t in 1:(n-1))
 	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
@@ -981,7 +997,8 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
     # We build the two step procedure as described in
   #  if(length(yuima@model@info@scale.par)!=0){
        prova<-as.numeric(param)
-       names(prova)<-fullcoef[oo]
+       #names(prova)<-fullcoef[oo]
+	     names(prova)<-names(param)
        param<-prova[c(length(prova):1)]
        
        y<-as.numeric(env$X)
