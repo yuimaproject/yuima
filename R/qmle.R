@@ -138,7 +138,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
         yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a non-Negative Levy  will be implemented as soon as possible")
         NoNeg.Noise<-TRUE
         if((yuima@model@info@q+1)==(yuima@model@info@q+1)){
-          start[[mean.noise]]<-1
+          start[["mean.noise"]]<-1
         }
         #return(NULL)
       }      
@@ -733,9 +733,29 @@ if(!is(yuima@model,"yuima.carma")){
       }
       if(yuima@model@measure.type=="code"){
   #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rngamma"
-  
+        name.func.dummy <- as.character(model@measure$df$expr[1])
+        name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
+        names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
+        valuemeasure<-as.numeric(names.measpar)
+        NaIdx<-which(is.na(valuemeasure))
+        if(length(NaIdx)!=0){
+          yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
+        }
+        
+        inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
+                                             to=yuima@sampling@n[1],
+                                             by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
+        )])
+        
         
         if(measurefunc=="rIG"){
+          
+          result.Lev<-list(estLevpar=coef[ names.measpar],
+                           covLev=matrix(NA,
+                                         length(coef[ names.measpar]),
+                                         length(coef[ names.measpar]))
+          )
+          
   #         result.Levy<-gigFit(inc.levy)
   #         Inc.Parm<-coef(result.Levy)
   #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
@@ -749,62 +769,79 @@ if(!is(yuima@model,"yuima.carma")){
   
   # Delete Dependence of GeneralizedHyperbolic package: 30/01
           
-           name.func.dummy <- as.character(model@measure$df$expr[1])
-           name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
-          names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
-          valuemeasure<-as.numeric(names.measpar)
-          NaIdx<-which(is.na(valuemeasure))
-          if(length(NaIdx)!=0){
-            yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
-          }
-          
-          inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
-                                    to=yuima@sampling@n[1],
-                                    by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
-                                    )])
 
            result.Lev<-yuima.Estimation.NIG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+# #           
+#            Inc.Parm<-result.Lev$estLevpar
+#            IncVCOV<-result.Lev$covLev
+# #   
+#            names(Inc.Parm)[NaIdx]<-measure.par
+# #           #prova<-as.matrix(IncVCOV)
+#            rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
+#            colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
+# #           
+# #           
+#            coef<-NULL
+#            coef<-c(dummycoeffCarmapar,Inc.Parm)
+# #           #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
+# #           #       
+#           names.par<-names(coef)
+#           cov<-NULL
+#           cov<-matrix(0,length(names.par),length(names.par))
+#           rownames(cov)<-names.par
+#           colnames(cov)<-names.par
+#           if(is.null(loc.par)){
+#             cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
+#           }else{
+#             cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
+#           }
+#           cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
 #           
-           Inc.Parm<-result.Lev$estLevpar
-           IncVCOV<-result.Lev$covLev
-#   
-           names(Inc.Parm)[NaIdx]<-measure.par
-#           #prova<-as.matrix(IncVCOV)
-           rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
-           colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
+#         }
+#         if(measurefunc=="rgamma"){
+#   #         result.Levy<-gigFit(inc.levy)
+#   #         Inc.Parm<-coef(result.Levy)
+#   #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
 #           
-#           
-           coef<-NULL
-           coef<-c(dummycoeffCarmapar,Inc.Parm)
-#           #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
-#           #       
-          names.par<-names(coef)
-          cov<-NULL
-          cov<-matrix(0,length(names.par),length(names.par))
-          rownames(cov)<-names.par
-          colnames(cov)<-names.par
-          if(is.null(loc.par)){
-            cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
-          }else{
-            cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
-          }
-          cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
-          
-        }
-        if(measurefunc=="rgamma"){
-  #         result.Levy<-gigFit(inc.levy)
-  #         Inc.Parm<-coef(result.Levy)
-  #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
-          
         }
         if(measurefunc=="rbgamma"){
-          
+          result.Lev<-list(estLevpar=coef[ names.measpar],
+                           covLev=matrix(NA,
+                                         length(coef[ names.measpar]),
+                                         length(coef[ names.measpar]))
+                           )
         }
         if(measurefunc=="rngamma"){
-          
+          result.Lev<-yuima.Estimation.VG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
         }
         
-      
+        #           
+        Inc.Parm<-result.Lev$estLevpar
+        IncVCOV<-result.Lev$covLev
+        #   
+        names(Inc.Parm)[NaIdx]<-measure.par
+        #           #prova<-as.matrix(IncVCOV)
+        rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
+        colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
+        #           
+        #           
+        coef<-NULL
+        coef<-c(dummycoeffCarmapar,Inc.Parm)
+        #           #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
+        #           #       
+        names.par<-names(coef)
+        cov<-NULL
+        cov<-matrix(0,length(names.par),length(names.par))
+        rownames(cov)<-names.par
+        colnames(cov)<-names.par
+        if(is.null(loc.par)){
+          cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
+        }else{
+          cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
+        }
+        cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
+        
+        
         
         
       }
@@ -1731,39 +1768,76 @@ yuima.Estimation.NIG<-function(Increment.lev,param0){
   }
   
   data<-Increment.lev
-  # First Problem
-  ui1<-rbind(c(1, -1, 0, 0),c(1, 0, 0, 0),c(0, 0, 1, 0))
-  ci1<-c(0,0,10^(-6))
-  firs1.prob<-tryCatch(constrOptim(theta=param0,
-                                   f=minusloglik.dNIG,grad=NULL,ui=ui1,ci=ci1,data=data),
+  
+  # Only one problem
+  
+  
+  ui<-rbind(c(1, -1, 0, 0),c(1, 1, 0, 0),c(1, 0, 0, 0),c(0, 0, 1, 0))
+  ci<-c(0,0,0,10^(-6))  
+  firs.prob<-tryCatch(constrOptim(theta=param0,
+                                   f=minusloglik.dNIG,grad=NULL,ui=ui,ci=ci,data=data),
                        error=function(theta){NULL})
   
-  # Second Problem
-  
-  ui2<-rbind(c(-1, -1, 0, 0),c(1, 0, 0, 0),c(0, 0, 1, 0))
-  ci2<-c(0,0,10^(-6))
-  
-  firs2.prob<-tryCatch(constrOptim(theta=param0,
-                                   f=minusloglik.dNIG,grad=NULL,ui=ui2,ci=ci2,data=data),
-                       error=function(theta){NULL})
+#   # First Problem: beta>0 => alpha-beta=>0
+#   ui1<-rbind(c(1, -1, 0, 0),c(0, 1, 0, 0),c(1, 0, 0, 0),c(0, 0, 1, 0))
+#   ci1<-c(0,0,0,10^(-6))  
+#   firs1.prob<-tryCatch(constrOptim(theta=param0,
+#                                    f=minusloglik.dNIG,grad=NULL,ui=ui1,ci=ci1,data=data),
+#                        error=function(theta){NULL})
+#   
+#   # Second Problem: beta>0 => -alpha-beta=>0
+#   
+#   ui2<-rbind(c(-1, -1, 0, 0), c(0, 1, 0, 0) ,c(1, 0, 0, 0),c(0, 0, 1, 0))
+#   ci2<-c(0,0,0,10^(-6))
+#   
+#   firs2.prob<-tryCatch(constrOptim(theta=param0,
+#                                    f=minusloglik.dNIG,grad=NULL,ui=ui2,ci=ci2,data=data),
+#                        error=function(theta){NULL})
+#   # Third problem: beta<0 => alpha+beta=>0
+# 
+#   ui3<-rbind(c(1, 1, 0, 0), c(0, -1, 0, 0) ,c(1, 0, 0, 0),c(0, 0, 1, 0))
+#   ci3<-c(0,10^(-6),0,10^(-6))
+#   
+#   firs3.prob<-tryCatch(constrOptim(theta=param0,
+#                                    f=minusloglik.dNIG,grad=NULL,ui=ui3,ci=ci3,data=data),
+#                        error=function(theta){NULL})
+#   
+#   # Fourth problem: beta<0 => -alpha+beta=>0
+#   
+#   ui4<-rbind(c(-1, 1, 0, 0), c(0, -1, 0, 0) ,c(1, 0, 0, 0),c(0, 0, 1, 0))
+#   ci4<-c(0,10^(-6),0,10^(-6))
+#   
+#   firs4.prob<-tryCatch(constrOptim(theta=param0,
+#                                    f=minusloglik.dNIG,grad=NULL,ui=ui4,ci=ci4,data=data),
+#                        error=function(theta){NULL})
   
   paramLev<-NULL
-  if(is.null(firs2.prob) && is.null(firs1.prob)){
-    warning("the start value for levy measure is outside of the admissible region")
-  } else{
-    if(is.null(firs2.prob)){
-      paramLev<-firs1.prob$par
-    }
-    if(is.null(firs1.prob)){
-      paramLev<-firs2.prob$par
-    }
-    if(!is.null(firs2.prob) && !is.null(firs1.prob)){
-      if(max(firs1.prob$value, firs2.prob$value)==firs1.prob$value){
-        paramLev<-firs1.prob$par
-      } else{paramLev<-firs2.prob$par}
-    }
-  }
   
+  
+  if(!is.null(firs.prob)){
+    paramLev<-firs.prob$par
+  }else{warning("the start value for levy measure is outside of the admissible region")}
+  
+#   if(!is.null(firs1.prob)){
+#     paramLev<-firs1.prob$par
+#   }
+#   
+#   if(!is.null(firs2.prob)){
+#     paramLev<-firs2.prob$par
+#   }
+#   
+#   if(!is.null(firs3.prob)){
+#     paramLev<-firs3.prob$par
+#   }
+#   
+#   if(!is.null(firs4.prob)){
+#     paramLev<-firs4.prob$par
+#   }
+#   
+#   if(is.null(firs2.prob) && is.null(firs1.prob) && is.null(firs3.prob) && is.null(firs4.prob)){
+#      warning("the start value for levy measure is outside of the admissible region")
+#   }
+    
   
   NIG.hessian<-function (data,params){
     logLik.NIG <- function(params) {
@@ -1775,7 +1849,7 @@ yuima.Estimation.NIG<-function(Increment.lev,param0){
       
       return(sum(log(dNIG(data,alpha,beta,delta,mu))))
     }
-    hessian <- tsHessian(param = params, fun = logLik.NIG)
+    hessian<-optimHess(par=params, fn=logLik.NIG)
     cov<--solve(hessian)
     return(cov)
   }
@@ -1784,6 +1858,118 @@ yuima.Estimation.NIG<-function(Increment.lev,param0){
     covLev<-NULL
   }else{
     covLev<-NIG.hessian(data=as.numeric(data),params=paramLev)
+  }
+  results<-list(estLevpar=paramLev,covLev=covLev)
+  return(results)
+}
+
+# Variance Gaussian
+
+yuima.Estimation.VG<-function(Increment.lev,param0){
+  
+  minusloglik.dVG<-function(par,data){
+    lambda<-par[1]
+    alpha<-par[2]
+    beta<-par[3]
+    mu<-par[4]
+    -sum(log(dngamma(data,lambda,alpha,beta,mu)))
+  }
+  
+  data<-Increment.lev
+  
+  ui<-rbind(c(1,0, 0, 0),c(0, 1, 1, 0),c(0, 1,-1, 0),c(0, 1,0, 0))
+  ci<-c(10^-6,10^-6,10^(-6), 0)
+  firs.prob<-tryCatch(constrOptim(theta=param0,
+                                  f=minusloglik.dVG,grad=NULL,ui=ui,ci=ci,data=data),
+                      error=function(theta){NULL})
+  
+  
+  paramLev<-NULL
+  if(!is.null(firs.prob)){
+    paramLev<-firs.prob$par
+  }
+  
+  VG.hessian<-function (data,params){
+    logLik.VG <- function(params) {
+      
+      lambda<-params[1]
+      alpha<-params[2]
+      beta<-params[3]
+      mu<-params[4]
+      
+      return(sum(log(dngamma(data,lambda,alpha,beta,mu))))
+    }
+    # hessian <- tsHessian(param = params, fun = logLik.VG)
+    #hessian<-optimHess(par, fn, gr = NULL,data=data)
+    hessian<-optimHess(par=params, fn=logLik.VG)
+    cov<--solve(hessian)
+    return(cov)
+  }
+  
+  if(is.null(paramLev)){
+    covLev<-NULL
+  }else{
+    covLev<-VG.hessian(data=as.numeric(data),params=paramLev)
+  }
+  results<-list(estLevpar=paramLev,covLev=covLev)
+  return(results)
+}
+
+# Inverse Gaussian
+
+yuima.Estimation.IG<-function(Increment.lev,param0){
+  
+  minusloglik.dIG<-function(par,data){
+    delta<-par[1]
+    gamma<-par[2]
+    -sum(log(dIG(data,delta,gamma)))
+  }
+# Be carefull 
+#   for(i in c(1:length(Increment.lev))){
+#     if(Increment.lev[i]<=0){
+#       Increment.lev[i]<--Increment.lev[i]
+#     }
+#   }
+  
+  
+  
+  data<-Increment.lev
+  
+  ui<-rbind(c(1,0),c(0, 1))
+  ci<-c(10^-6,10^-6)
+  firs.prob<-tryCatch(constrOptim(theta=param0,
+                                  f=minusloglik.dIG,
+                                  grad=NULL,
+                                  ui=ui,
+                                  ci=ci,
+                                  data=data),
+                      error=function(theta){NULL})
+  
+  
+  paramLev<-NULL
+  if(!is.null(firs.prob)){
+    paramLev<-firs.prob$par
+  }
+  
+  IG.hessian<-function (data,params){
+    logLik.IG <- function(params) {
+      
+      delta<-params[1]
+      gamma<-params[2]
+      
+      return(sum(log(dIG(data,delta,gamma))))
+    }
+    # hessian <- tsHessian(param = params, fun = logLik.VG)
+    #hessian<-optimHess(par, fn, gr = NULL,data=data)
+    hessian<-optimHess(par=params, fn=logLik.IG)
+    cov<--solve(hessian)
+    return(cov)
+  }
+  
+  if(is.null(paramLev)){
+    covLev<-NULL
+  }else{
+    covLev<-IG.hessian(data=as.numeric(data),params=paramLev)
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
