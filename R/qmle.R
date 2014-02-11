@@ -9,7 +9,6 @@
 ### calc.diffusion to make them independent of the specification of the 
 ### parameters.  S.M.I. 22/06/2010
 
-
 drift.term <- function(yuima, theta, env){
 	r.size <- yuima@model@noise.number
 	d.size <- yuima@model@equation.number
@@ -299,13 +298,31 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(onezoo(yuima)), envir=env)
-	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+  
+    assign("X",  as.matrix(onezoo(yuima)), envir=env)
+  	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+  
   if (is(yuima@model, "yuima.carma")){
     #24/12 If we consider a carma model,
     # the observations are only the first column of env$X
-	  env$X<-as.matrix(env$X[,1])
-	  env$deltaX<-as.matrix(env$deltaX[,1])
+#     assign("X",  as.matrix(onezoo(yuima)), envir=env)
+#     env$X<-as.matrix(env$X[,1])
+#     assign("deltaX",  matrix(0, n-1, d.size)[,1], envir=env)
+     	  env$X<-as.matrix(env$X[,1])
+     	  env$deltaX<-as.matrix(env$deltaX[,1])
+    assign("time.obs",length(env$X),envir=env)
+#   env$time.obs<-length(env$X)
+    #p <-yuima@model@info@p
+    assign("p", yuima@model@info@p, envir=env)
+    assign("q", yuima@model@info@q, envir=env)	  
+    assign("V_inf0", matrix(diag(rep(1,env$p)),env$p,env$p), envir=env)
+    
+    
+#     env$X<-as.matrix(env$X[,1])
+# 	  env$deltaX<-as.matrix(env$deltaX[,1])
+#     assign("time.obs",length(env$X), envir=env)
+# 	  p <-yuima@model@info@p
+# 	  assign("V_inf0", matrix(diag(rep(1,p)),p,p), envir=env)
 	}
   assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
 	
@@ -889,14 +906,24 @@ quasilogl <- function(yuima, param, print=FALSE){
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(yuima:::onezoo(yuima)), envir=env)
-	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
-  
+#	if (is(yuima@model, "yuima.carma")){
+	  assign("X",  as.matrix(yuima:::onezoo(yuima)), envir=env)
+	  assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+#	}
 	if (is(yuima@model, "yuima.carma")){
 	  #24/12 If we consider a carma model,
 	  # the observations are only the first column of env$X
-	  env$X<-as.matrix(env$X[,1])
-	  env$deltaX<-as.matrix(env$deltaX[,1])
+# 	  assign("X",  as.matrix(yuima:::onezoo(yuima))[,1], envir=env)
+# 	  assign("deltaX",  matrix(0, n-1, d.size)[,1], envir=env)
+ 	  env$X<-as.matrix(env$X[,1])
+ 	  env$deltaX<-as.matrix(env$deltaX[,1])
+    assign("time.obs",length(env$X),envir=env)
+    #env$time.obs<-length(env$X)
+    #p <-yuima@model@info@p
+    assign("p", yuima@model@info@p, envir=env)
+    assign("q", yuima@model@info@q, envir=env)	  
+    assign("V_inf0", matrix(diag(rep(1,env$p)),env$p,env$p), envir=env)
+	  
 	}
 	
   
@@ -1040,13 +1067,15 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
        #names(prova)<-fullcoef[oo]
 	     names(prova)<-names(param)
        param<-prova[c(length(prova):1)]
-       
+       time.obs<-env$time.obs
        y<-as.numeric(env$X)
-       tt<-env$time
-       p<-yuima@model@info@p
+       u<-env$h
+  p<-env$p
+  q<-env$q
+#         p<-yuima@model@info@p
 	  ar.par <- yuima@model@info@ar.par
 	  name.ar<-paste0(ar.par, c(1:p))
-	  q <- yuima@model@info@q
+# 	  q <- yuima@model@info@q
 	  ma.par <- yuima@model@info@ma.par
 	  name.ma<-paste0(ma.par, c(0:q))
        if (length(yuima@model@info@loc.par)==0){
@@ -1085,8 +1114,11 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
            }
            y<-y-mean.y
          }
-         
-       strLog<-yuima.carma.loglik1(y, tt, a, b, sigma)
+       # V_inf0<-matrix(diag(rep(1,p)),p,p)
+        V_inf0<-env$V_inf0
+        p<-env$p
+        q<-env$q
+        strLog<-yuima.carma.loglik1(y, u, a, b, sigma,time.obs,V_inf0,p,q)
        }else{
          # 01/01
 #          ar.par <- yuima@model@info@ar.par
@@ -1133,8 +1165,11 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
          
          
          y.start <- y-mu
-         
-         strLog<-yuima.carma.loglik1(y.start, tt, a, b, sigma)
+         #V_inf0<-matrix(diag(rep(1,p)),p,p)
+         V_inf0<-env$V_inf0
+         p<-env$p
+         q<-env$q
+         strLog<-yuima.carma.loglik1(y.start, u, a, b, sigma,time.obs,V_inf0,p,q)
        }
        
        QL<-strLog$loglikCdiag
@@ -1226,50 +1261,68 @@ yuima.Vinfinity<-function(elForVInf,v){
 }
 
 
-carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
-  
-  V_inf0<-matrix(diag(rep(1,p)),p,p)
+#carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
+carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
+    
+  # V_inf0<-matrix(diag(rep(1,p)),p,p)
   
   A<-MatrixA(a)
-  u<-diff(tt)[1]
-  expA<-as.matrix(expm(A*u))
+  # u<-diff(tt)[1]
+  
+  
+#  Amatx<-yuima.carma.eigen(A)
+#   expA<-Amatx$vectors%*%expm(diag(Amatx$values*u),
+#                              method="Pade",
+#                              order=6, 
+#                              trySym=TRUE,
+#                              do.sparseMsg = TRUE)%*%solve(Amatx$vectors)
+  
+#   if(!is.complex(Amatx$values)){
+#     expA<-Amatx$vectors%*%diag(exp(Amatx$values*u))%*%solve(Amatx$vectors)
+#     }else{
+      expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
+#    }
+  #expA<-yuima.exp(A*u)
+  
   v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
   elForVInf<-list(A=A,sigma=sigma)
   
   V_inf_vect<-nlm(yuima.Vinfinity, v, elForVInf = elForVInf)$estimate
+  
   V_inf<-matrix(0,p,p)
+  
   V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
   V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
   
   V_inf[abs(V_inf)<=1.e-06]=0
   
   
-  SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
-  
-  statevar0<-matrix(rep(0, p),p,1)
-  Qmatr<-SIGMA_err
+  #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
+  SigMatr<-V_inf-expA%*%V_inf%*%t(expA)
+  statevar<-matrix(rep(0, p),p,1)
+  Qmatr<-SigMatr
   
   # set
-  statevar<-statevar0
+  #statevar<-statevar0
   
   #   SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
   
-  SigMatr<-Qmatr
+  #SigMatr<-Qmatr
   #SigMatr<-V_inf
   
   zc<-matrix(bvector,1,p)
-  loglstar = 0
-  loglstar1 = 0
-  for(t in 1:length(tt)){ 
+  loglstar <- 0
+  loglstar1 <- 0
+  for(t in 1:times.obs){ 
     # prediction
     statevar<-expA%*%statevar
     SigMatr<-expA%*%SigMatr%*%t(expA)+Qmatr
     # forecast
     Uobs<-y[t]-zc%*%statevar
     sd_2<-zc%*%SigMatr%*%t(zc)
-    
+    Inv_sd_2<-1/sd_2
     #correction
-    Kgain<-SigMatr%*%t(zc)%*%solve(sd_2)
+    Kgain<-SigMatr%*%t(zc)%*%Inv_sd_2
     #  SigMatr<-SigMatr-Kgain%*%as.numeric(sd_2)%*%t(Kgain)
     
     statevar<-statevar+Kgain%*%Uobs
@@ -1277,31 +1330,38 @@ carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
     # construction of log-likelihood
     #     loglstar1<-loglstar1+log(dnorm(as.numeric(Uobs), mean = 0, sd = sqrt(as.numeric(sd_2))))
     #     sdsig<-sqrt(as.numeric(sd_2))
-    term_int<--0.5*(log((2*pi)^(length(Uobs))*det(sd_2))+t(Uobs)%*%solve(sd_2)%*%Uobs)
+    # term_int<--0.5*(log((2*pi)*det(sd_2))+t(Uobs)%*%Inv_sd_2%*%Uobs)
+    #term_int<--0.5*(log((2*pi)*sd_2)+t(Uobs)%*%Inv_sd_2%*%Uobs)
+    term_int<--0.5*(log((2*pi)*sd_2)+Uobs^2*Inv_sd_2)
     loglstar<-loglstar+term_int
   }
-  return(list(loglstar=as.numeric(loglstar),s2hat=as.numeric(sd_2)))
+  return(list(loglstar=loglstar,s2hat=sd_2))
 }
 
 
 
-yuima.carma.loglik1<-function (y, tt, a, b, sigma) 
+#yuima.carma.loglik1<-function (y, tt, a, b, sigma) 
+yuima.carma.loglik1<-function (y, u, a, b, sigma,time.obs,V_inf0,p,q)
 {
   #This code compute the LogLik using kalman filter
   
   # if(a_0!=0){we need to correct the Y_t for the mean}
   # if(sigma!=1){we need to write}
-  p <- as.integer(length(a))
+  #p <- as.integer(length(a))
+  
+#  p <- length(a)
   
   bvector <- rep(0, p)
-  q <- length(b)
+#  q <- length(b)
   bvector <- c(b, rep(0, p - q))
   
   
   sigma<-sigma
   y<-y
   
-  xxalt<-carma.kalman(y, tt, p, q, a,bvector,sigma)
+  #xxalt<-carma.kalman(y, tt, p, q, a,bvector,sigma)
+  
+  xxalt<-carma.kalman(y, u, p, q, a,bvector,sigma,time.obs,V_inf0)
   list(loglikCdiag = xxalt$loglstar,s2hat=xxalt$s2hat)
 }
 
