@@ -19,7 +19,7 @@
 %ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
-qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, Est.Incr=TRUE, ...)
+qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, Est.Incr="Carma.IncPar", ...)
 quasilogl(yuima, param, print=FALSE)
 }
 \arguments{
@@ -39,7 +39,7 @@ quasilogl(yuima, param, print=FALSE)
   \item{start}{initial values to be passed to the optimizer.}
   \item{fixed}{for conditional (quasi)maximum likelihood estimation.}
   \item{joint}{perform joint estimation or two stage estimation? by default \code{joint=FALSE}.}
-  \item{Est.Incr}{If the yuima model is an object of \code{\link{yuima.carma-class}} the \code{qmle} returns an object of \code{\link{yuima.carma.qmle-class}} or object of class \code{mle-class}. By default \code{Est.Incr=TRUE}.}
+  \item{Est.Incr}{If the yuima model is an object of \code{\link{yuima.carma-class}} the \code{qmle} returns an object of \code{\link{yuima.carma.qmle-class}} or object of class \code{mle-class}. By default \code{Est.Incr="Carma.IncPar"}.}
   \item{...}{passed to \code{\link{optim}} method. See Examples.}
 }
 \details{

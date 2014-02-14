@@ -73,9 +73,10 @@ diffusion.term <- function(yuima, theta, env){
 
 
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
- lower, upper, joint=FALSE, Est.Incr=TRUE, ...){
+ lower, upper, joint=FALSE, Est.Incr="Carma.IncPar", ...){
   if(is(yuima@model, "yuima.carma")){
     NoNeg.Noise<-FALSE
+    cat("\nStarting qmle for carma ... \n")
   }
   if(is(yuima@model, "yuima.carma")&& length(yuima@model@info@scale.par)!=0){
     method<-"L-BFGS-B"
@@ -247,9 +248,6 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	nm <- names(start)
     oo <- match(nm, fullcoef)
   #
-  
-  
-  
     if(any(is.na(oo))) 
 		yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
     start <- start[order(oo)]
@@ -647,20 +645,29 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                    method = method)
   }else{ 
-    if(Est.Incr==TRUE){
+    if( Est.Incr=="Carma.IncPar" || Est.Incr=="Carma.Inc" ){
     final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                   method = method)
+                    method = method)
     }else{
+      if(Est.Incr=="Carma.Par"){
       final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                      vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                      method = method)
+      }else{
+        yuima.warn("The variable Est.Incr is not correct. See qmle documentation for the allowed values ")
+        final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                       vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+                       method = method)
+        return(final_res)
+      }
     }
   }
   
 if(!is(yuima@model,"yuima.carma")){
     return(final_res)  
  }else {
+   cat("\nStarting Estimation Increments ...\n")
     param<-coef(final_res)
     
     observ<-yuima@data
@@ -701,8 +708,16 @@ if(!is(yuima@model,"yuima.carma")){
       inc.levy<-diff(t(levy))
     }
     # INSERT HERE THE NECESSARY STEPS FOR FINDING THE PARAMETERS OF LEVY
-    
-    
+   if(Est.Incr=="Carma.Inc"){
+     carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                          vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+                          method = method, Incr.Lev = inc.levy,
+                          model = yuima@model)
+     return(carma_final_res)
+   }
+   
+   cat("\nStarting Estimation parameter Noise ...\n")
+   
     dummycovCarmapar<-vcov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]
     if(!is.null(loc.par)){
       dummycovCarmapar<-vcov[unique(c(drift.par,diff.par,info@loc.par)),
@@ -736,116 +751,48 @@ if(!is(yuima@model,"yuima.carma")){
     
     if(length(model@measure.type)!=0){
       if(model@measure.type=="CP"){
-  #       tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
-  #       measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
-        if(measurefunc=="dnorm"){
-          
-        }
-        if(measurefunc=="dgamma"){
-          
-        }
-        if(measurefunc=="dexp"){
-          
-        }
-      }
-      if(yuima@model@measure.type=="code"){
-  #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rngamma"
         name.func.dummy <- as.character(model@measure$df$expr[1])
         name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
         names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
         valuemeasure<-as.numeric(names.measpar)
-        NaIdx<-which(is.na(valuemeasure))
+        name.int.dummy <- as.character(model@measure$intensity)
+        valueintensity<-as.numeric(name.int.dummy)
+        NaIdx<-which(is.na(c(valueintensity,valuemeasure)))
+        
         if(length(NaIdx)!=0){
           yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
+          carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                               vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+                               method = method, Incr.Lev = inc.levy,
+                               model = yuima@model)
+          return(carma_final_res)
         }
         
         inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
                                              to=yuima@sampling@n[1],
                                              by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
         )])
+        names.measpar<-c(name.int.dummy, names.measpar)
         
-        
-        if(measurefunc=="rIG"){
-          
-          result.Lev<-list(estLevpar=coef[ names.measpar],
-                           covLev=matrix(NA,
-                                         length(coef[ names.measpar]),
-                                         length(coef[ names.measpar]))
-          )
-          
-  #         result.Levy<-gigFit(inc.levy)
-  #         Inc.Parm<-coef(result.Levy)
-  #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
+        if(measurefunc=="dnorm"){
+          result.Lev<-yuima.Estimation.CPN(Increment.lev=inc.levy1,param0=coef[ names.measpar]) 
         }
-        if(measurefunc=="rNIG"){
-          
-          
-  #         inc.levy
-  #         measure.par
-  #         sapply(gregexpr("\\W+", measurefunc),length)
-  
-  # Delete Dependence of GeneralizedHyperbolic package: 30/01
-          
-
-           result.Lev<-yuima.Estimation.NIG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
-# #           
-#            Inc.Parm<-result.Lev$estLevpar
-#            IncVCOV<-result.Lev$covLev
-# #   
-#            names(Inc.Parm)[NaIdx]<-measure.par
-# #           #prova<-as.matrix(IncVCOV)
-#            rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
-#            colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
-# #           
-# #           
-#            coef<-NULL
-#            coef<-c(dummycoeffCarmapar,Inc.Parm)
-# #           #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
-# #           #       
-#           names.par<-names(coef)
-#           cov<-NULL
-#           cov<-matrix(0,length(names.par),length(names.par))
-#           rownames(cov)<-names.par
-#           colnames(cov)<-names.par
-#           if(is.null(loc.par)){
-#             cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
-#           }else{
-#             cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
-#           }
-#           cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
-#           
-#         }
-#         if(measurefunc=="rgamma"){
-#   #         result.Levy<-gigFit(inc.levy)
-#   #         Inc.Parm<-coef(result.Levy)
-#   #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
-#           
+        if(measurefunc=="dgamma"){
+          result.Lev<-yuima.Estimation.CPGam(Increment.lev=inc.levy1,param0=coef[ names.measpar])
         }
-        if(measurefunc=="rbgamma"){
-          result.Lev<-list(estLevpar=coef[ names.measpar],
-                           covLev=matrix(NA,
-                                         length(coef[ names.measpar]),
-                                         length(coef[ names.measpar]))
-                           )
+        if(measurefunc=="dexp"){
+          result.Lev<-yuima.Estimation.CPExp(Increment.lev=inc.levy1,param0=coef[ names.measpar])
         }
-        if(measurefunc=="rngamma"){
-          result.Lev<-yuima.Estimation.VG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
-        }
-        
-        #           
         Inc.Parm<-result.Lev$estLevpar
         IncVCOV<-result.Lev$covLev
-        #   
+        
         names(Inc.Parm)[NaIdx]<-measure.par
-        #           #prova<-as.matrix(IncVCOV)
         rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
         colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
-        #           
-        #           
+        
         coef<-NULL
         coef<-c(dummycoeffCarmapar,Inc.Parm)
-        #           #       names.par<-c(unique(c(drift.par,diff.par)),names(Inc.Parm))
-        #           #       
+        
         names.par<-names(coef)
         cov<-NULL
         cov<-matrix(0,length(names.par),length(names.par))
@@ -859,7 +806,77 @@ if(!is(yuima@model,"yuima.carma")){
         cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
         
         
+      }
+      if(yuima@model@measure.type=="code"){
+  #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rngamma"
+        name.func.dummy <- as.character(model@measure$df$expr[1])
+        name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
+        names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
+        valuemeasure<-as.numeric(names.measpar)
+        NaIdx<-which(is.na(valuemeasure))
+        if(length(NaIdx)!=0){
+          yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
+          carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+                               vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+                               method = method, Incr.Lev = inc.levy,
+                               model = yuima@model)
+          return(carma_final_res)
+        }
         
+        inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
+                                             to=yuima@sampling@n[1],
+                                             by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
+        )])
+        
+        
+        if(measurefunc=="rIG"){
+          
+#           result.Lev<-list(estLevpar=coef[ names.measpar],
+#                            covLev=matrix(NA,
+#                                          length(coef[ names.measpar]),
+#                                          length(coef[ names.measpar]))
+#           )
+          result.Lev<-yuima.Estimation.IG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+          
+  #         result.Levy<-gigFit(inc.levy)
+  #         Inc.Parm<-coef(result.Levy)
+  #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
+        }
+        if(measurefunc=="rNIG"){          
+           result.Lev<-yuima.Estimation.NIG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+        }
+        if(measurefunc=="rbgamma"){
+          result.Lev<-list(estLevpar=coef[ names.measpar],
+                           covLev=matrix(NA,
+                                         length(coef[ names.measpar]),
+                                         length(coef[ names.measpar]))
+                           )
+        }
+        if(measurefunc=="rngamma"){
+          result.Lev<-yuima.Estimation.VG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+        }
+        
+        Inc.Parm<-result.Lev$estLevpar
+        IncVCOV<-result.Lev$covLev
+        
+        names(Inc.Parm)[NaIdx]<-measure.par
+        rownames(IncVCOV)[NaIdx]<-as.character(measure.par)
+        colnames(IncVCOV)[NaIdx]<-as.character(measure.par)
+        
+        coef<-NULL
+        coef<-c(dummycoeffCarmapar,Inc.Parm)
+        
+        names.par<-names(coef)
+        cov<-NULL
+        cov<-matrix(0,length(names.par),length(names.par))
+        rownames(cov)<-names.par
+        colnames(cov)<-names.par
+        if(is.null(loc.par)){
+          cov[unique(c(drift.par,diff.par)),unique(c(drift.par,diff.par))]<-dummycovCarmapar
+        }else{
+          cov[unique(c(drift.par,diff.par,info@loc.par)),unique(c(drift.par,diff.par,info@loc.par))]<-dummycovCarmapar
+        }
+        cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
         
       }
     }
@@ -879,16 +896,17 @@ if(!is(yuima@model,"yuima.carma")){
 #     cov[unique(c(measure.par)),unique(c(measure.par))]<-dummycovCarmaNoise
         
 #    carma_final_res<-list(mle=final_res,Incr=inc.levy,model=yuima) 
-    if(Est.Incr==TRUE){
-      # START FROM HERE 24/01
+    if(Est.Incr=="Carma.IncPar"){
       carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                      vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
                      method = method, Incr.Lev = inc.levy,
                            model = yuima@model)
     }else{
-      carma_final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
-          vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
-          method = method)
+      if(Est.Incr=="Carma.IncPar"){
+        carma_final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+            vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
+            method = method)
+      }
     }
     return(carma_final_res)    
   }
@@ -941,7 +959,37 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	
 	diff.par <- yuima@model@parameter@diffusion
 	#  24/12
-	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
+  
+# 	if(is(yuima@model, "yuima.carma")){
+# # 	  if(length(yuima@model@info@scale.par)!=0){
+# # 	           xinit.par <- yuima@model@parameter@xinit
+# # 	    	  } 
+# # 	     	}
+# 	  if(length(yuima@model@info@lin.par)==0){
+#     	if(length(yuima@model@parameter@jump)!=0){
+#     	  diff.par<-yuima@model@parameter@jump
+#     	  # measure.par<-yuima@model@parameter@measure
+#     	}
+#     	if(length(yuima@model@parameter@measure)!=0){
+#     	  measure.par<-yuima@model@parameter@measure
+#     	}
+# 	  }else{
+# 	    yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
+# 	    return(NULL)    
+# 	  }
+# 	  xinit.par <- yuima@model@parameter@xinit
+# 	}
+	
+	
+	drift.par <- yuima@model@parameter@drift
+		if(is(yuima@model, "yuima.carma")){
+		  if(length(yuima@model@info@scale.par)!=0){
+	      xinit.par <- yuima@model@parameter@xinit
+		  } 
+		}
+	 
+  
+  if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
 	   && length(yuima@model@parameter@jump)!=0){
 	  diff.par<-yuima@model@parameter@jump
 	 # measure.par<-yuima@model@parameter@measure
@@ -958,8 +1006,6 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	  return(NULL)    
 	}
 	
-  
-  drift.par <- yuima@model@parameter@drift
 # 	if(is(yuima@model, "yuima.carma")){
 # 	  if(length(yuima@model@info@scale.par)!=0){
 #       xinit.par <- yuima@model@parameter@xinit
@@ -970,7 +1016,9 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	   xinit.par <- yuima@model@parameter@xinit
 	}
 	
-  
+
+drift.par <- yuima@model@parameter@drift
+
 	fullcoef <- NULL
 	
 	if(length(diff.par)>0)
@@ -1070,8 +1118,8 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
        time.obs<-env$time.obs
        y<-as.numeric(env$X)
        u<-env$h
-  p<-env$p
-  q<-env$q
+       p<-env$p
+       q<-env$q
 #         p<-yuima@model@info@p
 	  ar.par <- yuima@model@info@ar.par
 	  name.ar<-paste0(ar.par, c(1:p))
@@ -1248,14 +1296,21 @@ yuima.Vinfinity<-function(elForVInf,v){
   # We find the infinity stationary variance-covariance matrix
   A<-elForVInf$A
   sigma<-elForVInf$sigma
-  p<-dim(A)[1]  
-  matrixV<-matrix(0,p,p)
+#   #p<-dim(A)[1]
+#   p<-elForVInf$p
+  ATrans<-elForVInf$ATrans  
+  matrixV<-elForVInf$matrixV
   matrixV[upper.tri(matrixV,diag=TRUE)]<-v
   matrixV[lower.tri(matrixV)]<-matrixV[upper.tri(matrixV)]
-  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
+#  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
+#  matrixV<-matrix(v,p,p)
+
+  lTrans<-elForVInf$lTrans
+  l<-elForVInf$l
   
-  RigSid<-l%*%t(l)
-  Matrixobj<-A%*%matrixV+matrixV%*%t(A)+sigma^2*RigSid
+  
+  RigSid<-l%*%elForVInf$lTrans
+  Matrixobj<-A%*%matrixV+matrixV%*%ATrans+sigma^2*RigSid
   obj<-sum(Matrixobj^2)
   obj
 }
@@ -1285,10 +1340,23 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   #expA<-yuima.exp(A*u)
   
   v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
-  elForVInf<-list(A=A,sigma=sigma)
+    
+  ATrans<-t(A)
+  matrixV<-matrix(0,p,p)
+  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
+  lTrans<-t(l)
+
+  elForVInf<-list(A=A,
+                  ATrans=ATrans,
+                  lTrans=lTrans,
+                  l=l,
+                  matrixV=matrixV,
+                  sigma=sigma)
   
-  V_inf_vect<-nlm(yuima.Vinfinity, v, elForVInf = elForVInf)$estimate
-  
+   V_inf_vect<-nlm(yuima.Vinfinity, v,
+                   elForVInf = elForVInf)$estimate
+#  V_inf_vect<-nlminb(start=v,objective=yuima.Vinfinity, elForVInf = elForVInf)$par
+#  V_inf_vect<-optim(par=v,fn=yuima.Vinfinity,method="L-BFGS-B", elForVInf = elForVInf)$par
   V_inf<-matrix(0,p,p)
   
   V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
@@ -1296,9 +1364,9 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   
   V_inf[abs(V_inf)<=1.e-06]=0
   
-  
+  expAT<-t(expA)
   #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
-  SigMatr<-V_inf-expA%*%V_inf%*%t(expA)
+  SigMatr<-V_inf-expA%*%V_inf%*%expAT
   statevar<-matrix(rep(0, p),p,1)
   Qmatr<-SigMatr
   
@@ -1313,16 +1381,18 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   zc<-matrix(bvector,1,p)
   loglstar <- 0
   loglstar1 <- 0
+  
+  zcT<-t(zc)
   for(t in 1:times.obs){ 
     # prediction
     statevar<-expA%*%statevar
-    SigMatr<-expA%*%SigMatr%*%t(expA)+Qmatr
+    SigMatr<-expA%*%SigMatr%*%expAT+Qmatr
     # forecast
     Uobs<-y[t]-zc%*%statevar
-    sd_2<-zc%*%SigMatr%*%t(zc)
+    sd_2<-zc%*%SigMatr%*%zcT
     Inv_sd_2<-1/sd_2
     #correction
-    Kgain<-SigMatr%*%t(zc)%*%Inv_sd_2
+    Kgain<-SigMatr%*%zcT%*%Inv_sd_2
     #  SigMatr<-SigMatr-Kgain%*%as.numeric(sd_2)%*%t(Kgain)
     
     statevar<-statevar+Kgain%*%Uobs
@@ -1332,10 +1402,10 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
     #     sdsig<-sqrt(as.numeric(sd_2))
     # term_int<--0.5*(log((2*pi)*det(sd_2))+t(Uobs)%*%Inv_sd_2%*%Uobs)
     #term_int<--0.5*(log((2*pi)*sd_2)+t(Uobs)%*%Inv_sd_2%*%Uobs)
-    term_int<--0.5*(log((2*pi)*sd_2)+Uobs^2*Inv_sd_2)
+    term_int<--0.5*(log(sd_2)+Uobs^2*Inv_sd_2)
     loglstar<-loglstar+term_int
   }
-  return(list(loglstar=loglstar,s2hat=sd_2))
+  return(list(loglstar=(loglstar-0.5*log(2*pi)*times.obs),s2hat=sd_2))
 }
 
 
@@ -1364,27 +1434,6 @@ yuima.carma.loglik1<-function (y, u, a, b, sigma,time.obs,V_inf0,p,q)
   xxalt<-carma.kalman(y, u, p, q, a,bvector,sigma,time.obs,V_inf0)
   list(loglikCdiag = xxalt$loglstar,s2hat=xxalt$s2hat)
 }
-
-
-# loglik5 <- function(param) {
-#   a<-param[1:pp]
-#   b <- 1
-#   if(qq>0){
-#     b<-param[(pp + 1):(pp + qq)]
-#   }
-#   
-#   sigma<-tail(param,n=1)
-#   xx <- yuima.carma.loglik1(y, tt, a, b, sigma)
-#   
-#   return(xx$loglikCdiag)
-# }
-
-
-
-
-
-
-
 
 # returns the vector of log-transitions instead of the final quasilog
 quasiloglvec <- function(yuima, param, print=FALSE, env){
@@ -1871,7 +1920,7 @@ yuima.Estimation.NIG<-function(Increment.lev,param0){
 #                                    f=minusloglik.dNIG,grad=NULL,ui=ui4,ci=ci4,data=data),
 #                        error=function(theta){NULL})
   
-  paramLev<-NULL
+  paramLev<-NA*c(1:length(param0))
   
   
   if(!is.null(firs.prob)){
@@ -1914,8 +1963,8 @@ yuima.Estimation.NIG<-function(Increment.lev,param0){
     return(cov)
   }
   
-  if(is.null(paramLev)){
-    covLev<-NULL
+  if(is.na(paramLev)){
+    covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-NIG.hessian(data=as.numeric(data),params=paramLev)
   }
@@ -1944,7 +1993,7 @@ yuima.Estimation.VG<-function(Increment.lev,param0){
                       error=function(theta){NULL})
   
   
-  paramLev<-NULL
+  paramLev<-NA*c(1:length(param0))
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
   }
@@ -1966,8 +2015,8 @@ yuima.Estimation.VG<-function(Increment.lev,param0){
     return(cov)
   }
   
-  if(is.null(paramLev)){
-    covLev<-NULL
+  if(is.na(paramLev)){
+    covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-VG.hessian(data=as.numeric(data),params=paramLev)
   }
@@ -2006,7 +2055,7 @@ yuima.Estimation.IG<-function(Increment.lev,param0){
                       error=function(theta){NULL})
   
   
-  paramLev<-NULL
+  paramLev<-NA*c(1:length(param0))
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
   }
@@ -2026,10 +2075,260 @@ yuima.Estimation.IG<-function(Increment.lev,param0){
     return(cov)
   }
   
-  if(is.null(paramLev)){
-    covLev<-NULL
+  if(is.na(paramLev)){
+    covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-IG.hessian(data=as.numeric(data),params=paramLev)
+  }
+  results<-list(estLevpar=paramLev,covLev=covLev)
+  return(results)
+}
+
+# Compound Poisson-Normal
+
+yuima.Estimation.CPN<-function(Increment.lev,param0){
+  dCPN<-function(x,lambda,mu,sigma){
+    a<-min(mu-100*sigma,min(x)-1)
+    b<-max(mu+100*sigma,max(x)+1)
+    ChFunToDens.CPN <- function(n, a, b, lambda, mu, sigma) {
+      i <- 0:(n-1)            # Indices
+      dx <- (b-a)/n           # Step size, for the density
+      x <- a + i * dx         # Grid, for the density
+      dt <- 2*pi / ( n * dx ) # Step size, frequency space
+      c <- -n/2 * dt          # Evaluate the characteristic function on [c,d]
+      d <-  n/2 * dt          # (center the interval on zero)
+      t <- c + i * dt         # Grid, frequency space
+      charact.CPN<-function(t,lambda,mu,sigma){
+        normal.y<-exp(1i*t*mu-sigma^2*t^2/2)
+        y<-exp(lambda*(normal.y-1))
+      }
+      phi_t <- charact.CPN(t,lambda,mu,sigma)
+      X <- exp( -(0+1i) * i * dt * a ) * phi_t
+      Y <- fft(X)
+      density <- dt / (2*pi) * exp( - (0+1i) * c * x ) * Y
+      data.frame(
+        i = i,
+        t = t,
+        characteristic_function = phi_t,
+        x = x,
+        density = Re(density)
+      )
+    }
+    invFFT<-ChFunToDens.CPN(lambda=lambda,mu=mu,sigma=sigma,n=2^12,a=a,b=b)
+    dens<-approx(invFFT$x,invFFT$density,x)
+    return(dens$y)
+  }
+  
+  minusloglik.dCPN<-function(par,data){
+    lambda<-par[1]
+    mu<-par[2]
+    sigma<-par[3]
+    -sum(log(dCPN(data,lambda,mu,sigma)))
+  } 
+  
+  data<-Increment.lev
+  
+  ui<-rbind(c(1,0,0),c(0,0,1))
+  ci<-c(10^-6,10^-6)
+  firs.prob<-tryCatch(constrOptim(theta=param0,
+                                  f=minusloglik.dCPN,
+                                  grad=NULL,
+                                  ui=ui,
+                                  ci=ci,
+                                  data=data),
+                      error=function(theta){NULL})
+  
+  
+  paramLev<-NA*c(1:length(param0))
+  if(!is.null(firs.prob)){
+    paramLev<-firs.prob$par
+  }
+  
+  CPN.hessian<-function (data,params){
+    logLik.CPN <- function(params) {
+      
+      lambda<-params[1]
+      mu<-params[2]
+      sigma<-params[3]
+      return(sum(log(dCPN(data,lambda,mu,sigma))))
+    }
+    # hessian <- tsHessian(param = params, fun = logLik.VG)
+    #hessian<-optimHess(par, fn, gr = NULL,data=data)
+    hessian<-optimHess(par=params, fn=logLik.CPN)
+    cov<--solve(hessian)
+    return(cov)
+  }
+  
+  if(is.na(paramLev)){
+    covLev<-matrix(NA, length(paramLev),length(paramLev))
+  }else{
+    covLev<-CPN.hessian(data=as.numeric(data),params=paramLev)
+  }
+  results<-list(estLevpar=paramLev,covLev=covLev)
+  return(results)
+}
+
+yuima.Estimation.CPExp<-function(Increment.lev,param0){
+  dCPExp<-function(x,lambda,rate){
+    a<-10^-6
+    b<-max(1/rate*10 +1/rate^2*10 ,max(x[!is.na(x)])+1)
+    ChFunToDens.CPExp <- function(n, a, b, lambda, rate) {
+      i <- 0:(n-1)            # Indices
+      dx <- (b-a)/n           # Step size, for the density
+      x <- a + i * dx         # Grid, for the density
+      dt <- 2*pi / ( n * dx ) # Step size, frequency space
+      c <- -n/2 * dt          # Evaluate the characteristic function on [c,d]
+      d <-  n/2 * dt          # (center the interval on zero)
+      t <- c + i * dt         # Grid, frequency space
+      charact.CPExp<-function(t,lambda,rate){
+        normal.y<-(rate/(1-1i*t))
+        # exp(1i*t*mu-sigma^2*t^2/2)
+        y<-exp(lambda*(normal.y-1))
+      }
+      phi_t <- charact.CPExp(t,lambda,rate)
+      X <- exp( -(0+1i) * i * dt * a ) * phi_t
+      Y <- fft(X)
+      density <- dt / (2*pi) * exp( - (0+1i) * c * x ) * Y
+      data.frame(
+        i = i,
+        t = t,
+        characteristic_function = phi_t,
+        x = x,
+        density = Re(density)
+      )
+    }
+    invFFT<-ChFunToDens.CPExp(lambda=lambda,rate=rate,n=2^12,a=a,b=b)
+    dens<-approx(invFFT$x[!is.na(invFFT$density)],invFFT$density[!is.na(invFFT$density)],x)
+    return(dens$y[!is.na(dens$y)])
+  }
+  
+  minusloglik.dCPExp<-function(par,data){
+    lambda<-par[1]
+    rate<-par[2]
+    -sum(log(dCPExp(data,lambda,rate)))
+  } 
+  
+  data<-Increment.lev
+  
+  ui<-rbind(c(1,0),c(0,1))
+  ci<-c(10^-6,10^-6)
+  firs.prob<-tryCatch(constrOptim(theta=param0,
+                                  f=minusloglik.dCPExp,
+                                  grad=NULL,
+                                  ui=ui,
+                                  ci=ci,
+                                  data=data),
+                      error=function(theta){NULL})
+  
+  
+  paramLev<-NA*c(1:length(param0))
+  if(!is.null(firs.prob)){
+    paramLev<-firs.prob$par
+  }
+  
+  CPExp.hessian<-function (data,params){
+    logLik.CPExp <- function(params) {
+      
+      lambda<-params[1]
+      rate<-params[2]
+      
+      return(sum(log(dCPExp(data,lambda,rate))))
+    }
+    # hessian <- tsHessian(param = params, fun = logLik.VG)
+    #hessian<-optimHess(par, fn, gr = NULL,data=data)
+    hessian<-optimHess(par=params, fn=logLik.CPExp)
+    cov<--solve(hessian)
+    return(cov)
+  }
+  
+  if(is.na(paramLev)){
+    covLev<-matrix(NA,length(paramLev),length(paramLev))
+  }else{
+    covLev<-CPExp.hessian(data=as.numeric(data),params=paramLev)
+  }
+  results<-list(estLevpar=paramLev,covLev=covLev)
+  return(results)
+}
+
+yuima.Estimation.CPGam<-function(Increment.lev,param0){
+  dCPGam<-function(x,lambda,shape,scale){
+    a<-10^-6
+    b<-max(shape*scale*10 +shape*scale^2*10 ,max(x[!is.na(x)])+1)
+    ChFunToDens.CPGam <- function(n, a, b, lambda, shape,scale) {
+      i <- 0:(n-1)            # Indices
+      dx <- (b-a)/n           # Step size, for the density
+      x <- a + i * dx         # Grid, for the density
+      dt <- 2*pi / ( n * dx ) # Step size, frequency space
+      c <- -n/2 * dt          # Evaluate the characteristic function on [c,d]
+      d <-  n/2 * dt          # (center the interval on zero)
+      t <- c + i * dt         # Grid, frequency space
+      charact.CPGam<-function(t,lambda,shape,scale){
+        normal.y<-(1-1i*t*scale)^(-shape)
+        # exp(1i*t*mu-sigma^2*t^2/2)
+        y<-exp(lambda*(normal.y-1))
+      }
+      phi_t <- charact.CPGam(t,lambda,shape,scale)
+      X <- exp( -(0+1i) * i * dt * a ) * phi_t
+      Y <- fft(X)
+      density <- dt / (2*pi) * exp( - (0+1i) * c * x ) * Y
+      data.frame(
+        i = i,
+        t = t,
+        characteristic_function = phi_t,
+        x = x,
+        density = Re(density)
+      )
+    }
+    invFFT<-ChFunToDens.CPGam(lambda=lambda,shape=shape,scale=scale,n=2^12,a=a,b=b)
+    dens<-approx(invFFT$x[!is.na(invFFT$density)],invFFT$density[!is.na(invFFT$density)],x)
+    return(dens$y[!is.na(dens$y)])
+  }
+  
+  minusloglik.dCPGam<-function(par,data){
+    lambda<-par[1]
+    shape<-par[2]
+    scale<-par[3]
+    -sum(log(dCPGam(data,lambda,shape,scale)))
+  } 
+  
+  data<-Increment.lev
+  
+  ui<-rbind(c(1,0,0),c(0,1,0),c(0,1,0))
+  ci<-c(10^-6,10^-6,10^-6)
+  firs.prob<-tryCatch(constrOptim(theta=param0,
+                                  f=minusloglik.dCPGam,
+                                  grad=NULL,
+                                  ui=ui,
+                                  ci=ci,
+                                  data=data),
+                      error=function(theta){NULL})
+  
+  
+  paramLev<-NA*c(1:length(param0))
+  if(!is.null(firs.prob)){
+    paramLev<-firs.prob$par
+  }
+  
+  CPGam.hessian<-function (data,params){
+    logLik.CPGam <- function(params) {
+      
+      lambda<-params[1]
+      shape<-params[2]
+      scale<-params[3]
+      
+      return(sum(log(dCPGam(data,lambda,shape,scale))))
+    }
+    # hessian <- tsHessian(param = params, fun = logLik.VG)
+    #hessian<-optimHess(par, fn, gr = NULL,data=data)
+    hessian<-optimHess(par=params, fn=logLik.CPGam)
+    cov<--solve(hessian)
+    return(cov)
+  }
+  
+  if(is.na(paramLev)){
+    covLev<-matrix(NA,length(paramLev),length(paramLev))
+  }else{
+    covLev<-CPGam.hessian(data=as.numeric(data),params=paramLev)
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
