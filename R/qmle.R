@@ -233,11 +233,47 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   
 	fixed.par <- names(fixed) # We use Fixed.par when we consider a Carma with scale parameter
   if(is(yuima@model,"yuima.carma") && (length(measure.par)>0)){
+    fixed.carma=NULL
+    if(!missing(fixed)){
+      if(names(fixed) %in% measure.par){
+        idx.fixed.carma<-match(names(fixed),measure.par)
+        idx.fixed.carma<-idx.fixed.carma[!is.na(idx.fixed.carma)]
+        if(length(idx.fixed.carma)!=0){
+          fixed.carma<-as.numeric(fixed[measure.par[idx.fixed.carma]])
+          names(fixed.carma)<-measure.par[idx.fixed.carma]
+        }
+      }
+    }
+    upper.carma=NULL
+    if(!missing(upper)){
+      if(names(upper) %in% measure.par){
+        idx.upper.carma<-match(names(upper),measure.par)
+        idx.upper.carma<-idx.upper.carma[!is.na(idx.upper.carma)]
+        if(length(idx.upper.carma)!=0){
+          upper.carma<-as.numeric(upper[measure.par[idx.upper.carma]])
+          names(upper.carma)<-measure.par[idx.upper.carma]
+        }
+      }
+    }
+    lower.carma=NULL
+    if(!missing(lower)){
+      if(names(lower) %in% measure.par){
+        idx.lower.carma<-match(names(lower),measure.par)
+        idx.lower.carma<-idx.lower.carma[!is.na(idx.lower.carma)]
+        if(length(idx.lower.carma)!=0){
+          lower.carma<-as.numeric(lower[measure.par[idx.lower.carma]])
+          names(lower.carma)<-measure.par[idx.lower.carma]
+        }
+      }
+    }
+    
+
+    
     
     for( j in c(1:length(measure.par))){
-      if(is.na(match(measure.par[j],names(fixed)))){
-        fixed.par <- c(fixed.par,measure.par[j])
-        fixed[measure.par[j]]<-start[measure.par[j]]
+          if(is.na(match(measure.par[j],names(fixed)))){
+          fixed.par <- c(fixed.par,measure.par[j])
+          fixed[measure.par[j]]<-start[measure.par[j]]
       }
     }
     
@@ -757,7 +793,7 @@ if(!is(yuima@model,"yuima.carma")){
         valuemeasure<-as.numeric(names.measpar)
         name.int.dummy <- as.character(model@measure$intensity)
         valueintensity<-as.numeric(name.int.dummy)
-        NaIdx<-which(is.na(c(valueintensity,valuemeasure)))
+        NaIdx<-which(!is.na(c(valueintensity,valuemeasure)))
         
         if(length(NaIdx)!=0){
           yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
@@ -775,13 +811,22 @@ if(!is(yuima@model,"yuima.carma")){
         names.measpar<-c(name.int.dummy, names.measpar)
         
         if(measurefunc=="dnorm"){
-          result.Lev<-yuima.Estimation.CPN(Increment.lev=inc.levy1,param0=coef[ names.measpar]) 
+          result.Lev<-yuima.Estimation.CPN(Increment.lev=inc.levy1,param0=coef[ names.measpar],
+                                           fixed.carma=fixed.carma,
+                                           lower.carma=lower.carma,
+                                           upper.carma=upper.carma) 
         }
         if(measurefunc=="dgamma"){
-          result.Lev<-yuima.Estimation.CPGam(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+          result.Lev<-yuima.Estimation.CPGam(Increment.lev=inc.levy1,param0=coef[ names.measpar],
+                                             fixed.carma=fixed.carma,
+                                             lower.carma=lower.carma,
+                                             upper.carma=upper.carma)
         }
         if(measurefunc=="dexp"){
-          result.Lev<-yuima.Estimation.CPExp(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+          result.Lev<-yuima.Estimation.CPExp(Increment.lev=inc.levy1,param0=coef[ names.measpar],
+                                             fixed.carma=fixed.carma,
+                                             lower.carma=lower.carma,
+                                             upper.carma=upper.carma)
         }
         Inc.Parm<-result.Lev$estLevpar
         IncVCOV<-result.Lev$covLev
@@ -813,7 +858,7 @@ if(!is(yuima@model,"yuima.carma")){
         name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
         names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
         valuemeasure<-as.numeric(names.measpar)
-        NaIdx<-which(is.na(valuemeasure))
+        NaIdx<-which(!is.na(valuemeasure))
         if(length(NaIdx)!=0){
           yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
           carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
@@ -836,14 +881,20 @@ if(!is(yuima@model,"yuima.carma")){
 #                                          length(coef[ names.measpar]),
 #                                          length(coef[ names.measpar]))
 #           )
-          result.Lev<-yuima.Estimation.IG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+          result.Lev<-yuima.Estimation.IG(Increment.lev=inc.levy1,param0=coef[ names.measpar],
+                                          fixed.carma=fixed.carma,
+                                          lower.carma=lower.carma,
+                                          upper.carma=upper.carma)
           
   #         result.Levy<-gigFit(inc.levy)
   #         Inc.Parm<-coef(result.Levy)
   #         IncVCOV<--solve(gigHessian(inc.levy, param=Inc.Parm))
         }
         if(measurefunc=="rNIG"){          
-           result.Lev<-yuima.Estimation.NIG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+           result.Lev<-yuima.Estimation.NIG(Increment.lev=inc.levy1,param0=coef[ names.measpar],
+                                            fixed.carma=fixed.carma,
+                                            lower.carma=lower.carma,
+                                            upper.carma=upper.carma)
         }
         if(measurefunc=="rbgamma"){
           result.Lev<-list(estLevpar=coef[ names.measpar],
@@ -853,7 +904,10 @@ if(!is(yuima@model,"yuima.carma")){
                            )
         }
         if(measurefunc=="rngamma"){
-          result.Lev<-yuima.Estimation.VG(Increment.lev=inc.levy1,param0=coef[ names.measpar])
+          result.Lev<-yuima.Estimation.VG(Increment.lev=inc.levy1,param0=coef[ names.measpar],
+                                          fixed.carma=fixed.carma,
+                                          lower.carma=lower.carma,
+                                          upper.carma=upper.carma)
         }
         
         Inc.Parm<-result.Lev$estLevpar
@@ -1866,7 +1920,10 @@ setMethod("plot",signature(x="yuima.carma.qmle"),
 
 # Normal Inverse Gaussian
 
-yuima.Estimation.NIG<-function(Increment.lev,param0){
+yuima.Estimation.NIG<-function(Increment.lev,param0,
+                               fixed.carma=fixed.carma,
+                               lower.carma=lower.carma,
+                               upper.carma=upper.carma){
   
   minusloglik.dNIG<-function(par,data){
     alpha<-par[1]
@@ -1883,71 +1940,68 @@ yuima.Estimation.NIG<-function(Increment.lev,param0){
   
   ui<-rbind(c(1, -1, 0, 0),c(1, 1, 0, 0),c(1, 0, 0, 0),c(0, 0, 1, 0))
   ci<-c(0,0,0,10^(-6))  
+
+  if(!is.null(lower.carma)){
+    lower.con<-matrix(0,length(lower.carma),length(param0))
+    rownames(lower.con)<-names(lower.carma)
+    colnames(lower.con)<-names(param0)
+    numb.lower<-length(lower.carma)
+    lower.con[names(lower.carma),names(lower.carma)]<-1*diag(numb.lower)
+    dummy.lower.names<-paste0(names(lower.carma),".lower")
+    rownames(lower.con)<-dummy.lower.names
+    names(lower.carma)<-dummy.lower.names
+    ui<-rbind(ui,lower.con)
+    ci<-c(ci,lower.carma)
+    #idx.lower.carma<-match(names(lower.carma),names(param0))
+  }
+  if(!is.null(upper.carma)){
+    upper.con<-matrix(0,length(upper.carma),length(param0))
+    rownames(upper.con)<-names(upper.carma)
+    colnames(upper.con)<-names(param0)
+    numb.upper<-length(upper.carma)
+    upper.con[names(upper.carma),names(upper.carma)]<--1*diag(numb.upper)
+    dummy.upper.names<-paste0(names(upper.carma),".upper")
+    rownames(upper.con)<-dummy.upper.names
+    names(upper.carma)<-dummy.upper.names
+    ui<-rbind(ui,upper.con)
+    ci<-c(ci,-upper.carma)
+  }
+  if(!is.null(fixed.carma)){
+    names.fixed<-names(fixed.carma)
+    numb.fixed<-length(fixed.carma)
+    fixed.con<-matrix(0,length(fixed.carma),length(param0))
+    rownames(fixed.con)<-names(fixed.carma)
+    colnames(fixed.con)<-names(param0)
+    fixed.con.bis<-fixed.con
+    fixed.con[names(fixed.carma),names(fixed.carma)]<--1*diag(numb.fixed)
+    fixed.con.bis[names(fixed.carma),names(fixed.carma)]<-1*diag(numb.fixed)
+    dummy.fixed.names<-paste0(names(fixed.carma),".fixed.u")
+    dummy.fixed.bis.names<-paste0(names(fixed.carma),".fixed.l")
+    rownames(fixed.con)<-dummy.fixed.names
+    rownames(fixed.con.bis)<-dummy.fixed.bis.names
+    names(fixed.carma)<-dummy.fixed.names
+    ui<-rbind(ui,fixed.con,fixed.con.bis)
+    ci<-c(ci,-fixed.carma-10^-6,fixed.carma-10^-6)
+    #ci<-c(ci,-fixed.carma,fixed.carma)
+  }  
+  
+  
   firs.prob<-tryCatch(constrOptim(theta=param0,
                                    f=minusloglik.dNIG,grad=NULL,ui=ui,ci=ci,data=data),
                        error=function(theta){NULL})
   
-#   # First Problem: beta>0 => alpha-beta=>0
-#   ui1<-rbind(c(1, -1, 0, 0),c(0, 1, 0, 0),c(1, 0, 0, 0),c(0, 0, 1, 0))
-#   ci1<-c(0,0,0,10^(-6))  
-#   firs1.prob<-tryCatch(constrOptim(theta=param0,
-#                                    f=minusloglik.dNIG,grad=NULL,ui=ui1,ci=ci1,data=data),
-#                        error=function(theta){NULL})
-#   
-#   # Second Problem: beta>0 => -alpha-beta=>0
-#   
-#   ui2<-rbind(c(-1, -1, 0, 0), c(0, 1, 0, 0) ,c(1, 0, 0, 0),c(0, 0, 1, 0))
-#   ci2<-c(0,0,0,10^(-6))
-#   
-#   firs2.prob<-tryCatch(constrOptim(theta=param0,
-#                                    f=minusloglik.dNIG,grad=NULL,ui=ui2,ci=ci2,data=data),
-#                        error=function(theta){NULL})
-#   # Third problem: beta<0 => alpha+beta=>0
-# 
-#   ui3<-rbind(c(1, 1, 0, 0), c(0, -1, 0, 0) ,c(1, 0, 0, 0),c(0, 0, 1, 0))
-#   ci3<-c(0,10^(-6),0,10^(-6))
-#   
-#   firs3.prob<-tryCatch(constrOptim(theta=param0,
-#                                    f=minusloglik.dNIG,grad=NULL,ui=ui3,ci=ci3,data=data),
-#                        error=function(theta){NULL})
-#   
-#   # Fourth problem: beta<0 => -alpha+beta=>0
-#   
-#   ui4<-rbind(c(-1, 1, 0, 0), c(0, -1, 0, 0) ,c(1, 0, 0, 0),c(0, 0, 1, 0))
-#   ci4<-c(0,10^(-6),0,10^(-6))
-#   
-#   firs4.prob<-tryCatch(constrOptim(theta=param0,
-#                                    f=minusloglik.dNIG,grad=NULL,ui=ui4,ci=ci4,data=data),
-#                        error=function(theta){NULL})
-  
-  paramLev<-NA*c(1:length(param0))
-  
+  lengpar<-length(param0)
+  paramLev<-NA*c(1:length(lengpar))
   
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
+    names(paramLev)<-names(param0)
+    if(!is.null(fixed.carma)){
+      paramLev[names.fixed]<-fixed.carma
+      names(paramLev)<-names(param0)
+    }
   }else{warning("the start value for levy measure is outside of the admissible region")}
-  
-#   if(!is.null(firs1.prob)){
-#     paramLev<-firs1.prob$par
-#   }
-#   
-#   if(!is.null(firs2.prob)){
-#     paramLev<-firs2.prob$par
-#   }
-#   
-#   if(!is.null(firs3.prob)){
-#     paramLev<-firs3.prob$par
-#   }
-#   
-#   if(!is.null(firs4.prob)){
-#     paramLev<-firs4.prob$par
-#   }
-#   
-#   if(is.null(firs2.prob) && is.null(firs1.prob) && is.null(firs3.prob) && is.null(firs4.prob)){
-#      warning("the start value for levy measure is outside of the admissible region")
-#   }
-    
-  
+        
   NIG.hessian<-function (data,params){
     logLik.NIG <- function(params) {
       
@@ -1967,14 +2021,27 @@ yuima.Estimation.NIG<-function(Increment.lev,param0){
     covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-NIG.hessian(data=as.numeric(data),params=paramLev)
+    rownames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[names.fixed,]<-matrix(NA,numb.fixed,lengpar)
+    }
+    colnames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[,names.fixed]<-matrix(NA,lengpar,numb.fixed)
+    }  
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
 }
 
+
+
 # Variance Gaussian
 
-yuima.Estimation.VG<-function(Increment.lev,param0){
+yuima.Estimation.VG<-function(Increment.lev,param0,
+                              fixed.carma=fixed.carma,
+                              lower.carma=lower.carma,
+                              upper.carma=upper.carma){
   
   minusloglik.dVG<-function(par,data){
     lambda<-par[1]
@@ -1988,15 +2055,68 @@ yuima.Estimation.VG<-function(Increment.lev,param0){
   
   ui<-rbind(c(1,0, 0, 0),c(0, 1, 1, 0),c(0, 1,-1, 0),c(0, 1,0, 0))
   ci<-c(10^-6,10^-6,10^(-6), 0)
+  
+  if(!is.null(lower.carma)){
+    lower.con<-matrix(0,length(lower.carma),length(param0))
+    rownames(lower.con)<-names(lower.carma)
+    colnames(lower.con)<-names(param0)
+    numb.lower<-length(lower.carma)
+    lower.con[names(lower.carma),names(lower.carma)]<-1*diag(numb.lower)
+    dummy.lower.names<-paste0(names(lower.carma),".lower")
+    rownames(lower.con)<-dummy.lower.names
+    names(lower.carma)<-dummy.lower.names
+    ui<-rbind(ui,lower.con)
+    ci<-c(ci,lower.carma)
+    #idx.lower.carma<-match(names(lower.carma),names(param0))
+  }
+  if(!is.null(upper.carma)){
+    upper.con<-matrix(0,length(upper.carma),length(param0))
+    rownames(upper.con)<-names(upper.carma)
+    colnames(upper.con)<-names(param0)
+    numb.upper<-length(upper.carma)
+    upper.con[names(upper.carma),names(upper.carma)]<--1*diag(numb.upper)
+    dummy.upper.names<-paste0(names(upper.carma),".upper")
+    rownames(upper.con)<-dummy.upper.names
+    names(upper.carma)<-dummy.upper.names
+    ui<-rbind(ui,upper.con)
+    ci<-c(ci,-upper.carma)
+  }
+  if(!is.null(fixed.carma)){
+    names.fixed<-names(fixed.carma)
+    numb.fixed<-length(fixed.carma)
+    fixed.con<-matrix(0,length(fixed.carma),length(param0))
+    rownames(fixed.con)<-names(fixed.carma)
+    colnames(fixed.con)<-names(param0)
+    fixed.con.bis<-fixed.con
+    fixed.con[names(fixed.carma),names(fixed.carma)]<--1*diag(numb.fixed)
+    fixed.con.bis[names(fixed.carma),names(fixed.carma)]<-1*diag(numb.fixed)
+    dummy.fixed.names<-paste0(names(fixed.carma),".fixed.u")
+    dummy.fixed.bis.names<-paste0(names(fixed.carma),".fixed.l")
+    rownames(fixed.con)<-dummy.fixed.names
+    rownames(fixed.con.bis)<-dummy.fixed.bis.names
+    names(fixed.carma)<-dummy.fixed.names
+    ui<-rbind(ui,fixed.con,fixed.con.bis)
+    ci<-c(ci,-fixed.carma-10^-6,fixed.carma-10^-6)
+    #ci<-c(ci,-fixed.carma,fixed.carma)
+  }  
+  
+  
   firs.prob<-tryCatch(constrOptim(theta=param0,
                                   f=minusloglik.dVG,grad=NULL,ui=ui,ci=ci,data=data),
                       error=function(theta){NULL})
   
-  
-  paramLev<-NA*c(1:length(param0))
+  lengpar<-length(param0)
+  paramLev<-NA*c(1:length(lengpar))
+
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
+    names(paramLev)<-names(param0)
+    if(!is.null(fixed.carma)){
+      paramLev[names.fixed]<-fixed.carma
+      names(paramLev)<-names(param0)
+    }
   }
+  
   
   VG.hessian<-function (data,params){
     logLik.VG <- function(params) {
@@ -2019,6 +2139,14 @@ yuima.Estimation.VG<-function(Increment.lev,param0){
     covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-VG.hessian(data=as.numeric(data),params=paramLev)
+    rownames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[names.fixed,]<-matrix(NA,numb.fixed,lengpar)
+    }
+    colnames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[,names.fixed]<-matrix(NA,lengpar,numb.fixed)
+    }
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
@@ -2026,26 +2154,67 @@ yuima.Estimation.VG<-function(Increment.lev,param0){
 
 # Inverse Gaussian
 
-yuima.Estimation.IG<-function(Increment.lev,param0){
+yuima.Estimation.IG<-function(Increment.lev,param0,
+                              fixed.carma=fixed.carma,
+                              lower.carma=lower.carma,
+                              upper.carma=upper.carma){
   
   minusloglik.dIG<-function(par,data){
     delta<-par[1]
     gamma<-par[2]
     -sum(log(dIG(data,delta,gamma)))
   }
-# Be carefull 
-#   for(i in c(1:length(Increment.lev))){
-#     if(Increment.lev[i]<=0){
-#       Increment.lev[i]<--Increment.lev[i]
-#     }
-#   }
-  
-  
-  
+    
   data<-Increment.lev
   
   ui<-rbind(c(1,0),c(0, 1))
   ci<-c(10^-6,10^-6)
+  
+  if(!is.null(lower.carma)){
+    lower.con<-matrix(0,length(lower.carma),length(param0))
+    rownames(lower.con)<-names(lower.carma)
+    colnames(lower.con)<-names(param0)
+    numb.lower<-length(lower.carma)
+    lower.con[names(lower.carma),names(lower.carma)]<-1*diag(numb.lower)
+    dummy.lower.names<-paste0(names(lower.carma),".lower")
+    rownames(lower.con)<-dummy.lower.names
+    names(lower.carma)<-dummy.lower.names
+    ui<-rbind(ui,lower.con)
+    ci<-c(ci,lower.carma)
+    #idx.lower.carma<-match(names(lower.carma),names(param0))
+  }
+  if(!is.null(upper.carma)){
+    upper.con<-matrix(0,length(upper.carma),length(param0))
+    rownames(upper.con)<-names(upper.carma)
+    colnames(upper.con)<-names(param0)
+    numb.upper<-length(upper.carma)
+    upper.con[names(upper.carma),names(upper.carma)]<--1*diag(numb.upper)
+    dummy.upper.names<-paste0(names(upper.carma),".upper")
+    rownames(upper.con)<-dummy.upper.names
+    names(upper.carma)<-dummy.upper.names
+    ui<-rbind(ui,upper.con)
+    ci<-c(ci,-upper.carma)
+  }
+  if(!is.null(fixed.carma)){
+    names.fixed<-names(fixed.carma)
+    numb.fixed<-length(fixed.carma)
+    fixed.con<-matrix(0,length(fixed.carma),length(param0))
+    rownames(fixed.con)<-names(fixed.carma)
+    colnames(fixed.con)<-names(param0)
+    fixed.con.bis<-fixed.con
+    fixed.con[names(fixed.carma),names(fixed.carma)]<--1*diag(numb.fixed)
+    fixed.con.bis[names(fixed.carma),names(fixed.carma)]<-1*diag(numb.fixed)
+    dummy.fixed.names<-paste0(names(fixed.carma),".fixed.u")
+    dummy.fixed.bis.names<-paste0(names(fixed.carma),".fixed.l")
+    rownames(fixed.con)<-dummy.fixed.names
+    rownames(fixed.con.bis)<-dummy.fixed.bis.names
+    names(fixed.carma)<-dummy.fixed.names
+    ui<-rbind(ui,fixed.con,fixed.con.bis)
+    ci<-c(ci,-fixed.carma-10^-6,fixed.carma-10^-6)
+    #ci<-c(ci,-fixed.carma,fixed.carma)
+  }  
+
+
   firs.prob<-tryCatch(constrOptim(theta=param0,
                                   f=minusloglik.dIG,
                                   grad=NULL,
@@ -2054,10 +2223,15 @@ yuima.Estimation.IG<-function(Increment.lev,param0){
                                   data=data),
                       error=function(theta){NULL})
   
-  
-  paramLev<-NA*c(1:length(param0))
+  lengpar<-length(param0)
+  paramLev<-NA*c(1:length(lengpar))
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
+    names(paramLev)<-names(param0)
+    if(!is.null(fixed.carma)){
+      paramLev[names.fixed]<-fixed.carma
+      names(paramLev)<-names(param0)
+    }
   }
   
   IG.hessian<-function (data,params){
@@ -2079,6 +2253,14 @@ yuima.Estimation.IG<-function(Increment.lev,param0){
     covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-IG.hessian(data=as.numeric(data),params=paramLev)
+    rownames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[names.fixed,]<-matrix(NA,numb.fixed,lengpar)
+    }
+    colnames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[,names.fixed]<-matrix(NA,lengpar,numb.fixed)
+    }
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
@@ -2086,7 +2268,10 @@ yuima.Estimation.IG<-function(Increment.lev,param0){
 
 # Compound Poisson-Normal
 
-yuima.Estimation.CPN<-function(Increment.lev,param0){
+yuima.Estimation.CPN<-function(Increment.lev,param0,
+                               fixed.carma=fixed.carma,
+                               lower.carma=lower.carma,
+                               upper.carma=upper.carma){
   dCPN<-function(x,lambda,mu,sigma){
     a<-min(mu-100*sigma,min(x)-1)
     b<-max(mu+100*sigma,max(x)+1)
@@ -2130,6 +2315,49 @@ yuima.Estimation.CPN<-function(Increment.lev,param0){
   
   ui<-rbind(c(1,0,0),c(0,0,1))
   ci<-c(10^-6,10^-6)
+  if(!is.null(lower.carma)){
+    lower.con<-matrix(0,length(lower.carma),length(param0))
+    rownames(lower.con)<-names(lower.carma)
+    colnames(lower.con)<-names(param0)
+    numb.lower<-length(lower.carma)
+    lower.con[names(lower.carma),names(lower.carma)]<-1*diag(numb.lower)
+    dummy.lower.names<-paste0(names(lower.carma),".lower")
+    rownames(lower.con)<-dummy.lower.names
+    names(lower.carma)<-dummy.lower.names
+    ui<-rbind(ui,lower.con)
+    ci<-c(ci,lower.carma)
+    #idx.lower.carma<-match(names(lower.carma),names(param0))
+  }
+  if(!is.null(upper.carma)){
+    upper.con<-matrix(0,length(upper.carma),length(param0))
+    rownames(upper.con)<-names(upper.carma)
+    colnames(upper.con)<-names(param0)
+    numb.upper<-length(upper.carma)
+    upper.con[names(upper.carma),names(upper.carma)]<--1*diag(numb.upper)
+    dummy.upper.names<-paste0(names(upper.carma),".upper")
+    rownames(upper.con)<-dummy.upper.names
+    names(upper.carma)<-dummy.upper.names
+    ui<-rbind(ui,upper.con)
+    ci<-c(ci,-upper.carma)
+  }
+  if(!is.null(fixed.carma)){
+    names.fixed<-names(fixed.carma)
+    numb.fixed<-length(fixed.carma)
+    fixed.con<-matrix(0,length(fixed.carma),length(param0))
+    rownames(fixed.con)<-names(fixed.carma)
+    colnames(fixed.con)<-names(param0)
+    fixed.con.bis<-fixed.con
+    fixed.con[names(fixed.carma),names(fixed.carma)]<--1*diag(numb.fixed)
+    fixed.con.bis[names(fixed.carma),names(fixed.carma)]<-1*diag(numb.fixed)
+    dummy.fixed.names<-paste0(names(fixed.carma),".fixed.u")
+    dummy.fixed.bis.names<-paste0(names(fixed.carma),".fixed.l")
+    rownames(fixed.con)<-dummy.fixed.names
+    rownames(fixed.con.bis)<-dummy.fixed.bis.names
+    names(fixed.carma)<-dummy.fixed.names
+    ui<-rbind(ui,fixed.con,fixed.con.bis)
+    ci<-c(ci,-fixed.carma-10^-6,fixed.carma-10^-6)
+    #ci<-c(ci,-fixed.carma,fixed.carma)
+  }  
   firs.prob<-tryCatch(constrOptim(theta=param0,
                                   f=minusloglik.dCPN,
                                   grad=NULL,
@@ -2138,13 +2366,18 @@ yuima.Estimation.CPN<-function(Increment.lev,param0){
                                   data=data),
                       error=function(theta){NULL})
   
-  
-  paramLev<-NA*c(1:length(param0))
+  lengpar<-length(param0)
+  paramLev<-NA*c(1:lengpar)
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
+    names(paramLev)<-names(param0)
+    if(!is.null(fixed.carma)){
+      paramLev[names.fixed]<-fixed.carma
+      names(paramLev)<-names(param0)
+    }
   }
   
-  CPN.hessian<-function (data,params){
+  CPN.hessian<-function (data,params,lengpar){
     logLik.CPN <- function(params) {
       
       lambda<-params[1]
@@ -2154,21 +2387,33 @@ yuima.Estimation.CPN<-function(Increment.lev,param0){
     }
     # hessian <- tsHessian(param = params, fun = logLik.VG)
     #hessian<-optimHess(par, fn, gr = NULL,data=data)
-    hessian<-optimHess(par=params, fn=logLik.CPN)
+    hessian<-tryCatch(optimHess(par=params, fn=logLik.CPN),
+                      error=function(theta){matrix(NA,lengpar,lengpar)})
     cov<--solve(hessian)
     return(cov)
   }
   
   if(is.na(paramLev)){
-    covLev<-matrix(NA, length(paramLev),length(paramLev))
+    covLev<-matrix(NA, lengpar,lengpar)
   }else{
-    covLev<-CPN.hessian(data=as.numeric(data),params=paramLev)
+    covLev<-CPN.hessian(data=as.numeric(data),params=paramLev,lengpar=lengpar)
+    rownames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[names.fixed,]<-matrix(NA,numb.fixed,lengpar)
+    }
+    colnames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[,names.fixed]<-matrix(NA,lengpar,numb.fixed)
+    }
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
 }
 
-yuima.Estimation.CPExp<-function(Increment.lev,param0){
+yuima.Estimation.CPExp<-function(Increment.lev,param0,
+                                 fixed.carma=fixed.carma,
+                                 lower.carma=lower.carma,
+                                 upper.carma=upper.carma){
   dCPExp<-function(x,lambda,rate){
     a<-10^-6
     b<-max(1/rate*10 +1/rate^2*10 ,max(x[!is.na(x)])+1)
@@ -2212,6 +2457,50 @@ yuima.Estimation.CPExp<-function(Increment.lev,param0){
   
   ui<-rbind(c(1,0),c(0,1))
   ci<-c(10^-6,10^-6)
+  if(!is.null(lower.carma)){
+    lower.con<-matrix(0,length(lower.carma),length(param0))
+    rownames(lower.con)<-names(lower.carma)
+    colnames(lower.con)<-names(param0)
+    numb.lower<-length(lower.carma)
+    lower.con[names(lower.carma),names(lower.carma)]<-1*diag(numb.lower)
+    dummy.lower.names<-paste0(names(lower.carma),".lower")
+    rownames(lower.con)<-dummy.lower.names
+    names(lower.carma)<-dummy.lower.names
+    ui<-rbind(ui,lower.con)
+    ci<-c(ci,lower.carma)
+    #idx.lower.carma<-match(names(lower.carma),names(param0))
+  }
+  if(!is.null(upper.carma)){
+    upper.con<-matrix(0,length(upper.carma),length(param0))
+    rownames(upper.con)<-names(upper.carma)
+    colnames(upper.con)<-names(param0)
+    numb.upper<-length(upper.carma)
+    upper.con[names(upper.carma),names(upper.carma)]<--1*diag(numb.upper)
+    dummy.upper.names<-paste0(names(upper.carma),".upper")
+    rownames(upper.con)<-dummy.upper.names
+    names(upper.carma)<-dummy.upper.names
+    ui<-rbind(ui,upper.con)
+    ci<-c(ci,-upper.carma)
+  }
+  if(!is.null(fixed.carma)){
+    names.fixed<-names(fixed.carma)
+    numb.fixed<-length(fixed.carma)
+    fixed.con<-matrix(0,length(fixed.carma),length(param0))
+    rownames(fixed.con)<-names(fixed.carma)
+    colnames(fixed.con)<-names(param0)
+    fixed.con.bis<-fixed.con
+    fixed.con[names(fixed.carma),names(fixed.carma)]<--1*diag(numb.fixed)
+    fixed.con.bis[names(fixed.carma),names(fixed.carma)]<-1*diag(numb.fixed)
+    dummy.fixed.names<-paste0(names(fixed.carma),".fixed.u")
+    dummy.fixed.bis.names<-paste0(names(fixed.carma),".fixed.l")
+    rownames(fixed.con)<-dummy.fixed.names
+    rownames(fixed.con.bis)<-dummy.fixed.bis.names
+    names(fixed.carma)<-dummy.fixed.names
+    ui<-rbind(ui,fixed.con,fixed.con.bis)
+    ci<-c(ci,-fixed.carma-10^-6,fixed.carma-10^-6)
+    #ci<-c(ci,-fixed.carma,fixed.carma)
+  }  
+  
   firs.prob<-tryCatch(constrOptim(theta=param0,
                                   f=minusloglik.dCPExp,
                                   grad=NULL,
@@ -2220,11 +2509,17 @@ yuima.Estimation.CPExp<-function(Increment.lev,param0){
                                   data=data),
                       error=function(theta){NULL})
   
-  
-  paramLev<-NA*c(1:length(param0))
+  lengpar<-length(param0)
+  paramLev<-NA*c(1:length(lengpar))
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
+    names(paramLev)<-names(param0)
+    if(!is.null(fixed.carma)){
+      paramLev[names.fixed]<-fixed.carma
+      names(paramLev)<-names(param0)
+    }
   }
+  
   
   CPExp.hessian<-function (data,params){
     logLik.CPExp <- function(params) {
@@ -2245,12 +2540,23 @@ yuima.Estimation.CPExp<-function(Increment.lev,param0){
     covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-CPExp.hessian(data=as.numeric(data),params=paramLev)
+    rownames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[names.fixed,]<-matrix(NA,numb.fixed,lengpar)
+    }
+    colnames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[,names.fixed]<-matrix(NA,lengpar,numb.fixed)
+    }
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
 }
 
-yuima.Estimation.CPGam<-function(Increment.lev,param0){
+yuima.Estimation.CPGam<-function(Increment.lev,param0,
+                                 fixed.carma=fixed.carma,
+                                 lower.carma=lower.carma,
+                                 upper.carma=upper.carma){
   dCPGam<-function(x,lambda,shape,scale){
     a<-10^-6
     b<-max(shape*scale*10 +shape*scale^2*10 ,max(x[!is.na(x)])+1)
@@ -2295,6 +2601,52 @@ yuima.Estimation.CPGam<-function(Increment.lev,param0){
   
   ui<-rbind(c(1,0,0),c(0,1,0),c(0,1,0))
   ci<-c(10^-6,10^-6,10^-6)
+  
+  if(!is.null(lower.carma)){
+    lower.con<-matrix(0,length(lower.carma),length(param0))
+    rownames(lower.con)<-names(lower.carma)
+    colnames(lower.con)<-names(param0)
+    numb.lower<-length(lower.carma)
+    lower.con[names(lower.carma),names(lower.carma)]<-1*diag(numb.lower)
+    dummy.lower.names<-paste0(names(lower.carma),".lower")
+    rownames(lower.con)<-dummy.lower.names
+    names(lower.carma)<-dummy.lower.names
+    ui<-rbind(ui,lower.con)
+    ci<-c(ci,lower.carma)
+    #idx.lower.carma<-match(names(lower.carma),names(param0))
+  }
+  if(!is.null(upper.carma)){
+    upper.con<-matrix(0,length(upper.carma),length(param0))
+    rownames(upper.con)<-names(upper.carma)
+    colnames(upper.con)<-names(param0)
+    numb.upper<-length(upper.carma)
+    upper.con[names(upper.carma),names(upper.carma)]<--1*diag(numb.upper)
+    dummy.upper.names<-paste0(names(upper.carma),".upper")
+    rownames(upper.con)<-dummy.upper.names
+    names(upper.carma)<-dummy.upper.names
+    ui<-rbind(ui,upper.con)
+    ci<-c(ci,-upper.carma)
+  }
+  if(!is.null(fixed.carma)){
+    names.fixed<-names(fixed.carma)
+    numb.fixed<-length(fixed.carma)
+    fixed.con<-matrix(0,length(fixed.carma),length(param0))
+    rownames(fixed.con)<-names(fixed.carma)
+    colnames(fixed.con)<-names(param0)
+    fixed.con.bis<-fixed.con
+    fixed.con[names(fixed.carma),names(fixed.carma)]<--1*diag(numb.fixed)
+    fixed.con.bis[names(fixed.carma),names(fixed.carma)]<-1*diag(numb.fixed)
+    dummy.fixed.names<-paste0(names(fixed.carma),".fixed.u")
+    dummy.fixed.bis.names<-paste0(names(fixed.carma),".fixed.l")
+    rownames(fixed.con)<-dummy.fixed.names
+    rownames(fixed.con.bis)<-dummy.fixed.bis.names
+    names(fixed.carma)<-dummy.fixed.names
+    ui<-rbind(ui,fixed.con,fixed.con.bis)
+    ci<-c(ci,-fixed.carma-10^-6,fixed.carma-10^-6)
+    #ci<-c(ci,-fixed.carma,fixed.carma)
+  }  
+  
+  
   firs.prob<-tryCatch(constrOptim(theta=param0,
                                   f=minusloglik.dCPGam,
                                   grad=NULL,
@@ -2303,11 +2655,17 @@ yuima.Estimation.CPGam<-function(Increment.lev,param0){
                                   data=data),
                       error=function(theta){NULL})
   
-  
-  paramLev<-NA*c(1:length(param0))
+  lengpar<-length(param0)
+  paramLev<-NA*c(1:length(lengpar))
   if(!is.null(firs.prob)){
     paramLev<-firs.prob$par
+    names(paramLev)<-names(param0)
+    if(!is.null(fixed.carma)){
+      paramLev[names.fixed]<-fixed.carma
+      names(paramLev)<-names(param0)
+    }
   }
+  
   
   CPGam.hessian<-function (data,params){
     logLik.CPGam <- function(params) {
@@ -2329,6 +2687,14 @@ yuima.Estimation.CPGam<-function(Increment.lev,param0){
     covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-CPGam.hessian(data=as.numeric(data),params=paramLev)
+    rownames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[names.fixed,]<-matrix(NA,numb.fixed,lengpar)
+    }
+    colnames(covLev)<-names(paramLev)
+    if(!is.null(fixed.carma)){
+      covLev[,names.fixed]<-matrix(NA,lengpar,numb.fixed)
+    }
   }
   results<-list(estLevpar=paramLev,covLev=covLev)
   return(results)
