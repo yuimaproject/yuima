@@ -122,7 +122,7 @@ setClass("yuima", representation(data = "yuima.data",
          )
 
 # Class yuima.carma.qmle
-setClass("yuima.carma.qmle",representation(Incr.Lev = "matrix",
+setClass("yuima.carma.qmle",representation(Incr.Lev = "ANY",
                                            model = "yuima.carma"
                                            ),
                             contains="mle"

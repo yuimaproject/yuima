@@ -19,7 +19,7 @@
 %ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
-qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, Est.Incr="Carma.IncPar", ...)
+qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, ...)
 quasilogl(yuima, param, print=FALSE)
 }
 \arguments{
@@ -40,6 +40,7 @@ quasilogl(yuima, param, print=FALSE)
   \item{fixed}{for conditional (quasi)maximum likelihood estimation.}
   \item{joint}{perform joint estimation or two stage estimation? by default \code{joint=FALSE}.}
   \item{Est.Incr}{If the yuima model is an object of \code{\link{yuima.carma-class}} the \code{qmle} returns an object of \code{\link{yuima.carma.qmle-class}} or object of class \code{mle-class}. By default \code{Est.Incr="Carma.IncPar"}.}
+  \item{aggregation}{If \code{aggregation=TRUE}, before the estimation of the levy parameters we aggregate the increments.}
   \item{...}{passed to \code{\link{optim}} method. See Examples.}
 }
 \details{
