@@ -15,27 +15,40 @@ euler<-function(xinit,yuima,dW,env){
 #	dX <- xinit
   
 	# 06/11 xinit is an expression: the structure is equal to that of V0   
-	dX_dummy <- xinit
-	if(length(modelstate)==length(dX_dummy)){
-	  for(i in 1:length(modelstate)) {
+  if(length(unique(as.character(xinit)))==1 &&
+       is.numeric(tryCatch(eval(dX_dummy[i],env),error=function(...) FALSE))){
+    dX_dummy<-xinit[1]
+    dummy.val<-eval(dX_dummy, env)
+    for(i in 1:length(modelstate)){
+      assign(modelstate[i],dummy.val[i] ,env)
+    }
+    dX<-vector(mode="numeric",length(dX_dummy))
+    
+    for(i in 1:length(xinit)){
+      dX[i] <- dummy.val[i]
+    }
+  }else{
+    dX_dummy <- xinit
+	  if(length(modelstate)==length(dX_dummy)){
+	    for(i in 1:length(modelstate)) {
 	    if(is.numeric(tryCatch(eval(dX_dummy[i],env),error=function(...) FALSE))){
 	      assign(modelstate[i], eval(dX_dummy[i], env),env)
 	    }else{
 	      assign(modelstate[i], 0, env)
-	    }}
-	} else{ 
-	  yuima.warn("the number of model states do not match the number of initial conditions")
-	  return(NULL)
-	}
-	# 06/11 we need a initial variable for X_0
-	dX<-vector(mode="numeric",length(dX_dummy))
-	
-	for(i in 1:length(dX_dummy)){
-	  dX[i] <- eval(dX_dummy[i], env)
-	}
-	
+	    }
+	  }
+	}else{ 
+	    yuima.warn("the number of model states do not match the number of initial conditions")
+	    return(NULL)
+	  }
   
+	# 06/11 we need a initial variable for X_0
+	  dX<-vector(mode="numeric",length(dX_dummy))
 	
+	  for(i in 1:length(dX_dummy)){
+	    dX[i] <- eval(dX_dummy[i], env)
+	  }
+  }
 ##:: set time step	
 	delta <- Terminal/n 
 	

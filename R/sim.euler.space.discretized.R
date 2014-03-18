@@ -13,25 +13,39 @@ space.discretized<-function(xinit,yuima, env){
 	Terminal <- yuima@sampling@Terminal[1]
 	n <- yuima@sampling@n[1]
 #	dX <- xinit
+  if(length(unique(as.character(xinit)))==1 &&
+       is.numeric(tryCatch(eval(dX_dummy[i],env),error=function(...) FALSE))){
+    dX_dummy<-xinit[1]
+    dummy.val<-eval(dX_dummy, env)
+    for(i in 1:length(modelstate)){
+      assign(modelstate[i],dummy.val[i] ,env)
+    }
+    dX<-vector(mode="numeric",length(dX_dummy))
   
-	dX_dummy <- xinit
-	if(length(modelstate)==length(dX_dummy)){
-	  for(i in 1:length(modelstate)) {
-	    if(is.numeric(tryCatch(eval(dX_dummy[i],env),error=function(...) FALSE))){
-	      assign(modelstate[i], eval(dX_dummy[i], env),env)
-	    }else{
-	      assign(modelstate[i], 0, env)
-	    }}
-	} else{ 
-	  yuima.warn("the number of model states do not match the number of initial conditions")
-	  return(NULL)
-	}
+    for(i in 1:length(xinit)){
+      dX[i] <- dummy.val[i]
+    }
+  }else{
+	  dX_dummy <- xinit
+	  if(length(modelstate)==length(dX_dummy)){
+	    for(i in 1:length(modelstate)) {
+	      if(is.numeric(tryCatch(eval(dX_dummy[i],env),error=function(...) FALSE))){
+	        assign(modelstate[i], eval(dX_dummy[i], env),env)
+	      }else{
+	        assign(modelstate[i], 0, env)
+	      }
+	    }
+	  }else{ 
+	    yuima.warn("the number of model states do not match the number of initial conditions")
+	    return(NULL)
+	  }
 	# 20/11 we need a initial variable for X_0
-	dX<-vector(mode="numeric",length(dX_dummy))
+	  dX<-vector(mode="numeric",length(dX_dummy))
 
-	for(i in 1:length(dX_dummy)){
-	  dX[i] <- eval(dX_dummy[i], env)
-	}
+	  for(i in 1:length(dX_dummy)){
+	    dX[i] <- eval(dX_dummy[i], env)
+	  }
+  }
 	
 	
 ##:: set time step	
