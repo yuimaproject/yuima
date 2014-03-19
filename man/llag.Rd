@@ -49,7 +49,8 @@ Hoffmann, M., Rosenbaum, M. and Yoshida, N. (2013)
 diff.coef.matrix <- matrix(c("sqrt(x1)", "3/5*sqrt(x2)","1/3*sqrt(x3)", 
 "", "4/5*sqrt(x2)","2/3*sqrt(x3)","","","2/3*sqrt(x3)"), 3, 3) 
 drift <- c("1-x1","2*(10-x2)","3*(4-x3)")
-cor.mod <- setModel(drift = drift, diffusion = diff.coef.matrix,solve.variable = c("x1", "x2","x3")) 
+cor.mod <- setModel(drift = drift, diffusion = diff.coef.matrix,
+  solve.variable = c("x1", "x2","x3")) 
 
 set.seed(111) 
 

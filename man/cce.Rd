@@ -161,7 +161,8 @@ cce(x,method="MRC",theta,kn,g,delta=0,avg=TRUE,psd=FALSE)
 cce(x,method="TSCV",K,c.two,J=1,adj=TRUE,utime,psd=FALSE)
 cce(x,method="GME",c.multi,utime,psd=FALSE)
 cce(x,method="RK",kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime,psd=FALSE)
-cce(x,method="QMLE",opt.method="BFGS",vol.init=NULL,covol.init=NULL,nvar.init=NULL,ncov.init=NULL,\dots,utime,psd=FALSE)
+cce(x,method="QMLE",opt.method="BFGS",vol.init=NULL,covol.init=NULL,
+ nvar.init=NULL,ncov.init=NULL,\dots,utime,psd=FALSE)
 cce(x,method="SIML",mn,alpha=0.4,psd=FALSE)
 cce(x,method="THY",threshold,psd=FALSE)
 cce(x,method="PTHY",theta,kn,g,threshold,refreshing=TRUE,cwise=TRUE,psd=FALSE)
@@ -314,9 +315,11 @@ the second-order correction will be provided in a future version of the package.
 diff.coef.1 <- function(t, x1 = 0, x2 = 0) sqrt(1+t)
 diff.coef.2 <- function(t, x1 = 0, x2 = 0) sqrt(1+t^2)
 cor.rho <- function(t, x1 = 0, x2 = 0) sqrt(1/2)
-diff.coef.matrix <- matrix(c("diff.coef.1(t,x1,x2)", "diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)", 
+diff.coef.matrix <- matrix(c("diff.coef.1(t,x1,x2)", 
+"diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)", 
 "", "diff.coef.2(t,x1,x2) * sqrt(1-cor.rho(t,x1,x2)^2)"), 2, 2) 
-cor.mod <- setModel(drift = c("", ""), diffusion = diff.coef.matrix,solve.variable = c("x1", "x2")) 
+cor.mod <- setModel(drift = c("", ""), 
+diffusion = diff.coef.matrix,solve.variable = c("x1", "x2")) 
 
 set.seed(111) 
 
@@ -355,8 +358,11 @@ drift.coef.vector <- c("drift.coef.1","drift.coef.2")
 diff.coef.1 <- function(t,x1,x2) sqrt(abs(x1))*sqrt(1+t)
 diff.coef.2 <- function(t,x1,x2) sqrt(abs(x2))
 cor.rho <- function(t,x1,x2) 1/(1+x1^2)
-diff.coef.matrix <- matrix(c("diff.coef.1(t,x1,x2)", "diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)","", "diff.coef.2(t,x1,x2) * sqrt(1-cor.rho(t,x1,x2)^2)"), 2, 2) 
-cor.mod <- setModel(drift = drift.coef.vector, diffusion = diff.coef.matrix,solve.variable = c("x1", "x2"))
+diff.coef.matrix <- matrix(c("diff.coef.1(t,x1,x2)", 
+"diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)","", 
+"diff.coef.2(t,x1,x2) * sqrt(1-cor.rho(t,x1,x2)^2)"), 2, 2) 
+cor.mod <- setModel(drift = drift.coef.vector,
+ diffusion = diff.coef.matrix,solve.variable = c("x1", "x2"))
 
 ## Generate a path of the process
 set.seed(111) 
@@ -369,10 +375,12 @@ plot(yuima)
 ## The "true" value of the quadratic covariation.
 cce(yuima)
 
-## We use the function poisson.random.sampling to generate nonsynchronous observations by Poisson sampling.
+## We use the function poisson.random.sampling to generate nonsynchronous 
+## observations by Poisson sampling.
 psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 3000) 
 
-## cce takes the psample to return an estimated value  of the quadratic covariation. The off-diagonal elements are the value of the Hayashi-Yoshida estimator. 
+## cce takes the psample to return an estimated value  of the quadratic covariation. 
+## The off-diagonal elements are the value of the Hayashi-Yoshida estimator. 
 cce(psample)
 
 

@@ -27,8 +27,8 @@ we need to fix this routine.
 \examples{
 # to the Black-Scholes economy:
 # dXt^e = Xt^e * dt + e * Xt^e * dWt
-diff.matrix <- matrix( c("x*e"), 1,1)
-model <- setModel(drift = c("x"), diffusion = diff.matrix)
+diff.matrix <- "x*e"
+model <- setModel(drift = "x", diffusion = diff.matrix)
 # call option is evaluated by averating
 # max{ (1/T)*int_0^T Xt^e dt, 0}, the first argument is the functional of interest:
 Terminal <- 1
@@ -58,14 +58,16 @@ sum(asymp$d0 + e * asymp$d1)
 ### An example of multivariate case: Heston model
 ## a <- 1;C <- 1;d <- 10;R<-.1
 ## diff.matrix <- matrix( c("x1*sqrt(x2)*e", "e*R*sqrt(x2)",0,"sqrt(x2*(1-R^2))*e"), 2,2)
-## model <- setModel(drift = c("a*x1","C*(10-x2)"), diffusion = diff.matrix,solve.variable=c("x1","x2"),state.variable=c("x1","x2"))
+## model <- setModel(drift = c("a*x1","C*(10-x2)"), 
+## diffusion = diff.matrix,solve.variable=c("x1","x2"),state.variable=c("x1","x2"))
 ## call option is evaluated by averating
 ## max{ (1/T)*int_0^T Xt^e dt, 0}, the first argument is the functional of interest:
 ##
 ## Terminal <- 1
 ## xinit <- c(1,1)
 ## 
-## f <- list( c(expression(0), expression(0)),   c(expression(0), expression(0)) , c(expression(0), expression(0))  )
+## f <- list( c(expression(0), expression(0)),   
+## c(expression(0), expression(0)) , c(expression(0), expression(0))  )
 ## F <- expression(x1,x2)
 ## 
 ## division <- 1000

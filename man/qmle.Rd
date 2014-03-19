@@ -19,7 +19,8 @@
 %ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
-qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, ...)
+qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, 
+ joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, ...)
 quasilogl(yuima, param, print=FALSE)
 }
 \arguments{
@@ -72,7 +73,8 @@ quasilogl(yuima, param, print=FALSE)
 \examples{
 #dXt^e = -theta2 * Xt^e * dt + theta1 * dWt
 diff.matrix <- matrix(c("theta1"), 1, 1)
-ymodel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix, time.variable="t", state.variable="x", solve.variable="x")
+ymodel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix, 
+  time.variable="t", state.variable="x", solve.variable="x")
 n <- 100
 
 ysamp <- setSampling(Terminal=(n)^(1/3), n=n) 
@@ -133,7 +135,7 @@ print(coef(opt4))
 ##print(coef(opt))
 
 
-
+\dontrun{
 
 ###multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
@@ -150,7 +152,8 @@ yuima <- setYuima(model=ymodel, sampling=ysamp)
 set.seed(123)
 
 ##xinit=c(x1, x2) #true.parameter=c(theta2.1, theta2.2, theta1.1, theta1.2)
-yuima <- simulate(yuima, xinit=c(1, 1), true.parameter=list(theta2.1=0.5, theta2.2=0.3, theta1.1=0.6, theta1.2=0.2))
+yuima <- simulate(yuima, xinit=c(1, 1), 
+true.parameter=list(theta2.1=0.5, theta2.2=0.3, theta1.1=0.6, theta1.2=0.2))
 
 ## theta2 <- c(0.8, 0.2) #c(theta2.1, theta2.2)
 ##theta1 <- c(0.7, 0.1) #c(theta1.1, theta1.2)
@@ -310,7 +313,7 @@ summary(carmaopt3)
 
 plot(carmaopt3)
 
-
+}
 }
 
 

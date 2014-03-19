@@ -28,7 +28,8 @@ Brouste, A., Iacus, S.M. (2013) Parameter estimation for the discretely observed
 See also \code{\link{qgv}}.
 }
 \examples{
-# Estimating all Hurst parameter, diffusion coefficient  and drift coefficient in fractional Ornstein-Uhlenbeck
+# Estimating all Hurst parameter, diffusion coefficient  and drift coefficient 
+# in fractional Ornstein-Uhlenbeck
 
 model<-setModel(drift="-x*lambda",hurst=NA,diffusion="theta")
 sampling<-setSampling(T=100,n=10000)

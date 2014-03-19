@@ -30,7 +30,8 @@ set.seed(123)
 
 ## Yuima
 diff.matrix <- matrix(c("theta1"), 1, 1)
-myModel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix, time.variable="t", state.variable="x")
+myModel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix, 
+time.variable="t", state.variable="x")
 n <- 100
 mySampling <- setSampling(Terminal=(n)^(1/3), n=n)
 myYuima <- setYuima(model=myModel, sampling=mySampling)

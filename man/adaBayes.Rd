@@ -42,7 +42,8 @@ prior.theta1 <- function(theta2)
 prior.theta2 <- function(theta1)
   1*(theta1 > 0 & theta1 < 1)
 
-prior <- list(theta2=list(measure.type="code",df="dunif(z,0,1)"), theta1=list(measure.type="code",df="dunif(z,0,1)"))
+prior <- list(theta2=list(measure.type="code",df="dunif(z,0,1)"), 
+theta1=list(measure.type="code",df="dunif(z,0,1)"))
 
 param.init <- list(theta2=0.35,theta1=0.52)
 
@@ -52,7 +53,8 @@ upper=c(1,1)
 bayes1 <- adaBayes(yuima, start=param.init, prior=prior, method="nomcmc")
 bayes1@coef
 
-mle1 <- qmle(yuima, start=param.init, lower=list(theta1=0,theta2=0), upper=list(theta1=1,theta2=1), method="L-BFGS-B")
+mle1 <- qmle(yuima, start=param.init, lower=list(theta1=0,theta2=0), 
+     	upper=list(theta1=1,theta2=1), method="L-BFGS-B")
 mle1@coef
 }
 \keyword{ts}

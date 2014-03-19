@@ -93,7 +93,7 @@ ou1 <- setYuima(model=mod1, sampling=samp)
 ou1 <- simulate(ou1, xinit=1, true.p = list(theta=-0.3))
 plot(ou1)
 
-
+\dontrun{
 
 # A multi-dimensional (correlated) diffusion process. 
 # To describe the following model: 
@@ -278,7 +278,8 @@ plot(X)
 
 ##:: sample for Levy process ("code" type)
 ## dX_{t} = -x dt + dZ_t
-obj.model <- setModel(drift="-x", xinit=1, jump.coeff="1", measure.type="code", measure=list(df="rIG(z, 1, 0.1)"))
+obj.model <- setModel(drift="-x", xinit=1, jump.coeff="1", measure.type="code", 
+measure=list(df="rIG(z, 1, 0.1)"))
 obj.sampling <- setSampling(Terminal=10, n=10000)
 obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 result <- simulate(obj.yuima)
@@ -293,7 +294,9 @@ plot(result)
 ##  beta <- c(.1,.1)
 ##  mu <- c(0,0)
 ##  Lambda <- matrix(c(1,0,0,1),2,2)
-##  obj.model <- setModel(drift=c("1 - 2*x1-x2",".5-x1-2*x2"), xinit=c(1,1), solve.variable=c("x1","x2"), jump.coeff="1", measure.type="code", measure=list(df="rIG(z, alpha=1, beta=beta, mu=mu, Lambda=Lambda)"))
+##  obj.model <- setModel(drift=c("1 - 2*x1-x2",".5-x1-2*x2"), xinit=c(1,1), 
+## solve.variable=c("x1","x2"), jump.coeff="1", measure.type="code", 
+## measure=list(df="rIG(z, alpha=1, beta=beta, mu=mu, Lambda=Lambda)"))
 ##  obj.sampling <- setSampling(Terminal=10, n=10000)
 ##  obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
 ##  result <- simulate(obj.yuima)	   
@@ -339,6 +342,6 @@ sim.carma1<-simulate(carma1,
                      sampling=samp)
 
 plot(sim.carma1)
-
+}
 }
 \keyword{ts}

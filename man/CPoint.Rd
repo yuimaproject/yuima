@@ -40,6 +40,7 @@ qmleR(yuima, t,  ...)
 }
 \author{The YUIMA Project Team}
 \examples{
+\dontrun{
 diff.matrix <- matrix(c("theta1.1*x1","0*x2","0*x1","theta1.2*x2"), 2, 2)
 
 drift.c <- c("1-x1", "3-x2")
@@ -84,9 +85,11 @@ low <- list(theta1.1=0, theta1.2=0)
 
 # first state estimate of parameters using small 
 # portion of data in the tails
-tmp1 <- qmleL(yuima,start=list(theta1.1=0.3,theta1.2=0.5),t=1.5,lower=low, method="L-BFGS-B")
+tmp1 <- qmleL(yuima,start=list(theta1.1=0.3,theta1.2=0.5),t=1.5,
+        lower=low, method="L-BFGS-B")
 tmp1
-tmp2 <- qmleR(yuima,start=list(theta1.1=0.3,theta1.2=0.5), t=8.5,lower=low, method="L-BFGS-B")
+tmp2 <- qmleR(yuima,start=list(theta1.1=0.3,theta1.2=0.5), t=8.5,
+        lower=low, method="L-BFGS-B")
 tmp2
 
 
@@ -97,14 +100,17 @@ t.est2$tau
 
 # second stage estimation of parameters given first stage
 # change point estimator
-tmp11 <- qmleL(yuima,start=as.list(coef(tmp1)), t=t.est2$tau-0.1,lower=low, method="L-BFGS-B")
+tmp11 <- qmleL(yuima,start=as.list(coef(tmp1)), t=t.est2$tau-0.1,
+ lower=low, method="L-BFGS-B")
 tmp11
 
-tmp21 <- qmleR(yuima,start=as.list(coef(tmp2)), t=t.est2$tau+0.1,lower=low, method="L-BFGS-B")
+tmp21 <- qmleR(yuima,start=as.list(coef(tmp2)), t=t.est2$tau+0.1,
+ lower=low, method="L-BFGS-B")
 tmp21
 
 # second stage estimator of the change point
 CPoint(yuima,param1=coef(tmp11),param2=coef(tmp21))
+
 
 ## One dimensional example: non linear case
 diff.matrix <- matrix("(1+x1^2)^theta1", 1, 1)
@@ -169,15 +175,18 @@ t.est2$tau
 
 # second stage estimation of parameters given first stage
 # change point estimator
-tmp11 <- qmleL(yuima,start=as.list(coef(tmp1)), t=t.est2$tau-0.1, lower=low, upper=upp,method="L-BFGS-B")
+tmp11 <- qmleL(yuima,start=as.list(coef(tmp1)), t=t.est2$tau-0.1,
+   lower=low, upper=upp,method="L-BFGS-B")
 tmp11
 
-tmp21 <- qmleR(yuima,start=as.list(coef(tmp2)), t=t.est2$tau+0.1,lower=low, upper=upp,method="L-BFGS-B")
+tmp21 <- qmleR(yuima,start=as.list(coef(tmp2)), t=t.est2$tau+0.1,
+  lower=low, upper=upp,method="L-BFGS-B")
 tmp21
 
 
 # second stage estimator of the change point
 CPoint(yuima,param1=coef(tmp11),param2=coef(tmp21),plot=TRUE)
+}
 }
  
 % Add one or more standard keywords, see file 'KEYWORDS' in the
