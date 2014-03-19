@@ -234,8 +234,8 @@ toLatex.yuima <- function (object, ...)
     n.eq <- mod@equation.number
     dr <- paste("\\left(\\begin{array}{c}\n")
     for (i in 1:n.eq) {
-        #    dr <- paste(dr, substr(mod@drift[i], 2, nchar(mod@drift[i]) -1), "\\\\ \n")
-              dr <- paste(dr, substr(mod@drift[i], 3, nchar(mod@drift[i]) - 2), "\\\\ \n")
+            dr <- paste(dr, substr(mod@drift[i], 2, nchar(mod@drift[i]) -1), "\\\\ \n")
+        #      dr <- paste(dr, substr(mod@drift[i], 3, nchar(mod@drift[i]) - 2), "\\\\ \n")
     }
     #
     dr <- paste(dr, "\\end{array}\\right)", sprintf("d%s", mod@time.variable))
@@ -302,8 +302,8 @@ toLatex.yuima <- function (object, ...)
     numb.solve.var <- length(mod@solve.variable)
     bodyaus <-c( paste("\\left(\\begin{array}{c}\n"))
     for (i in 1:numb.solve.var) {
-      bodyaus <-
-      paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 3, nchar(mod@xinit[i]) - 2),sep="="), "\\\\ \n")
+      bodyaus <-paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 1),sep="="), "\\\\ \n")
+      # paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 3, nchar(mod@xinit[i]) - 2),sep="="), "\\\\ \n")
       #     paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 1),sep="="), "\\\\ \n")
     }
     
