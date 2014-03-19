@@ -128,10 +128,14 @@ setModel <- function(drift=NULL,
                      time.variable="t",
                      solve.variable,
                      xinit=NULL){
+  ## we need a temp env for simplifications
+  
+  yuimaENV <- new.env()
   ##::measure and jump term #####################################
   
   ##::initialize objects ########
   MEASURE <- list()
+  
   ##::end initialize objects ########
   
   ##::make type function list ####
@@ -388,8 +392,8 @@ setModel <- function(drift=NULL,
   }
   ##22/11:: function to simplify expression in drift, diffusion, jump and xinit characters
   yuima.Simplifyobj<-function(x){
-    dummy<-yuima.Simplify(x)
-    dummy1<-yuima.Simplify(dummy)
+    dummy<-yuima.Simplify(x, yuima.env=yuimaENV)
+    dummy1<-yuima.Simplify(dummy, yuima.env=yuimaENV)
     dummy2<-as.character(dummy1)
     res<-parse(text=paste0("(",dummy2,")",collapse=NULL))
     return(res)

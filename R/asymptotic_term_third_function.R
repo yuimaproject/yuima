@@ -9019,179 +9019,180 @@
 	}
 
 
-	p2 <- function(z,get_F_tilde1__2,get_F_tilde2,
-                     get_F_tilde1H1,get_H2_1,get_H2_2,get_H2_3,env){
-
-		k.size <- env$k.size
-		delta <- env$delta
-		mu <- env$mu
-		Sigma <- env$Sigma
-
-		z.tilde <- z - mu
-
-		first <- 0
-		second <- 0
-		third <- 0    #added
-
-		if(k.size == 1){
-
-		  first <- (F_tilde1__2_x(1,1,z.tilde+2*delta,get_F_tilde1__2,env) *
-				dnorm(z+2*delta,mean=mu,sd=sqrt(Sigma)) -
-				2 * F_tilde1__2_x(1,1,z.tilde+delta,get_F_tilde1__2,env) *
-				dnorm(z+delta,mean=mu,sd=sqrt(Sigma)) +
-				F_tilde1__2_x(1,1,z.tilde,get_F_tilde1__2,env) *
-				dnorm(z,mean=mu,sd=sqrt(Sigma)))/(delta)^2
-
-		  first <- first/2
-
-		  second <- (F_tilde2_x(1,z.tilde+delta,get_F_tilde2,env) *
-				 dnorm(z+delta,mean=mu,sd=sqrt(Sigma)) -
-				 F_tilde2_x(1,z.tilde,get_F_tilde2,env) *
-				 dnorm(z,mean=mu,sd=sqrt(Sigma)))/delta
-
-#added:start
-		  obj1 <- F_tilde1H1_x(1,z.tilde+delta,get_F_tilde1H1,env)
-
-		  obj2 <- F_tilde1H1_x(1,z.tilde,get_F_tilde1H1,env)
-
-		  third <- (obj1 * dnorm(z+delta,mean=mu,sd=sqrt(Sigma)) -
-				obj2 * dnorm(z,mean=mu,sd=sqrt(Sigma)))/delta
-
-		  forth <- H2_x(z.tilde,get_H2_1,get_H2_2,get_H2_3,env) * dnorm(z,mean=mu,sd=sqrt(Sigma))
-#added:end
-
-		}else{
-
-		  tmp1 <- matrix(0,k.size,k.size)
-
-		  for(l1 in 1:k.size){
-		    for(l2 in 1:k.size){
-
-			dif1 <- numeric(k.size)
-			dif2 <- numeric(k.size)
-			dif1[l1] <- dif1[l1] + delta
-			dif2[l2] <- dif2[l2] + delta
-
-			tmp1[l1,l2] <- (F_tilde1__2_x(l1,l2,z.tilde+dif1+dif2,get_F_tilde1__2,env) *
-					    ft_norm(z+dif1+dif2,env) -
-					    F_tilde1__2_x(l1,l2,z.tilde+dif1,get_F_tilde1__2,env) *
-					    ft_norm(z+dif1,env) -
-					    F_tilde1__2_x(l1,l2,z.tilde+dif2,get_F_tilde1__2,env) *
-					    ft_norm(z+dif2,env) +
-					    F_tilde1__2_x(l1,l2,z.tilde,get_F_tilde1__2,env) *
-					    ft_norm(z,env))/(delta)^2
-
-		    }
-		  }
-
-		  first <- sum(tmp1)/2
-
-		  tmp2 <- double(k.size)
-		  tmp3 <- double(k.size) #added
-
-		  for(l in 1:k.size){
-
-		    dif <- numeric(k.size)
-		    dif[l] <- dif[l] + delta
-
-		    tmp2[l] <- (F_tilde2_x(l,z.tilde+dif,get_F_tilde2,env) *
-				    ft_norm(z+dif,env) -
-				    F_tilde2_x(l,z.tilde,get_F_tilde2,env) *
-				    ft_norm(z,env))/delta
-
-#added:start
-		    obj1 <- F_tilde1H1_x(l,z.tilde+dif,get_F_tilde1H1,env)
-
-		    obj2 <- F_tilde1H1_x(l,z.tilde,get_F_tilde1H1,env)
-
-		    tmp3[l] <- (obj1 * ft_norm(z+dif,env) - 
-				    obj2 * ft_norm(z,env))/delta
-#added:end
-
-		  }
-
-		  second <- sum(tmp2)
-		  third <- sum(tmp3)  #added
-		  forth <- H2_x(z.tilde,get_H2_1,get_H2_2,get_H2_3,env)*ft_norm(z,env) #added
-		}
-
-		result <- first - second -
-			    third + forth #added
-		return(result)
-	}
-
-
-	p2_z <- function(z){
-
-		if(k.size == 1){
-			zlen <- length(z)
-			result <- c()
-
-			for(i in 1:zlen){
-				result[i] <- p2(z[i],get_F_tilde1__2,get_F_tilde2,
-						    get_F_tilde1H1,get_H2_1,get_H2_2,get_H2_3,env)
-			}
-		}else{
-			result <- p2(z,get_F_tilde1__2,get_F_tilde2,
-					 get_F_tilde1H1,get_H2_1,get_H2_2,get_H2_3,env)
-		}
-
-		return(result)
-	}
-
-
-	d2.term <- function(){
-
-		gz_p2 <- function(z){
-
-			result <- H0 * G(z) * p2_z(z)
-			return(result)
-		}
-
-		if(k.size == 1){
-
-			ztmp <- seq(mu-7*sqrt(Sigma),mu+7*sqrt(Sigma),length=1000)
-			dt <- ztmp[2] - ztmp[1]
-
-			p2tmp <- gz_p2(ztmp)
-
-			result <- sum(p2tmp) * dt
-
-		}else if(2 <= k.size || k.size <= 20){
-
-			lambda <- eigen(Sigma)$values
-			matA <- eigen(Sigma)$vector
-
-			gz_p2 <- function(z){
-			  tmpz <- matA %*% z
-			  tmp <- H0 * G(tmpz) * p2_z(tmpz)	#det(matA) = 1
-			  return( tmp  )
-			}
-
-			my.x <- matrix(0,k.size,20^k.size)
-			dt <- 1
-
-			for(k in 1:k.size){
-				max <- 5 * sqrt(lambda[k])
-				min <- -5 * sqrt(lambda[k])
-				tmp.x <- seq(min,max,length=20)
-				dt <- dt * (tmp.x[2] - tmp.x[1])
-				my.x[k,] <- rep(tmp.x,each=20^(k.size-k),times=20^(k-1))
-			}
-
-			tmp <- 0
-
-			for(i in 1:20^k.size){
-				tmp <- tmp + gz_pi1(my.x[,i])
-			}
-
-			tmp <- tmp * dt
-
-		}else{
-			stop("length k is too long.")
-		}
-
-		return(result)
-	}
+#	p2 <- function(z,get_F_tilde1__2,get_F_tilde2,
+#                     get_F_tilde1H1,get_H2_1,get_H2_2,get_H2_3,env){
+#
+#		k.size <- env$k.size
+#		delta <- env$delta
+#		mu <- env$mu
+#		Sigma <- env$Sigma
+#
+#		z.tilde <- z - mu
+#
+#		first <- 0
+#		second <- 0
+#		third <- 0    #added
+#
+#		if(k.size == 1){
+#
+#		  first <- (F_tilde1__2_x(1,1,z.tilde+2*delta,get_F_tilde1__2,env) *
+#				dnorm(z+2*delta,mean=mu,sd=sqrt(Sigma)) -
+#				2 * F_tilde1__2_x(1,1,z.tilde+delta,get_F_tilde1__2,env) *
+#				dnorm(z+delta,mean=mu,sd=sqrt(Sigma)) +
+#				F_tilde1__2_x(1,1,z.tilde,get_F_tilde1__2,env) *
+#				dnorm(z,mean=mu,sd=sqrt(Sigma)))/(delta)^2
+#
+#		  first <- first/2
+#
+#		  second <- (F_tilde2_x(1,z.tilde+delta,get_F_tilde2,env) *
+#				 dnorm(z+delta,mean=mu,sd=sqrt(Sigma)) -
+#				 F_tilde2_x(1,z.tilde,get_F_tilde2,env) *
+#				 dnorm(z,mean=mu,sd=sqrt(Sigma)))/delta
+#
+##added:start
+#		  obj1 <- F_tilde1H1_x(1,z.tilde+delta,get_F_tilde1H1,env)
+#
+#		  obj2 <- F_tilde1H1_x(1,z.tilde,get_F_tilde1H1,env)
+#
+#		  third <- (obj1 * dnorm(z+delta,mean=mu,sd=sqrt(Sigma)) -
+#				obj2 * dnorm(z,mean=mu,sd=sqrt(Sigma)))/delta
+#
+#		  forth <- H2_x(z.tilde,get_H2_1,get_H2_2,get_H2_3,env) * #dnorm(z,mean=mu,sd=sqrt(Sigma))
+#adde#d:end
+#
+#		}else{
+#
+#		  tmp1 <- matrix(0,k.size,k.size)
+#
+#		  for(l1 in 1:k.size){
+#		    for(l2 in 1:k.size){
+#
+#			dif1 <- numeric(k.size)
+#			dif2 <- numeric(k.size)
+#			dif1[l1] <- dif1[l1] + delta
+#			dif2[l2] <- dif2[l2] + delta
+#
+#			tmp1[l1,l2] <- (F_tilde1__2_x(l1,l2,z.tilde+dif1+dif2,get_F_tilde1__2,env) *
+#					    ft_norm(z+dif1+dif2,env) -
+#					    F_tilde1__2_x(l1,l2,z.tilde+dif1,get_F_tilde1__2,env) *
+#					    ft_norm(z+dif1,env) -
+#					    F_tilde1__2_x(l1,l2,z.tilde+dif2,get_F_tilde1__2,env) *
+#					    ft_norm(z+dif2,env) +
+#					    F_tilde1__2_x(l1,l2,z.tilde,get_F_tilde1__2,env) *
+#					    ft_norm(z,env))/(delta)^2
+#
+#		    }
+#		  }
+#
+#		  first <- sum(tmp1)/2
+#
+#		  tmp2 <- double(k.size)
+#		  tmp3 <- double(k.size) #added
+#
+#		  for(l in 1:k.size){
+#
+#		    dif <- numeric(k.size)
+#		    dif[l] <- dif[l] + delta
+#
+#		    tmp2[l] <- (F_tilde2_x(l,z.tilde+dif,get_F_tilde2,env) *
+#				    ft_norm(z+dif,env) -
+#				    F_tilde2_x(l,z.tilde,get_F_tilde2,env) *
+#				    ft_norm(z,env))/delta
+#
+##added:start
+#		    obj1 <- F_tilde1H1_x(l,z.tilde+dif,get_F_tilde1H1,env)
+#
+#		    obj2 <- F_tilde1H1_x(l,z.tilde,get_F_tilde1H1,env)
+#
+#		    tmp3[l] <- (obj1 * ft_norm(z+dif,env) -
+#				    obj2 * ft_norm(z,env))/delta
+##added:end
+#
+#		  }
+#
+#		  second <- sum(tmp2)
+#		  third <- sum(tmp3)  #added
+#		  forth <- H2_x(z.tilde,get_H2_1,get_H2_2,get_H2_3,env)*ft_norm(z,env) #added
+#		}
+#
+#		result <- first - second -
+#			    third + forth #added
+#		return(result)
+#	}
+#
+#
+#	p2_z <- function(z){
+#
+#		if(k.size == 1){
+#			zlen <- length(z)
+#			result <- c()
+#
+#			for(i in 1:zlen){
+#				result[i] <- p2(z[i],get_F_tilde1__2,get_F_tilde2,
+#						    get_F_tilde1H1,get_H2_1,get_H2_2,get_H2_3,env)
+#			}
+#		}else{
+#			result <- p2(z,get_F_tilde1__2,get_F_tilde2,
+#					 get_F_tilde1H1,get_H2_1,get_H2_2,get_H2_3,env)
+#		}
+#
+#		return(result)
+#	}
 
 
+#	d2.term <- function(){
+#
+#		gz_p2 <- function(z){
+#
+#			result <- H0 * G(z) * p2_z(z)
+#			return(result)
+#		}
+#
+#		if(k.size == 1){
+#
+#			ztmp <- seq(mu-7*sqrt(Sigma),mu+7*sqrt(Sigma),length=1000)
+#			dt <- ztmp[2] - ztmp[1]
+#
+#			p2tmp <- gz_p2(ztmp)
+#
+#			result <- sum(p2tmp) * dt
+#
+#		}else if(2 <= k.size || k.size <= 20){
+#
+#			lambda <- eigen(Sigma)$values
+#			matA <- eigen(Sigma)$vector
+#
+#			gz_p2 <- function(z){
+#			  tmpz <- matA %*% z
+#			  tmp <- H0 * G(tmpz) * p2_z(tmpz)	#det(matA) = 1
+#			  return( tmp  )
+#			}
+#
+#			my.x <- matrix(0,k.size,20^k.size)
+#			dt <- 1
+#
+#			for(k in 1:k.size){
+#				max <- 5 * sqrt(lambda[k])
+#				min <- -5 * sqrt(lambda[k])
+#				tmp.x <- seq(min,max,length=20)
+#				dt <- dt * (tmp.x[2] - tmp.x[1])
+#				my.x[k,] <- rep(tmp.x,each=20^(k.size-k),times=20^(k-1))
+#			}
+#
+#			tmp <- 0
+#
+#			for(i in 1:20^k.size){
+#				tmp <- tmp + gz_pi1(my.x[,i])
+#			}
+#
+#			tmp <- tmp * dt
+#
+#		}else{
+#			stop("length k is too long.")
+#		}
+#
+#		return(result)
+#	}
+
+
+#
