@@ -67,10 +67,8 @@ TBA
 %% ...
 an object of \code{\link{yuima.data-class}}.
 }
-\references{
-%% ~put references to the literature/web site here ~
-TBA
-}
+
+
 \author{
 %%  ~~who you are~~
 The YUIMA Project Team
