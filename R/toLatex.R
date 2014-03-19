@@ -234,15 +234,16 @@ toLatex.yuima <- function (object, ...)
     n.eq <- mod@equation.number
     dr <- paste("\\left(\\begin{array}{c}\n")
     for (i in 1:n.eq) {
-        dr <- paste(dr, substr(mod@drift[i], 2, nchar(mod@drift[i]) - 
-							   1), "\\\\ \n")
+        #    dr <- paste(dr, substr(mod@drift[i], 2, nchar(mod@drift[i]) -1), "\\\\ \n")
+              dr <- paste(dr, substr(mod@drift[i], 3, nchar(mod@drift[i]) - 2), "\\\\ \n")
     }
     #
     dr <- paste(dr, "\\end{array}\\right)", sprintf("d%s", mod@time.variable))
     n.n <- mod@noise.number
     df <- paste(sprintf("\\left[\\begin{array}{%s}\n",paste(rep("c",n.n),sep="",collapse="")))
     for (i in 1:n.eq) {
-        df <- paste(df, paste(mod@diffusion[[i]], collapse = "&"))
+        #df <- paste(df, paste(mod@diffusion[[i]], collapse = "&"))
+                df <- paste(df, paste(substr(mod@diffusion[[i]], 2, nchar(mod@diffusion[[i]]) - 1)  , collapse = "&"))
         df <- paste(df, "\\\\ \n")
     }
     df <- paste(df, "\\end{array}\\right]")
@@ -250,9 +251,8 @@ toLatex.yuima <- function (object, ...)
     if (length(mod@jump.coeff)>=1){
       dj<-paste("\\left(\\begin{array}{c}\n")
       for (i in 1:n.eq) {
-        #       dj <- paste(dj, substr(mod@jump.coeff[i], 2, nchar(mod@jump.coeff[i]) - 
-        #                                1), "\\\\ \n")
-        dj <- paste(dj, mod@jump.coeff[i], "\\\\ \n")
+        dj <- paste(dj, substr(mod@jump.coeff[i], 2, nchar(mod@jump.coeff[i]) - 1), "\\\\ \n")
+        #dj <- paste(dj, mod@jump.coeff[i], "\\\\ \n")
         
       }
       dj <- paste(dj, "\\end{array}\\right)", sprintf("d %s", mod@jump.variable))
@@ -302,8 +302,9 @@ toLatex.yuima <- function (object, ...)
     numb.solve.var <- length(mod@solve.variable)
     bodyaus <-c( paste("\\left(\\begin{array}{c}\n"))
     for (i in 1:numb.solve.var) {
-      bodyaus <- paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 
-                                                                                         1),sep="="), "\\\\ \n")
+      bodyaus <-
+      paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 3, nchar(mod@xinit[i]) - 2),sep="="), "\\\\ \n")
+      #     paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 1),sep="="), "\\\\ \n")
     }
     
     bodyaus <- paste(bodyaus, "\\end{array}\\right)")
