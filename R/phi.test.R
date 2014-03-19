@@ -10,7 +10,7 @@ phi.test <- function(yuima, H0, H1, phi, print=FALSE,...){
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-	assign("X",  as.matrix(yuima:::onezoo(yuima)), envir=env)
+	assign("X",  as.matrix(onezoo(yuima)), envir=env)
 	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
 	for(t in 1:(n-1))
 	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]

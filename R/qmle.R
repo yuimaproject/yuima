@@ -1052,13 +1052,13 @@ quasilogl <- function(yuima, param, print=FALSE){
 	
 	env <- new.env()
 #	if (is(yuima@model, "yuima.carma")){
-	  assign("X",  as.matrix(yuima:::onezoo(yuima)), envir=env)
+	  assign("X",  as.matrix(onezoo(yuima)), envir=env)
 	  assign("deltaX",  matrix(0, n-1, d.size), envir=env)
 #	}
 	if (is(yuima@model, "yuima.carma")){
 	  #24/12 If we consider a carma model,
 	  # the observations are only the first column of env$X
-# 	  assign("X",  as.matrix(yuima:::onezoo(yuima))[,1], envir=env)
+# 	  assign("X",  as.matrix(onezoo(yuima))[,1], envir=env)
 # 	  assign("deltaX",  matrix(0, n-1, d.size)[,1], envir=env)
  	  env$X<-as.matrix(env$X[,1])
  	  env$deltaX<-as.matrix(env$deltaX[,1])
