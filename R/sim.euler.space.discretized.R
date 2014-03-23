@@ -14,9 +14,10 @@ space.discretized<-function(xinit,yuima, env){
 	n <- yuima@sampling@n[1]
 #	dX <- xinit
   if(length(unique(as.character(xinit)))==1 &&
-       is.numeric(tryCatch(eval(dX_dummy[i],env),error=function(...) FALSE))){
+       is.numeric(tryCatch(eval(xinit[1],env),error=function(...) FALSE))){
     dX_dummy<-xinit[1]
     dummy.val<-eval(dX_dummy, env)
+    if(length(dummy.val)==1){dummy.val<-rep(dummy.val,length(xinit))}
     for(i in 1:length(modelstate)){
       assign(modelstate[i],dummy.val[i] ,env)
     }
