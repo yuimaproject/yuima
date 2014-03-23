@@ -739,7 +739,7 @@ if(!is(yuima@model,"yuima.carma")){
     y<-coredata(ttt)
     if(NoNeg.Noise==TRUE && (info@p==(info@q+1))){final_res@coef[mean.noise]<-mean(y)/tail(ma.par,n=1)*ar.par[1]}
     
-    levy<-yuima.CarmaRecovNoise(y,tt,ar.par,ma.par, loc.par, scale.par, lin.par, NoNeg.Noise)
+    levy<-yuima.CarmaNoise(y,tt,ar.par,ma.par, loc.par, scale.par, lin.par, NoNeg.Noise)
     inc.levy<-NULL
     if (!is.null(levy)){
       inc.levy<-diff(t(levy))

@@ -68,7 +68,7 @@ quasilogl(yuima, param, print=FALSE)
   %The function ml.ql uses the function optim internally.
   The function qmle uses the function optim internally.
   
-  The function qmle uses the function \code{\link{CarmaRecovNoise}} internally for estimation of underlying Levy if the model is an object of \code{\link{yuima.carma-class}}.
+  The function qmle uses the function \code{\link{CarmaNoise}} internally for estimation of underlying Levy if the model is an object of \code{\link{yuima.carma-class}}.
 }
 \examples{
 #dXt^e = -theta2 * Xt^e * dt + theta1 * dWt
@@ -135,7 +135,7 @@ print(coef(opt4))
 ##print(coef(opt))
 
 
-\dontrun{
+%\dontrun{
 
 ###multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
@@ -313,7 +313,7 @@ summary(carmaopt3)
 
 plot(carmaopt3)
 
-}
+%}
 }
 
 

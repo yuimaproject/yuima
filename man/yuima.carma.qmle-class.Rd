@@ -12,7 +12,7 @@
 }
 \section{Slots}{
   \describe{
-    \item{\code{Incr.Lev}:}{is an \code{matrix} object that contains the estimated increments of the noise obtained using \code{\link{CarmaRecovNoise}}.}
+    \item{\code{Incr.Lev}:}{is an object of class \code{\link{zoo}} that contains the estimated increments of the noise obtained using \code{\link{CarmaNoise}}.}
     \item{\code{model}:}{is an object of of \code{\link{yuima.carma-class}}.}
     \item{\code{call}:}{is an object of class \code{language}. }
     \item{\code{coef}:}{is an object of class \code{numeric} that contains estimated parameters.}

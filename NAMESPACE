@@ -110,7 +110,7 @@ export(CPoint)
 export(qmleR)
 export(qmleL)
 
-export(CarmaRecovNoise) # Estimates the Levy in carma model 
+export(CarmaNoise) # Estimates the Levy in carma model 
 
 export(qgv)
 export(mmfrac)
