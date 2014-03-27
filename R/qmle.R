@@ -681,7 +681,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                    method = method)
-  }else{ 
+  }else{
     if( Est.Incr=="Carma.IncPar" || Est.Incr=="Carma.Inc" ){
     final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
@@ -704,7 +704,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 if(!is(yuima@model,"yuima.carma")){
     return(final_res)  
  }else {
-   cat("\nStarting Estimation Increments ...\n")
+   
     param<-coef(final_res)
     
     observ<-yuima@data
@@ -732,6 +732,12 @@ if(!is(yuima@model,"yuima.carma")){
     lin.par=NULL
     if (length(info@lin.par)!=0){
       lin.par<-param[info@lin.par]
+    }
+    if(min(yuima.PhamBreton.Alg(ar.par[numb.ar:1]))>=0){
+      cat("\n Stationarity condition is satisfied...\n Starting Estimation Increments ...\n")
+    }else{
+      yuima.warn("Insert constraints in Autoregressive parameters for enforcing stationarity" )
+      cat("\n Starting Estimation Increments ...\n")
     }
     
     ttt<-observ@zoo.data[[1]]
@@ -1512,7 +1518,7 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   # SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
   
   #SigMatr<-Qmatr
-  #SigMatr<-V_inf
+  SigMatr<-V_inf
   
   zc<-matrix(bvector,1,p)
   loglstar <- 0
@@ -1540,6 +1546,54 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   }
   return(list(loglstar=(loglstar-0.5*log(2*pi)*times.obs),s2hat=sd_2))
 }
+
+
+
+yuima.PhamBreton.Alg<-function(a){
+  p<-length(a)
+  gamma<-a[p:1]
+  if(p>2){
+    gamma[p]<-a[1]
+    alpha<-matrix(NA,p,p)
+    for(j in 1:p){
+      if(is.integer(as.integer(j)/2)){
+        alpha[p,j]<-0
+        alpha[p-1,j]<-0
+      }else{
+        alpha[p,j]<-a[j]
+        alpha[p-1,j]<-a[j+1]/gamma[p]
+      }
+    }
+    for(n in (p-1):1){
+      gamma[n]<-alpha[n+1,2]-alpha[n,2]  
+      for(j in 1:n-1){
+        alpha[n-1,j]<-(alpha[n+1,j+2]-alpha[n,j+2])/gamma[n]
+      }
+      alpha[n-1,n-1]<-alpha[n+1,n+1]/gamma[n]
+    }
+    gamma[1]<-alpha[2,2]
+  }
+  return(gamma)
+}
+
+#yuima.PhamBreton.Inv<-function(gamma){
+#   p<-length(gamma)
+#   a<-gamma[p:1]
+#   if(p>2){
+#     x<-polynom()
+#     f0<-1*x^0
+#     f1<-x
+#     f2<-x*f1+gamma[1]*f0
+#     for(t in 2:(p-1)){
+#       f0<-f1
+#       f1<-f2
+#       f2<-x*f1+gamma[t]*f0
+#     }
+#     finpol<-f2+gamma[p]*f1
+#     a <- coef(finpol)[p:1]
+#   }
+#   return(a)
+# }
 
 
 
