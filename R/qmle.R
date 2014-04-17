@@ -1608,9 +1608,9 @@ yuima.carma.loglik1<-function (y, u, a, b, sigma,time.obs,V_inf0,p,q)
   
 #  p <- length(a)
   
-  bvector <- rep(0, p)
+#  bvector <- rep(0, p)
 #  q <- length(b)
-  bvector <- c(b, rep(0, p - q))
+  bvector <- c(b, rep(0, p - q-1))
   
   
   sigma<-sigma
