@@ -2,8 +2,8 @@
 \alias{CPoint}
 \alias{qmleL}
 \alias{qmleR}
-\title{Adaptive LASSO estimation for stochastic differential equations}
-\description{Adaptive LASSO estimation for stochastic differential equations.}
+\title{Volatility structural change point estimator}
+\description{Volatility structural change point estimator}
 \usage{
 CPoint(yuima, param1, param2, print=FALSE, symmetrized=FALSE, plot=FALSE)
 qmleL(yuima, t,  ...)
