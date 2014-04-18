@@ -32,7 +32,7 @@ Estimation for Non-Negative Levy-Driven CARMA Process, \emph{Journal of Business
 
 
 \examples{
-%\dontrun{
+\dontrun{
 #Ex.1: Carma(p=3, q=0) process driven by a brownian motion.
 
 mod0<-setCarma(p=3,q=0)
@@ -123,7 +123,7 @@ summary(carmaopt2)
 
 # Increments estimated by CarmaNoise
 plot(carmaopt2)
-%}
+}
 }
 
 

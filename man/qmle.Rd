@@ -135,7 +135,7 @@ print(coef(opt4))
 ##print(coef(opt))
 
 
-%\dontrun{
+\dontrun{
 
 ###multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
@@ -313,7 +313,7 @@ summary(carmaopt3)
 
 plot(carmaopt3)
 
-%}
+}
 }
 
 
