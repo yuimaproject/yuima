@@ -282,7 +282,8 @@ function(object){
     is.wienerdiff <- FALSE
     is.fracdiff <- FALSE
     is.jumpdiff <- FALSE
-    
+    is.carma <- FALSE
+
     if(length(mod@drift)>0) has.drift <- TRUE
     if(length(mod@diffusion)>0) has.diff <- TRUE
     if(length(mod@jump.coeff)>0) has.levy <- TRUE
@@ -291,18 +292,25 @@ function(object){
     if( has.drift | has.diff ) is.wienerdiff <- TRUE
     if( has.fbm  ) is.fracdiff <- TRUE
     if( has.levy ) is.jumpdiff <- TRUE
-    if( try(eval(mod@diffusion[[1]])) == 0){
+    if( try(eval(mod@diffusion[[1]]), silent=TRUE) == 0){
      has.diff <- FALSE
      is.wienerdiff <- FALSE
      is.fracdiff <- FALSE
     }
+    if( class(mod) == "yuima.carma")
+     is.carma <- TRUE
+     
     if( is.wienerdiff | is.fracdiff | is.jumpdiff  ){
-        if( is.wienerdiff )
-        cat("\nDiffusion process")
-        if( is.fracdiff & mod@hurst!=0.5)
-        cat(sprintf(" with Hurst index:%.2f", mod@hurst))
+        if( is.wienerdiff & ! is.carma){
+         cat("\nDiffusion process")
+         if( is.fracdiff & mod@hurst!=0.5)
+         cat(sprintf(" with Hurst index:%.2f", mod@hurst))
+        }
+        if(is.carma)
+          cat(sprintf("\nCarma process p=%d, q=%d", mod@info@p, mod@info@q))
+        
         if( is.jumpdiff ){
-            if( is.wienerdiff ){
+            if( is.wienerdiff | is.carma ){
                 cat(" with Levy jumps")
             } else {
                 cat("Levy jump process")
@@ -311,7 +319,7 @@ function(object){
         
         cat(sprintf("\nNumber of equations: %d", mod@equation.number))
         if(is.wienerdiff | is.fracdiff)
-         cat(sprintf("\nNumber of Wiener noises: %d", length(mod@diffusion)))
+         cat(sprintf("\nNumber of Wiener noises: %d", mod@noise.number))
         if(is.jumpdiff)
          cat(sprintf("\nNumber of Levy noises: %d", 1))
     }
