@@ -291,7 +291,11 @@ function(object){
     if( has.drift | has.diff ) is.wienerdiff <- TRUE
     if( has.fbm  ) is.fracdiff <- TRUE
     if( has.levy ) is.jumpdiff <- TRUE
-    
+    if( try(eval(mod@diffusion[[1]])) == 0){
+     has.diff <- FALSE
+     is.wienerdiff <- FALSE
+     is.fracdiff <- FALSE
+    }
     if( is.wienerdiff | is.fracdiff | is.jumpdiff  ){
         if( is.wienerdiff )
         cat("\nDiffusion process")
@@ -306,7 +310,10 @@ function(object){
         }
         
         cat(sprintf("\nNumber of equations: %d", mod@equation.number))
-        cat(sprintf("\nNumber of Wiener noises: %d", length(mod@diffusion)))
+        if(is.wienerdiff | is.fracdiff)
+         cat(sprintf("\nNumber of Wiener noises: %d", length(mod@diffusion)))
+        if(is.jumpdiff)
+         cat(sprintf("\nNumber of Levy noises: %d", 1))
     }
     
     if(length(object@data@original.data)>0){
