@@ -243,3 +243,105 @@ setYuima <-
   function(data=NULL, model=NULL, sampling=NULL, characteristic=NULL, functional=NULL){
     return(new("yuima", data=data, model=model, sampling=sampling, characteristic=characteristic,functional=functional))
   }
+
+
+
+
+setMethod("show", "yuima.functional",
+function(object){
+    str(object)
+} )
+
+setMethod("show", "yuima.sampling",
+function(object){
+    str(object)
+} )
+
+
+setMethod("show", "yuima.data",
+function(object){
+    show(setYuima(data=object))
+    
+} )
+
+
+setMethod("show", "yuima.model",
+function(object){
+    show(setYuima(model=object))
+    
+} )
+
+setMethod("show", "yuima",
+function(object){
+    
+    mod <- object@model
+    has.drift <- FALSE
+    has.diff <- FALSE
+    has.fbm <- FALSE
+    has.levy <- FALSE
+    is.wienerdiff <- FALSE
+    is.fracdiff <- FALSE
+    is.jumpdiff <- FALSE
+    
+    if(length(mod@drift)>0) has.drift <- TRUE
+    if(length(mod@diffusion)>0) has.diff <- TRUE
+    if(length(mod@jump.coeff)>0) has.levy <- TRUE
+    if(!is.null(mod@hurst)) has.fbm <- TRUE
+    
+    if( has.drift | has.diff ) is.wienerdiff <- TRUE
+    if( has.fbm  ) is.fracdiff <- TRUE
+    if( has.levy ) is.jumpdiff <- TRUE
+    
+    if( is.wienerdiff | is.fracdiff | is.jumpdiff  ){
+        if( is.wienerdiff )
+        cat("\nDiffusion process")
+        if( is.fracdiff & mod@hurst!=0.5)
+        cat(sprintf(" with Hurst index:%.2f", mod@hurst))
+        if( is.jumpdiff ){
+            if( is.wienerdiff ){
+                cat(" with Levy jumps")
+            } else {
+                cat("Levy jump process")
+            }
+        }
+        
+        cat(sprintf("\nNumber of equations: %d", mod@equation.number))
+        cat(sprintf("\nNumber of Wiener noises: %d", length(mod@diffusion)))
+    }
+    
+    if(length(object@data@original.data)>0){
+        n.series <- 1
+        if(!is.null(dim(object@data@original.data))){
+            n.series <- dim(object@data@original.data)[2]
+            n.length <- dim(object@data@original.data)[1]
+        } else {
+            n.length <- length(object@data@original.data)
+        }
+        
+        cat(sprintf("\n\nNumber of original time series: %d\nlength = %d, time range [%s ; %s]", n.series, n.length, min(time(object@data@original.data)), max(time(object@data@original.data))))
+    }
+    if(length(object@data@zoo.data)>0){
+        n.series <- length(object@data@zoo.data)
+        n.length <- unlist(lapply(object@data@zoo.data, length))
+        t.min <- unlist(lapply(object@data@zoo.data, function(u) as.character(round(time(u)[which.min(time(u))],3))))
+        t.max <- unlist(lapply(object@data@zoo.data, function(u) as.character(round(time(u)[which.max(time(u))],3))))
+        
+        delta <- NULL
+        for(i in 1:n.series){
+            tmp <- deltat(object@data@zoo.data[[i]])
+            if(is.null(tmp)){
+                delta <- c(delta, NA)
+            } else {
+                delta <- c(delta, tmp)
+            }
+        }
+        
+        
+        cat(sprintf("\n\nNumber of zoo time series: %d\n", n.series))
+        tmp <- data.frame(length=n.length, time.min = t.min, time.max =t.max, delta=delta)
+        rownames(tmp) <- sprintf("Series %d",1:n.series)
+        print(tmp)
+    }
+    
+})
+
