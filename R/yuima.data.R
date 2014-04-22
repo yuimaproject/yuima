@@ -4,13 +4,20 @@
 
  
 setMethod("initialize", "yuima.data",
-           function(.Object, original.data){
+           function(.Object, original.data, delta=NULL){
              .Object@original.data <- original.data
              if(is.list(original.data) && is.zoo(original.data[[1]])) {
                .Object@zoo.data <- original.data
              } else {
                .Object@zoo.data <- as.list(as.zoo(.Object@original.data))
 			 }
+             if(!is.null(delta)){
+                 for(i in 1:length(.Object@zoo.data)){
+                    n <- length(.Object@zoo.data[[i]])
+                    t <- seq(0, delta*n, length=n)
+                    index(.Object@zoo.data[[i]]) <- t
+                 }
+             }
              return(.Object)
            })
 
@@ -28,8 +35,8 @@ onezoo <- function(ydata) {
 
 # accessors
 setData <-
-  function(original.data){
-    return(new("yuima.data", original.data=original.data ))
+  function(original.data, delta=NULL){
+    return(new("yuima.data", original.data=original.data, delta=delta ))
   }
 
 
