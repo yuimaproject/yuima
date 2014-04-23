@@ -17,7 +17,7 @@ yuima.warn <- function(x)
 
 yuima.Simplify <- function(expr, yuima.env){
     
-    ###
+    ### 
     
     
     Simplify_ <- function(expr)
@@ -293,7 +293,6 @@ function(object){
     if( has.drift | has.diff ) is.wienerdiff <- TRUE
     if( has.fbm  ) is.fracdiff <- TRUE
     if( has.levy ) is.jumpdiff <- TRUE
-    tmp <- try(eval(mod@diffusion[[1]], env=myenv), silent=TRUE)
 
     if( as.character(mod@diffusion[[1]]) == "(0)" ){
      has.diff <- FALSE
