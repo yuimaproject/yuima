@@ -274,6 +274,7 @@ function(object){
 setMethod("show", "yuima",
 function(object){
     
+    myenv <- new.env()
     mod <- object@model
     has.drift <- FALSE
     has.diff <- FALSE
@@ -292,7 +293,9 @@ function(object){
     if( has.drift | has.diff ) is.wienerdiff <- TRUE
     if( has.fbm  ) is.fracdiff <- TRUE
     if( has.levy ) is.jumpdiff <- TRUE
-    if( try(eval(mod@diffusion[[1]]), silent=TRUE) == 0){
+    tmp <- try(eval(mod@diffusion[[1]], env=myenv), silent=TRUE)
+
+    if( as.character(mod@diffusion[[1]]) == "(0)" ){
      has.diff <- FALSE
      is.wienerdiff <- FALSE
      is.fracdiff <- FALSE
