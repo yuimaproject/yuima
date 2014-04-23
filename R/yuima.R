@@ -294,10 +294,13 @@ function(object){
     if( has.fbm  ) is.fracdiff <- TRUE
     if( has.levy ) is.jumpdiff <- TRUE
 
-    if( as.character(mod@diffusion[[1]]) == "(0)" ){
-     has.diff <- FALSE
-     is.wienerdiff <- FALSE
-     is.fracdiff <- FALSE
+    ldif <- length(mod@diffusion[[1]])
+    if(ldif==1){
+     if( as.character(mod@diffusion[[1]]) == "(0)" ){
+      has.diff <- FALSE
+      is.wienerdiff <- FALSE
+      is.fracdiff <- FALSE
+     }
     }
     if( class(mod) == "yuima.carma")
      is.carma <- TRUE
