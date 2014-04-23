@@ -322,6 +322,9 @@ function(object){
          cat(sprintf("\nNumber of Wiener noises: %d", mod@noise.number))
         if(is.jumpdiff)
          cat(sprintf("\nNumber of Levy noises: %d", 1))
+         if(length(mod@parameter@all)>0){
+             cat(sprintf("\nParametric model with %d parameters",length(mod@parameter@all)))
+         }
     }
     
     if(length(object@data@original.data)>0){
