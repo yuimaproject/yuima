@@ -293,8 +293,9 @@ function(object){
     if( has.drift | has.diff ) is.wienerdiff <- TRUE
     if( has.fbm  ) is.fracdiff <- TRUE
     if( has.levy ) is.jumpdiff <- TRUE
-
-    ldif <- length(mod@diffusion[[1]])
+    ldif <- 0
+    if(length(mod@diffusion)>0)
+     ldif <- length(mod@diffusion[[1]])
     if(ldif==1){
      if( as.character(mod@diffusion[[1]]) == "(0)" ){
       has.diff <- FALSE
