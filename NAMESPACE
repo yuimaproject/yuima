@@ -64,6 +64,7 @@ export(setSampling)
 export(setCharacteristic)
 export(setCarma)
 
+
 export(dim)
 export(length)
 #export(start)
@@ -122,10 +123,12 @@ export(cbind.yuima)
 S3method(print, phitest)
 S3method(print, qgv)
 S3method(print, mmfrac)
+S3method(print, yuima.lasso)
 
 S3method(toLatex, yuima)
 S3method(toLatex, yuima.model)
 S3method(toLatex, yuima.carma)
+
 
 useDynLib(yuima)
 
