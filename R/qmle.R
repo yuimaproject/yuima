@@ -104,8 +104,10 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 #     return(null)
 #   }
 #   
-  
-	diff.par <- yuima@model@parameter@diffusion
+
+    yuima.nobs <- as.integer(max(unlist(lapply(get.zoo.data(yuima),length))-1,na.rm=TRUE))
+
+    diff.par <- yuima@model@parameter@diffusion
 	
 #	24/12
   if(is(yuima@model, "yuima.carma") && length(diff.par)==0
@@ -680,22 +682,22 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   if(!is(yuima@model,"yuima.carma")){
     final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                   method = method)
+                   method = method, nobs=yuima.nobs)
   }else{
     if( Est.Incr=="Carma.IncPar" || Est.Incr=="Carma.Inc" ){
     final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                    method = method)
+                    method = method, nobs=yuima.nobs)
     }else{
       if(Est.Incr=="Carma.Par"){
       final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                      vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                     method = method)
+                     method = method, nobs=yuima.nobs)
       }else{
         yuima.warn("The variable Est.Incr is not correct. See qmle documentation for the allowed values ")
         final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                        vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                       method = method)
+                       method = method, nobs=yuima.nobs)
         return(final_res)
       }
     }
@@ -756,7 +758,7 @@ if(!is(yuima@model,"yuima.carma")){
      carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                           vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                           method = method, Incr.Lev = inc.levy.fin,
-                          model = yuima@model)
+                          model = yuima@model, nobs=yuima.nobs)
      return(carma_final_res)
    }
    
@@ -1033,12 +1035,12 @@ if(!is(yuima@model,"yuima.carma")){
       carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(coef), 
                      vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
                      method = method, Incr.Lev = inc.levy.fin,
-                           model = yuima@model)
+                           model = yuima@model, nobs=yuima.nobs)
     }else{
       if(Est.Incr=="Carma.Par"){
         carma_final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(coef), 
             vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
-            method = method)
+            method = method, nobs=yuima.nobs)
       }
     }
     return(carma_final_res)    
