@@ -2646,6 +2646,9 @@ if(d.size>1){
 }else{
   cormat <- as.matrix(1)
 }
-
+rownames(cmat) <- names(data)
+colnames(cmat) <- names(data)
+rownames(cormat) <- names(data)
+colnames(cormat) <- names(data)
 return(list(covmat=cmat,cormat=cormat))
 })

@@ -12,9 +12,10 @@ setMethod("initialize", "yuima.data",
                .Object@zoo.data <- as.list(as.zoo(.Object@original.data))
 			 }
              if(!is.null(delta)){
+                 delta <- rep(delta, length(.Object@zoo.data))
                  for(i in 1:length(.Object@zoo.data)){
                     n <- length(.Object@zoo.data[[i]])
-                    t <- seq(0, delta*n, length=n)
+                    t <- seq(0, delta[i]*n, length=n)
                     index(.Object@zoo.data[[i]]) <- t
                  }
              }

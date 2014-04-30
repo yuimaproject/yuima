@@ -204,8 +204,14 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
   }
   
   cormat <- diag(1/sqrt(diag(covmat)))%*%covmat%*%diag(1/sqrt(diag(covmat)))
-  
+  colnames(theta) <- names(zdata)
+  rownames(theta) <- names(zdata)
+
   if(verbose==TRUE){
+    colnames(covmat) <- names(zdata)
+    rownames(covmat) <- names(zdata)
+    colnames(cormat) <- names(zdata)
+    rownames(cormat) <- names(zdata)
     return(list(lagcce=theta,covmat=covmat,cormat=cormat,crosscov=crosscov))
   }else{
     return(theta)
@@ -353,7 +359,6 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,verb
   
   #  covmat <- lagcce(dat@zoo.data,theta)
   cormat <- diag(1/sqrt(diag(covmat)))%*%covmat%*%diag(1/sqrt(diag(covmat)))
-  
   if(verbose==TRUE){
     return(list(lagcce=theta,covmat=covmat,cormat=cormat))
   }else{

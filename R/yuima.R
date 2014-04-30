@@ -352,7 +352,12 @@ function(object){
         
         delta <- NULL
         for(i in 1:n.series){
-            tmp <- deltat(object@data@zoo.data[[i]])
+            tmp <- length(table(round(diff(time(object@data@zoo.data[[i]]),5))))
+            if(tmp>1){
+             tmp <- NULL
+            } else {
+             tmp <- diff(time(object@data@zoo.data[[i]]))[1]
+            }
             if(is.null(tmp)){
                 delta <- c(delta, NA)
             } else {
@@ -363,7 +368,12 @@ function(object){
         
         cat(sprintf("\n\nNumber of zoo time series: %d\n", n.series))
         tmp <- data.frame(length=n.length, time.min = t.min, time.max =t.max, delta=delta)
-        rownames(tmp) <- sprintf("Series %d",1:n.series)
+        nm <- names(object@data@zoo.data)
+        if(is.null(nm)){
+         rownames(tmp) <- sprintf("Series %d",1:n.series)
+        } else {
+         rownames(tmp) <- nm
+        }
         print(tmp)
     }
     
