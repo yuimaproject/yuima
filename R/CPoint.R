@@ -77,6 +77,9 @@ pminusquasilogl <- function(yuima, param, print=FALSE, env){
 	
 	nm <- names(param)
     oo <- match(nm, fullcoef)
+    if(any(is.na(oo)))
+     oo <- oo[-which(is.na(oo))]
+    
     if(any(is.na(oo))) 
 		yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
 
