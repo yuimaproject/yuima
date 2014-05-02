@@ -754,7 +754,8 @@ if(!is(yuima@model,"yuima.carma")){
     }
     # INSERT HERE THE NECESSARY STEPS FOR FINDING THE PARAMETERS OF LEVY
    if(Est.Incr=="Carma.Inc"){
-     inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
+     # inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
+     inc.levy.fin<-zoo(inc.levy[-1],tt[(1+length(tt)-length(inc.levy[-1])):length(tt)])
      carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                           vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                           method = method, Incr.Lev = inc.levy.fin,
@@ -1031,7 +1032,8 @@ if(!is(yuima@model,"yuima.carma")){
         
 #    carma_final_res<-list(mle=final_res,Incr=inc.levy,model=yuima) 
     if(Est.Incr=="Carma.IncPar"){
-      inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
+      #inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
+      inc.levy.fin<-zoo(inc.levy[-1],tt[(1+length(tt)-length(inc.levy[-1])):length(tt)])
       carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(coef), 
                      vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
                      method = method, Incr.Lev = inc.levy.fin,

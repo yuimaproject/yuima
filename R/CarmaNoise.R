@@ -207,7 +207,7 @@ CarmaNoise<-function(yuima, param, data=NULL,NoNeg.Noise=FALSE){
   
   levy<-yuima.CarmaNoise(y,tt,ar.par,ma.par, loc.par, scale.par, lin.par,NoNeg.Noise)
   inc.levy<-diff(as.numeric(levy))
-  return(inc.levy)
+  return(inc.levy[-1]) #We start to compute the increments from the second observation. 
 }
 
 
