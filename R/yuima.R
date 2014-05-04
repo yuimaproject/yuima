@@ -189,6 +189,8 @@ setMethod("initialize", "yuima",
             if(!is.null(data)){
               .Object@data <- data
               eqn <- dim(data)
+              if(is.null(sampling))
+               sampling <- setSampling(grid=list(index(get.zoo.data(data)[[1]])))
             }
             
             if(!is.null(model)){
@@ -296,7 +298,7 @@ function(object){
     ldif <- 0
     if(length(mod@diffusion)>0)
      ldif <- length(mod@diffusion[[1]])
-    if(ldif==1){
+    if(ldif==1 & (length(mod@diffusion)==0)){
      if( as.character(mod@diffusion[[1]]) == "(0)" ){
       has.diff <- FALSE
       is.wienerdiff <- FALSE
@@ -309,8 +311,15 @@ function(object){
     if( is.wienerdiff | is.fracdiff | is.jumpdiff  ){
         if( is.wienerdiff & ! is.carma){
          cat("\nDiffusion process")
-         if( is.fracdiff & mod@hurst!=0.5)
-         cat(sprintf(" with Hurst index:%.2f", mod@hurst))
+         if( is.fracdiff ){
+             if(!is.na(mod@hurst)){
+                 if(mod@hurst!=0.5){
+                  cat(sprintf(" with Hurst index:%.2f", mod@hurst))
+                 }
+             } else {
+                 cat(" with unknown Hurst index")
+             }
+         }
         }
         if(is.carma)
           cat(sprintf("\nCarma process p=%d, q=%d", mod@info@p, mod@info@q))
