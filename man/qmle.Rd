@@ -22,6 +22,7 @@
 qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, 
  joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, ...)
 quasilogl(yuima, param, print=FALSE)
+lse(yuima, start, lower, upper, method = "BFGS", ...)
 }
 \arguments{
   \item{yuima}{a yuima object.}

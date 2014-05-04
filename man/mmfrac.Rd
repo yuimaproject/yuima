@@ -4,7 +4,7 @@
 mmfrac
 }
 \description{
-Estimates the drift of s fractional Ornstein-Uhlenbeck and, if necessary, also the Hurst and diffusion parameters.
+Estimates the drift of a fractional Ornstein-Uhlenbeck and, if necessary, also the Hurst and diffusion parameters.
 }
 \usage{
 mmfrac(yuima, ...)
