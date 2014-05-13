@@ -1,5 +1,5 @@
 WoodChanfGn <- 
-function( mesh , H , dim )
+function( mesh , H , dimmesh )
 {
 
 ##--------------------------------------------------------------------------
@@ -25,13 +25,13 @@ function( mesh , H , dim )
 	mesh<-mesh[[1]]
 	
 	N<-length(mesh)-2 # N+1 is the size of the fGn sample to be simulated
-	fGn<-matrix(0,dim,N+1)
+	fGn<-matrix(0,dimmesh,N+1)
 	T<-mesh[N+2]
 	
 	H2 <- 2*H
 	
 	k <- 0:N
-    autocov<-0.5 * (abs(k-1)^H2 - 2*(k)^H2 + (k+1)^H2) * (T/(N+2))^H2
+    autocov<-0.5 * (abs(k-1)^H2 - 2*(k)^H2 + (k+1)^H2) * (T/(N+1))^H2
 	# g(0),g(1),g(n-1),g(1)
 	
 	
@@ -39,7 +39,7 @@ function( mesh , H , dim )
 	lambdak<-Re(fft(ligne1C,inverse = TRUE))
 	
 	
-	for (k in 1:dim){
+	for (k in 1:dimmesh){
 		
 	zr <- rnorm(N+1)
     zi <- rnorm(N-1)
