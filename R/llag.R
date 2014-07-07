@@ -15,13 +15,17 @@
 #setMethod( "llag", "yuima.data", function(x,from=FALSE,to=FALSE,division=FALSE,verbose=FALSE) {
 
 setGeneric( "llag",
-		function(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE,grid)
+		function(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE,grid,psd=TRUE,
+             plot=FALSE,ccor=FALSE)
 		standardGeneric("llag") )
 setMethod( "llag", "yuima",
-		function(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE,grid)
-		llag(x@data,from=from,to=to,division=division,verbose=verbose,grid=grid))
+		function(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE,grid,psd=TRUE,
+             plot=FALSE,ccor=FALSE)
+		llag(x@data,from=from,to=to,division=division,verbose=verbose,grid=grid,
+         psd=psd,plot=plot))
 setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
-                                          verbose=FALSE,grid) {
+                                          verbose=FALSE,grid,psd=TRUE,
+                                          plot=FALSE,ccor=FALSE) {
   
   if((is(x)=="yuima")||(is(x)=="yuima.data")){
     zdata <- get.zoo.data(x)
@@ -56,163 +60,335 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
   }
   
   theta <- matrix(0,d,d)
-  covmat <- diag(vol)
   
   d.size <- d*(d-1)/2
-  crosscov <- vector(d.size,mode="list")
+  crosscor <- vector(d.size,mode="list")
   
-  if(missing(grid)){
+  if(psd){
     
-    if(length(from) != d.size){
-      from <- c(from,rep(-Inf,d.size - length(from)))
-    }
+    cormat <- diag(d)
     
-    if(length(to) != d.size){
-      to <- c(to,rep(Inf,d.size - length(to)))
-    }
-    
-    if(length(division) == 1){
-      division <- rep(division,d.size)
-    }
-    
-    for(i in 1:(d-1)){
-      for(j in (i+1):d){
-        
-        time1 <- ser.times[[i]]
-        time2 <- ser.times[[j]] 
-        
-        # calculate the maximum of correlation by substituting theta to lagcce
-        
-        #n:=2*length(data)
-        
-        num <- d*(i-1) - (i-1)*i/2 + (j-i)
-        
-        if(division[num]==FALSE){
-          n <- round(2*max(length(time1),length(time2)))+1
+    if(missing(grid)){
+      
+      if(length(from) != d.size){
+        from <- c(from,rep(-Inf,d.size - length(from)))
+      }
+      
+      if(length(to) != d.size){
+        to <- c(to,rep(Inf,d.size - length(to)))
+      }
+      
+      if(length(division) == 1){
+        division <- rep(division,d.size)
+      }
+      
+      for(i in 1:(d-1)){
+        for(j in (i+1):d){
+          
+          time1 <- ser.times[[i]]
+          time2 <- ser.times[[j]] 
+          
+          # calculate the maximum of correlation by substituting theta to lagcce
+          
+          #n:=2*length(data)
+          
+          num <- d*(i-1) - (i-1)*i/2 + (j-i)
+          
+          if(division[num]==FALSE){
+            n <- round(2*max(length(time1),length(time2)))+1
+          }else{
+            n <- division[num]
+          }
+          
+          # maximum value of lagcce
+          
+          tmptheta <- time2[1]-time1[1] # time lag (sec)
+          
+          num1 <- time1[length(time1)]-time1[1] # elapsed time for series 1
+          num2 <- time2[length(time2)]-time2[1] # elapsed time for series 2
+          
+          # modified
+          
+          if(is.numeric(from[num])==TRUE && is.numeric(to[num])==TRUE){
+            num2 <- min(-from[num],num2+tmptheta)
+            num1 <- min(to[num],num1-tmptheta)
+            tmptheta <- 0
+            
+            if(-num2 >= num1){
+              print("llag:invalid range")
+              return(NULL)
+            }
+          }else if(is.numeric(from[num])==TRUE){
+            num2 <- min(-from[num],num2+tmptheta)
+            num1 <- num1-tmptheta
+            tmptheta <- 0
+            
+            if(-num2 >= num1){
+              print("llag:invalid range")
+              return(NULL)
+            }
+          }else if(is.numeric(to[num])==TRUE){
+            num2 <- num2+tmptheta
+            num1 <- min(to[num],num1-tmptheta)
+            tmptheta <- 0
+            
+            if(-num2 >= num1){
+              print("llag:invalid range")
+              return(NULL)
+            }
+          }
+          
+          y <- seq(-num2-tmptheta,num1-tmptheta,length=n)[2:(n-1)]
+          
+          tmp <- .C("HYcrosscorr",
+                    as.integer(n-2),
+                    as.integer(length(time1)),
+                    as.integer(length(time2)),
+                    as.double(y),
+                    as.double(time1),
+                    as.double(time2),
+                    double(length(time2)),
+                    as.double(ser.diffX[[i]]),
+                    as.double(ser.diffX[[j]]),
+                    as.double(vol[i]),
+                    as.double(vol[j]),
+                    value=double(n-2))$value
+          
+          idx <- which.max(abs(tmp))
+          mlag <- -y[idx] # make the first timing of max or min
+          corr <- tmp[idx]
+          
+          theta[i,j] <- mlag
+          cormat[i,j] <- corr
+          theta[j,i] <- -mlag
+          cormat[j,i] <- cormat[i,j]
+          
+          crosscor[[num]] <- zoo(tmp,-y)
+        }
+      }
+      
+    }else{
+      
+      if(!is.list(grid)){
+        if(is.numeric(grid)){
+          grid <- data.frame(matrix(grid,length(grid),d.size))
         }else{
-          n <- division[num]
+          print("llag:invalid grid")
+          return(NULL)
         }
-        
-        # maximum value of lagcce
-        
-        tmptheta <- time2[1]-time1[1] # time lag (sec)
-        
-        num1 <- time1[length(time1)]-time1[1] # elapsed time for series 1
-        num2 <- time2[length(time2)]-time2[1] # elapsed time for series 2
-        
-        # modified
-        
-        if(is.numeric(from[num])==TRUE && is.numeric(to[num])==TRUE){
-          num2 <- min(-from[num],num2+tmptheta)
-          num1 <- min(to[num],num1-tmptheta)
-          tmptheta <- 0
+      }
+      
+      for(i in 1:(d-1)){
+        for(j in (i+1):d){
           
-          if(-num2 >= num1){
-            print("llag:invalid range")
-            return(NULL)
-          }
-        }else if(is.numeric(from[num])==TRUE){
-          num2 <- min(-from[num],num2+tmptheta)
-          num1 <- num1-tmptheta
-          tmptheta <- 0
+          time1 <- ser.times[[i]]
+          time2 <- ser.times[[j]] 
           
-          if(-num2 >= num1){
-            print("llag:invalid range")
-            return(NULL)
-          }
-        }else if(is.numeric(to[num])==TRUE){
-          num2 <- num2+tmptheta
-          num1 <- min(to[num],num1-tmptheta)
-          tmptheta <- 0
+          num <- d*(i-1) - (i-1)*i/2 + (j-i)
           
-          if(-num2 >= num1){
-            print("llag:invalid range")
-            return(NULL)
-          }
+          tmp <- .C("HYcrosscorr",
+                    as.integer(length(grid[[num]])),
+                    as.integer(length(time1)),
+                    as.integer(length(time2)),
+                    as.double(grid[[num]]),
+                    as.double(time1),
+                    as.double(time2),
+                    double(length(time2)),
+                    as.double(ser.diffX[[i]]),
+                    as.double(ser.diffX[[j]]),
+                    as.double(vol[i]),
+                    as.double(vol[j]),
+                    value=double(length(grid[[num]])))$value
+          
+          idx <- which.max(abs(tmp))
+          mlag <- -grid[[num]][idx] # make the first timing of max or min
+          cor <- tmp[idx]
+          
+          theta[i,j] <- mlag
+          cormat[i,j] <- cor
+          theta[j,i] <- -mlag
+          cormat[j,i] <- cormat[i,j]
+          
+          crosscor[[num]] <- zoo(tmp,-grid[[num]])
         }
-        
-        y <- seq(-num2-tmptheta,num1-tmptheta,length=n)[2:(n-1)]
-        
-        tmp <- .C("HYcrosscov",
-                  as.integer(n-2),
-                  as.integer(length(time1)),
-                  as.integer(length(time2)),
-                  as.double(y),
-                  as.double(time1),
-                  as.double(time2),
-                  double(length(time2)),
-                  as.double(ser.diffX[[i]]),
-                  as.double(ser.diffX[[j]]),
-                  value=double(n-2),PACKAGE="yuima")$value
-        
-        idx <- which.max(abs(tmp))
-        mlag <- -y[idx] # make the first timing of max or min
-        cov <- tmp[idx]
-        
-        theta[i,j] <- mlag
-        covmat[i,j] <- cov
-        theta[j,i] <- -mlag
-        covmat[j,i] <- covmat[i,j]
-        
-        crosscov[[num]] <- zoo(tmp,y)
       }
     }
     
-  }else{
+    covmat <- diag(sqrt(vol))%*%cormat%*%diag(sqrt(vol))
     
-    if(!is.list(grid)){
-      if(is.numeric(grid)){
-        grid <- data.frame(matrix(grid,length(grid),d.size))
-      }else{
-        print("llag:invalid grid")
-        return(NULL)
+  }else{# non-psd
+    
+    covmat <- diag(vol)
+    
+    if(missing(grid)){
+      
+      if(length(from) != d.size){
+        from <- c(from,rep(-Inf,d.size - length(from)))
+      }
+      
+      if(length(to) != d.size){
+        to <- c(to,rep(Inf,d.size - length(to)))
+      }
+      
+      if(length(division) == 1){
+        division <- rep(division,d.size)
+      }
+      
+      for(i in 1:(d-1)){
+        for(j in (i+1):d){
+          
+          time1 <- ser.times[[i]]
+          time2 <- ser.times[[j]] 
+          
+          # calculate the maximum of correlation by substituting theta to lagcce
+          
+          #n:=2*length(data)
+          
+          num <- d*(i-1) - (i-1)*i/2 + (j-i)
+          
+          if(division[num]==FALSE){
+            n <- round(2*max(length(time1),length(time2)))+1
+          }else{
+            n <- division[num]
+          }
+          
+          # maximum value of lagcce
+          
+          tmptheta <- time2[1]-time1[1] # time lag (sec)
+          
+          num1 <- time1[length(time1)]-time1[1] # elapsed time for series 1
+          num2 <- time2[length(time2)]-time2[1] # elapsed time for series 2
+          
+          # modified
+          
+          if(is.numeric(from[num])==TRUE && is.numeric(to[num])==TRUE){
+            num2 <- min(-from[num],num2+tmptheta)
+            num1 <- min(to[num],num1-tmptheta)
+            tmptheta <- 0
+            
+            if(-num2 >= num1){
+              print("llag:invalid range")
+              return(NULL)
+            }
+          }else if(is.numeric(from[num])==TRUE){
+            num2 <- min(-from[num],num2+tmptheta)
+            num1 <- num1-tmptheta
+            tmptheta <- 0
+            
+            if(-num2 >= num1){
+              print("llag:invalid range")
+              return(NULL)
+            }
+          }else if(is.numeric(to[num])==TRUE){
+            num2 <- num2+tmptheta
+            num1 <- min(to[num],num1-tmptheta)
+            tmptheta <- 0
+            
+            if(-num2 >= num1){
+              print("llag:invalid range")
+              return(NULL)
+            }
+          }
+          
+          y <- seq(-num2-tmptheta,num1-tmptheta,length=n)[2:(n-1)]
+          
+          tmp <- .C("HYcrosscov",
+                    as.integer(n-2),
+                    as.integer(length(time1)),
+                    as.integer(length(time2)),
+                    as.double(y),
+                    as.double(time1),
+                    as.double(time2),
+                    double(length(time2)),
+                    as.double(ser.diffX[[i]]),
+                    as.double(ser.diffX[[j]]),
+                    value=double(n-2),PACKAGE="yuima")$value
+          
+          idx <- which.max(abs(tmp))
+          mlag <- -y[idx] # make the first timing of max or min
+          cov <- tmp[idx]
+          
+          theta[i,j] <- mlag
+          covmat[i,j] <- cov
+          theta[j,i] <- -mlag
+          covmat[j,i] <- covmat[i,j]
+          
+          crosscor[[num]] <- zoo(tmp,-y)/sqrt(vol[i]*vol[j])
+        }
+      }
+      
+    }else{
+      
+      if(!is.list(grid)){
+        if(is.numeric(grid)){
+          grid <- data.frame(matrix(grid,length(grid),d.size))
+        }else{
+          print("llag:invalid grid")
+          return(NULL)
+        }
+      }
+      
+      for(i in 1:(d-1)){
+        for(j in (i+1):d){
+          
+          time1 <- ser.times[[i]]
+          time2 <- ser.times[[j]] 
+          
+          num <- d*(i-1) - (i-1)*i/2 + (j-i)
+          
+          tmp <- .C("HYcrosscov",
+                    as.integer(length(grid[[num]])),
+                    as.integer(length(time1)),
+                    as.integer(length(time2)),
+                    as.double(grid[[num]]),
+                    as.double(time1),
+                    as.double(time2),
+                    double(length(time2)),
+                    as.double(ser.diffX[[i]]),
+                    as.double(ser.diffX[[j]]),
+                    value=double(length(grid[[num]])),PACKAGE="yuima")$value
+          
+          idx <- which.max(abs(tmp))
+          mlag <- -grid[[num]][idx] # make the first timing of max or min
+          cov <- tmp[idx]
+          
+          theta[i,j] <- mlag
+          covmat[i,j] <- cov
+          theta[j,i] <- -mlag
+          covmat[j,i] <- covmat[i,j]
+          
+          crosscor[[num]] <- zoo(tmp,-grid[[num]])/sqrt(vol[i]*vol[j])
+        }
       }
     }
     
+    cormat <- diag(1/sqrt(diag(covmat)))%*%covmat%*%diag(1/sqrt(diag(covmat)))
+  }
+  
+  colnames(theta) <- names(zdata)
+  rownames(theta) <- names(zdata)
+  
+  if(plot){
     for(i in 1:(d-1)){
       for(j in (i+1):d){
-        
-        time1 <- ser.times[[i]]
-        time2 <- ser.times[[j]] 
-        
         num <- d*(i-1) - (i-1)*i/2 + (j-i)
-        
-        tmp <- .C("HYcrosscov",
-                  as.integer(length(grid[[num]])),
-                  as.integer(length(time1)),
-                  as.integer(length(time2)),
-                  as.double(grid[[num]]),
-                  as.double(time1),
-                  as.double(time2),
-                  double(length(time2)),
-                  as.double(ser.diffX[[i]]),
-                  as.double(ser.diffX[[j]]),
-                  value=double(length(grid[[num]])),PACKAGE="yuima")$value
-        
-        idx <- which.max(abs(tmp))
-        mlag <- -grid[[num]][idx] # make the first timing of max or min
-        cov <- tmp[idx]
-        
-        theta[i,j] <- mlag
-        covmat[i,j] <- cov
-        theta[j,i] <- -mlag
-        covmat[j,i] <- covmat[i,j]
-        
-        crosscov[[num]] <- zoo(tmp,grid[[num]])
+        plot(crosscor[[num]],
+             main=paste(i,"vs",j,"(positive",expression(theta),"means",i,"leads",j,")"),
+             xlab=expression(theta),ylab=expression(U(theta)))
       }
     }
   }
   
-  cormat <- diag(1/sqrt(diag(covmat)))%*%covmat%*%diag(1/sqrt(diag(covmat)))
-  colnames(theta) <- names(zdata)
-  rownames(theta) <- names(zdata)
-
   if(verbose==TRUE){
     colnames(covmat) <- names(zdata)
     rownames(covmat) <- names(zdata)
     colnames(cormat) <- names(zdata)
     rownames(cormat) <- names(zdata)
-    return(list(lagcce=theta,covmat=covmat,cormat=cormat,crosscov=crosscov))
+    if(ccor){
+      return(list(lagcce=theta,covmat=covmat,cormat=cormat,ccor=crosscor))
+    }else{
+      return(list(lagcce=theta,covmat=covmat,cormat=cormat))
+    }
   }else{
     return(theta)
   }

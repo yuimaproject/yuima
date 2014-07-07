@@ -19,3 +19,4 @@
 2013/11/22: modify cce.R, cce_functions.c
 2014/04/28: modified qmle, added carma, modified lasso
 2014/05/04: modified show method, setYuima sets the sampling from the data if sampling is missing
+2014/07/07: modified llag.R, llag.Rd, cce_functions.c; estimated cross-correlation functions are converted to values in [-1,1]
