@@ -60,8 +60,9 @@ regular, sdelta, sgrid, oindex, interpolation){
 
 
 # grid is missing, but non random sampling	
-				
-				nTerm <- 0
+
+
+                nTerm <- 0
 	            if(!missing(Terminal)) nTerm <- length(Terminal)
 				nInit <- 0
 				if(!missing(Initial))  nInit <- length(Initial)
@@ -100,7 +101,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 				if(nInit>0 & nTerm>0 & nObs>0){
 					dims <- c(nInit, nTerm, nObs)
 					ndim <- dims[ which.max(dims) ]
-					Initial <- rep(Initial, ndim)[1:ndim] 	
+                    Initial <- rep(Initial, ndim)[1:ndim]
 					Terminal <- rep(Terminal, ndim)[1:ndim]
 					if( any(Terminal < Initial))
 						stop("\nYUIMA: 'Terminal' < 'Initial'\n")	
@@ -111,6 +112,23 @@ regular, sdelta, sgrid, oindex, interpolation){
 						grid[[i]] <- seq(Initial[i], Terminal[i], by=delta[i])					
 				}
 
+# Initial + delta + Terminal ( ignored) => n
+                if(nInit>0 & nTerm>0 & nDelta>0){
+                    dims <- c(nInit, nTerm, nDelta)
+                    ndim <- dims[ which.max(dims) ]
+                    delta <- rep(delta, ndim)[1:ndim]
+                    Initial <- rep(Initial, ndim)[1:ndim]
+                    Terminal <- rep(Terminal, ndim)[1:ndim]
+                    if( any(Terminal < Initial))
+                        stop("\nYUIMA: 'Terminal' < 'Initial'\n")
+                    n <- (Terminal-Initial)/delta
+                    n <- rep(n, ndim)[1:ndim]
+                    yuima.warn("'n' (re)defined.")
+                    for(i in 1:ndim)
+                        grid[[i]] <- seq(Initial[i], Terminal[i], by=delta[i])
+                }
+
+
 				.Object@Terminal <- Terminal
 				.Object@Initial <- Initial
 				.Object@n <- n	 
@@ -120,7 +138,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 				.Object@regular <- TRUE	 
 					 
 				return(.Object)
-           })
+})
 
 setSampling <- function(Initial=0, Terminal=1, n=100, delta, 
  grid, random=FALSE, sdelta=as.numeric(NULL), 

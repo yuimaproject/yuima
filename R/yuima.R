@@ -360,10 +360,15 @@ function(object){
         t.max <- unlist(lapply(object@data@zoo.data, function(u) as.character(round(time(u)[which.max(time(u))],3))))
         
         delta <- NULL
+        is.max.delta <- rep("", n.series)
+        have.max.delta <- FALSE
         for(i in 1:n.series){
-            tmp <- length(table(round(diff(time(object@data@zoo.data[[i]]),5))))
+            tmp <- length(table(round(diff(time(object@data@zoo.data[[i]])),5)))
             if(tmp>1){
-             tmp <- NULL
+             tmp <- max(diff(time(object@data@zoo.data[[i]])), na.rm=TRUE)
+             is.max.delta[i] <- "*"
+             have.max.delta <- TRUE
+             #tmp <- NULL
             } else {
              tmp <- diff(time(object@data@zoo.data[[i]]))[1]
             }
@@ -377,6 +382,8 @@ function(object){
         
         cat(sprintf("\n\nNumber of zoo time series: %d\n", n.series))
         tmp <- data.frame(length=n.length, time.min = t.min, time.max =t.max, delta=delta)
+        if(have.max.delta)
+         tmp <- data.frame(tmp, note=is.max.delta)
         nm <- names(object@data@zoo.data)
         if(is.null(nm)){
          rownames(tmp) <- sprintf("Series %d",1:n.series)
@@ -384,6 +391,8 @@ function(object){
          rownames(tmp) <- nm
         }
         print(tmp)
+        if(have.max.delta)
+         cat("================\n* : maximal mesh")
     }
     
 })
