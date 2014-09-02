@@ -1415,7 +1415,8 @@ quasilogl <- function(yuima, param, print=FALSE){
 	env <- new.env()
     assign("X",  as.matrix(onezoo(yuima)), envir=env)
     assign("deltaX",  matrix(0, n-1, d.size), envir=env)
-
+    assign("Cn.r", rep(1,n-1), envir=env)
+    
     if(is.CARMA(yuima)){
         env$X<-as.matrix(env$X[,1])
         env$deltaX<-as.matrix(env$deltaX[,1])

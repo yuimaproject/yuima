@@ -104,7 +104,8 @@ regular, sdelta, sgrid, oindex, interpolation){
                     Initial <- rep(Initial, ndim)[1:ndim]
 					Terminal <- rep(Terminal, ndim)[1:ndim]
 					if( any(Terminal < Initial))
-						stop("\nYUIMA: 'Terminal' < 'Initial'\n")	
+						stop("\nYUIMA: 'Terminal' < 'Initial'\n")
+                    n <- as.integer(n)
 					n <- rep(n, ndim)[1:ndim] 	
 					delta <- (Terminal-Initial)/n 						 
 					yuima.warn("'delta' (re)defined.")
@@ -121,7 +122,7 @@ regular, sdelta, sgrid, oindex, interpolation){
                     Terminal <- rep(Terminal, ndim)[1:ndim]
                     if( any(Terminal < Initial))
                         stop("\nYUIMA: 'Terminal' < 'Initial'\n")
-                    n <- (Terminal-Initial)/delta
+                    n <- as.integer((Terminal-Initial)/delta)
                     n <- rep(n, ndim)[1:ndim]
                     yuima.warn("'n' (re)defined.")
                     for(i in 1:ndim)
