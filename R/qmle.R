@@ -64,6 +64,40 @@ diffusion.term <- function(yuima, theta, env){
 }
 
 
+## Koike's code
+##::extract jump term from yuima
+##::gamma: parameter of diffusion term (theta3)
+measure.term <- function(yuima, theta, env){
+    r.size <- yuima@model@noise.number
+    d.size <- yuima@model@equation.number
+    modelstate <- yuima@model@state.variable
+    n <- dim(env$X)[1]
+    
+    tmp.env <- new.env()
+    assign(yuima@model@time.variable, env$time, envir =tmp.env)
+    JUMP <- yuima@model@jump.coeff
+    measure <- array(0, dim=c(d.size, r.size, n))
+    for(i in 1:length(theta)){
+        assign(names(theta)[i],theta[[i]],envir=tmp.env)
+    }
+	
+    for(d in 1:d.size){
+        assign(modelstate[d], env$X[,d],envir=tmp.env)
+    }
+    for(r in 1:r.size){
+        #for(d.tmp in 1:d){
+        if(d.size==1){
+            measure[1,r,] <- eval(JUMP[r],envir=tmp.env)
+        }else{
+            for(d in 1:d.size){
+                measure[d,r,] <- eval(JUMP[[d]][r],envir=tmp.env)
+            }
+        }
+    }
+    return(measure)
+}
+
+
 ### I have rewritten qmle as a version of ml.ql
 ### This function has an interface more similar to mle.
 ### ml.ql is limited in that it uses fixed names for drift and diffusion
@@ -71,21 +105,31 @@ diffusion.term <- function(yuima, theta, env){
 ### also, I am using the same interface of optim to specify upper and lower bounds
 ### S.M.I. 22/06/2010
 
+is.CARMA <- function(obj){
+ if(is(obj,"yuima"))
+    return(is(obj@model, "yuima.carma"))
+ if(is(obj,"yuima.model"))
+    return(is(obj, "yuima.carma"))
+ return(FALSE)
+}
 
-qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
- lower, upper, joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, ...){
+qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
+ lower, upper, joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, threshold=NULL, ...){
   if(is(yuima@model, "yuima.carma")){
     NoNeg.Noise<-FALSE
     cat("\nStarting qmle for carma ... \n")
   }
-  if(is(yuima@model, "yuima.carma")&& length(yuima@model@info@scale.par)!=0){
+  if(is.CARMA(yuima)&& length(yuima@model@info@scale.par)!=0){
     method<-"L-BFGS-B"
   }
 	call <- match.call()
 	
 	if( missing(yuima))
 		yuima.stop("yuima object is missing.")
-	
+
+    orig.fixed <- fixed
+    orig.fixed.par <- names(orig.fixed)
+
 ## param handling
 	
 ## FIXME: maybe we should choose initial values at random within lower/upper
@@ -110,12 +154,12 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     diff.par <- yuima@model@parameter@diffusion
 	
 #	24/12
-  if(is(yuima@model, "yuima.carma") && length(diff.par)==0
+  if(is.CARMA(yuima) && length(diff.par)==0
 	   && length(yuima@model@parameter@jump)!=0){
     diff.par<-yuima@model@parameter@jump
 	}
   
-  if(is(yuima@model, "yuima.carma") && length(yuima@model@parameter@jump)!=0){
+  if(is.CARMA(yuima) && length(yuima@model@parameter@jump)!=0){
     CPlist <- c("dgamma", "dexp")
     codelist <- c("rIG", "rgamma")
     if(yuima@model@measure.type=="CP"){
@@ -152,7 +196,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   }
   
   # 24/12
-  if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)>0){
+  if(is.CARMA(yuima) && length(yuima@model@info@lin.par)>0){
     yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
     return(NULL)    
   }
@@ -162,16 +206,27 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 #01/01 we introduce the new variable in order
 # to take into account the parameters in the starting conditions
   
-  if(is(yuima@model, "yuima.carma")){
+  if(is.CARMA(yuima)){
     #if(length(yuima@model@info@scale.par)!=0){
       xinit.par <- yuima@model@parameter@xinit
     #}
   }
   
-  
-  jump.par <- yuima@model@parameter@jump
-	measure.par <- yuima@model@parameter@measure
-	common.par <- yuima@model@parameter@common
+  # SMI-2/9/14: measure.par is used for Compound Poisson
+  # and CARMA, jump.par only by CARMA
+  jump.par <- NULL
+  if(is.CARMA(yuima)){
+      jump.par <- yuima@model@parameter@jump
+      measure.par <- yuima@model@parameter@measure
+  } else {
+      if(length(yuima@model@parameter@jump)!=0){
+          measure.par <- yuima@model@parameter@jump
+      } else {
+      measure.par <- yuima@model@parameter@measure
+      }
+  }
+  # jump.par is used for CARMA
+  common.par <- yuima@model@parameter@common
 
   JointOptim <- joint
   if(is(yuima@model, "yuima.carma") && length(yuima@model@parameter@jump)!=0){
@@ -194,10 +249,10 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 # 		     }
 	}
 
-	 if(!is(yuima@model, "yuima.carma")){
-    	if(length(jump.par)+length(measure.par)>0)
-    		yuima.stop("Cannot estimate the jump models, yet")
-	 }
+# if(!is(yuima@model, "yuima.carma")){
+#    	if(length(jump.par)+length(measure.par)>0)
+#    		yuima.stop("Cannot estimate the jump models, yet")
+#	 }
   
   
 	if(!is.list(start))
@@ -211,7 +266,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	if(length(drift.par)>0)
 	 fullcoef <- c(fullcoef, drift.par)
 
-  if(is(yuima@model,"yuima.carma") && 
+  if(is.CARMA(yuima) &&
        (length(yuima@model@info@loc.par)!=0)){
     # 01/01 We modify the code for considering 
     # the loc.par in yuima.carma model
@@ -219,22 +274,22 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     
   }
 
-  if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE)){
+  if(is.CARMA(yuima) && (NoNeg.Noise==TRUE)){
     if((yuima@model@info@q+1)==yuima@model@info@p){
       mean.noise<-"mean.noise"
       fullcoef<-c(fullcoef, mean.noise)
     }
   }
   
-  if(is(yuima@model,"yuima.carma") && (length(measure.par)>0)){
+  #  if(is.CARMA(yuima) && (length(measure.par)>0)){
    fullcoef<-c(fullcoef, measure.par)
-  }
+  #}
 
 	npar <- length(fullcoef)
 	
-  
+    
 	fixed.par <- names(fixed) # We use Fixed.par when we consider a Carma with scale parameter
-  if(is(yuima@model,"yuima.carma") && (length(measure.par)>0)){
+  if(is.CARMA(yuima) && (length(measure.par)>0)){
     fixed.carma=NULL
     if(!missing(fixed)){
       if(names(fixed) %in% measure.par){
@@ -282,8 +337,11 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   }
 	if (any(!(fixed.par %in% fullcoef))) 
 	 yuima.stop("Some named arguments in 'fixed' are not arguments to the supplied yuima model")
-	
-	nm <- names(start)
+
+nm <- names(start)
+#print(nm)
+#   print(fullcoef)
+#print(start)
     oo <- match(nm, fullcoef)
   #
     if(any(is.na(oo))) 
@@ -293,6 +351,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 		 
 	idx.diff <- match(diff.par, nm)
 	idx.drift <- match(drift.par, nm)
+    # SMI-2/9/14: idx.measure for CP
+    idx.measure <- match(measure.par, nm)
 	#01/01
   if(is(yuima@model, "yuima.carma")){
    # if(length(yuima@model@info@scale.par)!=0){
@@ -301,7 +361,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   }
   
   idx.fixed <- match(fixed.par, nm)
-
+  orig.idx.fixed <- idx.fixed
+  
 	tmplower <- as.list( rep( -Inf, length(nm)))
 	names(tmplower) <- nm	
 	if(!missing(lower)){
@@ -327,7 +388,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 
 	 
 	d.size <- yuima@model@equation.number
-	if (is(yuima@model, "yuima.carma")){
+	if (is.CARMA(yuima)){
 	  # 24/12
     d.size <-1
 	}
@@ -337,8 +398,12 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   
     assign("X",  as.matrix(onezoo(yuima)), envir=env)
   	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
-  
-  if (is(yuima@model, "yuima.carma")){
+    # SMI-2/9/14: for CP
+    assign("Cn.r", numeric(n-1), envir=env)
+    if(length(measure.par)==0)
+        threshold <- 0  # there are no jumps, we take all observations
+    
+  if (is.CARMA(yuima)){
     #24/12 If we consider a carma model,
     # the observations are only the first column of env$X
 #     assign("X",  as.matrix(onezoo(yuima)), envir=env)
@@ -363,60 +428,119 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	}
   assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
 	
-  for(t in 1:(n-1))
-	 env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
-
+    for(t in 1:(n-1)){
+        env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
+        env$Cn.r[t] <- ((sqrt( env$deltaX[t,] %*% env$deltaX[t,])) <= threshold)
+    }
+    
+    if(length(measure.par)==0)
+        env$Cn.r <- rep(1, length(env$Cn.r))  # there are no jumps, we take all observations
+    
 	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
+
+#SMI: 2/9/214 jump
+if(length(measure.par)>0){
+    #cat("\nmeas par\n")
+    #print(measure.par)
+    args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1",yuima@model@measure$df$expr,perl=TRUE)), ","))
+    idx.intensity <- numeric(0)
+    for(i in 1:length(measure.par)){
+        if(sum(grepl(measure.par[i],yuima@model@measure$intensity)))
+        idx.intensity <- append(idx.intensity,i)
+    }
+
+    assign("idx.intensity", idx.intensity, envir=env)
+    assign("measure.var", args[1], envir=env)
+}
+
 
 	f <- function(p) {
         mycoef <- as.list(p)
 #		print(nm[-idx.fixed])
 #		print(nm)
-		if(length(idx.fixed)>0)
-		 names(mycoef) <- nm[-idx.fixed]
+		if(length(c(idx.fixed,idx.measure))>0) ## SMI 2/9/14
+        names(mycoef) <- nm[-c(idx.fixed,idx.measure)] ## SMI 2/9/14
 		else
 		 names(mycoef) <- nm
         mycoef[fixed.par] <- fixed
+        #        cat("\nff")
 	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
     }
 		
+# SMI-2/9/14:
+        fpsi <- function(p){
+            #   cat("\n fpsi")
+            
+            mycoef <- as.list(p)
+            #	print(nm[-idx.fixed])
+            #	print(nm)
+            idx.cont <- c(idx.diff,idx.drift)
+            if(length(c(idx.fixed,idx.cont))>0)
+            names(mycoef) <- nm[-c(idx.fixed,idx.cont)]
+            else
+            names(mycoef) <- nm
+            mycoef[fixed.par] <- fixed
+            minusquasipsi(yuima=yuima, param=mycoef, print=print, env=env)
+        }
+    
+        
 	 fj <- function(p) {
 		 mycoef <- as.list(p)
+         #		 names(mycoef) <- nm
+         #	 cat("\n fj")
+         idx.fixed <- orig.idx.fixed
+         if(length(c(idx.fixed,idx.measure))>0) ## SMI 2/9/14
+         names(mycoef) <- nm[-c(idx.fixed,idx.measure)] ## SMI 2/9/14
+         else
 		 names(mycoef) <- nm
-		 mycoef[fixed.par] <- fixed
+         mycoef[fixed.par] <- fixed
 		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
 	 }
 
 	 oout <- NULL
-   HESS <- matrix(0, length(nm), length(nm))
+     HESS <- matrix(0, length(nm), length(nm))
 	 colnames(HESS) <- nm
 	 rownames(HESS) <- nm
-	 HaveDriftHess <- FALSE
+     
+     
+     HaveDriftHess <- FALSE
 	 HaveDiffHess <- FALSE
-	 if(length(start)){
+	 HaveMeasHess <- FALSE
+
+    if(length(start)){
 		if(JointOptim){ ### joint optimization
-			if(length(start)>1){ #Â?multidimensional optim # Adjust lower for no negative Noise
-        if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE))
-          if(mean.noise %in% names(lower)){lower[mean.noise]<-10^-7}
-				oout <- optim(start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
-				HESS <- oout$hessian
-				if(is(yuima@model,"yuima.carma") && length(yuima@model@info@scale.par)!=0){
+            old.fixed <- fixed
+            new.start <- start
+            old.start <- start
+            if(length(c(idx.fixed,idx.measure))>0)
+             new.start <- start[-c(idx.fixed,idx.measure)] # considering only initial guess for
+            
+            #    cat("\n############## joint\n")
+            #  print(method)
+			if(length(new.start)>1){ #Â?multidimensional optim # Adjust lower for no negative Noise
+                if(is.CARMA(yuima) && (NoNeg.Noise==TRUE))
+                    if(mean.noise %in% names(lower)){lower[mean.noise]<-10^-7}
+				oout <- optim(new.start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
+                #                print(oout$par)
+                #cat("\n############## finished\n")
+				HESS[names(new.start),names(new.start)] <- oout$hessian
+				if(is.CARMA(yuima) && length(yuima@model@info@scale.par)!=0){
 				  b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
 				  idx.b0<-match(b0,rownames(HESS))
 				  HESS<-HESS[-idx.b0,]
 				  HESS<-HESS[,-idx.b0]
 				}
-				if(is(yuima@model,"yuima.carma") && length(yuima@model@parameter@measure)!=0){
+				if(is.CARMA(yuima) && length(yuima@model@parameter@measure)!=0){
 				  for(i in c(1:length(fixed.par))){
-            indx.fixed<-match(fixed.par[i],rownames(HESS))
-            HESS<-HESS[-indx.fixed,]
-				    HESS<-HESS[,-indx.fixed]
+                      indx.fixed<-match(fixed.par[i],rownames(HESS))
+                      HESS<-HESS[-indx.fixed,]
+                      HESS<-HESS[,-indx.fixed]
 				  }
-          if(is(yuima@model,"yuima.carma") && (NoNeg.Noise==TRUE)){
-            idx.noise<-(match(mean.noise,rownames(HESS)))
-            HESS<-HESS[-idx.noise,]
-            HESS<-HESS[,-idx.noise]
-          }
+                  if(is.CARMA(yuima) && (NoNeg.Noise==TRUE)){
+                      idx.noise<-(match(mean.noise,rownames(HESS)))
+                      HESS<-HESS[-idx.noise,]
+                      HESS<-HESS[,-idx.noise]
+                  }
 				}
 				HaveDriftHess <- TRUE
 				HaveDiffHess <- TRUE
@@ -424,6 +548,10 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 				opt1 <- optimize(f, ...) ## an interval should be provided
                 oout <- list(par = opt1$minimum, value = opt1$objective)
 			} ### endif( length(start)>1 )
+          theta1 <- oout$par[diff.par]
+          theta2 <- oout$par[drift.par]
+          #print(theta1)
+          #print(theta2)
 		} else {  ### first diffusion, then drift
 			theta1 <- NULL
 
@@ -434,6 +562,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 ## DIFFUSION ESTIMATIOn first
 			old.fixed <- fixed
 			old.start <- start
+            old.fixed.par <- fixed.par
 			new.start <- start[idx.diff] # considering only initial guess for diffusion
 			new.fixed <- fixed
 			if(length(idx.drift)>0)	
@@ -450,25 +579,34 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$start <- NULL
 			mydots$par <- unlist(new.start)
 			mydots$hessian <- FALSE
-			mydots$upper <- unlist( upper[ nm[idx.diff] ])
-			mydots$lower <- unlist( lower[ nm[idx.diff] ])
-			if(length(mydots$par)>1){
-			 oout <- do.call(optim, args=mydots)
-			} else {
+			mydots$upper <- as.numeric(unlist( upper[ nm[idx.diff] ]))
+			mydots$lower <- as.numeric(unlist( lower[ nm[idx.diff] ]))
+            mydots$threshold <- NULL #SMI 2/9/14
+            
+           if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
+            oout <- do.call(optim, args=mydots)
+           } else {
 			 mydots$f <- mydots$fn
 			 mydots$fn <- NULL
 			 mydots$par <- NULL
 			 mydots$hessian <- NULL	
 			 mydots$method <- NULL	
-			 mydots$interval <- as.numeric(c(unlist(lower[diff.par]),unlist(upper[diff.par]))) 
-			 mydots$lower <- NULL	
-			 mydots$upper <- NULL	
+			 mydots$interval <- as.numeric(c(unlist(lower[diff.par]),unlist(upper[diff.par])))
+
+#print(mydots)
+			 mydots$lower <- NULL
+			 mydots$upper <- NULL
 			 opt1 <- do.call(optimize, args=mydots)
 			 theta1 <- opt1$minimum
 			 names(theta1) <- diff.par
 			 oout <- list(par = theta1, value = opt1$objective) 
 			}
 			theta1 <- oout$par
+            
+            fixed <- old.fixed
+			start <- old.start
+            fixed.par <- old.fixed.par
+
 			} ## endif(length(idx.diff)>0)
 			
 			theta2 <- NULL
@@ -477,6 +615,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 ## DRIFT estimation with first state diffusion estimates
 			fixed <- old.fixed
 			start <- old.start
+            old.fixed.par <- fixed.par
 			new.start <- start[idx.drift] # considering only initial guess for drift
 			new.fixed <- fixed
 			new.fixed[names(theta1)] <- theta1
@@ -489,35 +628,43 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 			mydots$print <- NULL
 			mydots$fixed <- NULL
 			mydots$fn <- as.name("f")
+            mydots$threshold <- NULL #SMI 2/9/14
+            
 			mydots$start <- NULL
 			mydots$par <- unlist(new.start)
 			mydots$hessian <- FALSE
 			mydots$upper <- unlist( upper[ nm[idx.drift] ])
 			mydots$lower <- unlist( lower[ nm[idx.drift] ])
-			if(length(mydots$par)>1){
-			  if(is(yuima@model, "yuima.carma")){
+            
+            
+         	
+            
+            
+			if(length(mydots$par)>1 | any(is.infinite(c(mydots$upper,mydots$lower)))){
+			  if(is.CARMA(yuima)){
 			    if(NoNeg.Noise==TRUE){
-            if((yuima@model@info@q+1)==yuima@model@info@p){
-              mydots$lower[names(start["NoNeg.Noise"])]<-10^(-7)
-            }
+                    if((yuima@model@info@q+1)==yuima@model@info@p){
+                        mydots$lower[names(start["NoNeg.Noise"])]<-10^(-7)
+                    }
              
 			    }
-          if(length(yuima@model@info@scale.par)!=0){
-            name_b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
-            index_b0<-match(name_b0,nm)
-  			    mydots$lower[index_b0]<-1
-            mydots$upper[index_b0]<-1+10^(-7)
+                if(length(yuima@model@info@scale.par)!=0){
+                    name_b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
+                    index_b0<-match(name_b0,nm)
+                    mydots$lower[index_b0]<-1
+                    mydots$upper[index_b0]<-1+10^(-7)
 			    }
-          if (length(yuima@model@info@loc.par)!=0){
-            mydots$upper <- unlist( upper[ nm ])
-            mydots$lower <- unlist( lower[ nm ])
-            idx.tot<-unique(c(idx.drift,idx.xinit))
-            new.start <- start[idx.tot]
-            names(new.start) <- nm[idx.tot]
-            mydots$par <- unlist(new.start)
-          }
-			  }
-			  oout1 <- do.call(optim, args=mydots)
+                if (length(yuima@model@info@loc.par)!=0){
+                    mydots$upper <- unlist( upper[ nm ])
+                    mydots$lower <- unlist( lower[ nm ])
+                    idx.tot<-unique(c(idx.drift,idx.xinit))
+                    new.start <- start[idx.tot]
+                    names(new.start) <- nm[idx.tot]
+                    mydots$par <- unlist(new.start)
+                }
+			  }  # END if(is.CARMA)
+            
+            oout1 <- do.call(optim, args=mydots)
 	#		  oout1 <- optim(mydots$par,f,method = "L-BFGS-B" , lower = mydots$lower, upper = mydots$upper)
 			} else {
 				mydots$f <- mydots$fn
@@ -532,12 +679,16 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 				oout1 <- list(par = theta2, value = as.numeric(opt1$objective)) 	
 			}
 			theta2 <- oout1$par
+            fixed <- old.fixed
+			start <- old.start
+            old.fixed.par <- fixed.par
 			} ## endif(length(idx.drift)>0)
       
       
 			oout1 <- list(par=  c(theta1, theta2))
-      if (! is(yuima@model,"yuima.carma")){
-			  names(oout1$par) <- c(diff.par,drift.par)
+      if (! is.CARMA(yuima)){
+              if(length(c(diff.par, diff.par))>0)
+                names(oout1$par) <- c(diff.par,drift.par)
       }
       
       
@@ -549,9 +700,20 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	}
 	
 	 	
-	 fDrift <- function(p) {
+      fMeas <- function(p) {
+            mycoef <- as.list(p)
+            #  if(! is.CARMA(yuima)){
+            #    #                names(mycoef) <- drift.par
+            #    mycoef[measure.par] <- coef[measure.par]
+            #}
+            minusquasipsi(yuima=yuima, param=mycoef, print=print, env=env)
+            #            minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+        }
+
+
+    fDrift <- function(p) {
 		 mycoef <- as.list(p)
-     if(! is(yuima@model,"yuima.carma")){
+     if(! is.CARMA(yuima)){
        names(mycoef) <- drift.par
   		 mycoef[diff.par] <- coef[diff.par]
      }
@@ -560,32 +722,104 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 
 	 fDiff <- function(p) {
 	   mycoef <- as.list(p)
-     if(! is(yuima@model,"yuima.carma")){
+     if(! is.CARMA(yuima)){
   		 names(mycoef) <- diff.par
   		 mycoef[drift.par] <- coef[drift.par]
      }
 		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
 	 }
 	 
-	 coef <- oout$par
-	 control=list()
-	 par <- coef
-  #if(!is(yuima@model,"yuima.carma")){
-	  names(par) <- unique(c(diff.par, drift.par))
-       nm <- unique(c(diff.par, drift.par))
-  if(is(yuima@model,"yuima.carma") && length(yuima@model@parameter@measure)!=0){
+     # coef <- oout$par
+	 #control=list()
+	 #par <- coef
+
+#names(par) <- unique(c(diff.par, drift.par))
+#     nm <- unique(c(diff.par, drift.par))
+
+# ESTIMATION OF CP part
+      theta3 <- NULL
+       
+       if(length(idx.measure)>0){
+           idx.cont <- c(idx.drift,idx.diff)
+           
+           fixed <- old.fixed
+           start <- old.start
+           old.fixed.par <- fixed.par
+           new.fixed <- fixed
+
+           new.start <- start[idx.measure] # considering only initial guess for measure
+           new.fixed <- fixed
+           
+           new.fixed[names(theta1)] <- theta1
+           new.fixed[names(theta2)] <- theta2
+           
+           fixed <- new.fixed
+           fixed.par <- names(fixed)
+           idx.fixed <- match(fixed.par, nm)
+           names(new.start) <- nm[idx.drift]
+           names(new.start) <- nm[idx.measure]
+           
+           mydots <- as.list(call)[-(1:2)]
+           #    mydots$print <- NULL
+           mydots$threshold <- NULL
+           mydots$fixed <- NULL
+           mydots$fn <- as.name("fpsi")
+           mydots$start <- NULL
+           mydots$threshold <- NULL #SMI 2/9/14
+           
+           mydots$par <- unlist(new.start)
+           mydots$hessian <- TRUE
+           mydots$joint <- NULL
+           mydots$upper <- unlist( upper[ nm[idx.measure] ])
+           mydots$lower <- unlist( lower[ nm[idx.measure] ])
+           mydots$method  <- method
+           #mydots <- c(mydots)
+           #names(mydots)[6] <- "method"
+           #     print(str(mydots))
+           #cat("\n here\n")
+           oout3 <- do.call(optim, args=mydots)
+           #  cat("\n out here\n")
+           theta3 <- oout3$par
+           #print(oout3$hessian)
+           #print(str(HESS))
+           HESS[measure.par,measure.par] <- oout3$hessian
+           HaveMeasHess <- TRUE
+           #print(theta3)
+           fixed <- old.fixed
+           start <- old.start
+           fixed.par <- old.fixed.par
+       }
+       
+       #      cat("\n############## here we are\n")
+ 
+    oout4 <- list(par=  c(theta1, theta2, theta3))
+    # print(oout4)
+       names(oout4$par) <- c(diff.par,drift.par,measure.par)
+       oout <- oout4
+       #print(oout)
+       coef <- oout$par
+       control=list()
+       par <- coef
+       
+       names(par) <- unique(c(diff.par, drift.par,measure.par))
+       nm <- unique(c(diff.par, drift.par,measure.par))
+       #  print(par)
+
+#return(oout)
+ 
+
+  if(is.CARMA(yuima) && length(yuima@model@parameter@measure)!=0){
       nm <-c(nm,measure.par)
       if((NoNeg.Noise==TRUE)){nm <-c(nm,mean.noise)}
       
       nm<-unique(nm)
   }
-  if(is(yuima@model,"yuima.carma") && (length(yuima@model@info@loc.par)!=0)){
+  if(is.CARMA(yuima) && (length(yuima@model@info@loc.par)!=0)){
     nm <-unique(c(nm,yuima@model@info@loc.par))
   }
-  #}
-#	 print(par)
-#	 print(coef)
-	 conDrift <- list(trace = 5, fnscale = 1, 
+
+
+	 conDrift <- list(trace = 5, fnscale = 1,
 				 parscale = rep.int(5, length(drift.par)), 
 				 ndeps = rep.int(0.001, length(drift.par)), maxit = 100L, 
 				 abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
@@ -597,7 +831,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 				  abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
 				  beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
 				  factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
-  if(is(yuima@model,"yuima.carma") && length(yuima@model@info@loc.par)!=0 ){
+      conMeas <- list(trace = 5, fnscale = 1,
+                  parscale = rep.int(5, length(measure.par)),
+                  ndeps = rep.int(0.001, length(measure.par)), maxit = 100L,
+                  abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1,
+                  beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5,
+                  factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
+  if(is.CARMA(yuima) && length(yuima@model@info@loc.par)!=0 ){
     conDrift <- list(trace = 5, fnscale = 1, 
                      parscale = rep.int(5, length(c(drift.par,yuima@model@info@loc.par))), 
                      ndeps = rep.int(0.001, length(c(drift.par,yuima@model@info@loc.par))), 
@@ -612,38 +852,17 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
                     beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
                     factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
   }
-#	 nmsC <- names(con)
-#	 if (method == "Nelder-Mead") 
-#	 con$maxit <- 500
-#	 if (method == "SANN") {
-#		 con$maxit <- 10000
-#		 con$REPORT <- 100
-#	 }
-#	 con[(namc <- names(control))] <- control
-#	 if (length(noNms <- namc[!namc %in% nmsC])) 
-#	 warning("unknown names in control: ", paste(noNms, collapse = ", "))
-#	 if (con$trace < 0) 
-#	 warning("read the documentation for 'trace' more carefully")
-#	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) == 
-#			  0) 
-#	 stop("'trace != 0' needs 'REPORT >= 1'")
-#	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol", 
-#													"abstol"), namc)))) 
-#	 warning("method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'")
-#	 npar <- length(par)
-#	 if (npar == 1 && method == "Nelder-Mead") 
-#	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
-#	 
-	 if(!HaveDriftHess & (length(drift.par)>0)){
+
+    if(!HaveDriftHess & (length(drift.par)>0)){
 	  #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
-	   if(!is(yuima@model,"yuima.carma")){
+	   if(!is.CARMA(yuima)){
        hess2 <- optimHess(coef[drift.par], fDrift, NULL, control=conDrift)
   	  HESS[drift.par,drift.par] <- hess2
 	   } else{ 
 	     hess2 <- optimHess(coef, fDrift, NULL, control=conDrift)
 	     HESS <- hess2
 	   }
-     if(is(yuima@model,"yuima.carma") && length(yuima@model@info@scale.par)!=0){
+     if(is.CARMA(yuima) && length(yuima@model@info@scale.par)!=0){
        b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
        idx.b0<-match(b0,rownames(HESS))
        HESS<-HESS[-idx.b0,]
@@ -651,6 +870,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
      }
 	 }
 
+#print(str(HESS))
 	 if(!HaveDiffHess  & (length(diff.par)>0)){
 		 #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
 	   hess1 <- optimHess(coef[diff.par], fDiff, NULL, control=conDiff)
@@ -658,17 +878,59 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 }
 	 	 
 	 oout$hessian <- HESS
+     #  print(oout$hessian)
+     if(!HaveMeasHess & length(measure.par)>0){
+        hess1 <- optimHess(coef[measure.par], fMeas, NULL, control=conMeas)
+        oout$hessian[measure.par,measure.par] <- hess1
+        #  print(hess1)
+     }
 
-	 vcov <- if (length(coef)) 
+ vcov <- if (length(coef))
 	  solve(oout$hessian)
-     else matrix(numeric(0L), 0L, 0L)
-	 
+    else matrix(numeric(0L), 0L, 0L)
+    #print(vcov)
+#vcov <- matrix(numeric(0L), 0L, 0L)
+#cat("\n### here ###\n")
   	mycoef <- as.list(coef)
-	names(mycoef) <- nm
-	mycoef[fixed.par] <- fixed
-	
-	min <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
-  
+    #   cat("\n### here 1###\n")
+    # print(mycoef)
+    names(mycoef) <- nm
+    #cat("\n### here 2###\n")
+    #print(mycoef)
+    #cat("\n### here 3###\n")
+    #print(orig.fixed)
+    #cat("\n### here 4###\n")
+    #print(orig.fixed.par)
+    idx.fixed <- orig.idx.fixed
+
+#cat("\n### here 5###\n")
+#print(mycoef[idx.measure])
+#cat("\n### here 6###\n")
+#print(mycoef[idx.fixed])
+
+mycoef.cont <- mycoef
+if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
+        mycoef.cont <- mycoef[-c(idx.fixed,idx.measure)]  # SMI 2/9/14
+
+#print(mycoef.cont)
+#cat("\n### here 7###\n")
+#       print(mycoef.cont)
+
+#if(length(orig.fixed.par)>0)
+#       mycoef[orig.fixed.par] <- orig.fixed
+    min.diff <- 0
+    min.jump <- 0
+    
+    if(length(c(diff.par,drift.par))>0)
+	  min.diff <- minusquasilogl(yuima=yuima, param=mycoef[c(diff.par,drift.par)], print=print, env)
+      # print(min.diff)
+    if(length(c(measure.par))>0)
+        min.jump <-   minusquasipsi(yuima=yuima, param=mycoef[measure.par], print=print, env=env)
+        # print(min.jump)
+        
+    min <- min.diff + min.jump
+    if(min==0)
+     min <- NA
   dummycov<-matrix(0,length(coef),length(coef))
   rownames(dummycov)<-names(coef)
   colnames(dummycov)<-names(coef)
@@ -679,11 +941,22 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 #        vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
 #        method = method)
 #LM 11/01
-  if(!is(yuima@model,"yuima.carma")){
-    final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+  if(!is.CARMA(yuima)){
+      if(length(measure.par)>0){
+          final_res<-new("yuima.CP.qmle",
+          Jump.times=env$time[env$Cn.r==0],
+          Jump.values=env$deltaX[env$Cn.r==0,],
+          X.values=env$X[env$Cn.r==0,],
+          model=yuima@model,
+          call = call, coef = coef, fullcoef = unlist(mycoef),
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                   method = method, nobs=yuima.nobs)
-  }else{
+                   method = method, nobs=yuima.nobs, threshold=threshold)
+      } else {
+          final_res<-new("yuima.qmle", call = call, coef = coef, fullcoef = unlist(mycoef),
+          vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl,
+          method = method, nobs=yuima.nobs, model=yuima@model)
+      }
+  } else {
     if( Est.Incr=="Carma.IncPar" || Est.Incr=="Carma.Inc" ){
     final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
@@ -703,8 +976,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     }
   }
   
-if(!is(yuima@model,"yuima.carma")){
-    return(final_res)  
+if(!is.CARMA(yuima)){
+    return(final_res)
  }else {
    
     param<-coef(final_res)
@@ -1049,6 +1322,85 @@ if(!is(yuima@model,"yuima.carma")){
   }
 }
 
+# SMI-2/9/14 CP
+minusquasipsi <- function(yuima, param, print=FALSE, env){
+	
+    idx.intensity <- env$idx.intensity
+	
+    fullcoef <- yuima@model@parameter@all
+    measurecoef <- param[yuima@model@parameter@measure]
+	
+    npar <- length(fullcoef)
+    nm <- names(param)
+    oo <- match(nm, fullcoef)
+    #print(nm)
+    #cat("\n minusquasipsi\n")
+    if(any(is.na(oo)))
+    yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
+    param <- param[order(oo)]
+	
+    h <- env$h
+    Dn.r <- !env$Cn.r
+    
+    if(length(idx.intensity)){
+        intensity <- unlist(measurecoef[idx.intensity])
+    }else{
+        intensity <- eval(yuima@model@measure$intensity)
+    }
+    
+	
+    d.size <- yuima@model@equation.number
+    n <- length(yuima)[1]
+    myidx <- which(Dn.r)[-n]
+    
+    measure <- measure.term(yuima, param, env)
+	
+    QL <- 0
+    
+    dx <- env$deltaX
+    measure.var <- env$measure.var
+	
+    for(i in 1:length(measurecoef))
+    if(is.na(match(i,idx.intensity)))
+    assign(names(measurecoef)[i],measurecoef[i][[1]])
+    
+    if(is.null(dim(measure[,,1]))){  # one-dimensional
+        for(t in myidx){
+            iC <- 1/measure[, , t]
+            assign(measure.var,iC%*%dx[t,])
+            dF <- intensity*eval(yuima@model@measure$df$expr)/iC
+            logpsi <- 0
+            if(dF>0)
+            logpsi <- log(dF)
+            QL <- QL + logpsi
+        }
+    } else {
+        for(t in myidx){
+            iC <- solve(measure[, , t])
+            assign(measure.var,iC%*%dx[t,])
+            dF <- intensity*eval(yuima@model@measure$df$expr)*det(iC)
+            logpsi <- 0
+            if(dF>0)
+            logpsi <- log(dF)
+            QL <- QL + logpsi
+        }
+    }
+    
+    QL <- QL -h*intensity*(n-1)
+    
+    
+    if(!is.finite(QL)){
+        yuima.warn("quasi likelihood is too small to calculate.")
+        return(1e10)
+    }
+    if(print==TRUE){
+        yuima.warn(sprintf("NEG-QL: %f, %s", -QL, paste(names(param),param,sep="=",collapse=", ")))
+    }
+    if(is.infinite(QL)) return(1e10)
+    return(as.numeric(-QL))
+	
+}
+
 
 quasilogl <- function(yuima, param, print=FALSE){
 
@@ -1061,29 +1413,21 @@ quasilogl <- function(yuima, param, print=FALSE){
 	n <- length(yuima)[1]
 	
 	env <- new.env()
-#	if (is(yuima@model, "yuima.carma")){
-	  assign("X",  as.matrix(onezoo(yuima)), envir=env)
-	  assign("deltaX",  matrix(0, n-1, d.size), envir=env)
-#	}
-	if (is(yuima@model, "yuima.carma")){
-	  #24/12 If we consider a carma model,
-	  # the observations are only the first column of env$X
-# 	  assign("X",  as.matrix(onezoo(yuima))[,1], envir=env)
-# 	  assign("deltaX",  matrix(0, n-1, d.size)[,1], envir=env)
- 	  env$X<-as.matrix(env$X[,1])
- 	  env$deltaX<-as.matrix(env$deltaX[,1])
-    #assign("time.obs",length(env$X),envir=env)
-    env$time.obs<-length(env$X)
-    #p <-yuima@model@info@p
-    assign("p", yuima@model@info@p, envir=env)
-    assign("q", yuima@model@info@q, envir=env)	  
-    assign("V_inf0", matrix(diag(rep(1,env$p)),env$p,env$p), envir=env)
-	  
+    assign("X",  as.matrix(onezoo(yuima)), envir=env)
+    assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+
+    if(is.CARMA(yuima)){
+        env$X<-as.matrix(env$X[,1])
+        env$deltaX<-as.matrix(env$deltaX[,1])
+        env$time.obs<-length(env$X)
+        assign("p", yuima@model@info@p, envir=env)
+        assign("q", yuima@model@info@q, envir=env)
+        assign("V_inf0", matrix(diag(rep(1,env$p)),env$p,env$p), envir=env)
 	}
 	
   
 	for(t in 1:(n-1))
-	env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
+        env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
 	
 	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
 	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
@@ -1095,66 +1439,38 @@ quasilogl <- function(yuima, param, print=FALSE){
 minusquasilogl <- function(yuima, param, print=FALSE, env){
 	
 	diff.par <- yuima@model@parameter@diffusion
-	#  24/12
-  
-# 	if(is(yuima@model, "yuima.carma")){
-# # 	  if(length(yuima@model@info@scale.par)!=0){
-# # 	           xinit.par <- yuima@model@parameter@xinit
-# # 	    	  } 
-# # 	     	}
-# 	  if(length(yuima@model@info@lin.par)==0){
-#     	if(length(yuima@model@parameter@jump)!=0){
-#     	  diff.par<-yuima@model@parameter@jump
-#     	  # measure.par<-yuima@model@parameter@measure
-#     	}
-#     	if(length(yuima@model@parameter@measure)!=0){
-#     	  measure.par<-yuima@model@parameter@measure
-#     	}
-# 	  }else{
-# 	    yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
-# 	    return(NULL)    
-# 	  }
-# 	  xinit.par <- yuima@model@parameter@xinit
-# 	}
-	
 	
 	drift.par <- yuima@model@parameter@drift
-		if(is(yuima@model, "yuima.carma")){
+		if(is.CARMA(yuima)){
 		  if(length(yuima@model@info@scale.par)!=0){
 	      xinit.par <- yuima@model@parameter@xinit
 		  } 
 		}
 	 
   
-  if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
+    if(is.CARMA(yuima) && length(yuima@model@info@lin.par)==0
 	   && length(yuima@model@parameter@jump)!=0){
 	  diff.par<-yuima@model@parameter@jump
 	 # measure.par<-yuima@model@parameter@measure
 	}
 	
-	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)==0
+	if(is.CARMA(yuima) && length(yuima@model@info@lin.par)==0
 	   && length(yuima@model@parameter@measure)!=0){
 	  measure.par<-yuima@model@parameter@measure
 	}
   
 	# 24/12
-	if(is(yuima@model, "yuima.carma") && length(yuima@model@info@lin.par)>0  ){
+	if(is.CARMA(yuima) && length(yuima@model@info@lin.par)>0  ){
 	  yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
 	  return(NULL)    
 	}
 	
-# 	if(is(yuima@model, "yuima.carma")){
-# 	  if(length(yuima@model@info@scale.par)!=0){
-#       xinit.par <- yuima@model@parameter@xinit
-# 	  } 
-# 	}
-
-	if(is(yuima@model, "yuima.carma")){
+	if(is.CARMA(yuima)){
 	   xinit.par <- yuima@model@parameter@xinit
 	}
 	
 
-drift.par <- yuima@model@parameter@drift
+    drift.par <- yuima@model@parameter@drift
 
 	fullcoef <- NULL
 	
@@ -1162,30 +1478,23 @@ drift.par <- yuima@model@parameter@drift
 	fullcoef <- diff.par
 	
 	if(length(drift.par)>0)
-	fullcoef <- c(fullcoef, drift.par)
-	#01/01
-# 	if(is(yuima@model, "yuima.carma")){
-# 	  if(length(yuima@model@info@scale.par)!=0){
-#       if(length(xinit.par)>0)
-#         fullcoef<-c(fullcoef, xinit.par)
-# 	  }
-# 	}
-  
-	  if(is(yuima@model, "yuima.carma")){
+        fullcoef <- c(fullcoef, drift.par)
+
+    if(is.CARMA(yuima)){
 	    if(length(xinit.par)>0)
-	        fullcoef<-c(fullcoef, xinit.par)
-				}
+	        fullcoef <- c(fullcoef, xinit.par)
+    }
   
-  	if(is(yuima@model,"yuima.carma") && (length(yuima@model@parameter@measure)!=0)){
-  	  fullcoef<-c(fullcoef, measure.par)
-  	}
-  if(is(yuima@model,"yuima.carma")){
-  	if("mean.noise" %in% names(param)){
-      mean.noise<-"mean.noise"
-  	  fullcoef<-c(fullcoef, mean.noise)
-      NoNeg.Noise<-TRUE
-  	}
-  }
+  	if(is.CARMA(yuima) && (length(yuima@model@parameter@measure)!=0))
+        fullcoef<-c(fullcoef, measure.par)
+  	
+    if(is.CARMA(yuima)){
+        if("mean.noise" %in% names(param)){
+            mean.noise<-"mean.noise"
+            fullcoef <- c(fullcoef, mean.noise)
+            NoNeg.Noise<-TRUE
+        }
+    }
   
 #	fullcoef <- c(diff.par, drift.par)
 	npar <- length(fullcoef)
@@ -1195,8 +1504,11 @@ drift.par <- yuima@model@parameter@drift
 #	print(fullcoef)
 	nm <- names(param)
     oo <- match(nm, fullcoef)
-    if(any(is.na(oo))) 
-	yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
+    #   cat("\nminusquasilogl\n")
+    #print(fullcoef)
+    #print(param)
+    if(any(is.na(oo)))
+   yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
     param <- param[order(oo)]
     nm <- names(param)
 	
@@ -1208,12 +1520,14 @@ drift.par <- yuima@model@parameter@drift
 # 	  }
 # 	}
   
-	if(is(yuima@model, "yuima.carma")){
+	if(is.CARMA(yuima)){
 	    idx.xinit <-as.integer(na.omit(match(xinit.par, nm)))
 	}
   
 	h <- env$h
 	
+    Cn.r <- env$Cn.r
+
     theta1 <- unlist(param[idx.diff])
     theta2 <- unlist(param[idx.drift])
     
@@ -1230,7 +1544,7 @@ drift.par <- yuima@model@parameter@drift
 # 	  }
 # 	}
 	
-	if(is(yuima@model, "yuima.carma")){
+	if(is.CARMA(yuima)){
 	    theta3 <- unlist(param[idx.xinit])
 	    n.theta3 <- length(theta3)
 	    n.theta <- n.theta1+n.theta2+n.theta3
@@ -1243,7 +1557,7 @@ drift.par <- yuima@model@parameter@drift
 	n <- length(yuima)[1]
 	
   
-  if (is(yuima@model, "yuima.carma")){
+  if (is.CARMA(yuima)){
 	  # 24/12
 	  d.size <-1
     # We build the two step procedure as described in
@@ -1281,7 +1595,7 @@ drift.par <- yuima@model@parameter@drift
        sigma<-tail(param,1)
          }else {sigma<-1}
          NoNeg.Noise<-FALSE
-         if(is(yuima@model,"yuima.carma")){
+         if(is.CARMA(yuima)){
            if("mean.noise" %in% names(param)){
              
              NoNeg.Noise<-TRUE
@@ -1327,7 +1641,7 @@ drift.par <- yuima@model@parameter@drift
          mu <- param[loc.par]
          
          NoNeg.Noise<-FALSE
-         if(is(yuima@model,"yuima.carma")){
+         if(is.CARMA(yuima)){
            if("mean.noise" %in% names(param)){
              
              NoNeg.Noise<-TRUE
@@ -1335,7 +1649,7 @@ drift.par <- yuima@model@parameter@drift
          }
          
 # Lines 883:840 work if we have a no negative noise
-        if(is(yuima@model,"yuima.carma")&&(NoNeg.Noise==TRUE)){
+        if(is.CARMA(yuima)&&(NoNeg.Noise==TRUE)){
            if (length(b)==p){
              mean.noise<-param[mean.noise]
            # Be useful for carma driven by levy process
@@ -1376,12 +1690,12 @@ drift.par <- yuima@model@parameter@drift
   	K <- -0.5*d.size * log( (2*pi*h) )
   
   	dimB <- dim(diff[, , 1])
-  
+    #print(sum(Cn.r))
   	if(is.null(dimB)){  # one dimensional X
   	  for(t in 1:(n-1)){
   		yB <- diff[, , t]^2
   		logdet <- log(yB)
-  		pn <- K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB) 
+  		pn <- Cn.r[t]*(K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB))
   		QL <- QL+pn
   			
   		}
@@ -1394,8 +1708,8 @@ drift.par <- yuima@model@parameter@drift
   			yuima.warn("singular diffusion matrix")
   			return(1e10)
   		}else{
-  			pn <- K - 0.5*logdet + 
-  					  ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]) 
+  			pn <- (K - 0.5*logdet +
+  					  ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]))*Cn.r[t]
   			QL <- QL+pn
   		}
   	 }
@@ -1644,7 +1958,8 @@ quasiloglvec <- function(yuima, param, print=FALSE, env){
 
 	nm <- names(param)
     oo <- match(nm, fullcoef)
-    if(any(is.na(oo))) 
+    # cat("\n quasilogvec\n")
+    if(any(is.na(oo)))
 	yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
     param <- param[order(oo)]
     nm <- names(param)
@@ -1707,344 +2022,6 @@ quasiloglvec <- function(yuima, param, print=FALSE, env){
 
 
 
-## test function using nlmnb instead of optim. Not mush difference
-
-qmle2 <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE, 
-lower, upper, joint=FALSE, ...){
-    
-	call <- match.call()
-	
-	if( missing(yuima))
-    yuima.stop("yuima object is missing.")
-	
-    ## param handling
-	
-    ## FIXME: maybe we should choose initial values at random within lower/upper
-    ##        at present, qmle stops	
-	if( missing(start) ) 
-    yuima.stop("Starting values for the parameters are missing.")
-    
-	diff.par <- yuima@model@parameter@diffusion
-	drift.par <- yuima@model@parameter@drift
-	jump.par <- yuima@model@parameter@jump
-	measure.par <- yuima@model@parameter@measure
-	common.par <- yuima@model@parameter@common
-	
-	JointOptim <- joint
-	if(length(common.par)>0){
-		JointOptim <- TRUE
-		yuima.warn("Drift and diffusion parameters must be different. Doing
-        joint estimation, asymptotic theory may not hold true.")
-	}
-    
-    
-	if(length(jump.par)+length(measure.par)>0)
-    yuima.stop("Cannot estimate the jump models, yet")
-	
-	if(!is.list(start))
-    yuima.stop("Argument 'start' must be of list type.")
-    
-	fullcoef <- NULL
-	
-	if(length(diff.par)>0)
-    fullcoef <- diff.par
-	
-	if(length(drift.par)>0)
-    fullcoef <- c(fullcoef, drift.par)
-    
-	npar <- length(fullcoef)
-	
-	fixed.par <- names(fixed)
-    
-	if (any(!(fixed.par %in% fullcoef))) 
-    yuima.stop("Some named arguments in 'fixed' are not arguments to the supplied yuima model")
-	
-	nm <- names(start)
-    oo <- match(nm, fullcoef)
-    if(any(is.na(oo))) 
-    yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
-    start <- start[order(oo)]
-    nm <- names(start)
-    
-	idx.diff <- match(diff.par, nm)
-	idx.drift <- match(drift.par, nm)
-	idx.fixed <- match(fixed.par, nm)
-    
-	tmplower <- as.list( rep( -Inf, length(nm)))
-	names(tmplower) <- nm	
-	if(!missing(lower)){
-        idx <- match(names(lower), names(tmplower))
-        if(any(is.na(idx)))
-		yuima.stop("names in 'lower' do not match names fo parameters")
-        tmplower[ idx ] <- lower	
-	}
-	lower <- tmplower
-    
-	tmpupper <- as.list( rep( Inf, length(nm)))
-	names(tmpupper) <- nm	
-	if(!missing(upper)){
-		idx <- match(names(upper), names(tmpupper))
-		if(any(is.na(idx)))
-        yuima.stop("names in 'lower' do not match names fo parameters")
-		tmpupper[ idx ] <- upper	
-	}
-	upper <- tmpupper
-    
-    
-    
-    
-	d.size <- yuima@model@equation.number
-	n <- length(yuima)[1]
-	
-	env <- new.env()
-	assign("X",  as.matrix(onezoo(yuima)), envir=env)
-	assign("deltaX",  matrix(0, n-1, d.size), envir=env)
-	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env) 
-	for(t in 1:(n-1))
-    env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
-    
-	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
-    
-	f <- function(p) {
-        mycoef <- as.list(p)
-        #		print(nm[-idx.fixed])
-        #		print(nm)
-		if(length(idx.fixed)>0)
-        names(mycoef) <- nm[-idx.fixed]
-		else
-        names(mycoef) <- nm
-        mycoef[fixed.par] <- fixed
-	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
-    }
-    
-    fj <- function(p) {
-        mycoef <- as.list(p)
-        names(mycoef) <- nm
-        mycoef[fixed.par] <- fixed
-        minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
-    }
-    
-    oout <- NULL
-    HESS <- matrix(0, length(nm), length(nm))
-    colnames(HESS) <- nm
-    rownames(HESS) <- nm
-    HaveDriftHess <- FALSE
-    HaveDiffHess <- FALSE
-    if(length(start)){
-		if(JointOptim){ ### joint optimization
-			if(length(start)>1){ #Â?multidimensional optim
-				oout <- nlminb(start, fj, lower=lower, upper=upper)
-                print(oout)
-				HESS <- oout$hessian
-				HaveDriftHess <- TRUE
-				HaveDiffHess <- TRUE
-			} else { ### one dimensional optim
-				opt1 <- optimize(f, ...) ## an interval should be provided
-                oout <- list(par = opt1$minimum, value = opt1$objective)
-			} ### endif( length(start)>1 )
-		} else {  ### first diffusion, then drift
-			theta1 <- NULL
-            
-			old.fixed <- fixed 
-			old.start <- start
-			
-			if(length(idx.diff)>0){
-                ## DIFFUSION ESTIMATIOn first
-                old.fixed <- fixed
-                old.start <- start
-                new.start <- start[idx.diff] # considering only initial guess for diffusion
-                new.fixed <- fixed
-                if(length(idx.drift)>0)	
-                new.fixed[nm[idx.drift]] <- start[idx.drift]
-                fixed <- new.fixed
-                fixed.par <- names(fixed)
-                idx.fixed <- match(fixed.par, nm)
-                names(new.start) <- nm[idx.diff]
-                
-                mydots <- as.list(call)[-(1:2)]
-                mydots$print <- NULL
-                mydots$fixed <- NULL
-                mydots$fn <- as.name("f")
-                mydots$objective <- mydots$fn
-                mydots$start <- NULL
-                mydots$par <- unlist(new.start)
-                mydots$start <- unlist(new.start)
-                mydots$hessian <- NULL
-                mydots$upper <- unlist( upper[ nm[idx.diff] ])
-                mydots$lower <- unlist( lower[ nm[idx.diff] ])
-                if(length(mydots$par)>1){
-                    mydots$fn <- NULL
-                    mydots$par <- NULL
-
-                    oout <- do.call(nlminb, args=mydots)
-                    #                    oout <- do.call(optim, args=mydots)
-                } else {
-                    mydots$f <- mydots$fn
-                    mydots$fn <- NULL
-                    mydots$par <- NULL
-                    mydots$hessian <- NULL	
-                    mydots$method <- NULL	
-                    mydots$start <- NULL 
-                    mydots$objective <- NULL
-                    mydots$interval <- as.numeric(c(unlist(lower[diff.par]),unlist(upper[diff.par]))) 
-                    mydots$lower <- NULL	
-                    mydots$upper <- NULL	
-                    opt1 <- do.call(optimize, args=mydots)
-                    theta1 <- opt1$minimum
-                    names(theta1) <- diff.par
-                    oout <- list(par = theta1, value = opt1$objective) 
-                }
-                theta1 <- oout$par
-			} ## endif(length(idx.diff)>0)
-			
-			theta2 <- NULL
-			
-			if(length(idx.drift)>0){
-                ## DRIFT estimation with first state diffusion estimates
-                fixed <- old.fixed
-                start <- old.start
-                new.start <- start[idx.drift] # considering only initial guess for drift
-                new.fixed <- fixed
-                new.fixed[names(theta1)] <- theta1
-                fixed <- new.fixed
-                fixed.par <- names(fixed)
-                idx.fixed <- match(fixed.par, nm)
-                names(new.start) <- nm[idx.drift]
-                
-                mydots <- as.list(call)[-(1:2)]
-                mydots$print <- NULL
-                mydots$fixed <- NULL
-                mydots$fn <- as.name("f")
-                mydots$objective <- mydots$fn
-                mydots$start <- NULL
-                mydots$par <- unlist(new.start)
-                mydots$start <- unlist(new.start)
-                mydots$hessian <- NULL
-                mydots$upper <- unlist( upper[ nm[idx.drift] ])
-                mydots$lower <- unlist( lower[ nm[idx.drift] ])
-                
-                if(length(mydots$par)>1){
-                    mydots$par <- NULL
-                    
-
-mydots$fn <- NULL
-                    oout1 <- do.call(nlminb, args=mydots)
-                    #                    oout1 <- do.call(optim, args=mydots)
-                } else {
-                    mydots$f <- mydots$fn
-                    mydots$fn <- NULL
-                    mydots$par <- NULL
-                    mydots$start <- NULL
-                    mydots$objective <- NULL
-                    mydots$hessian <- NULL	
-                    mydots$method <- NULL	
-                    mydots$interval <- as.numeric(c(lower[drift.par],upper[drift.par])) 
-                    opt1 <- do.call(optimize, args=mydots)
-                    theta2 <- opt1$minimum
-                    names(theta2) <- drift.par
-                    oout1 <- list(par = theta2, value = as.numeric(opt1$objective)) 	
-                }
-                theta2 <- oout1$par
-			} ## endif(length(idx.drift)>0)
-			oout1 <- list(par=  c(theta1, theta2))
-			names(oout1$par) <- c(diff.par,drift.par)
-			oout <- oout1
-            
-		} ### endif JointOptim
-    } else {
-		list(par = numeric(0L), value = f(start))
-	}
-	
-    
-    fDrift <- function(p) {
-        mycoef <- as.list(p)
-        if(! is(yuima@model,"yuima.carma")){
-          names(mycoef) <- drift.par
-          mycoef[diff.par] <- coef[diff.par]
-        }
-        minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
-    }
-    
-    fDiff <- function(p) {
-        mycoef <- as.list(p)
-        if(! is(yuima@model,"yuima.carma")){
-          names(mycoef) <- diff.par
-          mycoef[drift.par] <- coef[drift.par]
-        }
-        minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
-    }
-    
-    coef <- oout$par
-    control=list()
-    par <- coef
-    names(par) <- c(diff.par, drift.par)
-    nm <- c(diff.par, drift.par)
-    
-    #	 print(par)
-    #	 print(coef)
-    conDrift <- list(trace = 5, fnscale = 1, 
-    parscale = rep.int(5, length(drift.par)), 
-    ndeps = rep.int(0.001, length(drift.par)), maxit = 100L, 
-    abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
-    beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
-    factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
-    conDiff <- list(trace = 5, fnscale = 1, 
-    parscale = rep.int(5, length(diff.par)), 
-    ndeps = rep.int(0.001, length(diff.par)), maxit = 100L, 
-    abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
-    beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
-    factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
-    
-    #	 nmsC <- names(con)
-    #	 if (method == "Nelder-Mead") 
-    #	 con$maxit <- 500
-    #	 if (method == "SANN") {
-    #		 con$maxit <- 10000
-    #		 con$REPORT <- 100
-    #	 }
-    #	 con[(namc <- names(control))] <- control
-    #	 if (length(noNms <- namc[!namc %in% nmsC])) 
-    #	 warning("unknown names in control: ", paste(noNms, collapse = ", "))
-    #	 if (con$trace < 0) 
-    #	 warning("read the documentation for 'trace' more carefully")
-    #	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) == 
-    #			  0) 
-    #	 stop("'trace != 0' needs 'REPORT >= 1'")
-    #	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol", 
-    #													"abstol"), namc)))) 
-    #	 warning("method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'")
-    #	 npar <- length(par)
-    #	 if (npar == 1 && method == "Nelder-Mead") 
-    #	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
-    #	 
-    if(!HaveDriftHess & (length(drift.par)>0)){
-        #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
-        hess2 <- optimHess(coef[drift.par], fDrift, NULL, control=conDrift)
-        HESS[drift.par,drift.par] <- hess2	 
-    }
-    
-    if(!HaveDiffHess  & (length(diff.par)>0)){
-        #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
-        hess1 <- optimHess(coef[diff.par], fDiff, NULL, control=conDiff)
-        HESS[diff.par,diff.par] <- hess1	 
-    }
-    
-    oout$hessian <- HESS
-    
-    vcov <- if (length(coef)) 
-    solve(oout$hessian)
-    else matrix(numeric(0L), 0L, 0L)
-    
-  	mycoef <- as.list(coef)
-	names(mycoef) <- nm
-	mycoef[fixed.par] <- fixed
-	
-	min <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
-	
-    new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
-    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-    method = method)
-}
 
 # Plot Method for yuima.carma.qmle
 setMethod("plot",signature(x="yuima.carma.qmle"),
@@ -2059,7 +2036,91 @@ setMethod("plot",signature(x="yuima.carma.qmle"),
           }
 )
 
-# Utilities for estimation of levy in continuous arma model 
+setMethod("summary", "yuima.qmle",
+function (object, ...)
+{
+    cmat <- cbind(Estimate = object@coef, `Std. Error` = sqrt(diag(object@vcov)))
+    m2logL <- 2 * object@min
+    
+    tmp <- new("summary.yuima.qmle", call = object@call, coef = cmat,
+   	m2logL = m2logL,
+	model = object@model
+    )
+    tmp
+}
+)
+
+
+setMethod("show", "summary.yuima.qmle",
+function (object)
+{
+    
+    cat("Quasi-Maximum likelihood estimation\n\nCall:\n")
+    print(object@call)
+    cat("\nCoefficients:\n")
+    print(coef(object))
+    cat("\n-2 log L:", object@m2logL, "\n")
+  }
+)
+
+setMethod("plot",signature(x="yuima.CP.qmle"),
+function(x, ...){
+    t <- x@Jump.times
+    X <- x@X.values
+    points(x=t,y=X, ...)
+}
+)
+
+
+setMethod("summary", "yuima.CP.qmle",
+function (object, ...)
+{
+    cmat <- cbind(Estimate = object@coef, `Std. Error` = sqrt(diag(object@vcov)))
+    m2logL <- 2 * object@min
+    x <- object@X.values
+    j <- object@Jump.values
+    t <- object@Jump.times
+    
+    tmp <- new("summary.yuima.CP.qmle", call = object@call, coef = cmat,
+   	m2logL = m2logL, NJ = length(t),
+  	MeanJ = mean(j,na.rm=TRUE),
+	SdJ = sd(j,na.rm=TRUE),
+	MeanT = mean(diff(t),na.rm=TRUE),
+	X.values = x,
+	Jump.values = j,
+	Jump.times = t,
+	model = object@model,
+    threshold=object@threshold
+    )
+    tmp
+}
+)
+
+
+
+setMethod("show", "summary.yuima.CP.qmle",
+function (object)
+{
+    
+    cat("Quasi-Maximum likelihood estimation\n\nCall:\n")
+    print(object@call)
+    cat("\nCoefficients:\n")
+    print(coef(object))
+    cat("\n-2 log L:", object@m2logL, "\n")
+    
+    cat(sprintf("\n\nNumber of estimated jumps: %d\n",object@NJ))
+    cat(sprintf("\nAverage inter-arrival times: %f\n",object@MeanT))
+    cat(sprintf("\nAverage jump size: %f\n",object@MeanJ))
+    cat(sprintf("\nStandard Dev. of jump size: %f\n",object@SdJ))
+    cat(sprintf("\nJump Threshold: %f\n",object@threshold))
+    cat("\nSummary statistics for jump times:\n")
+    print(summary(object@Jump.times))
+    cat("\nSummary statistics for jump size:\n")
+    print(summary(object@Jump.values,na.rm=TRUE))
+    cat("\n")
+}
+)
+# Utilities for estimation of levy in continuous arma model
 
 #Density code for compound poisson
 

@@ -127,5 +127,46 @@ setClass("yuima.carma.qmle",representation(Incr.Lev = "ANY",
                                            ),
                             contains="mle"
          )
-# The yuima.carma.qmle extends the S4 class "mle". It contains three slots: Estimated Levy, 
+
+setClass("yuima.qmle",representation(
+model = "yuima.model"),
+contains="mle"
+)
+
+setClass("yuima.CP.qmle",representation(Jump.times = "ANY",
+Jump.values = "ANY",
+X.values = "ANY",
+model = "yuima.model",
+threshold="ANY"),
+contains="mle"
+)
+
+setClass("yuima.carma.qmle",representation(Incr.Lev = "ANY",
+model = "yuima.carma"
+),
+contains="mle"
+)
+
+setClass("summary.yuima.CP.qmle",
+representation(NJ = "ANY",
+MeanJ = "ANY",
+SdJ = "ANY",
+MeanT = "ANY",
+Jump.times = "ANY",
+Jump.values = "ANY",
+X.values = "ANY",
+model = "yuima.model",
+threshold = "ANY"),
+contains="summary.mle"
+)
+
+
+setClass("summary.yuima.qmle",
+representation(
+model = "yuima.model",
+threshold = "ANY"),
+contains="summary.mle"
+)
+
+# The yuima.carma.qmle extends the S4 class "mle". It contains three slots: Estimated Levy,
 # The description of the carma model and the mle.
