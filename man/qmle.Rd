@@ -20,7 +20,7 @@
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
 qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, 
- joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, ...)
+ joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, threshold=NULL, ...)
 quasilogl(yuima, param, print=FALSE)
 lse(yuima, start, lower, upper, method = "BFGS", ...)
 }
@@ -43,6 +43,8 @@ lse(yuima, start, lower, upper, method = "BFGS", ...)
   \item{joint}{perform joint estimation or two stage estimation? by default \code{joint=FALSE}.}
   \item{Est.Incr}{If the yuima model is an object of \code{\link{yuima.carma-class}} the \code{qmle} returns an object of \code{\link{yuima.carma.qmle-class}} or object of class \code{mle-class}. By default \code{Est.Incr="Carma.IncPar"}.}
   \item{aggregation}{If \code{aggregation=TRUE}, before the estimation of the levy parameters we aggregate the increments.}
+  \item{threshold}{If the model has Compund Poisson type jumps, the threshold is
+  used to perform thresholding of the increments.}
   \item{...}{passed to \code{\link{optim}} method. See Examples.}
 }
 \details{
