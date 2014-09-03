@@ -2,10 +2,12 @@ import("methods")
 
 ##importFrom("stats", "end", "time", "start")
 importFrom("graphics", "plot")
-importFrom("zoo")
+import("zoo")
 importFrom(stats, confint)
-importFrom(stats4)
-importFrom(expm)
+import("stats4")
+import("expm")
+import("mvtnorm")
+import("cubature")
 
 importFrom(utils, toLatex)
 
