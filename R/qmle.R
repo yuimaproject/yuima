@@ -229,7 +229,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   common.par <- yuima@model@parameter@common
 
   JointOptim <- joint
-  if(is(yuima@model, "yuima.carma") && length(yuima@model@parameter@jump)!=0){
+  if(is.CARMA(yuima) && length(yuima@model@parameter@jump)!=0){
     if(any((match(jump.par, drift.par)))){
       JointOptim <- TRUE
       yuima.warn("Drift and diffusion parameters must be different. Doing
@@ -338,13 +338,11 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	if (any(!(fixed.par %in% fullcoef))) 
 	 yuima.stop("Some named arguments in 'fixed' are not arguments to the supplied yuima model")
 
-nm <- names(start)
-#print(nm)
-#   print(fullcoef)
-#print(start)
+    nm <- names(start)
+
     oo <- match(nm, fullcoef)
-  #
-    if(any(is.na(oo))) 
+  
+    if(any(is.na(oo)))
 		yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
     start <- start[order(oo)]
     nm <- names(start)
@@ -354,7 +352,7 @@ nm <- names(start)
     # SMI-2/9/14: idx.measure for CP
     idx.measure <- match(measure.par, nm)
 	#01/01
-  if(is(yuima@model, "yuima.carma")){
+  if(is.CARMA(yuima)){
    # if(length(yuima@model@info@scale.par)!=0){
       idx.xinit <- as.integer(na.omit(match(xinit.par,nm)))# We need to add idx if NoNeg.Noise is TRUE
     #}
@@ -430,7 +428,8 @@ nm <- names(start)
 	
     for(t in 1:(n-1)){
         env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
-        env$Cn.r[t] <- ((sqrt( env$deltaX[t,] %*% env$deltaX[t,])) <= threshold)
+        if(!is.CARMA(yuima))
+            env$Cn.r[t] <- ((sqrt( env$deltaX[t,] %*% env$deltaX[t,])) <= threshold)
     }
     
     if(length(measure.par)==0)
@@ -440,8 +439,8 @@ nm <- names(start)
 
 #SMI: 2/9/214 jump
 if(length(measure.par)>0){
-    #cat("\nmeas par\n")
-    #print(measure.par)
+    
+    
     args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1",yuima@model@measure$df$expr,perl=TRUE)), ","))
     idx.intensity <- numeric(0)
     for(i in 1:length(measure.par)){
@@ -456,24 +455,25 @@ if(length(measure.par)>0){
 
 	f <- function(p) {
         mycoef <- as.list(p)
-#		print(nm[-idx.fixed])
-#		print(nm)
-		if(length(c(idx.fixed,idx.measure))>0) ## SMI 2/9/14
-        names(mycoef) <- nm[-c(idx.fixed,idx.measure)] ## SMI 2/9/14
-		else
-		 names(mycoef) <- nm
+        if(!is.CARMA(yuima)){
+            if(length(c(idx.fixed,idx.measure))>0) ## SMI 2/9/14
+                names(mycoef) <- nm[-c(idx.fixed,idx.measure)] ## SMI 2/9/14
+                else
+                    names(mycoef) <- nm
+        } else {
+            if(length(idx.fixed)>0)
+            names(mycoef) <- nm[-idx.fixed]
+            else
+            names(mycoef) <- nm
+        }
         mycoef[fixed.par] <- fixed
-        #        cat("\nff")
 	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
     }
 		
 # SMI-2/9/14:
         fpsi <- function(p){
-            #   cat("\n fpsi")
-            
             mycoef <- as.list(p)
-            #	print(nm[-idx.fixed])
-            #	print(nm)
+    
             idx.cont <- c(idx.diff,idx.drift)
             if(length(c(idx.fixed,idx.cont))>0)
             names(mycoef) <- nm[-c(idx.fixed,idx.cont)]
@@ -487,12 +487,16 @@ if(length(measure.par)>0){
 	 fj <- function(p) {
 		 mycoef <- as.list(p)
          #		 names(mycoef) <- nm
-         #	 cat("\n fj")
-         idx.fixed <- orig.idx.fixed
-         if(length(c(idx.fixed,idx.measure))>0) ## SMI 2/9/14
-         names(mycoef) <- nm[-c(idx.fixed,idx.measure)] ## SMI 2/9/14
-         else
-		 names(mycoef) <- nm
+         if(!is.CARMA(yuima)){
+          idx.fixed <- orig.idx.fixed
+          if(length(c(idx.fixed,idx.measure))>0) ## SMI 2/9/14
+           names(mycoef) <- nm[-c(idx.fixed,idx.measure)] ## SMI 2/9/14
+          else
+		  names(mycoef) <- nm
+         } else {
+             names(mycoef) <- nm
+             mycoef[fixed.par] <- fixed
+	     }
          mycoef[fixed.par] <- fixed
 		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
 	 }
@@ -512,18 +516,23 @@ if(length(measure.par)>0){
             old.fixed <- fixed
             new.start <- start
             old.start <- start
-            if(length(c(idx.fixed,idx.measure))>0)
-             new.start <- start[-c(idx.fixed,idx.measure)] # considering only initial guess for
-            
-            #    cat("\n############## joint\n")
-            #  print(method)
-			if(length(new.start)>1){ #Â?multidimensional optim # Adjust lower for no negative Noise
+            if(!is.CARMA(yuima)){
+             if(length(c(idx.fixed,idx.measure))>0)
+              new.start <- start[-c(idx.fixed,idx.measure)] # considering only initial guess for
+            }
+
+            if(length(new.start)>1){ #Â?multidimensional optim # Adjust lower for no negative Noise
                 if(is.CARMA(yuima) && (NoNeg.Noise==TRUE))
                     if(mean.noise %in% names(lower)){lower[mean.noise]<-10^-7}
 				oout <- optim(new.start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
-                #                print(oout$par)
-                #cat("\n############## finished\n")
-				HESS[names(new.start),names(new.start)] <- oout$hessian
+
+            if(is.CARMA(yuima)){
+                HESS <- oout$hessian
+            } else {
+                HESS[names(new.start),names(new.start)] <- oout$hessian
+            }
+            
+            
 				if(is.CARMA(yuima) && length(yuima@model@info@scale.par)!=0){
 				  b0<-paste0(yuima@model@info@ma.par,"0",collapse="")
 				  idx.b0<-match(b0,rownames(HESS))
@@ -550,8 +559,7 @@ if(length(measure.par)>0){
 			} ### endif( length(start)>1 )
           theta1 <- oout$par[diff.par]
           theta2 <- oout$par[drift.par]
-          #print(theta1)
-          #print(theta2)
+
 		} else {  ### first diffusion, then drift
 			theta1 <- NULL
 
@@ -593,8 +601,8 @@ if(length(measure.par)>0){
 			 mydots$method <- NULL	
 			 mydots$interval <- as.numeric(c(unlist(lower[diff.par]),unlist(upper[diff.par])))
 
-#print(mydots)
-			 mydots$lower <- NULL
+
+             mydots$lower <- NULL
 			 mydots$upper <- NULL
 			 opt1 <- do.call(optimize, args=mydots)
 			 theta1 <- opt1$minimum
@@ -622,7 +630,8 @@ if(length(measure.par)>0){
 			fixed <- new.fixed
 			fixed.par <- names(fixed)
 			idx.fixed <- match(fixed.par, nm)
-			names(new.start) <- nm[idx.drift]
+            
+            names(new.start) <- nm[idx.drift]
 
 			mydots <- as.list(call)[-(1:2)]
 			mydots$print <- NULL
@@ -739,9 +748,9 @@ if(length(measure.par)>0){
 # ESTIMATION OF CP part
       theta3 <- NULL
        
-       if(length(idx.measure)>0){
+       if(length(idx.measure)>0 & !is.CARMA(yuima)){
            idx.cont <- c(idx.drift,idx.diff)
-           
+
            fixed <- old.fixed
            start <- old.start
            old.fixed.par <- fixed.par
@@ -756,7 +765,7 @@ if(length(measure.par)>0){
            fixed <- new.fixed
            fixed.par <- names(fixed)
            idx.fixed <- match(fixed.par, nm)
-           names(new.start) <- nm[idx.drift]
+           #            names(new.start) <- nm[idx.drift]
            names(new.start) <- nm[idx.measure]
            
            mydots <- as.list(call)[-(1:2)]
@@ -773,38 +782,39 @@ if(length(measure.par)>0){
            mydots$upper <- unlist( upper[ nm[idx.measure] ])
            mydots$lower <- unlist( lower[ nm[idx.measure] ])
            mydots$method  <- method
-           #mydots <- c(mydots)
-           #names(mydots)[6] <- "method"
-           #     print(str(mydots))
-           #cat("\n here\n")
+           
            oout3 <- do.call(optim, args=mydots)
-           #  cat("\n out here\n")
+           
            theta3 <- oout3$par
-           #print(oout3$hessian)
-           #print(str(HESS))
+           
            HESS[measure.par,measure.par] <- oout3$hessian
            HaveMeasHess <- TRUE
-           #print(theta3)
+           
            fixed <- old.fixed
            start <- old.start
            fixed.par <- old.fixed.par
        }
        
-       #      cat("\n############## here we are\n")
- 
-    oout4 <- list(par=  c(theta1, theta2, theta3))
-    # print(oout4)
+       
+       
+ if(!is.CARMA(yuima)){
+     
+  oout4 <- list(par=  c(theta1, theta2, theta3))
        names(oout4$par) <- c(diff.par,drift.par,measure.par)
        oout <- oout4
-       #print(oout)
-       coef <- oout$par
+    }
+ 
+     coef <- oout$par
        control=list()
        par <- coef
-       
+       if(!is.CARMA(yuima)){
+    
        names(par) <- unique(c(diff.par, drift.par,measure.par))
        nm <- unique(c(diff.par, drift.par,measure.par))
-       #  print(par)
-
+       } else {
+           names(par) <- unique(c(diff.par, drift.par))
+           nm <- unique(c(diff.par, drift.par))
+       }
 #return(oout)
  
 
@@ -853,12 +863,15 @@ if(length(measure.par)>0){
                     factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
   }
 
+
+
     if(!HaveDriftHess & (length(drift.par)>0)){
 	  #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
 	   if(!is.CARMA(yuima)){
        hess2 <- optimHess(coef[drift.par], fDrift, NULL, control=conDrift)
   	  HESS[drift.par,drift.par] <- hess2
-	   } else{ 
+	   } else{
+         names(coef) <- c(drift.par,yuima@model@info@loc.par)
 	     hess2 <- optimHess(coef, fDrift, NULL, control=conDrift)
 	     HESS <- hess2
 	   }
@@ -868,66 +881,53 @@ if(length(measure.par)>0){
        HESS<-HESS[-idx.b0,]
        HESS<-HESS[,-idx.b0]
      }
-	 }
-
-#print(str(HESS))
+    }
+    
 	 if(!HaveDiffHess  & (length(diff.par)>0)){
-		 #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
 	   hess1 <- optimHess(coef[diff.par], fDiff, NULL, control=conDiff)
 		 HESS[diff.par,diff.par] <- hess1	 
 	 }
 	 	 
 	 oout$hessian <- HESS
-     #  print(oout$hessian)
-     if(!HaveMeasHess & length(measure.par)>0){
+     
+     
+     if(!HaveMeasHess & (length(measure.par)>0) & !is.CARMA(yuima)){
         hess1 <- optimHess(coef[measure.par], fMeas, NULL, control=conMeas)
         oout$hessian[measure.par,measure.par] <- hess1
-        #  print(hess1)
      }
 
- vcov <- if (length(coef))
+    vcov <- if (length(coef))
 	  solve(oout$hessian)
     else matrix(numeric(0L), 0L, 0L)
-    #print(vcov)
-#vcov <- matrix(numeric(0L), 0L, 0L)
-#cat("\n### here ###\n")
-  	mycoef <- as.list(coef)
-    #   cat("\n### here 1###\n")
-    # print(mycoef)
-    names(mycoef) <- nm
-    #cat("\n### here 2###\n")
-    #print(mycoef)
-    #cat("\n### here 3###\n")
-    #print(orig.fixed)
-    #cat("\n### here 4###\n")
-    #print(orig.fixed.par)
+
+
+    mycoef <- as.list(coef)
+
+    if(!is.CARMA(yuima)){
+        names(mycoef) <- nm
+    }
     idx.fixed <- orig.idx.fixed
 
-#cat("\n### here 5###\n")
-#print(mycoef[idx.measure])
-#cat("\n### here 6###\n")
-#print(mycoef[idx.fixed])
+
 
 mycoef.cont <- mycoef
 if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
         mycoef.cont <- mycoef[-c(idx.fixed,idx.measure)]  # SMI 2/9/14
 
-#print(mycoef.cont)
-#cat("\n### here 7###\n")
-#       print(mycoef.cont)
 
-#if(length(orig.fixed.par)>0)
-#       mycoef[orig.fixed.par] <- orig.fixed
     min.diff <- 0
     min.jump <- 0
     
+    
     if(length(c(diff.par,drift.par))>0)
 	  min.diff <- minusquasilogl(yuima=yuima, param=mycoef[c(diff.par,drift.par)], print=print, env)
-      # print(min.diff)
-    if(length(c(measure.par))>0)
+    
+    
+    if(length(c(measure.par))>0 & !is.CARMA(yuima))
         min.jump <-   minusquasipsi(yuima=yuima, param=mycoef[measure.par], print=print, env=env)
-        # print(min.jump)
-        
+    
+    
+    
     min <- min.diff + min.jump
     if(min==0)
      min <- NA
@@ -1043,19 +1043,22 @@ if(!is.CARMA(yuima)){
       dummycovCarmapar<-vcov[unique(c(drift.par,diff.par,info@loc.par)),
                              unique(c(drift.par,diff.par,info@loc.par))]
     }
-    dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to adjusted
+
+
+dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to adjusted
     dummycoeffCarmapar<-coef[unique(c(drift.par,diff.par))]
     if(!is.null(loc.par)){
       dummycoeffCarmapar<-coef[unique(c(drift.par,diff.par,info@loc.par))]
     }
     
     dummycoeffCarmaNoise<-coef[unique(c(measure.par))]
-    coef<-NULL
+     coef<-NULL
     coef<-c(dummycoeffCarmapar,dummycoeffCarmaNoise)
     names.par<-c(unique(c(drift.par,diff.par)),unique(c(measure.par)))
     if(!is.null(loc.par)){
       names.par<-c(unique(c(drift.par,diff.par,info@loc.par)),unique(c(measure.par)))
     }
+    
     names(coef)<-names.par
     cov<-NULL
     cov<-matrix(0,length(names.par),length(names.par))
@@ -1333,10 +1336,9 @@ minusquasipsi <- function(yuima, param, print=FALSE, env){
     npar <- length(fullcoef)
     nm <- names(param)
     oo <- match(nm, fullcoef)
-    #print(nm)
-    #cat("\n minusquasipsi\n")
+   
     if(any(is.na(oo)))
-    yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
+        yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
     param <- param[order(oo)]
 	
     h <- env$h
@@ -1497,30 +1499,21 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
         }
     }
   
-#	fullcoef <- c(diff.par, drift.par)
-	npar <- length(fullcoef)
-#	cat("\nparam\n")
-#	print(param)
-#	cat("\nfullcoef\n")
-#	print(fullcoef)
-	nm <- names(param)
+
+    npar <- length(fullcoef)
+
+    nm <- names(param)
     oo <- match(nm, fullcoef)
-    #   cat("\nminusquasilogl\n")
-    #print(fullcoef)
-    #print(param)
+    
     if(any(is.na(oo)))
-   yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
+        yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
     param <- param[order(oo)]
     nm <- names(param)
 	
 	idx.diff <- match(diff.par, nm)
 	idx.drift <- match(drift.par, nm)
-# 	if(is(yuima@model, "yuima.carma")){
-# 	  if(length(yuima@model@info@scale.par)!=0){
-#       idx.xinit <-as.integer(na.omit(match(xinit.par, nm)))
-# 	  }
-# 	}
-  
+
+
 	if(is.CARMA(yuima)){
 	    idx.xinit <-as.integer(na.omit(match(xinit.par, nm)))
 	}
@@ -1536,15 +1529,8 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 	n.theta1 <- length(theta1)
 	n.theta2 <- length(theta2)
 	n.theta <- n.theta1+n.theta2
-#01/01	
-# 	if(is(yuima@model, "yuima.carma")){
-# 	  if(length(yuima@model@info@scale.par)!=0){
-#     	theta3 <- unlist(param[idx.xinit])
-#       n.theta3 <- length(theta3)
-# 	    n.theta <- n.theta1+n.theta2+n.theta3
-# 	  }
-# 	}
-	
+
+
 	if(is.CARMA(yuima)){
 	    theta3 <- unlist(param[idx.xinit])
 	    n.theta3 <- length(theta3)
@@ -1691,8 +1677,8 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
   	K <- -0.5*d.size * log( (2*pi*h) )
   
   	dimB <- dim(diff[, , 1])
-    #print(sum(Cn.r))
-  	if(is.null(dimB)){  # one dimensional X
+   
+   if(is.null(dimB)){  # one dimensional X
   	  for(t in 1:(n-1)){
   		yB <- diff[, , t]^2
   		logdet <- log(yB)
@@ -1959,9 +1945,9 @@ quasiloglvec <- function(yuima, param, print=FALSE, env){
 
 	nm <- names(param)
     oo <- match(nm, fullcoef)
-    # cat("\n quasilogvec\n")
+    
     if(any(is.na(oo)))
-	yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
+        yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
     param <- param[order(oo)]
     nm <- names(param)
 	
