@@ -141,7 +141,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   # In this case we use a two step procedure:
   # First) The Coefficient are obtained by QMLE computed using the Kalman Filter.
   # Second) Using the result in Brockwell, Davis and Yang (2007) we retrieve 
-  # the underlying Levy. The estimated increments are used to find the Lévy parameters.
+  # the underlying Levy. The estimated increments are used to find the L?vy parameters.
 
 #   if(is(yuima@model, "yuima.carma")){
 #     yuima.warm("two step procedure for carma(p,q)")
@@ -521,7 +521,7 @@ if(length(measure.par)>0){
               new.start <- start[-c(idx.fixed,idx.measure)] # considering only initial guess for
             }
 
-            if(length(new.start)>1){ #Â?multidimensional optim # Adjust lower for no negative Noise
+            if(length(new.start)>1){ #??multidimensional optim # Adjust lower for no negative Noise
                 if(is.CARMA(yuima) && (NoNeg.Noise==TRUE))
                     if(mean.noise %in% names(lower)){lower[mean.noise]<-10^-7}
 				oout <- optim(new.start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
@@ -919,9 +919,13 @@ if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
     min.jump <- 0
     
     
-    if(length(c(diff.par,drift.par))>0)
-	  min.diff <- minusquasilogl(yuima=yuima, param=mycoef[c(diff.par,drift.par)], print=print, env)
-    
+    if(length(c(diff.par,drift.par))>0 & !is.CARMA(yuima)){ # LM 04/09/14
+	    min.diff <- minusquasilogl(yuima=yuima, param=mycoef[c(diff.par,drift.par)], print=print, env)
+    }else{
+      if(length(c(diff.par,drift.par))>0 & is.CARMA(yuima)){
+        min.diff <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+      }
+    }
     
     if(length(c(measure.par))>0 & !is.CARMA(yuima))
         min.jump <-   minusquasipsi(yuima=yuima, param=mycoef[measure.par], print=print, env=env)
@@ -960,7 +964,7 @@ if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
     if( Est.Incr=="Carma.IncPar" || Est.Incr=="Carma.Inc" ){
     final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                    method = method, nobs=yuima.nobs)
+                    method = method, nobs=yuima.nobs, logL.Incr = NULL)
     }else{
       if(Est.Incr=="Carma.Par"){
       final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
@@ -1032,7 +1036,7 @@ if(!is.CARMA(yuima)){
      carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                           vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                           method = method, Incr.Lev = inc.levy.fin,
-                          model = yuima@model, nobs=yuima.nobs)
+                          model = yuima@model, nobs=yuima.nobs, logL.Incr = NULL)
      return(carma_final_res)
    }
    
@@ -1087,7 +1091,7 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
           carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                                vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                                method = method, Incr.Lev = inc.levy,
-                               model = yuima@model)
+                               model = yuima@model, logL.Incr = NULL)
           return(carma_final_res)
         }
         
@@ -1189,7 +1193,7 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
           carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                                vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                                method = method, Incr.Lev = inc.levy,
-                               model = yuima@model)
+                               model = yuima@model, logL.Incr = NULL)
           return(carma_final_res)
         }
         if(aggregation==TRUE){
@@ -1313,7 +1317,8 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
       carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(coef), 
                      vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
                      method = method, Incr.Lev = inc.levy.fin,
-                           model = yuima@model, nobs=yuima.nobs)
+                           model = yuima@model, nobs=yuima.nobs,
+                     logL.Incr = tryCatch(-result.Lev$value,error=function(theta){NULL}))
     }else{
       if(Est.Incr=="Carma.Par"){
         carma_final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(coef), 
@@ -2009,20 +2014,6 @@ quasiloglvec <- function(yuima, param, print=FALSE, env){
 
 
 
-
-# Plot Method for yuima.carma.qmle
-setMethod("plot",signature(x="yuima.carma.qmle"),
-          function(x, ...){
-            Time<-index(x@Incr.Lev)
-            Incr.L<-coredata(x@Incr.Lev)
-            if(is.complex(Incr.L)){
-              yuima.warn("Complex increments. We plot only the real part")
-              Incr.L<-Re(Incr.L)
-            }
-            plot(x=Time,y=Incr.L, ...)
-          }
-)
-
 setMethod("summary", "yuima.qmle",
 function (object, ...)
 {
@@ -2108,6 +2099,68 @@ function (object)
 }
 )
 # Utilities for estimation of levy in continuous arma model
+
+setMethod("summary", "yuima.carma.qmle",
+          function (object, ...)
+          {
+            cmat <- cbind(Estimate = object@coef, `Std. Error` = sqrt(diag(object@vcov)))
+            m2logL <- 2 * object@min
+            data<-Re(coredata(object@Incr.Lev))
+            data<- data[!is.na(data)]
+            
+            tmp <- new("summary.yuima.carma.qmle", call = object@call, coef = cmat,
+                       m2logL = m2logL, 
+                       MeanI = mean(data),
+                       SdI = sd(data),
+                       logLI = object@logL.Incr,
+                       TypeI = object@model@measure.type,
+                       NumbI = length(data),
+                       StatI =summary(data)
+            )
+            tmp
+          }
+)
+
+setMethod("show", "summary.yuima.carma.qmle",
+          function (object)
+          {
+            
+            cat("Two Stage Quasi-Maximum likelihood estimation\n\nCall:\n")
+            print(object@call)
+            cat("\nCoefficients:\n")
+            print(coef(object))
+            cat("\n-2 log L:", object@m2logL, "\n")
+            
+            cat(sprintf("\n\nNumber of increments: %d\n",object@NumbI))
+            cat(sprintf("\nAverage of increments: %f\n",object@MeanI))
+            cat(sprintf("\nStandard Dev. of increments: %f\n",object@SdI))
+            if(!is.null(object@logLI)){
+              cat(sprintf("\n\n-2 log L of increments: %f\n",-2*object@logLI))
+            }
+            cat("\nSummary statistics for increments:\n")
+            print(object@StatI)
+            cat("\n")
+          }
+)
+
+
+
+  # Plot Method for yuima.carma.qmle
+setMethod("plot",signature(x="yuima.carma.qmle"),
+          function(x, ...){
+            Time<-index(x@Incr.Lev)
+            Incr.L<-coredata(x@Incr.Lev)
+            if(is.complex(Incr.L)){
+              yuima.warn("Complex increments. We plot only the real part")
+              Incr.L<-Re(Incr.L)
+            }
+            plot(x=Time,y=Incr.L, ...)
+          }
+)
+
+
+
+
 
 #Density code for compound poisson
 
@@ -2571,7 +2624,7 @@ yuima.Estimation.Lev<-function(Increment.lev,param0,
         paramLev[1]<-paramLev[1]/dt
       }
   }
-  results<-list(estLevpar=paramLev,covLev=covLev)
+  results<-list(estLevpar=paramLev,covLev=covLev, value=firs.prob$value)
   return(results)
 }
 

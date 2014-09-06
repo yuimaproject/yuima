@@ -123,7 +123,8 @@ setClass("yuima", representation(data = "yuima.data",
 
 # Class yuima.carma.qmle
 setClass("yuima.carma.qmle",representation(Incr.Lev = "ANY",
-                                           model = "yuima.carma"
+                                           model = "yuima.carma",
+                                           logL.Incr = "ANY"
                                            ),
                             contains="mle"
          )
@@ -141,10 +142,13 @@ threshold="ANY"),
 contains="mle"
 )
 
-setClass("yuima.carma.qmle",representation(Incr.Lev = "ANY",
-model = "yuima.carma"
-),
-contains="mle"
+setClass("summary.yuima.carma.qmle",representation(MeanI = "ANY",
+                                                   SdI = "ANY",
+                                                   logLI = "ANY",
+                                                   TypeI = "ANY",
+                                                   NumbI = "ANY",
+                                                   StatI ="ANY"),
+contains="summary.mle"
 )
 
 setClass("summary.yuima.CP.qmle",

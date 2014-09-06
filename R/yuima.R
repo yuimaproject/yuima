@@ -243,6 +243,13 @@ setMethod("initialize", "yuima",
 # setter
 setYuima <-
   function(data=NULL, model=NULL, sampling=NULL, characteristic=NULL, functional=NULL){
+    if(is.CARMA(model)&& !is.null(data)){
+      if(is.null(dim(data@original.data))){
+        data<-setData(zoo(x=matrix(as.numeric(data@original.data),length(data@original.data),
+                                   (model@info@p+1)), order.by=time(data@zoo.data[[1]])))  
+      
+      } 
+    }# LM 05/09/14 
     return(new("yuima", data=data, model=model, sampling=sampling, characteristic=characteristic,functional=functional))
   }
 

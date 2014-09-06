@@ -14,6 +14,7 @@
   \describe{
     \item{\code{Incr.Lev}:}{is an object of class \code{\link{zoo}} that contains the estimated increments of the noise obtained using \code{\link{CarmaNoise}}.}
     \item{\code{model}:}{is an object of of \code{\link{yuima.carma-class}}.}
+    \item{\code{logL.Incr}:}{is an object of class \code{numeric} that contains the value of the log-likelihood for estimated Levy increments.}
     \item{\code{call}:}{is an object of class \code{language}. }
     \item{\code{coef}:}{is an object of class \code{numeric} that contains estimated parameters.}
     \item{\code{fullcoef}:}{is an object of class \code{numeric} that contains estimated and fixed parameters.}
