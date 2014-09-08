@@ -1,15 +1,14 @@
 #include <Rinternals.h>
 #include <math.h>
 
-void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse,
-                   int *n, double *grid, double *result)
+void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse, int *n, double *grid, double *result)
 {
   int t, i, k;
-  
+   
   for(t = 0; t < *frequency; t++){
-    k = 1;
     for(i = 0; i < *nsparse; i++){
-      while((ztime[k]<=grid[i])&&(k < *n)){
+        k = 1;
+      while((ztime[k]<=grid[i])&&(k<*n)){
         k++;
       }
       result[(*nsparse)*t+i] += znum[k-1];
@@ -21,16 +20,18 @@ void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse,
 
 
 void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
-                     int *Lengths, double *MinTime, int *MinL,
+                     int *Lengths, int *D, double *MinTime, int *MinL,
                      int *Samplings)
 {
   int d, i, J;
   double Tmp;
   
   for(d = 0; d < *Dim; d++) {
-    while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[0]){
+    /*while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[0]){*/
+    while(Times[D[d] + (I[d]+1)] <= rtimes[0]){
       I[d]++;
-      if((I[d]+1) >= Lengths[d + 1]){
+      /*if((I[d]+1) >= Lengths[d + 1]){*/
+      if((I[d]+1) >= Lengths[d]){
         break;
       }
     }
@@ -46,9 +47,11 @@ void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
     for(d = 0; d < *Dim; d++) {
       Tmp = rtimes[i];
       J = I[d];
-      while((J < (Lengths[d + 1]-1)) && (Tmp <= rtimes[i])) {
+      /*while((J < (Lengths[d + 1]-1)) && (Tmp <= rtimes[i])) {*/
+      while((J < (Lengths[d]-1)) && (Tmp <= rtimes[i])) {
         J++;
-        Tmp = Times[Lengths[d] * d + J];
+        /*Tmp = Times[Lengths[d] * d + J];*/
+        Tmp = Times[D[d] + J];
       }
       if(Tmp > rtimes[i + 1])
         rtimes[i + 1] = Tmp;
@@ -57,9 +60,11 @@ void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
     i++;
       
     for(d = 0; d < *Dim; d++) {
-      while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[i]){
+      /*while(Times[Lengths[d] * d + (I[d]+1)] <= rtimes[i]){*/
+      while(Times[D[d] + (I[d]+1)] <= rtimes[i]){
         I[d]++;
-        if((I[d]+1) >= Lengths[d + 1]){
+        /*if((I[d]+1) >= Lengths[d + 1]){*/
+        if((I[d]+1) >= Lengths[d]){
           break;
         }
       }
@@ -71,7 +76,7 @@ void refreshsampling(int *Dim, int* I, double *Times, double *rtimes,
 
 
 void refreshsamplingphy(int *Dim, int* I, double *Times, double *rtimes,
-                        int *Lengths, double *MinTime, int *MinL,
+                        int *Lengths, int *D, double *MinTime, int *MinL,
                         int *Samplings, int *rNum)
 {
   int d, i;
@@ -84,11 +89,14 @@ void refreshsamplingphy(int *Dim, int* I, double *Times, double *rtimes,
   for(i = 0; rtimes[i] < *MinTime; i++) {
     rtimes[i + 1] = rtimes[i];
     for(d = 0; d < *Dim; d++) {
-      while(I[d] < (Lengths[d + 1] - 1)){
+      /*while(I[d] < (Lengths[d + 1] - 1)){*/
+      while(I[d] < (Lengths[d] - 1)){
         I[d]++;
-        if(Times[Lengths[d] * d + I[d]] > rtimes[i]){
+        /*if(Times[Lengths[d] * d + I[d]] > rtimes[i]){*/
+        if(Times[D[d] + I[d]] > rtimes[i]){
           Samplings[(*MinL + 1) * d + (i + 1)] = I[d] + 1;
-          Tmp = Times[Lengths[d] * d + I[d]];
+          /*Tmp = Times[Lengths[d] * d + I[d]];*/
+          Tmp = Times[D[d] + I[d]];
           if(rtimes[i + 1] < Tmp){
             rtimes[i + 1] = Tmp; 
           }
@@ -101,9 +109,11 @@ void refreshsamplingphy(int *Dim, int* I, double *Times, double *rtimes,
   *rNum = i + 1;
   
   for(d = 0; d < *Dim; d++) {
-    while(I[d] < (Lengths[d + 1] -1)){
+    /*while(I[d] < (Lengths[d + 1] -1)){*/
+    while(I[d] < (Lengths[d] -1)){
       I[d]++;
-      if(Times[Lengths[d] * d + I[d]] > rtimes[i]){
+      /*if(Times[Lengths[d] * d + I[d]] > rtimes[i]){*/
+      if(Times[D[d] + I[d]] > rtimes[i]){
         Samplings[(*MinL + 1) * d + (i + 1)] = I[d] + 1;
         break;
       }
@@ -312,53 +322,53 @@ void HYcrosscov(int *gridL, int *xL, int *yL, double *grid, double *xtime,
 
 
 void HYcrosscorr(int *gridL, int *xL, int *yL, double *grid, double *xtime,
-                 double *ytime, double *tmptime, double *dX, double *dY, 
+                 double *ytime, double *tmptime, double *dX, double *dY,
                  double *xvol, double *yvol, double *value)
 {
-  int i, j, I, J;
-  double A, B, C, s;
-  
-  for(i = 0; i < *gridL; i++){
+    int i, j, I, J;
+    double A, B, C, s;
     
-    for(j = 0; j < *yL; j++){
-      tmptime[j] = ytime[j] + grid[i];
-    }
-    
-    I = 0;
-    J = 0;
-    
-    /* Checking Starting Point */
-    while((I < (*xL-1)) && (J < (*yL-1))){
-        if(xtime[I] >= tmptime[J + 1]){
-            J++;
-        }else if(xtime[I + 1] <= tmptime[J]){
-            I++;
-        }else{
-            break;
+    for(i = 0; i < *gridL; i++){
+        
+        for(j = 0; j < *yL; j++){
+            tmptime[j] = ytime[j] + grid[i];
         }
-    }
-    
-    /* Main Component */
-    while((I < (*xL-1)) && (J < (*yL-1))) {
-        value[i] += dX[I] * dY[J];
-        if(xtime[I + 1] > tmptime[J + 1]){
-            J++;
-        }else if(xtime[I + 1] < tmptime[J + 1]){
-            I++;
-        }else{
-            I++;
-            J++;
+        
+        I = 0;
+        J = 0;
+        
+        /* Checking Starting Point */
+        while((I < (*xL-1)) && (J < (*yL-1))){
+            if(xtime[I] >= tmptime[J + 1]){
+                J++;
+            }else if(xtime[I + 1] <= tmptime[J]){
+                I++;
+            }else{
+                break;
+            }
         }
+        
+        /* Main Component */
+        while((I < (*xL-1)) && (J < (*yL-1))) {
+            value[i] += dX[I] * dY[J];
+            if(xtime[I + 1] > tmptime[J + 1]){
+                J++;
+            }else if(xtime[I + 1] < tmptime[J + 1]){
+                I++;
+            }else{
+                I++;
+                J++;
+            }
+        }
+        
+        /* Positive semi-definite correction */
+        A = (*xvol)*(*xvol) + value[i]*value[i];
+        B = (*xvol + *yvol)*value[i];
+        C = (*yvol)*(*yvol) + value[i]*value[i];
+        
+        s = sqrt(A*C-B*B);
+        
+        value[i] = B/sqrt((A + s)*(C + s));
+        
     }
-    
-    /* Positive semi-definite correction */
-    A = (*xvol)*(*xvol) + value[i]*value[i];
-    B = (*xvol + *yvol)*value[i];
-    C = (*yvol)*(*yvol) + value[i]*value[i];
-    
-    s = sqrt(A*C-B*B);
-    
-    value[i] = B/sqrt((A + s)*(C + s));
-    
-  }
 }

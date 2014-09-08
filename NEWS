@@ -21,3 +21,4 @@
 2014/05/04: modified show method, setYuima sets the sampling from the data if sampling is missing
 2014/07/07: modified llag.R, llag.Rd, cce_functions.c; estimated cross-correlation functions are converted to values in [-1,1]
 2014/07/31: fixed setSampling and print methods
+2014/09/08: fixed a bug in cce_functions.c
