@@ -56,7 +56,8 @@ euler<-function(xinit,yuima,dW,env){
 ##:: check if DRIFT and/or DIFFUSION has values
 	has.drift <- sum(as.character(sdeModel@drift) != "(0)")
 	var.in.diff <- is.logical(any(match(unlist(lapply(sdeModel@diffusion, all.vars)), sdeModel@state.variable)))
-	
+	#print(is.Poisson(sdeModel))
+
   ##:: function to calculate coefficients of dW(including drift term)
   ##:: common used in Wiener and CP
   p.b <- function(t, X=numeric(d.size)){
@@ -74,14 +75,16 @@ euler<-function(xinit,yuima,dW,env){
           tmp[i,j+1] <- eval(V[[i]][j],env)
         }
       }
-    }else{  ##:: no drift term (faster)
-      tmp <- matrix(0, d.size, r.size)
-      for(i in 1:d.size){
-        for(j in 1:r.size){
-          tmp[i,j] <- eval(V[[i]][j],env)
-        }
-      }
-    }
+    } else {  ##:: no drift term (faster)
+       tmp <- matrix(0, d.size, r.size)
+       if(!is.Poisson(sdeModel)){ # we do not need to evaluate diffusion
+        for(i in 1:d.size){
+         for(j in 1:r.size){
+            tmp[i,j] <- eval(V[[i]][j],env)
+         } # for j
+        } # foh i
+       } # !is.Poisson
+    } # else
     return(tmp)
   }
   
@@ -96,7 +99,7 @@ euler<-function(xinit,yuima,dW,env){
   if(!length(sdeModel@jump.coeff)){ ##:: Wiener Proc
     ##:: using Euler-Maruyama method
         
-    if(var.in.diff){  ##:: diffusions have state variables
+    if(var.in.diff & (!is.Poisson(sdeModel))){  ##:: diffusions have state variables and it is not Poisson
       ##:: calcurate difference eq.    
       for( i in 1:n){
         dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i]
@@ -127,19 +130,22 @@ euler<-function(xinit,yuima,dW,env){
         dim(pbdata)<-(c(r.size+1, d.size*t.size))
       }else{
         pbdata <- matrix(0, d.size*r.size, t.size)
-        for(i in 1:d.size){
+        if(!is.Poisson(sdeModel)){
+         for(i in 1:d.size){
           for(j in 1:r.size){
-            pbdata[(i-1)*r.size+j, ] <- eval(V[[i]][j], env)
-          }
-        }
+           pbdata[(i-1)*r.size+j, ] <- eval(V[[i]][j], env)
+          } # for j
+         } # for i
+        } # !is.Poisson
         dim(pbdata)<-(c(r.size, d.size*t.size))
-      }
+      } # else
     
       pbdata <- t(pbdata)
       
       ##:: calcurate difference eq.
       for( i in 1:n){
-        dX <- dX + pbdata[((i-1)*d.size+1):(i*d.size), ] %*% dW[, i]
+        if(!is.Poisson(sdeModel))
+         dX <- dX + pbdata[((i-1)*d.size+1):(i*d.size), ] %*% dW[, i]
         X_mat[, i+1] <- dX
       }
     }
@@ -205,11 +211,11 @@ euler<-function(xinit,yuima,dW,env){
       }
       
       ##:: make expression to create iid rand J
-      if(grep("^[dexp|dnorm|dgamma]", sdeModel@measure$df$expr)){
+      if(grep("^[dexp|dnorm|dgamma|dconst]", sdeModel@measure$df$expr)){
         ##:: e.g. dnorm(z,1,1) -> rnorm(mu.size*N_sharp,1,1)
         F <- suppressWarnings(parse(text=gsub("^d(.+?)\\(.+?,", "r\\1(mu.size*N_sharp,", sdeModel@measure$df$expr, perl=TRUE)))
       }else{
-        stop("Sorry. CP only supports dexp, dnorm and dgamma yet.")
+        stop("Sorry. CP only supports dconst, dexp, dnorm and dgamma yet.")
       }
 
       ##:: delete 2010/09/13 for simulate func bug fix by s.h

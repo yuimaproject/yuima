@@ -218,15 +218,23 @@ setMethod("simulate", "yuima",
               } else {
                 
                 delta<-Terminal/n
-                dW <- rnorm(n * r.size, 0, sqrt(delta))
-                dW <- matrix(dW, ncol=n, nrow=r.size,byrow=TRUE)  
+                if(!is.Poisson(sdeModel)){ # if pure CP no need to setup dW
+                 dW <- rnorm(n * r.size, 0, sqrt(delta))
+                 dW <- matrix(dW, ncol=n, nrow=r.size,byrow=TRUE)
+                } else {
+                    dW <- matrix(0,ncol=n,nrow=1)  # maybe to be fixed
+                }
               }
               
             } else {
               dW <- increment.W
             }
             
-            yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
+            if(is.Poisson(sdeModel)){
+                yuima@data <- simCP(xinit, yuima, yuimaEnv)
+            } else {
+                yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
+            }
             
             for(i in 1:length(yuima@data@zoo.data)) 
               index(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid[[1]]  ## to be fixed

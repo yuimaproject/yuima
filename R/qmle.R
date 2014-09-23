@@ -105,6 +105,14 @@ measure.term <- function(yuima, theta, env){
 ### also, I am using the same interface of optim to specify upper and lower bounds
 ### S.M.I. 22/06/2010
 
+is.Poisson <- function(obj){
+    if(is(obj,"yuima"))
+    return(is(obj@model, "yuima.poisson"))
+    if(is(obj,"yuima.model"))
+    return(is(obj, "yuima.poisson"))
+    return(FALSE)
+}
+
 is.CARMA <- function(obj){
  if(is(obj,"yuima"))
     return(is(obj@model, "yuima.carma"))

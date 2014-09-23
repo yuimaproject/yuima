@@ -139,7 +139,7 @@ setModel <- function(drift=NULL,
   ##::end initialize objects ########
   
   ##::make type function list ####
-  CPlist <- c("dnorm", "dgamma", "dexp")
+  CPlist <- c("dnorm", "dgamma", "dexp", "dconst")
   codelist <- c("rIG", "rNIG", "rgamma", "rbgamma", "rngamma", "rstable")
   ##::end make type function list ####
   

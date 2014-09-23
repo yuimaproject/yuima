@@ -293,6 +293,7 @@ function(object){
     is.fracdiff <- FALSE
     is.jumpdiff <- FALSE
     is.carma <- FALSE
+    is.poisson <- is.Poisson(mod)
 
     if(length(mod@drift)>0) has.drift <- TRUE
     if(length(mod@diffusion)>0) has.diff <- TRUE
@@ -316,7 +317,7 @@ function(object){
      is.carma <- TRUE
      
     if( is.wienerdiff | is.fracdiff | is.jumpdiff  ){
-        if( is.wienerdiff & ! is.carma){
+        if( is.wienerdiff & ! is.carma & !is.poisson){
          cat("\nDiffusion process")
          if( is.fracdiff ){
              if(!is.na(mod@hurst)){
@@ -330,17 +331,20 @@ function(object){
         }
         if(is.carma)
           cat(sprintf("\nCarma process p=%d, q=%d", mod@info@p, mod@info@q))
-        
+        if(is.poisson)
+          cat("\nCompound Poisson process")
+          
         if( is.jumpdiff ){
-            if( is.wienerdiff | is.carma ){
+            if( (is.wienerdiff | is.carma) & !is.poisson ){
                 cat(" with Levy jumps")
             } else {
+                if(!is.poisson)
                 cat("Levy jump process")
             }
         }
         
         cat(sprintf("\nNumber of equations: %d", mod@equation.number))
-        if(is.wienerdiff | is.fracdiff)
+        if((is.wienerdiff | is.fracdiff) & !is.poisson)
          cat(sprintf("\nNumber of Wiener noises: %d", mod@noise.number))
         if(is.jumpdiff)
          cat(sprintf("\nNumber of Levy noises: %d", 1))

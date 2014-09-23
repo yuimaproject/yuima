@@ -56,6 +56,9 @@ setClass("yuima.carma",
          representation(info="carma.info"),
          contains="yuima.model")
 
+# Class Compound Poisson
+setClass("yuima.poisson", contains="yuima.model")
+
 
 # Class 'yuima.data'
 
