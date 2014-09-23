@@ -24,7 +24,10 @@ exportClasses("yuima",
               "model.parameter",
 	      "yuima.carma",
 	      "carma.info",
-	      "yuima.carma.qmle"
+	      "yuima.carma.qmle",
+              "yuima.poisson",
+              "yuima.qmle",
+              "yuima.CP.qmle"
               )
 
 exportMethods(
@@ -65,7 +68,9 @@ export(setData)
 export(setSampling)
 export(setCharacteristic)
 export(setCarma)
-
+export(setPoisson)
+export(dconst)
+export(rconst)
 
 export(dim)
 export(length)
