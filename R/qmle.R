@@ -137,7 +137,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 
     orig.fixed <- fixed
     orig.fixed.par <- names(orig.fixed)
-
+    if(is.Poisson(yuima))
+     threshold <- 0
 ## param handling
 	
 ## FIXME: maybe we should choose initial values at random within lower/upper
@@ -488,6 +489,8 @@ if(length(measure.par)>0){
             else
             names(mycoef) <- nm
             mycoef[fixed.par] <- fixed
+            #            print(mycoef)
+            #print(p)
             minusquasipsi(yuima=yuima, param=mycoef, print=print, env=env)
         }
     
@@ -794,7 +797,7 @@ if(length(measure.par)>0){
            oout3 <- do.call(optim, args=mydots)
            
            theta3 <- oout3$par
-           
+           #print(theta3)
            HESS[measure.par,measure.par] <- oout3$hessian
            HaveMeasHess <- TRUE
            
@@ -1357,13 +1360,21 @@ minusquasipsi <- function(yuima, param, print=FALSE, env){
     h <- env$h
     Dn.r <- !env$Cn.r
     
-    if(length(idx.intensity)){
-        intensity <- unlist(measurecoef[idx.intensity])
-    }else{
-        intensity <- eval(yuima@model@measure$intensity)
-    }
+    #    if(length(idx.intensity)){
+    #    intensity <- unlist(measurecoef[idx.intensity])
+    #}else{
+    #    intensity <- eval(yuima@model@measure$intensity, envir=env)
+    #}
     
-	
+    #	print(intensity)
+    #print(str(env$time))
+
+#  tmp.env <- new.env()
+#for(i in 1:length(param)){
+#    assign(names(param)[i],param[[i]],envir=tmp.env)
+#}
+#print(ls(env))
+    
     d.size <- yuima@model@equation.number
     n <- length(yuima)[1]
     myidx <- which(Dn.r)[-n]
@@ -1376,32 +1387,61 @@ minusquasipsi <- function(yuima, param, print=FALSE, env){
     measure.var <- env$measure.var
 	
     for(i in 1:length(measurecoef))
-    if(is.na(match(i,idx.intensity)))
-    assign(names(measurecoef)[i],measurecoef[i][[1]])
-    
+    #if(!is.Poisson(yuima)){
+        #      if(is.na(match(i,idx.intensity)))
+        #   assign(names(measurecoef)[i],measurecoef[i][[1]], envir=env)
+        # } else {
+        assign(names(measurecoef)[i],measurecoef[i][[1]], envir=env)
+        # }
+        
+    #    print("### ls(env)")
+    #       print(ls(env))
     if(is.null(dim(measure[,,1]))){  # one-dimensional
         for(t in myidx){
             iC <- 1/measure[, , t]
-            assign(measure.var,iC%*%dx[t,])
-            dF <- intensity*eval(yuima@model@measure$df$expr)/iC
+            assign(measure.var,iC%*%dx[t,],envir=env)
+            assign(yuima@model@time.variable, env$time[t], envir=env)
+            #       print("### t")
+            #print(t)
+            #print(env$time[t])
+            intensity <- eval(yuima@model@measure$intensity, envir=env)
+            #print("intensity")
+            #print(intensity)
+            dF <- intensity*eval(yuima@model@measure$df$expr,envir=env)/iC
             logpsi <- 0
             if(dF>0)
-            logpsi <- log(dF)
+                logpsi <- log(dF)
             QL <- QL + logpsi
         }
     } else {
         for(t in myidx){
             iC <- solve(measure[, , t])
-            assign(measure.var,iC%*%dx[t,])
-            dF <- intensity*eval(yuima@model@measure$df$expr)*det(iC)
+            assign(measure.var,iC%*%dx[t,], envir=env)
+            assign(yuima@model@time.variable, env$time[t], envir=env)
+            intensity <- eval(yuima@model@measure$intensity, envir=env)
+            dF <- intensity*eval(yuima@model@measure$df$expr,envir=env)*det(iC)
             logpsi <- 0
             if(dF>0)
-            logpsi <- log(dF)
+                logpsi <- log(dF)
             QL <- QL + logpsi
         }
     }
     
-    QL <- QL -h*intensity*(n-1)
+    myf <- function(x) {
+        f1 <- function(u){
+         assign(yuima@model@time.variable, u, envir=env)
+         intensity <- eval(yuima@model@measure$intensity, envir=env)
+        }
+        sapply(x, f1)
+    }
+    #    print(myf(1))
+    #  print(str( try(integrate(f=myf, lower=yuima@sampling@Initial, upper=yuima@sampling@Terminal,subdivisions=100),silent=TRUE )))
+
+    myint <- integrate(f=myf, lower=yuima@sampling@Initial, upper=yuima@sampling@Terminal,subdivisions=100)$value
+    #  print(myint)
+    #print(-h*intensity*(n-1))
+    #    QL <- QL -h*intensity*(n-1)
+    QL <- QL -myint
     
     
     if(!is.finite(QL)){
