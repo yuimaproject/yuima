@@ -209,9 +209,9 @@ setModel <- function(drift=NULL,
         if(!is.na(match(measurefunc, codelist))){
           yuima.warn(paste("distribution function", measurefunc, "should be defined as type code."))
           return(NULL)
-        }else if(is.na(match(measurefunc, CPlist))){
-          warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type CP.\n"))
-        }
+        }#else if(is.na(match(measurefunc, CPlist))){
+        # warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type CP.\n"))
+        #}
         MEASURE$df$func <- eval(parse(text=measurefunc))
         MEASURE$df$expr <- parse(text=measure$df)
         MEASURE$intensity <- parse(text=measure$intensity)

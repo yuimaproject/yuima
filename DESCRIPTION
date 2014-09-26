@@ -1,7 +1,7 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project package for SDEs
-Version: 1.0.32
+Version: 1.0.33
 Date: 2014-09-23
 Depends: methods, zoo, stats4, utils, expm, cubature, mvtnorm
 Author: YUIMA Project Team
