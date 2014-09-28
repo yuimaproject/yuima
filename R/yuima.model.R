@@ -81,7 +81,8 @@ setMethod("initialize", "yuima.model",
                    drift = expression() ,
                    diffusion = list() ,
                    hurst = 0.5,
-                   jump.coeff = expression(),
+                   jump.coeff = list(),
+#jump.coeff = expression(),
                    measure=list(),
                    measure.type=character(),
                    parameter = new("model.parameter"),
@@ -161,23 +162,22 @@ setModel <- function(drift=NULL,
       #         return(NULL)
       #     }
       
-    }else if(measure.type=="CP"){ ##::CP
-        if(length(measure)!=2){
-          yuima.warn(paste("length of measure must be two on type", measure.type, "."))
-          return(NULL)
-        }
-        
-        if(!is.list(measure)){          
-          measure <- list(intensity=measure[1], df=measure[2])
-        }else{
-          if(length(measure[[1]])!=1 || length(measure[[2]])!=1){
-            yuima.warn("multi dimentional jump term is not supported yet.")
-            return(NULL)
-          }
+    } else if(measure.type=="CP"){ ##::CP
+        #        if(length(measure)!=2){
+        # yuima.warn(paste("length of measure must be two on type", measure.type, "."))
+        # return(NULL)
+        #}
+        if(!is.list(measure)){
+          measure <- list(intensity=measure[1], df=measure[2],dimension=measure[3])
+        } else {
+        #if(length(measure[[1]])!=1 || length(measure[[2]])!=1){
+        #   yuima.warn("multi dimentional jump term is not supported yet.")
+        #   return(NULL)
+        # }
           ##::naming measure list ########
           tmpc <- names(measure)
           if(is.null(tmpc)){
-            names(measure) <- c("intensity", "df")
+            names(measure) <- c("intensity", "df","dimension")
           }else{
             whichint <- match("intensity", tmpc)            
             whichdf <- match("df", tmpc)
@@ -220,7 +220,8 @@ setModel <- function(drift=NULL,
         ##measure.par$intensity <- unique(all.vars(MEASURE$intensity))
         ##::end check df name ####################
         ##::end CP
-      }else if(measure.type=="code"){ ##::code
+     
+      } else if(measure.type=="code"){ ##::code
         if(length(measure)!=1){
           yuima.warn(paste("length of measure must be one on type", measure.type, "."))
           return(NULL)
@@ -307,7 +308,6 @@ setModel <- function(drift=NULL,
   }
   
   ##::end measure and jump term #####################################
-  
   
   ##:: check for errors and reform values
   if(any(time.variable %in% state.variable)){
@@ -399,13 +399,8 @@ setModel <- function(drift=NULL,
     return(res)
   }
 
-  if (length(jump.coeff)==0){
-    JUMP <- parse(text=jump.coeff)
-  }else{
-    JUMP <- vector(n.eqn, mode="expression")
-  }
-  
-  ##:: make expressions of drifts and diffusions
+
+  ##:: make expressions of drifts and diffusions and jump
   for(i in 1:n.eqn){
     DRIFT[i] <- pre.proc(loc.drift[i,])
     # 22/11 Simplify expressions
@@ -423,14 +418,57 @@ setModel <- function(drift=NULL,
       DIFFUSION[[i]][j] <- yuima.Simplifyobj(expr)
     }
 #22/11     
-    if (length(JUMP)>0){
-      JUMP[i] <- parse(text=jump.coeff[i])
-      JUMP[i] <- yuima.Simplifyobj(JUMP[i])
-    }
+
+#if (length(JUMP)>0){
+#    JUMP[i] <- parse(text=jump.coeff[i])
+#    JUMP[i] <- yuima.Simplifyobj(JUMP[i])
+#}
+
   }
 
+
+
+#print(length(jump.coeff))
+#if (length(jump.coeff)==0){
+#    JUMP <- list(parse(text=jump.coeff))
+#}else{
+#    #    JUMP <- vector(n.eqn, mode="expression")
+#    JUMP <- vector(n.eqn, mode="list")
+#}
+
+if(length(jump.coeff)==0){
+    JUMP <- list()
+} else {
+    if(length(jump.coeff)==1 & !is.matrix(jump.coeff)){ # is a scalar
+        expr <- parse(text=jump.coeff)
+        if(length(expr)==0){
+            expr <- expression(0)  # expr must have something
+        }
+        JUMP <- list(yuima.Simplifyobj(expr))
+    } else { # must be matrix, n.col = dimension of Lévy noise
+        jump.coeff <- as.matrix(jump.coeff)
+        c.j <- ncol(jump.coeff)
+        r.j <- nrow(jump.coeff)
+        #print(c.j)
+        #print(r.j)
+        #print(jump.coeff)
+        JUMP <- vector(r.j, mode="list")
+        for(i in 1:r.j){
+            for(j in 1:c.j){
+                #cat(sprintf("\ni=%d,j=%d\n",i,j))
+                expr <- parse(text=jump.coeff[i,j])
+                if(length(expr)==0){
+                    expr <- expression(0)  # expr must have something
+                }
+                JUMP[[i]][j] <- yuima.Simplifyobj(expr)
+            }
+        }
+    }
+}
+#print(str(JUMP))
+
  #
-  
+ 
   ##:: get parameters in drift expression
   drift.par <- unique(all.vars(DRIFT))
   # Modification starting point 6/11

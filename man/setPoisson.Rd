@@ -15,13 +15,14 @@
 }
 
 \usage{
-setPoisson(intensity = 1, df = NULL, scale = 1, ...)
+setPoisson(intensity = 1, df = NULL, scale = 1, dimension=1, ...)
 }
 
 \arguments{
   \item{intensity}{either and expression or a numerical value representing the intensity function of the Poisson process Nt.}
   \item{df}{is the density of jump random variables Y.}
   \item{scale}{this is the scaling factor \code{c}.}
+  \item{dimension}{this is the dimension of the jump component.}
   \item{...}{passed to \code{\link{setModel}}}
  }
 

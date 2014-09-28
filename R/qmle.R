@@ -87,7 +87,7 @@ measure.term <- function(yuima, theta, env){
     for(r in 1:r.size){
         #for(d.tmp in 1:d){
         if(d.size==1){
-            measure[1,r,] <- eval(JUMP[r],envir=tmp.env)
+            measure[1,r,] <- eval(JUMP[[r]],envir=tmp.env)
         }else{
             for(d in 1:d.size){
                 measure[d,r,] <- eval(JUMP[[d]][r],envir=tmp.env)

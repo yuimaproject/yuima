@@ -1,5 +1,4 @@
 euler<-function(xinit,yuima,dW,env){
-
 	
 	sdeModel<-yuima@model
 	
@@ -96,7 +95,7 @@ euler<-function(xinit,yuima,dW,env){
 	}
 	
   
-  if(!length(sdeModel@jump.coeff)){ ##:: Wiener Proc
+  if(!length(sdeModel@measure.type)){ ##:: Wiener Proc
     ##:: using Euler-Maruyama method
         
     if(var.in.diff & (!is.Poisson(sdeModel))){  ##:: diffusions have state variables and it is not Poisson
@@ -154,19 +153,38 @@ euler<-function(xinit,yuima,dW,env){
   }else{ ##:: Levy
     JP <- sdeModel@jump.coeff
     mu.size <- length(JP)
-    
+    # cat("\n Levy\n")
     ##:: function to solve c(x,z)
     p.b.j <- function(t, X=numeric(d.size)){
       for(i in 1:length(modelstate)){
         assign(modelstate[i], X[i], env)
       }
       assign(modeltime, t, env)
-      tmp <- numeric(d.size)
-      for(i in 1:d.size){
-        tmp[i] <-  eval(JP[i], env)
+      #      tmp <- numeric(d.size)
+      j.size <- length(JP[[1]])
+      tmp <- matrix(0, mu.size, j.size)
+      # cat("\n inside\n")
+      #print(dim(tmp))
+      for(i in 1:mu.size){
+          for(j in 1:j.size){
+              tmp[i,j] <- eval(JP[[i]][j],env)
+          }
+          #        tmp[i] <-  eval(JP[i], env)
       }
       return(tmp)
     }
+    #  print(ls(env))
+    
+    ### WHY I AM DOING THIS?
+    #    tmp <- matrix(0, d.size, r.size)
+    #
+    #for(i in 1:d.size){
+    #        for(j in 1:r.size){
+    #            cat("\n here\n")
+    #            tmp[i,j] <- eval(V[[i]][j],env)
+    #        } # for j
+    #    }
+    ###
     
     if(sdeModel@measure.type == "CP"){ ##:: Compound-Poisson type
 
@@ -185,10 +203,14 @@ euler<-function(xinit,yuima,dW,env){
       #lambda <- integrate(tmp.expr, 0, Inf)$value * eta0 ##bug:2013/10/28
       
       dummyList<-as.list(env)
+      #   print(str(dummyList))
+      #print(str(idx.dummy))
       lgth.meas<-length(yuima@model@parameter@measure)
       if(lgth.meas>1){
         for(i in c(2:lgth.meas)){
           idx.dummy<-yuima@model@parameter@measure[i]
+          #print(i)
+          #print(yuima@model@parameter@measure[i])
           assign(idx.dummy,as.numeric(dummyList[idx.dummy]))
         }
       }
@@ -254,22 +276,31 @@ euler<-function(xinit,yuima,dW,env){
       ##:: Jump terms
       code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
       args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
+      #print(args)
       dZ <- switch(code,
-                   rNIG=paste("rNIG(n, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta)"),
+                   rNIG=paste("rNIG(n, ", args[2], ", ", args[3], ", ", args[4], "*delta, ", args[5], "*delta, ", args[6],")"),
                    rIG=paste("rIG(n,", args[2], "*delta, ", args[3], ")"),
                    rgamma=paste("rgamma(n, ", args[2], "*delta, ", args[3], ")"),
                    rbgamma=paste("rbgamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], "*delta, ", args[5], ")"),
 ##                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
-                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta)"),
+                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta,", args[6],")"),
 ##                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
                    rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)")
                    )
       dummyList<-as.list(env)
+      #print(str(dummyList))
       lgth.meas<-length(yuima@model@parameter@measure)
+      #print(lgth.meas)
       if(lgth.meas!=0){
         for(i in c(1:lgth.meas)){
+            #print(i)
+            #print(yuima@model@parameter@measure[i])
           idx.dummy<-yuima@model@parameter@measure[i]
-          assign(idx.dummy,as.numeric(dummyList[idx.dummy]))
+          #print(str(idx.dummy))
+          assign(idx.dummy,dummyList[[idx.dummy]])
+          #print(str(idx.dummy))
+          #print(str(dummyList[[idx.dummy]]))
+          #print(get(idx.dummy))
         }
       }
       
@@ -279,15 +310,28 @@ euler<-function(xinit,yuima,dW,env){
       }
       dZ <- eval(parse(text=dZ))
       ##:: calcurate difference eq.
-      
+      #print(str(dZ))
+      if(is.null(dim(dZ)))
+        dZ <- matrix(dZ,nrow=1)
+        # print(dim(dZ))
+        #  print(str(sdeModel@jump.variable))
       for(i in 1:n){
-        assign(sdeModel@jump.variable, dZ[i], env)
+        assign(sdeModel@jump.variable, dZ[,i], env)
         
         if(sdeModel@J.flag){
-          dZ[i] <- 1
+          dZ[,i] <- 1
         }
-          
-        dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] +p.b.j(t=i*delta, X=dX) * dZ[i]
+        #           cat("\np.b.j call\n")
+            tmp.j <- p.b.j(t=i*delta, X=dX)
+            #print(str(tmp.j))
+            #cat("\np.b.j cback and dZ\n")
+            # print(str(dZ[,i]))
+            # print(sum(dim(tmp.j)))
+        if(sum(dim(tmp.j))==2)
+         tmp.j <- as.numeric(tmp.j)
+         #print(str(tmp.j))
+         #print(str(p.b(t = i * delta, X = dX) %*% dW[, i]))
+        dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i]
         X_mat[, i+1] <- dX
       }
       tsX <- ts(data=t(X_mat), deltat=delta, start=0)

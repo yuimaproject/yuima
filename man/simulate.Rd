@@ -137,7 +137,8 @@ plot(cor)
 # A non-negative process (CIR process)
 # dXt= a*(c-y)*dt + b*sqrt(Xt)*dWt
  sq <- function(x){y = 0;if(x>0){y = sqrt(x);};return(y);}
- model<- setModel(drift="0.8*(0.2-x)",diffusion="0.5*sq(x)",solve.variable=c("x"))
+ model<- setModel(drift="0.8*(0.2-x)",
+  diffusion="0.5*sq(x)",solve.variable=c("x"))
  T<-10
  n<-1000
  sampling <- setSampling(Terminal=T,n=n)
@@ -226,7 +227,8 @@ my.dW <- rnorm(n * yuima.obj@model@noise.number, 0, sqrt(delta))
 my.dW <- t(matrix(my.dW, nrow=n, ncol=yuima.obj@model@noise.number))
 
 ## Solve SDEs using Euler-Maruyama method.
-yuima.obj.path <- simulate(yuima.obj, space.discretized=FALSE, increment.W=my.dW)
+yuima.obj.path <- simulate(yuima.obj, space.discretized=FALSE, 
+ increment.W=my.dW)
 if( !is.null(yuima.obj.path) ){
   dev.new()
 #  x11()
@@ -290,17 +292,23 @@ plot(result)
 ## dX = (theta - A X)dt + dZ,
 ##    theta=(theta_1, theta_2) = c(1,.5)
 ##    A=[a_ij], a_11 = 2, a_12 = 1, a_21 = 1, a_22=2
-##  xinit <- c(1,1)
-##  beta <- c(.1,.1)
-##  mu <- c(0,0)
-##  Lambda <- matrix(c(1,0,0,1),2,2)
-##  obj.model <- setModel(drift=c("1 - 2*x1-x2",".5-x1-2*x2"), xinit=c(1,1), 
-## solve.variable=c("x1","x2"), jump.coeff="1", measure.type="code", 
-## measure=list(df="rIG(z, alpha=1, beta=beta, mu=mu, Lambda=Lambda)"))
-##  obj.sampling <- setSampling(Terminal=10, n=10000)
-##  obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
-##  result <- simulate(obj.yuima)	   
-## plot(result)
+require(yuima)
+x0 <- c(1,1)
+beta <- c(.1,.1)
+mu <- c(0,0)
+delta0 <- 1
+alpha <- 1
+Lambda <- matrix(c(1,0,0,1),2,2)
+cc <- matrix(c(1,0,0,1),2,2)
+obj.model <- setModel(drift=c("1 - 2*x1-x2",".5-x1-2*x2"), xinit=x0,
+solve.variable=c("x1","x2"), jump.coeff=cc, measure.type="code",
+ measure=list(df="rNIG(z, alpha, beta, delta0, mu, Lambda)"))
+obj.sampling <- setSampling(Terminal=10, n=10000)
+obj.yuima <- setYuima(model=obj.model, sampling=obj.sampling)
+result <- simulate(obj.yuima,true.par=list( alpha=alpha, 
+ beta=beta, delta0=delta0, mu=mu, Lambda=Lambda))
+plot(result)
+
 
 # Path-simulation for a Carma(p=2,q=1) model driven by a Brownian motion:
 carma1<-setCarma(p=2,q=1)

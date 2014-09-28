@@ -37,7 +37,7 @@ setMethod("initialize", "yuima.poisson",
             return(.Object)
           })
 
-setPoisson <- function(intensity=1, df=NULL, scale=1, ...){
+setPoisson <- function(intensity=1, df=NULL, scale=1, dimension=1, ...){
     
     poisson.model <- setModel(drift="0", diffusion="0",
     jump.coeff=as.expression(scale),
@@ -57,8 +57,8 @@ setPoisson <- function(intensity=1, df=NULL, scale=1, ...){
     jump.variable=poisson.model@jump.variable,
     time.variable=poisson.model@time.variable,
     noise.number =  poisson.model@noise.number,
-    equation.number = poisson.model@equation.number,
-    dimension = poisson.model@dimension,
+    equation.number = dimension,
+    dimension = dimension,
     solve.variable=poisson.model@solve.variable,
     xinit=poisson.model@xinit,
     J.flag = poisson.model@J.flag
