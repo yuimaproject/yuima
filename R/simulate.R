@@ -176,7 +176,7 @@ setMethod("simulate", "yuima",
               if(space.discretized == TRUE){
                 yuima.warn("Parameter increment must be invalid if space.discretized=TRUE.")
                 return(NULL)
-              }else if(dim(increment.L)[1] != r.size){
+              }else if(dim(increment.L)[1] != length(yuima@model@jump.coeff[[1]]) ){ #r.size){
                 yuima.warn("Length of increment's row must be same as yuima@model@noise.number.")
                 return(NULL)
               }else if(dim(increment.L)[2] != n){
@@ -186,7 +186,7 @@ setMethod("simulate", "yuima",
             }
             
             
-            
+            yuimaEnv$dL <- increment.L
             
             
             if(space.discretized){   	  

@@ -10,7 +10,8 @@ euler<-function(xinit,yuima,dW,env){
 	d.size <- sdeModel@equation.number
 	Terminal <- yuima@sampling@Terminal[1]
 	n <- yuima@sampling@n[1]
-	
+	dL <- env$dL
+    
 #	dX <- xinit
   
 	# 06/11 xinit is an expression: the structure is equal to that of V0   
@@ -247,6 +248,7 @@ euler<-function(xinit,yuima,dW,env){
       F.env <- new.env(parent=env)
       assign("mu.size", mu.size, envir=F.env)
       assign("N_sharp", N_sharp, envir=F.env)
+   
       randJ <- eval(F, F.env)  ## this expression is evaluated in the F.env
       
       j <- 1
@@ -308,7 +310,10 @@ euler<-function(xinit,yuima,dW,env){
         cat(paste("Code \"", code, "\" not supported yet.\n", sep=""))
         return(NULL)
       }
-      dZ <- eval(parse(text=dZ))
+      if(!is.null(dL))
+       dZ <- dL
+      else
+       dZ <- eval(parse(text=dZ))
       ##:: calcurate difference eq.
       #print(str(dZ))
       if(is.null(dim(dZ)))
