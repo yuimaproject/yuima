@@ -21,7 +21,7 @@
 }
 
 \usage{
-setModel(drift = NULL, diffusion = NULL, hurst = 0.5, jump.coeff = character(),
+setModel(drift = NULL, diffusion = NULL, hurst = 0.5, jump.coeff = NULL,
 measure = list(), measure.type = character(), state.variable = "x",
 jump.variable = "z", time.variable = "t", solve.variable, xinit)
 }

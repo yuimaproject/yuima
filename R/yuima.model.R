@@ -121,7 +121,7 @@ setMethod("initialize", "yuima.model",
 setModel <- function(drift=NULL,
                      diffusion=NULL,
                      hurst=0.5,
-                     jump.coeff=character(),
+                     jump.coeff=NULL,
                      measure=list(),
                      measure.type=character(),
                      state.variable="x",
@@ -488,7 +488,10 @@ if(length(jump.coeff)==0){
   
   ##:: get parameters in jump expression
   J.flag <- FALSE
-  jump.par <- unique(all.vars(JUMP))
+  #  jump.par <- unique(all.vars(JUMP))
+  jump.par <- unlist(lapply(JUMP,all.vars))
+  if(is.null(jump.par))
+   jump.par <- character()
   if(length(na.omit(match(jump.par, jump.variable)))){
     J.flag <- TRUE
   }

@@ -521,7 +521,8 @@ if(length(measure.par)>0){
      HaveDriftHess <- FALSE
 	 HaveDiffHess <- FALSE
 	 HaveMeasHess <- FALSE
-
+     
+     
     if(length(start)){
 		if(JointOptim){ ### joint optimization
             old.fixed <- fixed
@@ -630,6 +631,7 @@ if(length(measure.par)>0){
 			
 			theta2 <- NULL
 			
+            
 			if(length(idx.drift)>0){
 ## DRIFT estimation with first state diffusion estimates
 			fixed <- old.fixed
@@ -684,7 +686,11 @@ if(length(measure.par)>0){
                 }
 			  }  # END if(is.CARMA)
             
+            
+            
             oout1 <- do.call(optim, args=mydots)
+            
+            
 	#		  oout1 <- optim(mydots$par,f,method = "L-BFGS-B" , lower = mydots$lower, upper = mydots$upper)
 			} else {
 				mydots$f <- mydots$fn
@@ -756,7 +762,7 @@ if(length(measure.par)>0){
 #names(par) <- unique(c(diff.par, drift.par))
 #     nm <- unique(c(diff.par, drift.par))
 
-# ESTIMATION OF CP part
+# START: ESTIMATION OF CP part
       theta3 <- NULL
        
        if(length(idx.measure)>0 & !is.CARMA(yuima)){
@@ -805,6 +811,7 @@ if(length(measure.par)>0){
            start <- old.start
            fixed.par <- old.fixed.par
        }
+# END: ESTIMATION OF CP part
        
        
        
@@ -816,6 +823,8 @@ if(length(measure.par)>0){
     }
  
      coef <- oout$par
+     
+     
        control=list()
        par <- coef
        if(!is.CARMA(yuima)){
@@ -912,6 +921,7 @@ if(length(measure.par)>0){
     else matrix(numeric(0L), 0L, 0L)
 
 
+
     mycoef <- as.list(coef)
 
     if(!is.CARMA(yuima)){
@@ -946,11 +956,14 @@ if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
     min <- min.diff + min.jump
     if(min==0)
      min <- NA
+     
+     
   dummycov<-matrix(0,length(coef),length(coef))
   rownames(dummycov)<-names(coef)
   colnames(dummycov)<-names(coef)
   dummycov[rownames(vcov),colnames(vcov)]<-vcov
   vcov<-dummycov
+  
   
 #     new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
 #        vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
@@ -1058,6 +1071,7 @@ if(!is.CARMA(yuima)){
       dummycovCarmapar<-vcov[unique(c(drift.par,diff.par,info@loc.par)),
                              unique(c(drift.par,diff.par,info@loc.par))]
     }
+
 
 
 dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to adjusted

@@ -28,7 +28,10 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
   if(length(mu)!=length(beta)){
     stop("Error: wrong input dimension.")
   }
-  if(missing(Lambda) | is.na(Lambda)){
+  if(missing(Lambda))
+   Lambda <- NA
+  
+  if(is.na(Lambda)){
     ## univariate case
     if(length(mu)!=1 || length(beta)!=1){
       stop("Error: wrong input dimension.")
@@ -179,8 +182,10 @@ rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
   if(length(mu)!=length(beta)){
     stop("Error: wrong input dimension.")
   }
-  
-  if(missing(Lambda) | is.na(Lambda)){
+  if(missing(Lambda))
+   Lambda <- NA
+
+  if(is.na(Lambda)){
     ## univariate case
     gamma <- sqrt(alpha^2 - beta^2)
     if(gamma <0){
