@@ -1880,7 +1880,22 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   
   expAT<-t(expA)
   #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
-  SigMatr<-V_inf-expA%*%V_inf%*%expAT
+  
+  # input: V_inf, p, expA
+  # output: SigMatr (pre-alloc in R)
+  
+  SigMatr1 <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
+
+print( (expA %*% V_inf) %*% expAT)
+  SigMatr <- V_inf - expA %*% V_inf %*% expAT
+  cat("\nSigMatr\n")
+  print(SigMatr)
+  cat("\nAVAT\n")
+  print(expA %*% V_inf)
+  cat("\nSigMatr1\n")
+  print(SigMatr1)
+  stop("")
+  
   statevar<-matrix(rep(0, p),p,1)
   Qmatr<-SigMatr
   
@@ -1890,31 +1905,31 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   # SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
   
   #SigMatr<-Qmatr
-  SigMatr<-V_inf
+  SigMatr <- V_inf
   
-  zc<-matrix(bvector,1,p)
+  
+  zc <- matrix(bvector,1,p)
   loglstar <- 0
   loglstar1 <- 0
   
 #  zcT<-matrix(bvector,p,1)
-  zcT<-t(zc)
+  zcT <- t(zc)
+  ###  statevar, expA, times.obs, Qmatr,
   for(t in 1:times.obs){ 
     # prediction
-    statevar<-expA%*%statevar
-    SigMatr<-expA%*%SigMatr%*%expAT+Qmatr
+    statevar <- expA %*% statevar
+    SigMatr <- expA %*% SigMatr %*% expAT + Qmatr
     # forecast
-    Uobs<-y[t]-zc%*%statevar
-    dum.zc<-zc%*%SigMatr
-    sd_2<-dum.zc%*%zcT
-    # sd_2<-zc%*%SigMatr%*%zcT
-    Inv_sd_2<-1/sd_2
+    Uobs <- y[t] - zc %*% statevar
+    dum.zc <- zc %*% SigMatr
+    sd_2 <- dum.zc %*% zcT
+    Inv_sd_2 <- 1/sd_2
     #correction
-    Kgain<-SigMatr%*%zcT%*%Inv_sd_2    
-    statevar<-statevar+Kgain%*%Uobs
-    #SigMatr<-SigMatr-Kgain%*%zc%*%SigMatr
-    SigMatr<-SigMatr-Kgain%*%dum.zc
-    term_int<--0.5*(log(sd_2)+Uobs%*%Uobs%*%Inv_sd_2)
-    loglstar<-loglstar+term_int
+    Kgain <- SigMatr %*% zcT %*% Inv_sd_2
+    statevar <- statevar+Kgain %*% Uobs
+    SigMatr <- SigMatr - Kgain %*% dum.zc
+    term_int<- -0.5 * (log(sd_2)+ Uobs %*% Uobs %*% Inv_sd_2)
+    loglstar <- loglstar + term_int
   }
   return(list(loglstar=(loglstar-0.5*log(2*pi)*times.obs),s2hat=sd_2))
 }
