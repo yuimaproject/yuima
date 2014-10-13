@@ -1806,7 +1806,8 @@ yuima.Vinfinity<-function(elForVInf,v){
   ATrans<-elForVInf$ATrans  
   matrixV<-elForVInf$matrixV
   matrixV[upper.tri(matrixV,diag=TRUE)]<-v
-  matrixV[lower.tri(matrixV)]<-matrixV[upper.tri(matrixV)]
+  matrixV<-as.matrix(forceSymmetric(matrixV))
+#matrixV[lower.tri(matrixV)]<-matrixV[upper.tri(matrixV)]
 #  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
 #  matrixV<-matrix(v,p,p)
 
@@ -1859,6 +1860,7 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   elForVInf$lTrans<-lTrans
   elForVInf$l<-l
   elForVInf$matrixV<-matrixV
+
   elForVInf$sigma<-sigma
 #   elForVInf<-list(A=A,
 #                   ATrans=ATrans,
@@ -1874,28 +1876,29 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   V_inf<-matrix(0,p,p)
   
   V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
-  V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
+  V_inf<-as.matrix(forceSymmetric(V_inf))
+#  V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
   
   V_inf[abs(V_inf)<=1.e-06]=0
   
   expAT<-t(expA)
-  #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
+  #IGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
   
   # input: V_inf, p, expA
   # output: SigMatr (pre-alloc in R)
-  
-  SigMatr1 <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
-
-print( (expA %*% V_inf) %*% expAT)
-  SigMatr <- V_inf - expA %*% V_inf %*% expAT
-  cat("\nSigMatr\n")
-  print(SigMatr)
-  cat("\nAVAT\n")
-  print(expA %*% V_inf)
-  cat("\nSigMatr1\n")
-  print(SigMatr1)
-  stop("")
-  
+#   
+#   SigMatr1 <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
+# 
+# print( (expA %*% V_inf) %*% expAT)
+   SigMatr <- V_inf - expA %*% V_inf %*% expAT
+#   cat("\nSigMatr\n")
+#   print(SigMatr)
+#   cat("\nAVAT\n")
+#   print(expA %*% V_inf)
+#   cat("\nSigMatr1\n")
+#   print(SigMatr1)
+#   stop("")
+#   
   statevar<-matrix(rep(0, p),p,1)
   Qmatr<-SigMatr
   
