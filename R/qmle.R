@@ -1882,22 +1882,19 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   V_inf[abs(V_inf)<=1.e-06]=0
   
   expAT<-t(expA)
-  #IGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
+  #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
   
   # input: V_inf, p, expA
   # output: SigMatr (pre-alloc in R)
 #   
-#   SigMatr1 <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
+   SigMatr <- .Call("carma_tmp",  V_inf, as.integer(p), matrix(expA,p,p), PACKAGE="yuima")
 # 
-# print( (expA %*% V_inf) %*% expAT)
-   SigMatr <- V_inf - expA %*% V_inf %*% expAT
-#   cat("\nSigMatr\n")
-#   print(SigMatr)
-#   cat("\nAVAT\n")
-#   print(expA %*% V_inf)
-#   cat("\nSigMatr1\n")
-#   print(SigMatr1)
-#   stop("")
+  
+#   SigMatr <- V_inf - expA %*% V_inf %*% expAT
+#    cat("\nSigMatr\n")
+#    print(SigMatr)
+  
+#    stop("")
 #   
   statevar<-matrix(rep(0, p),p,1)
   Qmatr<-SigMatr
@@ -1908,7 +1905,7 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   # SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
   
   #SigMatr<-Qmatr
-  SigMatr <- V_inf
+  #SigMatr <- V_inf
   
   
   zc <- matrix(bvector,1,p)
@@ -1917,7 +1914,7 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   
 #  zcT<-matrix(bvector,p,1)
   zcT <- t(zc)
-  ###  statevar, expA, times.obs, Qmatr,
+  ###  statevar, expA, times.obs, Qmatr, SigMatr, zc
   for(t in 1:times.obs){ 
     # prediction
     statevar <- expA %*% statevar

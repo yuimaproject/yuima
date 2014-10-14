@@ -48,7 +48,7 @@ SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
     int p;
     int i, j, h;
     double *rV, *rA, *rB, *rC, *rSigma;
-    SEXP B, C, Sigma;
+    SEXP  B, C, Sigma;
     
     if(!isInteger(P)) error("`P' must be integer");
     if(!isNumeric(V)) error("`V' must be numeric");
@@ -73,12 +73,14 @@ SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
     PROTECT(Sigma  = allocMatrix(REALSXP, p, p));
     rSigma = REAL(Sigma);
     
+  
+    
     /* B = A %*% V */
     for(i=0; i<p; i++){
         for(j=0; j<p; j++){
-            rB[i,j] = 0;
+            rB[i+j*p] = 0;
             for(h=0; h<p; h++){
-                rB[i,j] = rB[i,j] + rA[i,h] * rV[h,j];
+                rB[i+j*p] = rB[i+j*p] + rA[i+h*p] * rV[h+j*p];
             }
         }
     }
@@ -87,26 +89,24 @@ SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
     /* C = B %*% A^T */
     for(i=0; i<p; i++){
         for(j=0; j<p; j++){
-            rC[i,j] = 0;
+            rC[i+j*p] = 0;
             for(h=0; h<p; h++){
-                rC[i,j] = rC[i,j] + rB[i,h] * rA[j,h];
+                rC[i+j*p] = rC[i+j*p] + rB[i+h*p] * rA[j+h*p];
             }
         }
     }
 
-    for(i=0; i<p; i++){
-        for(j=0; j<p; j++){
-            rSigma[i,j] = rV[i,j] - rC[i,j];
+    for(i=0; i<p*p; i++){
+          rSigma[i] = rV[i] - rC[i];
         }
-    }
     
     UNPROTECT(5);
-    return(C);
+    return(Sigma);
 }
 
 /*
 SEXP sde_sim_euler(SEXP x0, SEXP t0, SEXP delta, SEXP N, SEXP M,
-                   SEXP d, SEXP s, SEXP sx, 
+                   SEXP d,888 SEXP s, SEXP sx, 
 				   SEXP eta, SEXP alpha, SEXP corr, SEXP rho)
 {
   SEXP X, Y1, Y2;
