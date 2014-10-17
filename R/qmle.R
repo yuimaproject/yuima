@@ -1831,7 +1831,7 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   # u<-diff(tt)[1]
   
   
-#  Amatx<-yuima.carma.eigen(A)
+#  Amatx<-yuima.ca2rma.eigen(A)
 #   expA<-Amatx$vectors%*%expm(diag(Amatx$values*u),
 #                              method="Pade",
 #                              order=6, 
@@ -1887,7 +1887,7 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   # input: V_inf, p, expA
   # output: SigMatr (pre-alloc in R)
 #   
-   SigMatr <- .Call("carma_tmp",  V_inf, as.integer(p), matrix(expA,p,p), PACKAGE="yuima")
+   SigMatr <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
 # 
   
 #   SigMatr <- V_inf - expA %*% V_inf %*% expAT
@@ -1897,44 +1897,183 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
 #    stop("")
 #   
   statevar<-matrix(rep(0, p),p,1)
-  Qmatr<-SigMatr
+  Qmatr<-SigMatr+0
   
   # set
   #statevar<-statevar0
   
-  # SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
+  # SigMatCheckr<-expA%*%V_inf%*%t(expA)+Qmatr
   
   #SigMatr<-Qmatr
+
   #SigMatr <- V_inf
   
   
   zc <- matrix(bvector,1,p)
   loglstar <- 0
-  loglstar1 <- 0
+
   
 #  zcT<-matrix(bvector,p,1)
   zcT <- t(zc)
-  ###  statevar, expA, times.obs, Qmatr, SigMatr, zc
-  for(t in 1:times.obs){ 
-    # prediction
-    statevar <- expA %*% statevar
-    SigMatr <- expA %*% SigMatr %*% expAT + Qmatr
-    # forecast
-    Uobs <- y[t] - zc %*% statevar
-    dum.zc <- zc %*% SigMatr
-    sd_2 <- dum.zc %*% zcT
-    Inv_sd_2 <- 1/sd_2
-    #correction
-    Kgain <- SigMatr %*% zcT %*% Inv_sd_2
-    statevar <- statevar+Kgain %*% Uobs
-    SigMatr <- SigMatr - Kgain %*% dum.zc
-    term_int<- -0.5 * (log(sd_2)+ Uobs %*% Uobs %*% Inv_sd_2)
-    loglstar <- loglstar + term_int
-  }
-  return(list(loglstar=(loglstar-0.5*log(2*pi)*times.obs),s2hat=sd_2))
+# Cycle_Carma(SEXP StateVar, SEXP ExpA, SEXP Times.Obs, SEXP P,
+#             SEXP Qmatr, SEXP SigMatr, SEXP Zc, SEXP Logstar) 
+ # sd_2<-0
+    loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(times.obs),
+                   as.integer(p), Qmatr, SigMatr, zc, 
+                   PACKAGE="yuima")
+  return(list(loglstar=as.numeric(loglstar[1,1])-0.5*log(2*pi)*times.obs,s2hat=loglstar[2,1]))
+
+  #  statevar, expA, times.obs, Qmatr, SigMatr, zc, logstar
+  
+ #loglstar<-CycleCarma(y, statevar, expA, as.integer(times.obs), as.integer(p), Qmatr, SigMatr, zc, loglstar)
+#return(list(loglstar=loglstar[1,1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2,1]))
+#   for(t in 1:times.obs){ 
+#     # prediction
+#     statevar <- expA %*% statevar
+#     SigMatr <- expA %*% SigMatr %*% expAT + Qmatr
+#     # forecast
+#     Uobs <- y[t] - zc %*% statevar
+#     dum.zc <- zc %*% SigMatr
+#     sd_2 <- dum.zc %*% zcT
+#     Inv_sd_2 <- 1/sd_2
+#     #correction
+#     Kgain <- SigMatr %*% zcT %*% Inv_sd_2
+#     statevar <- statevar+Kgain %*% Uobs
+#     SigMatr <- SigMatr - Kgain %*% dum.zc
+#     term_int<- -0.5 * (log(sd_2)+ Uobs %*% Uobs %*% Inv_sd_2)
+#     loglstar <- loglstar + term_int
+#   }
+#   return(list(loglstar=loglstar-0.5*log(2*pi)*times.obs,s2hat=sd_2))
 }
 
-
+# CycleCarma<-function(y, statevar, expA, times.obs=integer(),
+#                      p=integer(), Qmatr, SigMatr, zc, loglstar){
+# #   expAT=t(expA)
+# #   zcT=t(zc)
+#  # for(t in 1:times.obs){ 
+# #   t=1
+# # #     # prediction
+# #     statevar <- expA %*% statevar
+# #     SigMatr <- expA %*% SigMatr %*% t(expA) + Qmatr
+# #     # forecast
+# #     Uobs <- y[t] - zc %*% statevar # 1 - 1Xp px1
+# #     dum.zc <- zc %*% SigMatr  # 1xp pxp
+# #     sd_2 <- dum.zc %*% t(zc)  # 1xp px1
+# #     Inv_sd_2 <- 1/sd_2
+# #     #correction
+# #     Kgain <- SigMatr %*%  t(zc) %*% Inv_sd_2 # pxp px1*1
+# #     statevar <- statevar+Kgain %*% Uobs # px1+px1
+# #     SigMatr <- SigMatr - Kgain %*% dum.zc # pxp-px1 1x+
+# #     term_int<- -0.5 * (log(sd_2)+ Uobs %*% Uobs %*% Inv_sd_2) # every entries are scalars 
+# #     loglstar <- loglstar + term_int # every entries are scalars
+# #   }
+# #   expA=matrix(c(1:16),nrow=4,ncol=4)
+# #   SigMatr=matrix(c(1:16),nrow=4,ncol=4)+1
+# #   Qmatr=matrix(c(1:16),nrow=4,ncol=4)+2
+# #   vvvvv<-expA%*%SigMatr
+# #   ppppp<-expA%*%SigMatr%*%t(expA)+Qmatr
+#   rY=as.numeric(y)
+#   rStateVar=as.numeric(statevar)
+#   rExpA=as.numeric(expA)
+#   rtime_obs=times.obs
+#   p=p
+#   rQmatr=as.numeric(Qmatr)
+#   rSigMatr=as.numeric(SigMatr)
+#   rZc=as.numeric(zc)
+#   rLogstar=loglstar
+#   In_dum=0
+#   sd_2=0
+#   rMat21=numeric(length=p)
+#   rdum_zc=numeric(length=p)
+#   rMat22int=numeric(length=p*p)
+#   rMat22est=numeric(length=p*p)
+#   rKgain=numeric(length=p)
+#   for(t in 1:rtime_obs){
+#     # prediction
+#     for(i in 1:p){
+#       rMat21[(i-1)+1] = 0
+#       for(j in 1:p){
+#         #     statevar <- expA %*% statevar: px1=pxp px1
+#         rMat21[(i-1)+1] = rMat21[(i-1)+1]+rExpA[(i-1)+(j-1)*p+1]*rStateVar[(j-1)+1]
+#       }
+#         rStateVar[(i-1)+1] = rMat21[(i-1)+1]  #     statevar <- expA %*% statevar 
+#     }
+#    
+# #   SigMatr <- expA %*% SigMatr %*% expAT + Qmatr: pxp = pxp pxp pxp
+#       # First We compute rMat22int <- expA %*% SigMatr : pxp = pxp pxp 
+#     for(i in 1:p){
+#       for(j in 1:p){
+#         rMat22int[(i-1)+(j-1)*p+1]=0
+#         for(h in 1:p){
+#             rMat22int[(i-1)+(j-1)*p+1]=rMat22int[(i-1)+(j-1)*p+1]+rExpA[(i-1)+(h-1)*p+1]*
+#             rSigMatr[(h-1)+(j-1)*p+1]
+#         }
+#       }
+#     }
+#       # Second We compute rMat22est <- rMat22int %*% t(expA) + Qmatr: pxp = pxp pxp + pxp 
+#     for(i in 1:p){
+#       for(j in 1:p){
+#         rMat22est[(i-1)+(j-1)*p+1]=0
+#         for(h in 1:p){
+#           rMat22est[(i-1)+(j-1)*p+1]=rMat22est[(i-1)+(j-1)*p+1]+rMat22int[(i-1)+(h-1)*p+1]*rExpA[(j-1)+(h-1)*p+1]
+#           
+#         }
+#         rSigMatr[(i-1)+(j-1)*p+1]=rMat22est[(i-1)+(j-1)*p+1]+rQmatr[(i-1)+(j-1)*p+1]
+#       }
+#     }
+# #     # forecast
+# 
+# #     Uobs <- y[t] - zc %*% statevar # 1 - 1Xp px1
+#       rMat22est[1]=0
+#     for(i in c(1:p)){
+#       rMat22est[1]=rMat22est[1]+rZc[i]*rStateVar[i]
+#     }  
+#     Uobs=rY[t]-rMat22est[1]
+# 
+#  #   dum.zc <- zc %*% SigMatr  # 1xp pxp
+#  
+#     
+#     for(i in c(1:p)){
+#       rdum_zc[i]=0
+#       for(j in c(1:p)){
+#         rdum_zc[i]=rdum_zc[i]+rZc[j]*rSigMatr[(i-1)*h+j-1+1]        
+#       }
+#     }
+# #     sd_2 <- dum.zc %*% zcT  # 1xp px1   
+#     sd_2=0
+#     for(i in c(1:p)){
+#         sd_2=sd_2+rdum_zc[i]*rZc[i]
+#     }
+# #     #correction
+# #   Kgain <- SigMatr %*% zcT %*% 1/sd_2 # pxp px1*1
+#     for(i in c(1:p)){
+#       rMat21[i]=0
+#       for(j in c(1:p)){
+#         rMat21[i]=rMat21[i]+rSigMatr[(i-1)+(j-1)*p+1]*rZc[j]      
+#       }
+#       rKgain[i]=rMat21[i]/sd_2
+#     }
+# 
+# 
+# #     statevar <- statevar+Kgain %*% Uobs # px1+px1
+#      for(i in c(1:p)){
+#        rStateVar[i] = rStateVar[i] + rKgain[i]*Uobs 
+#      }
+# #     SigMatr <- SigMatr - Kgain %*% dum.zc # pxp-px1 1xp
+#     for(i in c(1:p)){
+#       for(j in c(1:p)){
+#         rSigMatr[(i-1)+(j-1)*p+1] =rSigMatr[(i-1)+(j-1)*p+1]-rKgain[i]*rdum_zc[j] 
+#       }
+#     }
+#   
+#      term_int = -0.5 * (log(sd_2)+ Uobs * Uobs * 1/sd_2) # every entries are scalars 
+#      loglstar = loglstar + term_int # every entries are scalars
+# 
+#     
+#   }
+#   Res<-matrix(c(loglstar,sd_2),nrow=2,ncol=1)
+#   return(Res)
+# }
 
 yuima.PhamBreton.Alg<-function(a){
   p<-length(a)

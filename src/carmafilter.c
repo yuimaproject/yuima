@@ -43,6 +43,11 @@
 
 SEXP carma_tmp(SEXP V, SEXP P, SEXP A);
 
+SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
+                SEXP Qmatr, SEXP SigMatr, SEXP Zc);
+
+
+
 SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
 
     int p;
@@ -73,8 +78,6 @@ SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
     PROTECT(Sigma  = allocMatrix(REALSXP, p, p));
     rSigma = REAL(Sigma);
     
-  
-    
     /* B = A %*% V */
     for(i=0; i<p; i++){
         for(j=0; j<p; j++){
@@ -83,26 +86,364 @@ SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
                 rB[i+j*p] = rB[i+j*p] + rA[i+h*p] * rV[h+j*p];
             }
         }
-    }
-
-    
-    /* C = B %*% A^T */
-    for(i=0; i<p; i++){
+   /*} 
+     C = B %*% A^T 
+    for(i=0; i<p; i++){*/
         for(j=0; j<p; j++){
             rC[i+j*p] = 0;
             for(h=0; h<p; h++){
                 rC[i+j*p] = rC[i+j*p] + rB[i+h*p] * rA[j+h*p];
             }
+          rSigma[i+j*p] = rV[i+j*p] - rC[i+j*p];  
         }
     }
-
-    for(i=0; i<p*p; i++){
-          rSigma[i] = rV[i] - rC[i];
-        }
-    
+    /*for(i=0; i<p*p; i++){
+          
+        }*/   
     UNPROTECT(5);
-    return(Sigma);
+    return Sigma;
 }
+
+SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
+                SEXP Qmatr, SEXP SigMatr, SEXP Zc){
+                
+                /* Declare Integer Variable */                
+                
+                int times_obs, p;
+                int i, j, h, k, t;
+                
+                /* Declare pointer */
+                
+                double *rY, *rStateVar, *rExpA, *rQmatr, *rSigMatr, *rZc;
+                double *rKgain, *rdum_zc, *rMat21, *rMat22int, *rMat22est, *rResult;
+                double ppp=0;
+                double Uobs=0;
+                double sd_2=0;
+                double LogL=0;
+                
+                /* Declare SEXP */
+                
+                SEXP Kgain,  dum_zc, Mat21, Mat22int, Mat22est, Result;
+                
+                /* Check the type of variables*/
+                
+                if(!isInteger(P)) error("`P' must be integer");
+                if(!isInteger(Times_Obs)) error("`Times_Obs' must be integer");
+                if(!isNumeric(Y)) error("`Y' must be numeric");
+                if(!isNumeric(StateVar)) error("`StateVar' must be numeric");
+                if(!isNumeric(ExpA)) error("`ExpA' must be numeric");
+                if(!isNumeric(Qmatr)) error("`Qmatr' must be numeric");
+                if(!isNumeric(SigMatr)) error("`SigMatr' must be numeric");
+                if(!isNumeric(Zc)) error("`Zc' must be numeric");
+                           
+                
+                /* Protect Objects */
+                
+                PROTECT(Y = AS_NUMERIC(Y));
+                rY = REAL(Y);
+                
+                PROTECT(StateVar = AS_NUMERIC(StateVar));
+                rStateVar = REAL(StateVar);
+                
+                PROTECT(ExpA = AS_NUMERIC(ExpA));
+                rExpA = REAL(ExpA);
+                
+                PROTECT(Qmatr = AS_NUMERIC(Qmatr));
+                rQmatr = REAL(Qmatr);
+                
+                PROTECT(SigMatr = AS_NUMERIC(SigMatr));
+                rSigMatr = REAL(SigMatr);
+                
+                PROTECT(Zc = AS_NUMERIC(Zc));
+                rZc = REAL(Zc);
+                
+                /*PROTECT(Logstar = AS_NUMERIC(Logstar));
+                rLoglstar = REAL(Logstar);*/
+                
+                
+                /* Declare dimensions for the state variables and observations */
+                times_obs = *INTEGER(Times_Obs);
+                p = *INTEGER(P);
+                
+                PROTECT(Mat21 = allocMatrix(REALSXP, p, 1));
+                rMat21 = REAL(Mat21);
+                
+                PROTECT(Kgain = allocMatrix(REALSXP, p, 1));
+                rKgain = REAL(Kgain);
+                
+                PROTECT(dum_zc = allocMatrix(REALSXP, p,1));
+                rdum_zc = REAL(dum_zc);
+                
+                PROTECT(Mat22int = allocMatrix(REALSXP, p, p));
+                rMat22int = REAL(Mat22int);
+                
+                PROTECT(Mat22est = allocMatrix(REALSXP, p, p));
+                rMat22est = REAL(Mat22est);
+                
+                PROTECT(Result = allocMatrix(REALSXP, 2, 1));
+                rResult = REAL(Result);
+                
+                
+               /* Main Code */
+                /* Dimension of Inputs:
+                Y = Vector p dimension;
+                StateVar = matrix p x 1;
+                ExpA = matrix p x p; 
+                Times_Obs = integer; 
+                P = integer;
+                Qmatr = matrix p x p; 
+                SigMatr = matrix p x p;
+                Zc =  matrix 1 x p;
+                Logstar = scalar. 
+                
+                for(t in 1:rtime_obs){*/
+                
+              /*  rResult[0]=0;*/
+         /*       for(i=0; i<p; i++){
+                  rdum_zc[i]=0;
+                }*/
+                
+                 for(t=0; t<times_obs; t++){
+              /*t=0;*/
+                      /* prediction */
+                      for(i=0; i<p; i++){
+                        rMat21[i] = 0;
+                        for(j=0; j<p; j++){
+                          /*    statevar <- expA %*% statevar: px1=pxp px1 */
+                          rMat21[i] = rMat21[i]+rExpA[i+j*p]*rStateVar[j];
+                        }
+                          rStateVar[i] = rMat21[i];
+                          /* rMat21[i]=0;  statevar <- expA %*% statevar */ 
+                      /*}
+                         SigMatr <- expA %*% SigMatr %*% expAT + Qmatr: pxp = pxp pxp pxp 
+                         First We compute rMat22int <- expA %*% SigMatr : pxp = pxp pxp 
+                      for(i=0; i<p; i++){*/ 
+                        for(j=0; j<p; j++){
+                          rMat22int[i+j*p]=0;
+                          for(h=0; h<p; h++){
+                              rMat22int[i+j*p]=rMat22int[i+j*p]+rExpA[i+h*p]*
+                              rSigMatr[h+j*p];
+                          }                          
+                        }
+                       }
+                       /* Second We compute rMat22est <- rMat22int %*% t(expA) 
+                         + Qmatr: pxp = pxp pxp + pxp */ 
+                      for(i=0; i<p; i++){  
+                        for(j=0; j<p; j++){
+                          rMat22est[i+j*p]=0;
+                          for(h=0; h<p; h++){
+                            rMat22est[i+j*p]=rMat22est[i+j*p]+rMat22int[i+h*p]*rExpA[j+h*p];
+                            
+                          }
+                          rSigMatr[i+j*p]=rMat22est[i+j*p]+rQmatr[i+j*p]; 
+                        }
+
+                      }             
+                                  
+                      /*forecast*/
+                      
+                      /*Uobs <- y[t] - zc %*% statevar # 1 - 1Xp px1*/
+                      rMat22est[0]=0;
+                      for(i=0; i<p; i++){
+                          rMat22est[0]=rMat22est[0]+rZc[i]*rStateVar[i];
+                      }  
+                      Uobs=rY[t]-rMat22est[0];
+                      /*rMat22est[0]=0;*/                          
+                      /*   dum.zc <- zc %*% SigMatr  # 1xp pxp */                      
+                      for(i=0; i<p; i++){
+                        rMat21[i] = 0;
+                        for(j=0; j<p; j++){  
+                          rMat21[i] =rMat21[i]+rSigMatr[i+j*p]*rZc[j];
+                        }
+                        rdum_zc[i]=rMat21[i];
+                      }
+                      
+                      
+                      /*rResult[1]=rSigMatr[0];*/
+                      /*     Sd_2 <- dum.zc %*% zcT  # 1xp px1 */
+                      rResult[1] =0;
+                      for(i=0; i<p; i++){
+                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];    
+                      }
+                      
+                      /* correction */
+                      /*   Kgain <- SigMatr %*% zcT %*% 1/Sd_2 # pxp px1*1 */
+                      for(i=0; i<p; i++){ 
+                        rMat21[i]=0;
+                        for(j=0; j<p; j++){
+                          rMat21[i]=rMat21[i]+rSigMatr[i+j*p]*rZc[j];    
+                        }
+                        rKgain[i]=rMat21[i]/rResult[1];
+                        /*rMat21[i]=0;*/
+                      }                 
+                      /*     statevar <- statevar+Kgain %*% Uobs # px1+px1 */
+                      for(i=0; i<p; i++){
+                         rStateVar[i] = rStateVar[i] + rKgain[i]*Uobs; 
+                      }
+
+
+                      /*     SigMatr <- SigMatr - Kgain %*% dum.zc # pxp-px1 1xp */
+                      for(i=0; i<p; i++){
+                        for(j=0; j<p; j++){
+                            rSigMatr[i+j*p]=rSigMatr[i+j*p]-rKgain[i]*rdum_zc[j]; 
+                        }
+                       }
+                       /*for(i=0; i<p*p; i++){
+                         rMat22int[i];
+                       }*/
+                       /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/ 
+                      rResult[0] = rResult[0] -0.5 * (log(rResult[1])+ Uobs * Uobs /rResult[1]);
+                      /* manual debug */
+
+                          
+                   } 
+                   
+                   UNPROTECT(12);
+                   return Result;
+                      
+                }
+                 
+                /* t=1;*/
+                   
+                     
+                   /* next step of the loop */
+                   
+                   
+           /*        for(i=0; i<p; i++){
+                        rMat21[i] = 0;
+                        for(j=0; j<p; j++){
+                          /*    statevar <- expA %*% statevar: px1=pxp px1 */
+                 /*         rMat21[i] = rMat21[i]+rExpA[i+j*p]*rStateVar[j];
+                        }
+                          rStateVar[i] = rMat21[i];
+                          rMat21[i]=0;/*  statevar <- expA %*% statevar */ 
+                    /*  }
+                      
+                      
+ 
+                  /*   SigMatr <- expA %*% SigMatr %*% expAT + Qmatr: pxp = pxp pxp pxp */
+                        /* First We compute rMat22int <- expA %*% SigMatr : pxp = pxp pxp */ 
+                     /* for(i=0; i<p; i++){
+                        for(j=0; j<p; j++){
+                          rMat22int[i+j*p]=0;
+                          for(h=0; h<p; h++){
+                              rMat22int[i+j*p]=rMat22int[i+j*p]+rExpA[i+h*p]*
+                              rSigMatr[h+j*p];
+                          }
+                        }
+                      }
+                      
+                      /* print(rMat22int) */
+                        /* Second We compute rMat22est <- rMat22int %*% t(expA) + Qmatr: pxp = pxp pxp + pxp */ 
+                 /*     for(i=0; i<p; i++){
+                        for(j=0; j<p; j++){
+                          rMat22est[i+j*p]=0;
+                          for(h=0; h<p; h++){
+                            rMat22est[i+j*p]=rMat22est[i+j*p]+rMat22int[i+h*p]*rExpA[j+h*p];
+                            
+                          }
+                          rSigMatr[i+j*p]=rMat22est[i+j*p];
+                          
+                        }
+
+                      }
+                      
+
+
+                      
+                      for(i=0; i<p*p; i++){
+                        rSigMatr[i]=rSigMatr[i]+rQmatr[i];
+                      }
+                      
+                     
+                      for(i=0; i<p*p; i++){
+                        rMat22est[i]=0;
+                        rMat22int[i]=0;
+                      }
+                                                     
+                      /*forecast*/
+                      
+                      /*Uobs <- y[t] - zc %*% statevar # 1 - 1Xp px1*/
+                     /* rMat22est[0]=0;
+                      for(i=0; i<p; i++){
+                          rMat22est[0]=rMat22est[0]+rZc[i]*rStateVar[i];
+                      }  
+                      Uobs=rY[t]-rMat22est[0];
+                      rMat22est[0]=0;                          
+                      /*   dum.zc <- zc %*% SigMatr  # 1xp pxp */
+                                
+                    
+                      
+                    /*  
+                      
+                        
+                      
+                      for(i=0; i<p; i++){
+                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];    
+                      }*/
+                       
+                      
+                      
+                    /*  for(i=0; i<p; i++){
+                        rMat21[i] = 0;
+                        for(j=0; j<p; j++){  
+                          rMat21[i] =rMat21[i]+rSigMatr[i+j*p]*rZc[j];
+                        }
+                        rdum_zc[i]=rMat21[i];
+                        rMat21[i]=0;
+                      }
+                      
+                      /*rResult[1]=rSigMatr[0];*/
+                      /*     Sd_2 <- dum.zc %*% zcT  # 1xp px1 */
+                    /*  rResult[1] =0;
+                      for(i=0; i<p; i++){
+                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];    
+                      }
+                      
+                      /* correction */
+                      /*   Kgain <- SigMatr %*% zcT %*% 1/Sd_2 # pxp px1*1 */
+                   /*   for(i=0; i<p; i++){ 
+                        rMat21[i]=0;
+                        for(j=0; j<p; j++){
+                          rMat21[i]=rMat21[i]+rSigMatr[i+j*p]*rZc[j];    
+                        }
+                        rKgain[i]=rMat21[i]/rResult[1];
+                        rMat21[i]=0;
+                      }
+                      
+                      
+                      /*     statevar <- statevar+Kgain %*% Uobs # px1+px1 */
+    /*                  for(i=0; i<p; i++){
+                         rStateVar[i] = rStateVar[i] + rKgain[i]*Uobs; 
+                      }
+
+
+                      /*     SigMatr <- SigMatr - Kgain %*% dum.zc # pxp-px1 1xp */
+              /*        for(i=0; i<p; i++){
+                        for(j=0; j<p; j++){
+                            rSigMatr[i+j*p]=rSigMatr[i+j*p]-rKgain[i]*rdum_zc[j]; 
+                        }
+                       }
+                       /*for(i=0; i<p*p; i++){
+                         rMat22int[i];
+                       }*/
+                       /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/ 
+                    /*  rResult[0] = rResult[0] -0.5 * (log(rResult[1])+ Uobs * Uobs /rResult[1]);
+                      
+                      
+                      
+                   
+                /* Unprotect steps */
+      /*          UNPROTECT(12);
+                return(Result);                  
+                                 
+                         
+
+                    
+                
+               
+}
+
 
 /*
 SEXP sde_sim_euler(SEXP x0, SEXP t0, SEXP delta, SEXP N, SEXP M,
