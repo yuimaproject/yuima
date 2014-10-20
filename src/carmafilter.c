@@ -120,6 +120,7 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                 double Uobs=0;
                 double sd_2=0;
                 double LogL=0;
+    double dummy=0;
 
                 /* Declare SEXP */
 
@@ -165,8 +166,8 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                 times_obs = *INTEGER(Times_Obs);
                 p = *INTEGER(P);
 
-                PROTECT(Mat21 = allocMatrix(REALSXP, p, 1));
-                rMat21 = REAL(Mat21);
+              //  PROTECT(Mat21 = allocMatrix(REALSXP, p, 1));
+               // rMat21 = REAL(Mat21);
 
                 PROTECT(Kgain = allocMatrix(REALSXP, p, 1));
                 rKgain = REAL(Kgain);
@@ -207,12 +208,12 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
               /*t=0;*/
                       /* prediction */
                       for(i=0; i<p; i++){
-                        rMat21[i] = 0;
+                        dummy = 0;
                         for(j=0; j<p; j++){
                           /*    statevar <- expA %*% statevar: px1=pxp px1 */
-                          rMat21[i] = rMat21[i]+rExpA[i+j*p]*rStateVar[j];
+                          dummy += rExpA[i+j*p]*rStateVar[j];
                         }
-                          rStateVar[i] = rMat21[i];
+                          rStateVar[i] = dummy;
                           /* rMat21[i]=0;  statevar <- expA %*% statevar */
                       /*}
                          SigMatr <- expA %*% SigMatr %*% expAT + Qmatr: pxp = pxp pxp pxp
@@ -251,11 +252,11 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                       /*rMat22est[0]=0;*/
                       /*   dum.zc <- zc %*% SigMatr  # 1xp pxp */
                       for(i=0; i<p; i++){
-                        rMat21[i] = 0;
+                        dummy = 0;
                         for(j=0; j<p; j++){
-                          rMat21[i] =rMat21[i]+rSigMatr[i+j*p]*rZc[j];
+                          dummy += rSigMatr[i+j*p]*rZc[j];
                         }
-                        rdum_zc[i]=rMat21[i];
+                        rdum_zc[i]=dummy;
                       }
 
 
@@ -269,11 +270,11 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                       /* correction */
                       /*   Kgain <- SigMatr %*% zcT %*% 1/Sd_2 # pxp px1*1 */
                       for(i=0; i<p; i++){
-                        rMat21[i]=0;
+                        dummy=0;
                         for(j=0; j<p; j++){
-                          rMat21[i]=rMat21[i]+rSigMatr[i+j*p]*rZc[j];
+                          dummy += rSigMatr[i+j*p]*rZc[j];
                         }
-                        rKgain[i]=rMat21[i]/rResult[1];
+                        rKgain[i]=dummy/rResult[1];
                         /*rMat21[i]=0;*/
                       }
                       /*     statevar <- statevar+Kgain %*% Uobs # px1+px1 */
@@ -298,7 +299,7 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
 
                    }
 
-                   UNPROTECT(12);
+                   UNPROTECT(11);
                    return Result;
 
                 }

@@ -1918,6 +1918,7 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
 # Cycle_Carma(SEXP StateVar, SEXP ExpA, SEXP Times.Obs, SEXP P,
 #             SEXP Qmatr, SEXP SigMatr, SEXP Zc, SEXP Logstar) 
  # sd_2<-0
+ 
     loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(times.obs),
                    as.integer(p), Qmatr, SigMatr, zc, 
                    PACKAGE="yuima")
