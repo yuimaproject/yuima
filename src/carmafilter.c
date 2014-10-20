@@ -34,8 +34,8 @@
 #include <Rinternals.h>
 #include <R_ext/Complex.h>
 
-#define max(a, b) (a > b ? a : b) 
-#define min(a, b) (a < b ? a : b) 
+#define max(a, b) (a > b ? a : b)
+#define min(a, b) (a < b ? a : b)
 
 
 
@@ -54,30 +54,30 @@ SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
     int i, j, h;
     double *rV, *rA, *rB, *rC, *rSigma;
     SEXP  B, C, Sigma;
-    
+
     if(!isInteger(P)) error("`P' must be integer");
     if(!isNumeric(V)) error("`V' must be numeric");
     if(!isNumeric(A)) error("`A' must be numeric");
-    
-    
+
+
     PROTECT(V = AS_NUMERIC(V));
     rV = REAL(V);
     PROTECT(A = AS_NUMERIC(A));
     rA = REAL(A);
-    
+
     p = *INTEGER(P);
 
-    
+
     PROTECT(B = allocMatrix(REALSXP, p, p));
     rB = REAL(B);
 
     PROTECT(C  = allocMatrix(REALSXP, p, p));
     rC = REAL(C);
-    
-    
+
+
     PROTECT(Sigma  = allocMatrix(REALSXP, p, p));
     rSigma = REAL(Sigma);
-    
+
     /* B = A %*% V */
     for(i=0; i<p; i++){
         for(j=0; j<p; j++){
@@ -86,47 +86,47 @@ SEXP carma_tmp(SEXP V, SEXP P, SEXP A){
                 rB[i+j*p] = rB[i+j*p] + rA[i+h*p] * rV[h+j*p];
             }
         }
-   /*} 
-     C = B %*% A^T 
+   /*}
+     C = B %*% A^T
     for(i=0; i<p; i++){*/
         for(j=0; j<p; j++){
             rC[i+j*p] = 0;
             for(h=0; h<p; h++){
                 rC[i+j*p] = rC[i+j*p] + rB[i+h*p] * rA[j+h*p];
             }
-          rSigma[i+j*p] = rV[i+j*p] - rC[i+j*p];  
+          rSigma[i+j*p] = rV[i+j*p] - rC[i+j*p];
         }
     }
     /*for(i=0; i<p*p; i++){
-          
-        }*/   
+
+        }*/
     UNPROTECT(5);
     return Sigma;
 }
 
 SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                 SEXP Qmatr, SEXP SigMatr, SEXP Zc){
-                
-                /* Declare Integer Variable */                
-                
+
+                /* Declare Integer Variable */
+
                 int times_obs, p;
                 int i, j, h, k, t;
-                
+
                 /* Declare pointer */
-                
+
                 double *rY, *rStateVar, *rExpA, *rQmatr, *rSigMatr, *rZc;
                 double *rKgain, *rdum_zc, *rMat21, *rMat22int, *rMat22est, *rResult;
                 double ppp=0;
                 double Uobs=0;
                 double sd_2=0;
                 double LogL=0;
-                
+
                 /* Declare SEXP */
-                
+
                 SEXP Kgain,  dum_zc, Mat21, Mat22int, Mat22est, Result;
-                
+
                 /* Check the type of variables*/
-                
+
                 if(!isInteger(P)) error("`P' must be integer");
                 if(!isInteger(Times_Obs)) error("`Times_Obs' must be integer");
                 if(!isNumeric(Y)) error("`Y' must be numeric");
@@ -135,74 +135,74 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                 if(!isNumeric(Qmatr)) error("`Qmatr' must be numeric");
                 if(!isNumeric(SigMatr)) error("`SigMatr' must be numeric");
                 if(!isNumeric(Zc)) error("`Zc' must be numeric");
-                           
-                
+
+
                 /* Protect Objects */
-                
+
                 PROTECT(Y = AS_NUMERIC(Y));
                 rY = REAL(Y);
-                
+
                 PROTECT(StateVar = AS_NUMERIC(StateVar));
                 rStateVar = REAL(StateVar);
-                
+
                 PROTECT(ExpA = AS_NUMERIC(ExpA));
                 rExpA = REAL(ExpA);
-                
+
                 PROTECT(Qmatr = AS_NUMERIC(Qmatr));
                 rQmatr = REAL(Qmatr);
-                
+
                 PROTECT(SigMatr = AS_NUMERIC(SigMatr));
                 rSigMatr = REAL(SigMatr);
-                
+
                 PROTECT(Zc = AS_NUMERIC(Zc));
                 rZc = REAL(Zc);
-                
+
                 /*PROTECT(Logstar = AS_NUMERIC(Logstar));
                 rLoglstar = REAL(Logstar);*/
-                
-                
+
+
                 /* Declare dimensions for the state variables and observations */
                 times_obs = *INTEGER(Times_Obs);
                 p = *INTEGER(P);
-                
+
                 PROTECT(Mat21 = allocMatrix(REALSXP, p, 1));
                 rMat21 = REAL(Mat21);
-                
+
                 PROTECT(Kgain = allocMatrix(REALSXP, p, 1));
                 rKgain = REAL(Kgain);
-                
+
                 PROTECT(dum_zc = allocMatrix(REALSXP, p,1));
                 rdum_zc = REAL(dum_zc);
-                
+
                 PROTECT(Mat22int = allocMatrix(REALSXP, p, p));
                 rMat22int = REAL(Mat22int);
-                
+
                 PROTECT(Mat22est = allocMatrix(REALSXP, p, p));
                 rMat22est = REAL(Mat22est);
-                
+
                 PROTECT(Result = allocMatrix(REALSXP, 2, 1));
                 rResult = REAL(Result);
-                
-                
+
+
                /* Main Code */
                 /* Dimension of Inputs:
                 Y = Vector p dimension;
                 StateVar = matrix p x 1;
-                ExpA = matrix p x p; 
-                Times_Obs = integer; 
+                ExpA = matrix p x p;
+                Times_Obs = integer;
                 P = integer;
-                Qmatr = matrix p x p; 
+                Qmatr = matrix p x p;
                 SigMatr = matrix p x p;
                 Zc =  matrix 1 x p;
-                Logstar = scalar. 
-                
+                Logstar = scalar.
+
                 for(t in 1:rtime_obs){*/
-                
-              /*  rResult[0]=0;*/
+
+                rResult[0]=0;
          /*       for(i=0; i<p; i++){
                   rdum_zc[i]=0;
                 }*/
-                
+
                  for(t=0; t<times_obs; t++){
               /*t=0;*/
                       /* prediction */
@@ -213,102 +213,102 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                           rMat21[i] = rMat21[i]+rExpA[i+j*p]*rStateVar[j];
                         }
                           rStateVar[i] = rMat21[i];
-                          /* rMat21[i]=0;  statevar <- expA %*% statevar */ 
+                          /* rMat21[i]=0;  statevar <- expA %*% statevar */
                       /*}
-                         SigMatr <- expA %*% SigMatr %*% expAT + Qmatr: pxp = pxp pxp pxp 
-                         First We compute rMat22int <- expA %*% SigMatr : pxp = pxp pxp 
-                      for(i=0; i<p; i++){*/ 
+                         SigMatr <- expA %*% SigMatr %*% expAT + Qmatr: pxp = pxp pxp pxp
+                         First We compute rMat22int <- expA %*% SigMatr : pxp = pxp pxp
+                      for(i=0; i<p; i++){*/
                         for(j=0; j<p; j++){
                           rMat22int[i+j*p]=0;
                           for(h=0; h<p; h++){
                               rMat22int[i+j*p]=rMat22int[i+j*p]+rExpA[i+h*p]*
                               rSigMatr[h+j*p];
-                          }                          
+                          }
                         }
                        }
-                       /* Second We compute rMat22est <- rMat22int %*% t(expA) 
-                         + Qmatr: pxp = pxp pxp + pxp */ 
-                      for(i=0; i<p; i++){  
+                       /* Second We compute rMat22est <- rMat22int %*% t(expA)
+                         + Qmatr: pxp = pxp pxp + pxp */
+                      for(i=0; i<p; i++){
                         for(j=0; j<p; j++){
                           rMat22est[i+j*p]=0;
                           for(h=0; h<p; h++){
                             rMat22est[i+j*p]=rMat22est[i+j*p]+rMat22int[i+h*p]*rExpA[j+h*p];
-                            
+
                           }
-                          rSigMatr[i+j*p]=rMat22est[i+j*p]+rQmatr[i+j*p]; 
+                          rSigMatr[i+j*p]=rMat22est[i+j*p]+rQmatr[i+j*p];
                         }
 
-                      }             
-                                  
+                      }
+
                       /*forecast*/
-                      
+
                       /*Uobs <- y[t] - zc %*% statevar # 1 - 1Xp px1*/
                       rMat22est[0]=0;
                       for(i=0; i<p; i++){
                           rMat22est[0]=rMat22est[0]+rZc[i]*rStateVar[i];
-                      }  
+                      }
                       Uobs=rY[t]-rMat22est[0];
-                      /*rMat22est[0]=0;*/                          
-                      /*   dum.zc <- zc %*% SigMatr  # 1xp pxp */                      
+                      /*rMat22est[0]=0;*/
+                      /*   dum.zc <- zc %*% SigMatr  # 1xp pxp */
                       for(i=0; i<p; i++){
                         rMat21[i] = 0;
-                        for(j=0; j<p; j++){  
+                        for(j=0; j<p; j++){
                           rMat21[i] =rMat21[i]+rSigMatr[i+j*p]*rZc[j];
                         }
                         rdum_zc[i]=rMat21[i];
                       }
-                      
-                      
+
+
                       /*rResult[1]=rSigMatr[0];*/
                       /*     Sd_2 <- dum.zc %*% zcT  # 1xp px1 */
                       rResult[1] =0;
                       for(i=0; i<p; i++){
-                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];    
+                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];
                       }
-                      
+
                       /* correction */
                       /*   Kgain <- SigMatr %*% zcT %*% 1/Sd_2 # pxp px1*1 */
-                      for(i=0; i<p; i++){ 
+                      for(i=0; i<p; i++){
                         rMat21[i]=0;
                         for(j=0; j<p; j++){
-                          rMat21[i]=rMat21[i]+rSigMatr[i+j*p]*rZc[j];    
+                          rMat21[i]=rMat21[i]+rSigMatr[i+j*p]*rZc[j];
                         }
                         rKgain[i]=rMat21[i]/rResult[1];
                         /*rMat21[i]=0;*/
-                      }                 
+                      }
                       /*     statevar <- statevar+Kgain %*% Uobs # px1+px1 */
                       for(i=0; i<p; i++){
-                         rStateVar[i] = rStateVar[i] + rKgain[i]*Uobs; 
+                         rStateVar[i] = rStateVar[i] + rKgain[i]*Uobs;
                       }
 
 
                       /*     SigMatr <- SigMatr - Kgain %*% dum.zc # pxp-px1 1xp */
                       for(i=0; i<p; i++){
                         for(j=0; j<p; j++){
-                            rSigMatr[i+j*p]=rSigMatr[i+j*p]-rKgain[i]*rdum_zc[j]; 
+                            rSigMatr[i+j*p]=rSigMatr[i+j*p]-rKgain[i]*rdum_zc[j];
                         }
                        }
                        /*for(i=0; i<p*p; i++){
                          rMat22int[i];
                        }*/
-                       /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/ 
+                       /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/
                       rResult[0] = rResult[0] -0.5 * (log(rResult[1])+ Uobs * Uobs /rResult[1]);
                       /* manual debug */
 
-                          
-                   } 
-                   
+
+                   }
+
                    UNPROTECT(12);
                    return Result;
-                      
+
                 }
-                 
+
                 /* t=1;*/
-                   
-                     
+
+
                    /* next step of the loop */
-                   
-                   
+
+
            /*        for(i=0; i<p; i++){
                         rMat21[i] = 0;
                         for(j=0; j<p; j++){
@@ -316,13 +316,13 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                  /*         rMat21[i] = rMat21[i]+rExpA[i+j*p]*rStateVar[j];
                         }
                           rStateVar[i] = rMat21[i];
-                          rMat21[i]=0;/*  statevar <- expA %*% statevar */ 
+                          rMat21[i]=0;/*  statevar <- expA %*% statevar */
                     /*  }
-                      
-                      
- 
+
+
+
                   /*   SigMatr <- expA %*% SigMatr %*% expAT + Qmatr: pxp = pxp pxp pxp */
-                        /* First We compute rMat22int <- expA %*% SigMatr : pxp = pxp pxp */ 
+                        /* First We compute rMat22int <- expA %*% SigMatr : pxp = pxp pxp */
                      /* for(i=0; i<p; i++){
                         for(j=0; j<p; j++){
                           rMat22int[i+j*p]=0;
@@ -332,122 +332,122 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                           }
                         }
                       }
-                      
+
                       /* print(rMat22int) */
-                        /* Second We compute rMat22est <- rMat22int %*% t(expA) + Qmatr: pxp = pxp pxp + pxp */ 
+                        /* Second We compute rMat22est <- rMat22int %*% t(expA) + Qmatr: pxp = pxp pxp + pxp */
                  /*     for(i=0; i<p; i++){
                         for(j=0; j<p; j++){
                           rMat22est[i+j*p]=0;
                           for(h=0; h<p; h++){
                             rMat22est[i+j*p]=rMat22est[i+j*p]+rMat22int[i+h*p]*rExpA[j+h*p];
-                            
+
                           }
                           rSigMatr[i+j*p]=rMat22est[i+j*p];
-                          
+
                         }
 
                       }
-                      
 
 
-                      
+
+
                       for(i=0; i<p*p; i++){
                         rSigMatr[i]=rSigMatr[i]+rQmatr[i];
                       }
-                      
-                     
+
+
                       for(i=0; i<p*p; i++){
                         rMat22est[i]=0;
                         rMat22int[i]=0;
                       }
-                                                     
+
                       /*forecast*/
-                      
+
                       /*Uobs <- y[t] - zc %*% statevar # 1 - 1Xp px1*/
                      /* rMat22est[0]=0;
                       for(i=0; i<p; i++){
                           rMat22est[0]=rMat22est[0]+rZc[i]*rStateVar[i];
-                      }  
+                      }
                       Uobs=rY[t]-rMat22est[0];
-                      rMat22est[0]=0;                          
+                      rMat22est[0]=0;
                       /*   dum.zc <- zc %*% SigMatr  # 1xp pxp */
-                                
-                    
-                      
-                    /*  
-                      
-                        
-                      
+
+
+
+                    /*
+
+
+
                       for(i=0; i<p; i++){
-                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];    
+                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];
                       }*/
-                       
-                      
-                      
+
+
+
                     /*  for(i=0; i<p; i++){
                         rMat21[i] = 0;
-                        for(j=0; j<p; j++){  
+                        for(j=0; j<p; j++){
                           rMat21[i] =rMat21[i]+rSigMatr[i+j*p]*rZc[j];
                         }
                         rdum_zc[i]=rMat21[i];
                         rMat21[i]=0;
                       }
-                      
+
                       /*rResult[1]=rSigMatr[0];*/
                       /*     Sd_2 <- dum.zc %*% zcT  # 1xp px1 */
                     /*  rResult[1] =0;
                       for(i=0; i<p; i++){
-                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];    
+                         rResult[1] = rResult[1]+rdum_zc[i]*rZc[i];
                       }
-                      
+
                       /* correction */
                       /*   Kgain <- SigMatr %*% zcT %*% 1/Sd_2 # pxp px1*1 */
-                   /*   for(i=0; i<p; i++){ 
+                   /*   for(i=0; i<p; i++){
                         rMat21[i]=0;
                         for(j=0; j<p; j++){
-                          rMat21[i]=rMat21[i]+rSigMatr[i+j*p]*rZc[j];    
+                          rMat21[i]=rMat21[i]+rSigMatr[i+j*p]*rZc[j];
                         }
                         rKgain[i]=rMat21[i]/rResult[1];
                         rMat21[i]=0;
                       }
-                      
-                      
+
+
                       /*     statevar <- statevar+Kgain %*% Uobs # px1+px1 */
     /*                  for(i=0; i<p; i++){
-                         rStateVar[i] = rStateVar[i] + rKgain[i]*Uobs; 
+                         rStateVar[i] = rStateVar[i] + rKgain[i]*Uobs;
                       }
 
 
                       /*     SigMatr <- SigMatr - Kgain %*% dum.zc # pxp-px1 1xp */
               /*        for(i=0; i<p; i++){
                         for(j=0; j<p; j++){
-                            rSigMatr[i+j*p]=rSigMatr[i+j*p]-rKgain[i]*rdum_zc[j]; 
+                            rSigMatr[i+j*p]=rSigMatr[i+j*p]-rKgain[i]*rdum_zc[j];
                         }
                        }
                        /*for(i=0; i<p*p; i++){
                          rMat22int[i];
                        }*/
-                       /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/ 
+                       /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/
                     /*  rResult[0] = rResult[0] -0.5 * (log(rResult[1])+ Uobs * Uobs /rResult[1]);
-                      
-                      
-                      
-                   
+
+
+
+
                 /* Unprotect steps */
       /*          UNPROTECT(12);
-                return(Result);                  
-                                 
-                         
+                return(Result);
 
-                    
-                
-               
+
+
+
+
+
 }
 
 
 /*
 SEXP sde_sim_euler(SEXP x0, SEXP t0, SEXP delta, SEXP N, SEXP M,
-                   SEXP d,888 SEXP s, SEXP sx, 
+                   SEXP d,888 SEXP s, SEXP sx,
 				   SEXP eta, SEXP alpha, SEXP corr, SEXP rho)
 {
   SEXP X, Y1, Y2;
@@ -456,7 +456,7 @@ SEXP sde_sim_euler(SEXP x0, SEXP t0, SEXP delta, SEXP N, SEXP M,
   double sdt, Z, tmp, d1, d2, *rx0;
   Rboolean CORR;
   int i, n, j, m;
-  
+
   if(!isNumeric(x0)) error("`x0' must be numeric");
   if(!isNumeric(t0)) error("`t0' must be numeric");
   if(!isNumeric(delta)) error("`delta' must be numeric");
@@ -472,14 +472,14 @@ SEXP sde_sim_euler(SEXP x0, SEXP t0, SEXP delta, SEXP N, SEXP M,
   if(!isLogical(corr)) error("`corr' must be logical");
 
   if(!isEnvironment(rho)) error("`rho' must be an environment");
- 
+
   PROTECT(x0 = AS_NUMERIC(x0));
   PROTECT(t0 = AS_NUMERIC(t0));
   PROTECT(delta = AS_NUMERIC(delta));
   PROTECT(eta = AS_NUMERIC(eta));
   PROTECT(alpha = AS_NUMERIC(alpha));
   PROTECT(corr = AS_LOGICAL(corr));
-  
+
   n = *INTEGER(N);
   m = *INTEGER(M);
 
@@ -492,9 +492,9 @@ SEXP sde_sim_euler(SEXP x0, SEXP t0, SEXP delta, SEXP N, SEXP M,
   rX = REAL(X);
   rY1 = REAL(Y1);
   rY2 = REAL(Y2);
-  rx0 = REAL(x0);  
+  rx0 = REAL(x0);
   for(j=0; j<m; j++)
-   rX[j*(n+1)] = rx0[j]; 
+   rX[j*(n+1)] = rx0[j];
   T1 = *REAL(t0);
   DELTA = *REAL(delta);
   ETA = *REAL(eta);
@@ -505,29 +505,29 @@ SEXP sde_sim_euler(SEXP x0, SEXP t0, SEXP delta, SEXP N, SEXP M,
 
   for(j=0; j<m; j++)
    rY1[j] = rX[j*(n+1)];
-  
+
   GetRNGstate();
   if(CORR==TRUE){
    for(i=1; i< n+1; i++){
     T2 = T1 + DELTA;
     for(j=0; j<m; j++){
  	 Z = rnorm(0,sdt);
-	 tmp = rX[i-1 +j*(n+1)];    
+	 tmp = rX[i-1 +j*(n+1)];
 	 rY2[j] = tmp + feval(T1,tmp,d, rho)*DELTA + feval(T1,tmp,s, rho)*Z;
 	 d1 = feval(T2,rY2[j],d,rho) - ETA*feval(T2,rY2[j], s, rho)*feval(T2,rY2[j],sx,rho);
 	 d2 = feval(T2,tmp,d,rho) - ETA*feval(T2,tmp, s, rho)*feval(T2,tmp,sx,rho);
-	 rX[i +j*(n+1)] = tmp + (ALPHA*d1 + (1.0-ALPHA)*d2)*DELTA +     
-               (ETA * feval(T2,rY2[j],s,rho) + (1.0-ETA)*feval(T1,rY1[j],s,rho))*Z;	
+	 rX[i +j*(n+1)] = tmp + (ALPHA*d1 + (1.0-ALPHA)*d2)*DELTA +
+               (ETA * feval(T2,rY2[j],s,rho) + (1.0-ETA)*feval(T1,rY1[j],s,rho))*Z;
  	 rY1[j] = rY2[j];
 	}
-	T1 = T2;  
-   }   
+	T1 = T2;
+   }
   } else {
     for(i=1; i< n+1; i++){
-	 T1 = T1 + DELTA; 
+	 T1 = T1 + DELTA;
      for(j=0; j<m; j++){
-	  Z = rnorm(0, sdt);  
-	  tmp = rX[i + j*(n+1) - 1]; 
+	  Z = rnorm(0, sdt);
+	  tmp = rX[i + j*(n+1) - 1];
       rX[i + (n+1)*j] = tmp + feval(T1,tmp,d, rho)*DELTA + feval(T1,tmp,s, rho)*Z;
 	  }
 	}
