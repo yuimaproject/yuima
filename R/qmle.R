@@ -1823,14 +1823,10 @@ yuima.Vinfinity<-function(elForVInf,v){
 
 
 #carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
-carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
-    
-  # V_inf0<-matrix(diag(rep(1,p)),p,p)
-  
+carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){  
+  # V_inf0<-matrix(diag(rep(1,p)),p,p)  
   A<-MatrixA(a)
   # u<-diff(tt)[1]
-  
-  
 #  Amatx<-yuima.ca2rma.eigen(A)
 #   expA<-Amatx$vectors%*%expm(diag(Amatx$values*u),
 #                              method="Pade",
@@ -1844,42 +1840,49 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
       expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
 #    }
   #expA<-yuima.exp(A*u)
-  
-  v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
-    
-  ATrans<-t(A)
-  matrixV<-matrix(0,p,p)
-  #l.dummy<-c(rep(0,p-1),1)
-  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
-  #l<-matrix(l.dummy,p,1)
-  #lTrans<-matrix(l.dummy,1,p)
-  lTrans<-t(l)
-  elForVInf<-new.env()
-  elForVInf$A<-A
-  elForVInf$ATrans<-ATrans
-  elForVInf$lTrans<-lTrans
-  elForVInf$l<-l
-  elForVInf$matrixV<-matrixV
-
-  elForVInf$sigma<-sigma
-#   elForVInf<-list(A=A,
-#                   ATrans=ATrans,
-#                   lTrans=lTrans,
-#                   l=l,
-#                   matrixV=matrixV,
-#                   sigma=sigma)
-#   
-   V_inf_vect<-nlm(yuima.Vinfinity, v,
-                   elForVInf = elForVInf)$estimate
+#   v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
+#     
+#   ATrans<-t(A)
+#   matrixV<-matrix(0,p,p)
+#   #l.dummy<-c(rep(0,p-1),1)
+#   l<-rbind(matrix(rep(0,p-1),p-1,1),1)
+#   #l<-matrix(l.dummy,p,1)
+#   #lTrans<-matrix(l.dummy,1,p)
+#   lTrans<-t(l)
+#   elForVInf<-new.env()
+#   elForVInf$A<-A
+#   elForVInf$ATrans<-ATrans
+#   elForVInf$lTrans<-lTrans
+#   elForVInf$l<-l
+#   elForVInf$matrixV<-matrixV
+# 
+#   elForVInf$sigma<-sigma
+# #   elForVInf<-list(A=A,
+# #                   ATrans=ATrans,
+# #                   lTrans=lTrans,
+# #                   l=l,
+# #                   matrixV=matrixV,
+# #                   sigma=sigma)
+# #   
+# 
+# #   V_inf_vect<-nlm(yuima.Vinfinity, v,
+# #                    elForVInf = elForVInf)$estimate
+# 
 #  V_inf_vect<-nlminb(start=v,objective=yuima.Vinfinity, elForVInf = elForVInf)$par
-#  V_inf_vect<-optim(par=v,fn=yuima.Vinfinity,method="L-BFGS-B", elForVInf = elForVInf)$par
-  V_inf<-matrix(0,p,p)
-  
-  V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
-  V_inf<-as.matrix(forceSymmetric(V_inf))
-#  V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
-  
-  V_inf[abs(V_inf)<=1.e-06]=0
+ # V_inf_vect<-optim(par=v,fn=yuima.Vinfinity,method="L-BFGS-B", elForVInf = elForVInf)$par
+#   V_inf<-diag(p)
+# 
+#    V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
+#    V_inf<-as.matrix(forceSymmetric(V_inf))
+#   
+#    V_inf[abs(V_inf)<=1.e-06]=0
+#     pp = as.integer(length(a))
+#     vinf = matrix(ncol = pp, nrow = pp, 0)
+#     xx = .Fortran("vinfinity", a, pp, vinf, PACKAGE = "yuima")
+# We need to write this part using Yuima 
+#    V_inf<-sigma^2 * xx[[3]]
+ 
+  V_inf<-V0inf(a,p)*sigma^2
   
   expAT<-t(expA)
   #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
@@ -1887,16 +1890,16 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   # input: V_inf, p, expA
   # output: SigMatr (pre-alloc in R)
 #   
-   SigMatr <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
+#   SigMatr <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
 # 
   
-#   SigMatr <- V_inf - expA %*% V_inf %*% expAT
+   SigMatr <- V_inf - expA %*% V_inf %*% expAT
 #    cat("\nSigMatr\n")
 #    print(SigMatr)
   
 #    stop("")
 #   
-  statevar<-matrix(rep(0, p),p,1)
+  statevar<-numeric(length=p)
   Qmatr<-SigMatr+0
   
   # set
@@ -1909,20 +1912,25 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
   #SigMatr <- V_inf
   
   
-  zc <- matrix(bvector,1,p)
-  loglstar <- 0
+   zc <- matrix(bvector,1,p)
+   loglstar <- 0
 
   
-#  zcT<-matrix(bvector,p,1)
-  zcT <- t(zc)
+  zcT<-matrix(bvector,p,1)
+  #zcT <- t(zc)
 # Cycle_Carma(SEXP StateVar, SEXP ExpA, SEXP Times.Obs, SEXP P,
 #             SEXP Qmatr, SEXP SigMatr, SEXP Zc, SEXP Logstar) 
- # sd_2<-0
- 
-    loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(times.obs),
-                   as.integer(p), Qmatr, SigMatr, zc, 
-                   PACKAGE="yuima")
-  return(list(loglstar=as.numeric(loglstar[1,1])-0.5*log(2*pi)*times.obs,s2hat=loglstar[2,1]))
+ #   sd_2<-0
+   Result<-numeric(length=2)
+   Kgain<-numeric(length=p)
+   dum_zc<-numeric(length=p)
+   Mat22int<-numeric(length=(p*p))
+# #  
+     loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(length(y)),
+                    as.integer(p), Qmatr, SigMatr, bvector, Result, Kgain, 
+                   dum_zc, Mat22int,
+                    PACKAGE="yuima")
+  return(list(loglstar=loglstar[1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2]))
 
   #  statevar, expA, times.obs, Qmatr, SigMatr, zc, logstar
   
@@ -1933,18 +1941,51 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
 #     statevar <- expA %*% statevar
 #     SigMatr <- expA %*% SigMatr %*% expAT + Qmatr
 #     # forecast
-#     Uobs <- y[t] - zc %*% statevar
+#     #Uobs <- y[t] - zc %*% statevar
+#     Uobs <- y[t] - sum(bvector * statevar)
 #     dum.zc <- zc %*% SigMatr
-#     sd_2 <- dum.zc %*% zcT
+#     sd_2 <- sum(dum.zc * bvector)
 #     Inv_sd_2 <- 1/sd_2
-#     #correction
-#     Kgain <- SigMatr %*% zcT %*% Inv_sd_2
-#     statevar <- statevar+Kgain %*% Uobs
+#     #correction Kgain <- SigMatr %*% zcT %*% Inv_sd_2
+#     Kgain <- SigMatr %*% zcT *Inv_sd_2
+#     statevar <- statevar+Kgain * Uobs
 #     SigMatr <- SigMatr - Kgain %*% dum.zc
-#     term_int<- -0.5 * (log(sd_2)+ Uobs %*% Uobs %*% Inv_sd_2)
+#     term_int<- -0.5 * (log(sd_2)+ Uobs * Uobs *Inv_sd_2)
 #     loglstar <- loglstar + term_int
 #   }
 #   return(list(loglstar=loglstar-0.5*log(2*pi)*times.obs,s2hat=sd_2))
+}
+
+V0inf<-function(a,p){
+  # This code is based on the paper A continuous-time ARMA process Tsai-Chan 2000
+  # we need to find the values along the diagonal
+  #l<-c(numeric(length=(p-1)),0.5)
+  # B_{p*p}V^{*}_{p*1}=-sigma^2*l/2
+  B<-matrix(0,nrow=p,ncol=p)
+  aa <- -rev(a)
+  for(i in 1:p){
+    # Condition on B
+    for(j in 1:p){
+      if ((2*j-i) %in% c(1:p)){ 
+        B[i,j]<-(-1)^(j-i)*aa[2*j-i]
+      }
+      if((2*j-i)==(p+1)){
+        B[i,j]<-(-1)^(j-i-1)
+      }
+    }  
+  }
+  Vdiag <- -solve(B)[,p]*0.5
+  V <- diag(Vdiag)
+  # we insert the values outside the diagonal
+  for(i in 1:p){
+    for(j in (i+1):p){
+      if((i+j)  %% 2 == 0){ # if even
+        V[i,j]=(-1)^((i-j)/2)*V[(i+j)/2,(i+j)/2]
+        V[j,i]=V[i,j]
+      }
+    }
+  }
+  return(V)
 }
 
 # CycleCarma<-function(y, statevar, expA, times.obs=integer(),
