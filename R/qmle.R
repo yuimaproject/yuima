@@ -1797,29 +1797,29 @@ MatrixA<-function (a)
 }
 
 
-yuima.Vinfinity<-function(elForVInf,v){
-  # We find the infinity stationary variance-covariance matrix
-  A<-elForVInf$A
-  sigma<-elForVInf$sigma
-#   #p<-dim(A)[1]
-#   p<-elForVInf$p
-  ATrans<-elForVInf$ATrans  
-  matrixV<-elForVInf$matrixV
-  matrixV[upper.tri(matrixV,diag=TRUE)]<-v
-  matrixV<-as.matrix(forceSymmetric(matrixV))
-#matrixV[lower.tri(matrixV)]<-matrixV[upper.tri(matrixV)]
-#  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
-#  matrixV<-matrix(v,p,p)
-
-  lTrans<-elForVInf$lTrans
-  l<-elForVInf$l
-  
-  
-  RigSid<-l%*%elForVInf$lTrans
-  Matrixobj<-A%*%matrixV+matrixV%*%ATrans+sigma^2*RigSid
-  obj<-sum(Matrixobj^2)
-  obj
-}
+# yuima.Vinfinity<-function(elForVInf,v){
+#   # We find the infinity stationary variance-covariance matrix
+#   A<-elForVInf$A
+#   sigma<-elForVInf$sigma
+# #   #p<-dim(A)[1]
+# #   p<-elForVInf$p
+#   ATrans<-elForVInf$ATrans  
+#   matrixV<-elForVInf$matrixV
+#   matrixV[upper.tri(matrixV,diag=TRUE)]<-v
+#   matrixV<-as.matrix(forceSymmetric(matrixV))
+# #matrixV[lower.tri(matrixV)]<-matrixV[upper.tri(matrixV)]
+# #  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
+# #  matrixV<-matrix(v,p,p)
+# 
+#   lTrans<-elForVInf$lTrans
+#   l<-elForVInf$l
+#   
+#   
+#   RigSid<-l%*%elForVInf$lTrans
+#   Matrixobj<-A%*%matrixV+matrixV%*%ATrans+sigma^2*RigSid
+#   obj<-sum(Matrixobj^2)
+#   obj
+# }
 
 
 #carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
