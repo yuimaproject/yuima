@@ -1824,24 +1824,57 @@ MatrixA<-function (a)
 
 #carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
 carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){  
-  # V_inf0<-matrix(diag(rep(1,p)),p,p)  
+  #new Code
   A<-MatrixA(a)
-  # u<-diff(tt)[1]
-#  Amatx<-yuima.ca2rma.eigen(A)
-#   expA<-Amatx$vectors%*%expm(diag(Amatx$values*u),
-#                              method="Pade",
-#                              order=6, 
-#                              trySym=TRUE,
-#                              do.sparseMsg = TRUE)%*%solve(Amatx$vectors)
+  expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
+
+  V_inf<-V0inf(a,p,sigma)
   
-#   if(!is.complex(Amatx$values)){
-#     expA<-Amatx$vectors%*%diag(exp(Amatx$values*u))%*%solve(Amatx$vectors)
-#     }else{
-      expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
-#    }
-  #expA<-yuima.exp(A*u)
+  expAT<-t(expA)
+  
+  Qmatr <- V_inf - expA %*% V_inf %*% expAT
+  
+  statevar<-numeric(length=p)
+ 
+  SigMatr <- V_inf+0
+  
+  sd_2<-0
+  Result<-numeric(length=2)
+  Kgain<-numeric(length=p)
+  dum_zc<-numeric(length=p)
+  Mat22int<-numeric(length=(p*p))
+
+  loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(length(y)),
+                    as.integer(p), Qmatr, SigMatr, bvector, Result, Kgain, 
+                   dum_zc, Mat22int,
+                    PACKAGE="yuima")
+  return(list(loglstar=loglstar[1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2]))
+
+#   # Old version
+
+  
+  # V_inf0<-matrix(diag(rep(1,p)),p,p)
+  
+#   A<-MatrixA(a)
+#   # u<-diff(tt)[1]
+#   
+#   
+#   #  Amatx<-yuima.carma.eigen(A)
+#   #   expA<-Amatx$vectors%*%expm(diag(Amatx$values*u),
+#   #                              method="Pade",
+#   #                              order=6, 
+#   #                              trySym=TRUE,
+#   #                              do.sparseMsg = TRUE)%*%solve(Amatx$vectors)
+#   
+#   #   if(!is.complex(Amatx$values)){
+#   #     expA<-Amatx$vectors%*%diag(exp(Amatx$values*u))%*%solve(Amatx$vectors)
+#   #     }else{
+#   expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
+#   #    }
+#   #expA<-yuima.exp(A*u)
+#   
 #   v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
-#     
+#   
 #   ATrans<-t(A)
 #   matrixV<-matrix(0,p,p)
 #   #l.dummy<-c(rep(0,p-1),1)
@@ -1855,108 +1888,67 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
 #   elForVInf$lTrans<-lTrans
 #   elForVInf$l<-l
 #   elForVInf$matrixV<-matrixV
-# 
 #   elForVInf$sigma<-sigma
-# #   elForVInf<-list(A=A,
-# #                   ATrans=ATrans,
-# #                   lTrans=lTrans,
-# #                   l=l,
-# #                   matrixV=matrixV,
-# #                   sigma=sigma)
-# #   
-# 
-# #   V_inf_vect<-nlm(yuima.Vinfinity, v,
-# #                    elForVInf = elForVInf)$estimate
-# 
-#  V_inf_vect<-nlminb(start=v,objective=yuima.Vinfinity, elForVInf = elForVInf)$par
- # V_inf_vect<-optim(par=v,fn=yuima.Vinfinity,method="L-BFGS-B", elForVInf = elForVInf)$par
-#   V_inf<-diag(p)
-# 
-#    V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
-#    V_inf<-as.matrix(forceSymmetric(V_inf))
+#   #   elForVInf<-list(A=A,
+#   #                   ATrans=ATrans,
+#   #                   lTrans=lTrans,
+#   #                   l=l,
+#   #                   matrixV=matrixV,
+#   #                   sigma=sigma)
+#   #   
+#   V_inf_vect<-nlm(yuima.Vinfinity, v,
+#                   elForVInf = elForVInf)$estimate
+#   #  V_inf_vect<-nlminb(start=v,objective=yuima.Vinfinity, elForVInf = elForVInf)$par
+#   #  V_inf_vect<-optim(par=v,fn=yuima.Vinfinity,method="L-BFGS-B", elForVInf = elForVInf)$par
+#   V_inf<-matrix(0,p,p)
 #   
-#    V_inf[abs(V_inf)<=1.e-06]=0
-#     pp = as.integer(length(a))
-#     vinf = matrix(ncol = pp, nrow = pp, 0)
-#     xx = .Fortran("vinfinity", a, pp, vinf, PACKAGE = "yuima")
-# We need to write this part using Yuima 
-#    V_inf<-sigma^2 * xx[[3]]
- 
-  V_inf<-V0inf(a,p)*sigma^2
-  
-  expAT<-t(expA)
-  #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
-  
-  # input: V_inf, p, expA
-  # output: SigMatr (pre-alloc in R)
+#   V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
+#   V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
 #   
-#   SigMatr <- .Call("carma_tmp",  V_inf, as.integer(p), expA, PACKAGE="yuima")
-# 
-  
-   SigMatr <- V_inf - expA %*% V_inf %*% expAT
-#    cat("\nSigMatr\n")
-#    print(SigMatr)
-  
-#    stop("")
+#   V_inf[abs(V_inf)<= 1.e-06]=0
 #   
-  statevar<-numeric(length=p)
-  Qmatr<-SigMatr+0
-  
-  # set
-  #statevar<-statevar0
-  
-  # SigMatCheckr<-expA%*%V_inf%*%t(expA)+Qmatr
-  
-  #SigMatr<-Qmatr
-
-  #SigMatr <- V_inf
-  
-  
-   zc <- matrix(bvector,1,p)
-   loglstar <- 0
-
-  
-  zcT<-matrix(bvector,p,1)
-  #zcT <- t(zc)
-# Cycle_Carma(SEXP StateVar, SEXP ExpA, SEXP Times.Obs, SEXP P,
-#             SEXP Qmatr, SEXP SigMatr, SEXP Zc, SEXP Logstar) 
- #   sd_2<-0
-   Result<-numeric(length=2)
-   Kgain<-numeric(length=p)
-   dum_zc<-numeric(length=p)
-   Mat22int<-numeric(length=(p*p))
-# #  
-     loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(length(y)),
-                    as.integer(p), Qmatr, SigMatr, bvector, Result, Kgain, 
-                   dum_zc, Mat22int,
-                    PACKAGE="yuima")
-  return(list(loglstar=loglstar[1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2]))
-
-  #  statevar, expA, times.obs, Qmatr, SigMatr, zc, logstar
-  
- #loglstar<-CycleCarma(y, statevar, expA, as.integer(times.obs), as.integer(p), Qmatr, SigMatr, zc, loglstar)
-#return(list(loglstar=loglstar[1,1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2,1]))
+#   expAT<-t(expA)
+#   #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
+#   SigMatr<-V_inf-expA%*%V_inf%*%expAT
+#   statevar<-matrix(rep(0, p),p,1)
+#   Qmatr<-SigMatr
+#   
+#   # set
+#   #statevar<-statevar0
+#   
+#   # SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
+#   
+#   #SigMatr<-Qmatr
+#   SigMatr<-V_inf
+#   
+#   zc<-matrix(bvector,1,p)
+#   loglstar <- 0
+#   loglstar1 <- 0
+#   
+#   #  zcT<-matrix(bvector,p,1)
+#   zcT<-t(zc)
 #   for(t in 1:times.obs){ 
 #     # prediction
-#     statevar <- expA %*% statevar
-#     SigMatr <- expA %*% SigMatr %*% expAT + Qmatr
+#     statevar<-expA%*%statevar
+#     SigMatr<-expA%*%SigMatr%*%expAT+Qmatr
 #     # forecast
-#     #Uobs <- y[t] - zc %*% statevar
-#     Uobs <- y[t] - sum(bvector * statevar)
-#     dum.zc <- zc %*% SigMatr
-#     sd_2 <- sum(dum.zc * bvector)
-#     Inv_sd_2 <- 1/sd_2
-#     #correction Kgain <- SigMatr %*% zcT %*% Inv_sd_2
-#     Kgain <- SigMatr %*% zcT *Inv_sd_2
-#     statevar <- statevar+Kgain * Uobs
-#     SigMatr <- SigMatr - Kgain %*% dum.zc
-#     term_int<- -0.5 * (log(sd_2)+ Uobs * Uobs *Inv_sd_2)
-#     loglstar <- loglstar + term_int
+#     Uobs<-y[t]-zc%*%statevar
+#     dum.zc<-zc%*%SigMatr
+#     sd_2<-dum.zc%*%zcT
+#     # sd_2<-zc%*%SigMatr%*%zcT
+#     Inv_sd_2<-1/sd_2
+#     #correction
+#     Kgain<-SigMatr%*%zcT%*%Inv_sd_2    
+#     statevar<-statevar+Kgain%*%Uobs
+#     #SigMatr<-SigMatr-Kgain%*%zc%*%SigMatr
+#     SigMatr<-SigMatr-Kgain%*%dum.zc
+#     term_int<--0.5*(log(sd_2)+Uobs%*%Uobs%*%Inv_sd_2)
+#     loglstar<-loglstar+term_int
 #   }
-#   return(list(loglstar=loglstar-0.5*log(2*pi)*times.obs,s2hat=sd_2))
+#   return(list(loglstar=(loglstar-0.5*log(2*pi)*times.obs),s2hat=sd_2))
 }
 
-V0inf<-function(a,p){
+V0inf<-function(a,p,sigma){
   # This code is based on the paper A continuous-time ARMA process Tsai-Chan 2000
   # we need to find the values along the diagonal
   #l<-c(numeric(length=(p-1)),0.5)
@@ -1974,7 +1966,7 @@ V0inf<-function(a,p){
       }
     }  
   }
-  Vdiag <- -solve(B)[,p]*0.5
+  Vdiag <- -solve(B)[,p]*0.5*sigma^2
   V <- diag(Vdiag)
   # we insert the values outside the diagonal
   for(i in 1:p){
