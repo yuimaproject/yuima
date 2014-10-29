@@ -324,7 +324,13 @@ yuima.CarmaNoise<-function(y,tt,ar.par,ma.par,
     
     idx.r<-match(0,Im(diagA$values))
     lambda.r<-Re(diagA$values[idx.r])
-    int<-0
+
+    if(is.na(idx.r)){
+      yuima.warn("all eigenvalues are immaginary numbers")
+      idx.r<-1
+      lambda.r<-diagA$values[idx.r]
+    }
+        int<-0
     
     derA<-aEvalPoly(ar.par[c(p:1)],lambda.r)
 #     if(q==1){
@@ -360,7 +366,7 @@ yuima.CarmaNoise<-function(y,tt,ar.par,ma.par,
 #       
 #       }
 #     }
-  return(lev.und)
+  return(Re(lev.und))
 }
 
 
