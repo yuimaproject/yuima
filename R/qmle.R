@@ -1851,61 +1851,68 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
 #   return(list(loglstar=loglstar[1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2]))
 
 #   # Old version
+# 
+#   
+#   V_inf0<-matrix(diag(rep(1,p)),p,p)
+#   
+#   A<-MatrixA(a)
+#   # u<-diff(tt)[1]
+#   
+#   
+#   #  Amatx<-yuima.carma.eigen(A)
+#   #   expA<-Amatx$vectors%*%expm(diag(Amatx$values*u),
+#   #                              method="Pade",
+#   #                              order=6, 
+#   #                              trySym=TRUE,
+#   #                              do.sparseMsg = TRUE)%*%solve(Amatx$vectors)
+#   
+#   #   if(!is.complex(Amatx$values)){
+#   #     expA<-Amatx$vectors%*%diag(exp(Amatx$values*u))%*%solve(Amatx$vectors)
+#   #     }else{
+#   expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
+#   #    }
+#   #expA<-yuima.exp(A*u)
+#   
+#   v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
+#   
+#   ATrans<-t(A)
+#   matrixV<-matrix(0,p,p)
+#   #l.dummy<-c(rep(0,p-1),1)
+#   l<-rbind(matrix(rep(0,p-1),p-1,1),1)
+#   #l<-matrix(l.dummy,p,1)
+#   #lTrans<-matrix(l.dummy,1,p)
+#   lTrans<-t(l)
+#   elForVInf<-new.env()
+#   elForVInf$A<-A
+#   elForVInf$ATrans<-ATrans
+#   elForVInf$lTrans<-lTrans
+#   elForVInf$l<-l
+#   elForVInf$matrixV<-matrixV
+#   elForVInf$sigma<-sigma
+#   #   elForVInf<-list(A=A,
+#   #                   ATrans=ATrans,
+#   #                   lTrans=lTrans,
+#   #                   l=l,
+#   #                   matrixV=matrixV,
+#   #                   sigma=sigma)
+#   #   
+#   V_inf_vect<-nlm(yuima.Vinfinity, v,
+#                   elForVInf = elForVInf)$estimate
+#   #  V_inf_vect<-nlminb(start=v,objective=yuima.Vinfinity, elForVInf = elForVInf)$par
+#   #  V_inf_vect<-optim(par=v,fn=yuima.Vinfinity,method="L-BFGS-B", elForVInf = elForVInf)$par
+#   V_inf<-matrix(0,p,p)
+#   
+#   V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
+#   V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
+#   
+#   V_inf[abs(V_inf)<= 1.e-06]=0
 
-  
-  V_inf0<-matrix(diag(rep(1,p)),p,p)
-  
-  A<-MatrixA(a)
-  # u<-diff(tt)[1]
-  
-  
-  #  Amatx<-yuima.carma.eigen(A)
-  #   expA<-Amatx$vectors%*%expm(diag(Amatx$values*u),
-  #                              method="Pade",
-  #                              order=6, 
-  #                              trySym=TRUE,
-  #                              do.sparseMsg = TRUE)%*%solve(Amatx$vectors)
-  
-  #   if(!is.complex(Amatx$values)){
-  #     expA<-Amatx$vectors%*%diag(exp(Amatx$values*u))%*%solve(Amatx$vectors)
-  #     }else{
-  expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
-  #    }
-  #expA<-yuima.exp(A*u)
-  
-  v<-as.numeric(V_inf0[upper.tri(V_inf0,diag=TRUE)])
-  
-  ATrans<-t(A)
-  matrixV<-matrix(0,p,p)
-  #l.dummy<-c(rep(0,p-1),1)
-  l<-rbind(matrix(rep(0,p-1),p-1,1),1)
-  #l<-matrix(l.dummy,p,1)
-  #lTrans<-matrix(l.dummy,1,p)
-  lTrans<-t(l)
-  elForVInf<-new.env()
-  elForVInf$A<-A
-  elForVInf$ATrans<-ATrans
-  elForVInf$lTrans<-lTrans
-  elForVInf$l<-l
-  elForVInf$matrixV<-matrixV
-  elForVInf$sigma<-sigma
-  #   elForVInf<-list(A=A,
-  #                   ATrans=ATrans,
-  #                   lTrans=lTrans,
-  #                   l=l,
-  #                   matrixV=matrixV,
-  #                   sigma=sigma)
+     A<-MatrixA(a)
+     expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
+   
+     V_inf<-V0inf(a,p,sigma)
   #   
-  V_inf_vect<-nlm(yuima.Vinfinity, v,
-                  elForVInf = elForVInf)$estimate
-  #  V_inf_vect<-nlminb(start=v,objective=yuima.Vinfinity, elForVInf = elForVInf)$par
-  #  V_inf_vect<-optim(par=v,fn=yuima.Vinfinity,method="L-BFGS-B", elForVInf = elForVInf)$par
-  V_inf<-matrix(0,p,p)
   
-  V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
-  V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
-  
-  V_inf[abs(V_inf)<= 1.e-06]=0
   
   expAT<-t(expA)
   #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
