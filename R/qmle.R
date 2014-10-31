@@ -1825,30 +1825,30 @@ yuima.Vinfinity<-function(elForVInf,v){
 #carma.kalman<-function(y, tt, p, q, a,bvector, sigma){
 carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){  
   #new Code
-#   A<-MatrixA(a)
-#   expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
-# 
-#   V_inf<-V0inf(a,p,sigma)
-#   
-#   expAT<-t(expA)
-#   
-#   Qmatr <- V_inf - expA %*% V_inf %*% expAT
-#   
-#   statevar<-numeric(length=p)
-#  
-#   SigMatr <- V_inf+0
-#   
-#   sd_2<-0
-#   Result<-numeric(length=2)
-#   Kgain<-numeric(length=p)
-#   dum_zc<-numeric(length=p)
-#   Mat22int<-numeric(length=(p*p))
-# 
-#   loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(length(y)),
-#                     as.integer(p), Qmatr, SigMatr, bvector, Result, Kgain, 
-#                    dum_zc, Mat22int,
-#                     PACKAGE="yuima")
-#   return(list(loglstar=loglstar[1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2]))
+  A<-MatrixA(a)
+  expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
+
+  V_inf<-V0inf(a,p,sigma)
+  
+  expAT<-t(expA)
+  
+  Qmatr <- V_inf - expA %*% V_inf %*% expAT
+  
+  statevar<-numeric(length=p)
+ 
+  SigMatr <- V_inf+0
+  
+  sd_2<-0
+  Result<-numeric(length=2)
+  Kgain<-numeric(length=p)
+  dum_zc<-numeric(length=p)
+  Mat22int<-numeric(length=(p*p))
+
+  loglstar<- .Call("Cycle_Carma", y, statevar, expA, as.integer(length(y)),
+                    as.integer(p), Qmatr, SigMatr, bvector, Result, Kgain, 
+                   dum_zc, Mat22int,
+                    PACKAGE="yuima")
+  return(list(loglstar=loglstar[1]-0.5*log(2*pi)*times.obs,s2hat=loglstar[2]))
 
 #   # Old version
 # 
@@ -1903,56 +1903,56 @@ carma.kalman<-function(y, u, p, q, a,bvector, sigma, times.obs, V_inf0){
 #   V_inf<-matrix(0,p,p)
 #   
 #   V_inf[upper.tri(V_inf,diag=TRUE)]<-V_inf_vect
-#   V_inf[lower.tri(V_inf)]<-V_inf[upper.tri(V_inf)]
+#   V_inf<-forceSymmetric(V_inf)
 #   
 #   V_inf[abs(V_inf)<= 1.e-06]=0
-
-     A<-MatrixA(a)
-     expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
-   
-     V_inf<-V0inf(a,p,sigma)
-  #   
-  
-  
-  expAT<-t(expA)
-  #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
-  SigMatr<-V_inf-expA%*%V_inf%*%expAT
-  statevar<-matrix(rep(0, p),p,1)
-  Qmatr<-SigMatr
-  
-  # set
-  #statevar<-statevar0
-  
-  # SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
-  
-  #SigMatr<-Qmatr
-  SigMatr<-V_inf
-  
-  zc<-matrix(bvector,1,p)
-  loglstar <- 0
-  loglstar1 <- 0
-  
-  #  zcT<-matrix(bvector,p,1)
-  zcT<-t(zc)
-  for(t in 1:times.obs){ 
-    # prediction
-    statevar<-expA%*%statevar
-    SigMatr<-expA%*%SigMatr%*%expAT+Qmatr
-    # forecast
-    Uobs<-y[t]-zc%*%statevar
-    dum.zc<-zc%*%SigMatr
-    sd_2<-dum.zc%*%zcT
-    # sd_2<-zc%*%SigMatr%*%zcT
-    Inv_sd_2<-1/sd_2
-    #correction
-    Kgain<-SigMatr%*%zcT%*%Inv_sd_2    
-    statevar<-statevar+Kgain%*%Uobs
-    #SigMatr<-SigMatr-Kgain%*%zc%*%SigMatr
-    SigMatr<-SigMatr-Kgain%*%dum.zc
-    term_int<--0.5*(log(sd_2)+Uobs%*%Uobs%*%Inv_sd_2)
-    loglstar<-loglstar+term_int
-  }
-  return(list(loglstar=(loglstar-0.5*log(2*pi)*times.obs),s2hat=sd_2))
+# 
+# #      A<-MatrixA(a)
+# #      expA<-expm(A*u,method="Pade",order=6, trySym=FALSE, do.sparseMsg = FALSE)
+# #    
+# #      V_inf<-V0inf(a,p,sigma)
+#   #   
+#   
+#   
+#   expAT<-t(expA)
+#   #SIGMA_err<-V_inf-expA%*%V_inf%*%t(expA)
+#   SigMatr<-V_inf-expA%*%V_inf%*%expAT
+#   statevar<-matrix(rep(0, p),p,1)
+#   Qmatr<-SigMatr
+#   
+#   # set
+#   #statevar<-statevar0
+#   
+#   # SigMatr<-expA%*%V_inf%*%t(expA)+Qmatr
+#   
+#   #SigMatr<-Qmatr
+#   SigMatr<-V_inf
+#   
+#   zc<-matrix(bvector,1,p)
+#   loglstar <- 0
+#   loglstar1 <- 0
+#   
+#   #  zcT<-matrix(bvector,p,1)
+#   zcT<-t(zc)
+#   for(t in 1:times.obs){ 
+#     # prediction
+#     statevar<-expA%*%statevar
+#     SigMatr<-expA%*%SigMatr%*%expAT+Qmatr
+#     # forecast
+#     Uobs<-y[t]-zc%*%statevar
+#     dum.zc<-zc%*%SigMatr
+#     sd_2<-dum.zc%*%zcT
+#     # sd_2<-zc%*%SigMatr%*%zcT
+#     Inv_sd_2<-1/sd_2
+#     #correction
+#     Kgain<-SigMatr%*%zcT%*%Inv_sd_2    
+#     statevar<-statevar+Kgain%*%Uobs
+#     #SigMatr<-SigMatr-Kgain%*%zc%*%SigMatr
+#     SigMatr<-SigMatr-Kgain%*%dum.zc
+#     term_int<--0.5*(log(sd_2)+Uobs%*%Uobs%*%Inv_sd_2)
+#     loglstar<-loglstar+term_int
+#   }
+#   return(list(loglstar=(loglstar-0.5*log(2*pi)*times.obs),s2hat=sd_2))
 }
 
 V0inf<-function(a,p,sigma){
@@ -1962,6 +1962,9 @@ V0inf<-function(a,p,sigma){
   # B_{p*p}V^{*}_{p*1}=-sigma^2*l/2
   B<-matrix(0,nrow=p,ncol=p)
   aa <- -rev(a)
+#   B1<-.Call("Coeffdiag_B", as.integer(p), aa, B,
+#         PACKAGE="yuima")
+#   B<-matrix(0,nrow=p,ncol=p)
   for(i in 1:p){
     # Condition on B
     for(j in 1:p){
