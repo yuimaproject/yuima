@@ -27,7 +27,9 @@ exportClasses("yuima",
 	      "yuima.carma.qmle",
               "yuima.poisson",
               "yuima.qmle",
-              "yuima.CP.qmle"
+              "yuima.CP.qmle",
+        "cogarch.info",
+        "yuima.cogarch"
               )
 
 exportMethods(
@@ -71,6 +73,8 @@ export(setCarma)
 export(setPoisson)
 export(dconst)
 export(rconst)
+
+export(setCogarch)
 
 export(dim)
 export(length)
