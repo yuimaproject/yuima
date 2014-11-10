@@ -14,8 +14,8 @@ irregularly sampled one-dimensional data as a special case.
 \usage{
 cce(x, method="HY", theta, kn, g=function(x)min(x,1-x), refreshing = TRUE,
     cwise = TRUE, delta = 0, adj = TRUE, K, c.two, J = 1, c.multi, kernel, H,
-    c.RK, eta = 3/5, m = 2, ftregion = 0, opt.method = "BFGS", vol.init = NA,
-    covol.init = NA, nvar.init = NA, ncov.init = NA, ..., mn, alpha = 0.4,
+    c.RK, eta = 3/5, m = 2, ftregion = 0, vol.init = NA,
+    covol.init = NA, nvar.init = NA, ncov.init = NA, mn, alpha = 0.4,
     frequency = 300, avg = TRUE, threshold, utime, psd = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -30,7 +30,7 @@ the method to be used. See `Details'.
 }
   \item{theta}{
 %%     ~~Describe \code{theta} here~~
-a numeric vector or matrix. If it is a matrix, each of its components   indicates the tuning parameter which determines the pre-averaging window lengths \code{kn} to be used for estimating the corresponding component. If it is a numeric vector, it is converted to a matrix as \code{(C+t(C))/2}, where \code{C=matrix(theta,d,d)} and \code{d=dim(x)}. The default value is \code{0.15} for the method \code{"PHY"} or \code{"PTHY"} following Christensen et al. (2011), while it is \code{1} for the method \code{"MRC"} following Christensen et al. (2010). 
+a numeric vector or matrix. If it is a matrix, each of its components   indicates the tuning parameter which determines the pre-averaging window lengths \code{kn} to be used for estimating the corresponding component. If it is a numeric vector, it is converted to a matrix as \code{(C+t(C))/2}, where \code{C=matrix(theta,d,d)} and \code{d=dim(x)}. The default value is \code{0.15} for the method \code{"PHY"} or \code{"PTHY"} following Christensen et al. (2013), while it is \code{1} for the method \code{"MRC"} following Christensen et al. (2010). 
 }
   \item{kn}{
 %%     ~~Describe \code{kn} here~~
@@ -62,7 +62,7 @@ a positive integer indicating the large time-scale parameter. The default value 
 }
   \item{c.two}{
 %%     ~~Describe \code{c.two} here~~
-a positive number indicating the tuning parameter which determines the scale of the large time-scale parameter \code{K}. The default value is the average of the  numeric vector each of whose components is the roughly estimated optimal value in the sense of the minimizer of the theoretical asymptotic variance of the estimator of the corresponding diagonal component. The theoretical asymptotic variance is considered in the standard case and given in Zhang et al. (2005).
+a positive number indicating the tuning parameter which determines the scale of the large time-scale parameter \code{K}. The default value is the average of the  numeric vector each of whose components is the roughly estimated optimal value in the sense of the minimizer of the theoretical asymptotic variance of the estimator of the corresponding diagonal component. The theoretical asymptotic variance is considered in the standard case and given by Eq.(63) of Zhang et al. (2005).
 }
   \item{J}{
 %%     ~~Describe \code{J} here~~
@@ -70,7 +70,7 @@ a positive integer indicating the small time-scale parameter.
 }
   \item{c.multi}{
 %%     ~~Describe \code{c.multi} here~~
-a numeric vector or matrix. If it is a matrix, each of its components   indicates the tuning parameter which determines (the scale of) the number of the time scales to be used for estimating the corresponding component. If it is a numeric vector, it is converted to a matrix as \code{(C+t(C))/2}, where \code{C=matrix(c.multi,d,d)} and \code{d=dim(x)}. The default value is the numeric vector each of whose components is the roughly estimated optimal value in the sense of minimizing the theoretical asymptotic variance of the estimator of the corresponding diagonal component. The theoretical asymptotic variance is considered in the standard case and given in Bibinger et al. (2012).
+a numeric vector or matrix. If it is a matrix, each of its components   indicates the tuning parameter which determines (the scale of) the number of the time scales to be used for estimating the corresponding component. If it is a numeric vector, it is converted to a matrix as \code{(C+t(C))/2}, where \code{C=matrix(c.multi,d,d)} and \code{d=dim(x)}. The default value is the numeric vector each of whose components is the roughly estimated optimal value in the sense of minimizing the theoretical asymptotic variance of the estimator of the corresponding diagonal component. The theoretical asymptotic variance is considered in the standard case and given by Eq.(37) of Zhang (2006).
 }
   \item{kernel}{
 %%     ~~Describe \code{kernel} here~~
@@ -96,29 +96,21 @@ a positive integer indicating the number of the end points to be jittered.
 %%     ~~Describe \code{ftregion} here~~
 a non-negative number indicating the length of the flat-top region. \code{ftregion=0} (the default) means that a non-flat-top realized kernel studied in Barndorff-Nielsen et al. (2011) is used. \code{ftregion=1/H} means that a flat-top realized kernel studied in Barndorff-Nielsen et al. (2008) is used. See Varneskov (2011) for other values. 
 }
-  \item{opt.method}{
-%%     ~~Describe \code{opt.method} here~~
-passed to the argument \code{method} of \link{constrOptim}.
-}
   \item{vol.init}{
 %%     ~~Describe \code{vol.init} here~~
-a numeric vector each of whose components indicates the initial value to be used to estimate the integrated volatility of the corresponding component, which is passed to the optimizer. Components involving \code{NA} are filled with the rough estimated true values. 
+a numeric vector each of whose components indicates the initial value to be used to estimate the integrated volatility of the corresponding component, which is passed to the optimizer. %Components involving \code{NA} are filled with the rough estimated true values. 
 }
   \item{covol.init}{
 %%     ~~Describe \code{covol.init} here~~
-a numeric matrix each of whose columns indicates the initial value to be used to estimate the integrated covariance of the corresponding component, which is passed to the optimizer. Components involving \code{NA} are filled with the rough estimated true values.
+a numeric matrix each of whose columns indicates the initial value to be used to estimate the integrated covariance of the corresponding component, which is passed to the optimizer. %Components involving \code{NA} are filled with the rough estimated true values.
 }
   \item{nvar.init}{
 %%     ~~Describe \code{nvar.init} here~~
-a numeric vector each of whose components indicates the initial value to be used to estimate the variance of noise of the corresponding component, which is passed to the optimizer. Components involving \code{NA} are filled with the rough estimated true values.
+a numeric vector each of whose components indicates the initial value to be used to estimate the variance of noise of the corresponding component, which is passed to the optimizer. %Components involving \code{NA} are filled with the rough estimated true values.
 }
   \item{ncov.init}{
 %%     ~~Describe \code{ncov.init} here~~
-a numeric matrix each of whose columns indicates the initial value to be used to estimate the covariance of noise of the corresponding component, which is passed to the optimizer. Components involving \code{NA} are filled with the rough estimated true values.
-}
-  \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
-other named arguments to be passed to \link{constrOptim}.
+a numeric matrix each of whose columns indicates the initial value to be used to estimate the covariance of noise of the corresponding component, which is passed to the optimizer. %Components involving \code{NA} are filled with the rough estimated true values.
 }
   \item{mn}{
 %%     ~~Describe \code{mn} here~~
@@ -138,7 +130,7 @@ logical. If \code{TRUE}, the averaged subsampling estimator is calculated. Other
 }
   \item{threshold}{
 %%     ~~Describe \code{threshold} here~~
-a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in \code{threshold} are recycled if there are two few elements in \code{threshold}. The default value is determined following Koike (2013a) (for the method \code{"THY"}) and Koike (2013b) (for the method \code{"PTHY"}).
+a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in \code{threshold} are recycled if there are two few elements in \code{threshold}. The default value is determined following Koike (2014) (for the method \code{"THY"}) and Koike (2013) (for the method \code{"PTHY"}).
 }
   \item{utime}{
 %%     ~~Describe \code{utime} here~~
@@ -161,8 +153,8 @@ cce(x,method="MRC",theta,kn,g,delta=0,avg=TRUE,psd=FALSE)
 cce(x,method="TSCV",K,c.two,J=1,adj=TRUE,utime,psd=FALSE)
 cce(x,method="GME",c.multi,utime,psd=FALSE)
 cce(x,method="RK",kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime,psd=FALSE)
-cce(x,method="QMLE",opt.method="BFGS",vol.init=NULL,covol.init=NULL,
- nvar.init=NULL,ncov.init=NULL,\dots,utime,psd=FALSE)
+cce(x,method="QMLE",vol.init=NULL,covol.init=NULL,
+    nvar.init=NULL,ncov.init=NULL,psd=FALSE)
 cce(x,method="SIML",mn,alpha=0.4,psd=FALSE)
 cce(x,method="THY",threshold,psd=FALSE)
 cce(x,method="PTHY",theta,kn,g,threshold,refreshing=TRUE,cwise=TRUE,psd=FALSE)
@@ -191,7 +183,7 @@ Method \code{"RK"} is an implementation of the multivariate Realized Kernel base
 Method \code{"QMLE"} is an implementation of the nonparametric Quasi Maximum Likelihood Estimator proposed in Ait-Sahalia et al. (2010).
 \cr
 \cr
-Method \code{"SIML"} is an implementation of the Separating Information Maximum Likelihood estimator proposed in Kunitomo and Sato (2008) with the basis of refresh time sampling.
+Method \code{"SIML"} is an implementation of the Separating Information Maximum Likelihood estimator proposed in Kunitomo and Sato (2013) with the basis of refresh time sampling.
 \cr
 \cr
 Method \code{"THY"} is an implementation of the Truncated Hayashi-Yoshida estimator proposed in Mancini and Gobbi (2012).
@@ -209,7 +201,10 @@ Method \code{"SBPC"} is an implementation of the calendar time Subsampled realiz
 The rough estimation procedures for selecting the default values of the tuning parameters are based on those in Barndorff-Nielsen et al. (2009).
 \cr
 \cr
-For the methods \code{"PHY"} or \code{"PTHY"}, the default value of \code{kn} changes depending on the values of \code{refreshing} and \code{cwise}. If both \code{refreshing} and \code{cwise} are \code{TRUE} (the default), the default value of \code{kn} is given by the matrix \code{ceiling(theta*N)}, where \code{N} is a matrix whose diagonal components are identical with the vector \code{length(x)-1} and whose \eqn{(i,j)}-th component is identical with the number of the refresh times associated with \eqn{i}-th and \eqn{j}-th components of \code{x} minus 1. If \code{refreshing} is \code{TRUE} while \code{cwise} is \code{FALSE}, the default value of \code{kn} is given by \code{ceiling(mean(theta)*sqrt(n))}, where \code{n} is the number of the refresh times associated with the data minus 1. If \code{refreshing} is \code{FALSE} while \code{cwise} is \code{TRUE}, the default value of \code{kn} is given by the matrix \code{ceiling(theta*N0)}, where \code{N0} is a matrix whose diagonal components are identical with the vector \code{length(x)-1} and whose \eqn{(i,j)}-th component is identical with \code{(length(x)[i]-1)+(length(x)[j]-1)}. If both \code{refreshing} and \code{cwise} are \code{FALSE}, the default value of \code{kn} is given by \code{ceiling(mean(theta)*sqrt(sum(length(x)-1)))} (following Christensen et al. (2011)).      
+For the methods \code{"PHY"} or \code{"PTHY"}, the default value of \code{kn} changes depending on the values of \code{refreshing} and \code{cwise}. If both \code{refreshing} and \code{cwise} are \code{TRUE} (the default), the default value of \code{kn} is given by the matrix \code{ceiling(theta*N)}, where \code{N} is a matrix whose diagonal components are identical with the vector \code{length(x)-1} and whose \eqn{(i,j)}-th component is identical with the number of the refresh times associated with \eqn{i}-th and \eqn{j}-th components of \code{x} minus 1. If \code{refreshing} is \code{TRUE} while \code{cwise} is \code{FALSE}, the default value of \code{kn} is given by \code{ceiling(mean(theta)*sqrt(n))}, where \code{n} is the number of the refresh times associated with the data minus 1. If \code{refreshing} is \code{FALSE} while \code{cwise} is \code{TRUE}, the default value of \code{kn} is given by the matrix \code{ceiling(theta*N0)}, where \code{N0} is a matrix whose diagonal components are identical with the vector \code{length(x)-1} and whose \eqn{(i,j)}-th component is identical with \code{(length(x)[i]-1)+(length(x)[j]-1)}. If both \code{refreshing} and \code{cwise} are \code{FALSE}, the default value of \code{kn} is given by \code{ceiling(mean(theta)*sqrt(sum(length(x)-1)))} (following Christensen et al. (2013)).
+\cr
+\cr
+For the method \code{"QMLE"}, the optimization of the quasi-likelihood function is implemented via \link{arima0} using the fact that it can be seen as an MA(1) model's one: See Hansen et al. (2008) for details.
 }
 
 
@@ -253,10 +248,14 @@ Christensen, K., Kinnebrock, S. and Podolskij, M. (2010)
   Pre-averaging estimators of the ex-post covariance matrix in noisy diffusion models with non-synchronous data,
   \emph{Journal of Econometrics}, \bold{159}, 116--133.
   
-Christensen, K., Podolskij, M. and Vetter, M. (2011)
+Christensen, K., Podolskij, M. and Vetter, M. (2013)
   On covariation estimation for multivariate continuous Ito semimartingales with noise in non-synchronous observation schemes,
-  CREATES Research Paper 2011-53, Aarhus University.
+  \emph{Journal of Multivariate Analysis} \bold{120} 59--84.
 
+Hansen, P. R., Large, J. and Lunde, A. (2008)
+  Moving average-based estimators of integrated variance,
+  \emph{conometric Reviews}, \bold{27}, 79--111.
+  
 Hayashi, T. and Yoshida, N. (2005)
   On covariance estimation of non-synchronously observed diffusion processes,
   \emph{Bernoulli}, \bold{11}, no. 2, 359--379.
@@ -264,18 +263,18 @@ Hayashi, T. and Yoshida, N. (2005)
 Hayashi, T. and Yoshida, N. (2008)
   Asymptotic normality of a covariance estimator for nonsynchronously observed diffusion processes, 
   \emph{Annals of the Institute of Statistical Mathematics}, \bold{60}, no. 2, 367--406.
-  
-Koike, Y. (2013a)
-  An estimator for the cumulative co-volatility of asynchronously observed semimartingales with jumps,
-  To apper in \emph{Scandinavian Journal of Statistics}.
-  
-Koike, Y. (2013b)
+
+Koike, Y. (2013)
   Estimation of integrated covariances in the simultaneous presence of nonsynchronicity, microstructure noise and jumps,
   arXiv:1302.5202.
-
-Kunitomo, N. and Sato, S. (2008)
+  
+Koike, Y. (2014)
+  An estimator for the cumulative co-volatility of asynchronously observed semimartingales with jumps,
+  \emph{Scandinavian Journal of Statistics}, \bold{41}, 460--481.
+  
+Kunitomo, N. and Sato, S. (2013)
   Separating information maximum likelihood estimation of realized volatility and covariance with micro-market noise,
-  CIRJE Discussion papers CIRJE-F-581, University of Tokyo.
+  \emph{North American Journal of Economics and Finance}, \bold{26}, 282--309.
   
 Mancini, C. and Gobbi, F. (2012)
   Identifying the Brownian covariation from the co-jumps given discrete observations,
@@ -284,6 +283,10 @@ Mancini, C. and Gobbi, F. (2012)
 Varneskov, R. T. (2011)
   Flat-top realized kernel estimation of quadratic covariation with non-synchronous and noisy asset prices,
   CREATES Research Paper 2011-35, Aarhus University.
+  
+Zhang, L. (2006)
+  Efficient estimation of stochastic volatility using noisy observations: a multi-scale approach,
+  \emph{Bernoulli}, \bold{12}, no.6, 1019--1043.
 
 Zhang, L. (2011)
   Estimating covariation: Epps effect, microstructure noise,
@@ -383,9 +386,48 @@ psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 3000)
 ## The off-diagonal elements are the value of the Hayashi-Yoshida estimator. 
 cce(psample)
 
+# Example. Non-synchronous and noisy observations of a correlated Brownian motions
 
+## Set a model
+drift <- c(0,0)
 
+sigma1 <- 1
+sigma2 <- 1
+rho <- 0.5
 
+diffusion <- matrix(c(sigma1,sigma2*rho,0,sigma2*sqrt(1-rho^2)),2,2)
+
+model <- setModel(drift=drift,diffusion=diffusion,
+                  state.variable=c("x1","x2"),solve.variable=c("x1","x2"))
+                  
+## Generate a path of the latent process
+set.seed(111)
+yuima.samp <- setSampling(Terminal = 1, n = 11700) 
+yuima <- setYuima(model = model, sampling = yuima.samp) 
+yuima <- simulate(yuima)
+
+## Poisson random sampling
+psample<- poisson.random.sampling(yuima, rate = c(1/5,1/5), n = 11700) 
+
+## Generate noisy observations
+Omega <- diag(0.005,2) # covariance matrix of noise
+noisy.psample <- noisy.sampling(psample,var.adj=Omega)
+plot(noisy.psample)
+
+## Hayashi-Yoshida estimator: inconsistent
+cce(noisy.psample)$covmat
+
+## Pre-averaged Hayashi-Yoshida estimator: consistent
+cce(noisy.psample,method="PHY")$covmat
+
+## Generalized multiscale estimator: consistent
+cce(noisy.psample,method="GME")$covmat
+
+## Multivariate realized kernel: consistent
+cce(noisy.psample,method="RK")$covmat
+
+## Nonparametric QMLE: consistent
+cce(noisy.psample,method="QMLE")$covmat
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

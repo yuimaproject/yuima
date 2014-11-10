@@ -165,7 +165,8 @@ void bibsynchro(double *xtime, double *ytime, int *xlength, int *ylength,
   
   for(i = 0; (q[i] < (*xlength-1)) && (r[i] < (*ylength-1)); i++) {
     if(xtime[q[i]] < ytime[r[i]]){
-      if(xtime[*xlength - 1] < ytime[r[i]]){
+      /*if(xtime[*xlength - 1] < ytime[r[i]]){*/
+      if(xtime[*xlength - 2] < ytime[r[i]]){
         break;
       }
       I = q[i];
@@ -181,7 +182,8 @@ void bibsynchro(double *xtime, double *ytime, int *xlength, int *ylength,
       }
       r[i+1] = r[i] + 1;
     }else if(xtime[q[i]] > ytime[r[i]]){
-      if(xtime[q[i]] > ytime[*ylength - 1]){
+      /*if(xtime[q[i]] > ytime[*ylength - 1]){*/
+      if(xtime[q[i]] > ytime[*ylength - 2]){
         break;
       }
       mu[i] = q[i];

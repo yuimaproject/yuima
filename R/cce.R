@@ -490,8 +490,9 @@ selectParam.GME <- function(data,utime,frequency=1200,sec=120){
   NS <- sapply(data,FUN=NSratio_BNHLS,frequency=frequency,sec=sec,
                utime=utime)
   
-  a.theta <- (26/35)*2
-  b.theta <- (12/5)*(NS^2+3*NS)
+  a.theta <- 52/35
+  #b.theta <- (12/5)*(NS^2+3*NS)
+  b.theta <- (24/5)*(NS^2+2*NS)
   c.theta <- 48*NS^2
   
   return(sqrt((b.theta+sqrt(b.theta^2+12*a.theta*c.theta))/(2*a.theta)))
@@ -1210,7 +1211,6 @@ GME <- function(data,c.multi,utime){
       if(i!=j){
         
         sdata <- Bibsynchro(data[[i]],data[[j]])
-        
         N <- sdata$num.data
         
         M <- ceiling(c.multi[i,j]*sqrt(N))
@@ -1350,7 +1350,9 @@ RK <- function(data,kernel,H,c.RK,eta=3/5,m=2,ftregion=0,utime){
 #############################################################
 
 # QMLE (Ait-Sahalia et al.(2010))
+## Old sources
 
+if(0){
 ql.xiu <- function(zdata){
   
   diffX <- diff(as.numeric(zdata))
@@ -1449,6 +1451,68 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
         cmat[i,i] <- constrOptim(theta=c(Sigma,Omega),f=ql$n.ql,grad=ql$gr,
                                  method=opt.method,
                                  ui=diag(2),ci=0,...)$par[1]
+        
+      }
+    }
+  }
+  
+  return(cmat)
+}
+}
+
+## New sources (2014/11/10, use arima0)
+
+cce.qmle <- function(data,vol.init=NA,covol.init=NA,nvar.init=NA,ncov.init=NA){
+  
+  d.size <- length(data)
+  dd <- d.size*(d.size-1)/2
+  
+  vol.init <- matrix(vol.init,1,d.size)
+  nvar.init <- matrix(vol.init,1,d.size)
+  covol.init <- matrix(covol.init,2,dd)
+  ncov.init <- matrix(ncov.init,2,dd)
+  
+  cmat <- matrix(0,d.size,d.size)
+  
+  for(i in 1:d.size){
+    for(j in i:d.size){
+      if(i!=j){
+        
+        idx <- d.size*(i-1)-(i-1)*i/2+(j-i)
+        
+        dat <- refresh_sampling(list(data[[i]],data[[j]]))
+        dat[[1]] <- diff(as.numeric(dat[[1]]))
+        dat[[2]] <- diff(as.numeric(dat[[2]]))
+        n <- length(dat[[1]])
+        
+        Sigma1 <- covol.init[1,idx]
+        Sigma2 <- covol.init[2,idx]
+        Omega1 <- ncov.init[1,idx]
+        Omega2 <- ncov.init[2,idx]
+        
+        init <- (-2*Omega1-Sigma1/n+sqrt(Sigma1*(4*Omega1+Sigma1/n)/n))/(2*Omega1)
+        obj <- arima0(dat[[1]]+dat[[2]],order=c(0,0,1),include.mean=FALSE,
+                      init=init)
+        par1 <- n*obj$sigma2*(1+obj$coef)^2
+        
+        init <- (-2*Omega2-Sigma2/n+sqrt(Sigma2*(4*Omega2+Sigma2/n)/n))/(2*Omega2)
+        obj <- arima0(dat[[1]]-dat[[2]],order=c(0,0,1),include.mean=FALSE,
+                      init=init)
+        par2 <- n*obj$sigma2*(1+obj$coef)^2
+        
+        cmat[i,j] <- (par1-par2)/4
+        cmat[j,i] <- cmat[i,j]
+      }else{
+        
+        dx <- diff(as.numeric(data[[i]]))
+        n <- length(dx)
+        
+        Sigma <- vol.init[i]
+        Omega <- nvar.init[i]
+        
+        init <- (-2*Omega-Sigma/n+sqrt(Sigma*(4*Omega+Sigma/n)/n))/(2*Omega)
+        obj <- arima0(dx,order=c(0,0,1),include.mean=FALSE,init=init)
+        cmat[i,i] <- n*obj$sigma2*(1+obj$coef)^2
         
       }
     }
@@ -2563,9 +2627,9 @@ setGeneric("cce",
                     refreshing=TRUE,cwise=TRUE,
                     delta=0,adj=TRUE,K,c.two,J=1,c.multi,
                     kernel,H,c.RK,eta=3/5,m=2,ftregion=0,
-                    opt.method="BFGS",vol.init=NA,covol.init=NA,
-                    nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
-                    frequency=300,avg=TRUE,threshold,utime,psd=FALSE)
+                    vol.init=NA,covol.init=NA,nvar.init=NA,ncov.init=NA,
+                    mn,alpha=0.4,frequency=300,avg=TRUE,
+                    threshold,utime,psd=FALSE)
              standardGeneric("cce"))
 
 setMethod("cce",signature(x="yuima"),
@@ -2573,15 +2637,15 @@ setMethod("cce",signature(x="yuima"),
                    refreshing=TRUE,cwise=TRUE,
                    delta=0,adj=TRUE,K,c.two,J=1,c.multi,
                    kernel,H,c.RK,eta=3/5,m=2,ftregion=0,
-                   opt.method="BFGS",vol.init=NA,covol.init=NA,
-                   nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
+                   vol.init=NA,covol.init=NA,
+                   nvar.init=NA,ncov.init=NA,mn,alpha=0.4,
                    frequency=300,avg=TRUE,threshold,utime,psd=FALSE)
             cce(x@data,method=method,theta=theta,kn=kn,g=g,refreshing=refreshing,
                 cwise=cwise,delta=delta,adj=adj,K=K,c.two=c.two,J=J,
                 c.multi=c.multi,kernel=kernel,H=H,c.RK=c.RK,eta=eta,m=m,
-                ftregion=ftregion,opt.method=opt.method,vol.init=vol.init,
+                ftregion=ftregion,vol.init=vol.init,
                 covol.init=covol.init,nvar.init=nvar.init,
-                ncov.init=ncov.init,...,mn=mn,alpha=alpha,
+                ncov.init=ncov.init,mn=mn,alpha=alpha,
                 frequency=frequency,avg=avg,threshold=threshold,
                 utime=utime,psd=psd))
 
@@ -2590,8 +2654,8 @@ setMethod("cce",signature(x="yuima.data"),
                    refreshing=TRUE,cwise=TRUE,
                    delta=0,adj=TRUE,K,c.two,J=1,c.multi,
                    kernel,H,c.RK,eta=3/5,m=2,ftregion=0,
-                   opt.method="BFGS",vol.init=NA,covol.init=NA,
-                   nvar.init=NA,ncov.init=NA,...,mn,alpha=0.4,
+                   vol.init=NA,covol.init=NA,
+                   nvar.init=NA,ncov.init=NA,mn,alpha=0.4,
                    frequency=300,avg=TRUE,threshold,utime,psd=FALSE){
             
 data <- get.zoo.data(x)
@@ -2619,8 +2683,8 @@ switch(method,
        "TSCV"="<-"(cmat,TSCV(data,K,c.two,J,adj,utime)),  
        "GME"="<-"(cmat,GME(data,c.multi,utime)),
        "RK"="<-"(cmat,RK(data,kernel,H,c.RK,eta,m,ftregion,utime)),
-       "QMLE"="<-"(cmat,cce.qmle(data,opt.method,vol.init,covol.init,
-                                 nvar.init,ncov.init,...,utime=utime)),
+       "QMLE"="<-"(cmat,cce.qmle(data,vol.init,covol.init,
+                                 nvar.init,ncov.init)),
        "SIML"="<-"(cmat,SIML(data,mn,alpha)),
        "THY"="<-"(cmat,THY(data,threshold)),
        "PTHY"="<-"(cmat,PTHY(data,theta,kn,g,threshold,
