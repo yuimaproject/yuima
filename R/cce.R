@@ -1240,7 +1240,7 @@ GME <- function(data,c.multi,utime){
         
         X <- as.numeric(data[[i]])
         
-        N <- length(X)
+        N <- length(X)-1
         
         M <- ceiling(c.multi[i,j]*sqrt(N))
         M <- min(c(M,N)) # M must be smaller than N
@@ -1257,10 +1257,10 @@ GME <- function(data,c.multi,utime){
         tmp <- .C("msrc",
                   as.integer(M),
                   as.integer(N),
-                  as.double(X),
-                  as.double(X),
-                  as.double(X),
-                  as.double(X),
+                  as.double(X[-1]),
+                  as.double(X[1:N]),
+                  as.double(X[-1]),
+                  as.double(X[1:N]),
                   result=double(M))$result
         
         cmat[i,j] <- (alpha/(1:M))%*%tmp

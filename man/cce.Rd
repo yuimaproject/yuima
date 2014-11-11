@@ -401,7 +401,7 @@ model <- setModel(drift=drift,diffusion=diffusion,
                   state.variable=c("x1","x2"),solve.variable=c("x1","x2"))
                   
 ## Generate a path of the latent process
-set.seed(111)
+set.seed(107)
 yuima.samp <- setSampling(Terminal = 1, n = 11700) 
 yuima <- setYuima(model = model, sampling = yuima.samp) 
 yuima <- simulate(yuima)
@@ -410,7 +410,7 @@ yuima <- simulate(yuima)
 psample<- poisson.random.sampling(yuima, rate = c(1/5,1/5), n = 11700) 
 
 ## Generate noisy observations
-Omega <- diag(0.005,2) # covariance matrix of noise
+Omega <- 0.005*matrix(c(1,rho,rho,1),2,2) # covariance matrix of noise
 noisy.psample <- noisy.sampling(psample,var.adj=Omega)
 plot(noisy.psample)
 

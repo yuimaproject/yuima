@@ -26,3 +26,5 @@
 2014/11/10: fixed a bug in cce_functions.c
             changed the optimization method of the method "QMLE" of cce
             modified cce.Rd
+2014/11/11: fixed a bug in cce.R (method "GME")
+            modified the example of cce.Rd
