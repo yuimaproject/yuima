@@ -73,6 +73,7 @@ setCarma<-function(p,
                    Carma.var="v",
                    Latent.var="x",
                    XinExpr=FALSE,
+                   Cogarch=FALSE,
                    ...){
 # We use the same parametrization as in Brockwell (2000) 
   
@@ -142,7 +143,11 @@ setCarma<-function(p,
     }else{  
       if(XinExpr==TRUE){
         Int.Var<-paste(Latent.var,"0",sep="")
-        mydots$xinit<-paste(Int.Var,c(0:(p-1)),sep="")
+        if(Cogarch==FALSE){
+          mydots$xinit<-paste(Int.Var,c(0:(p-1)),sep="")
+        }else{
+          mydots$xinit<-paste(Int.Var,c(1:p),sep="")
+        }
       }
     }
   } else{
@@ -156,10 +161,17 @@ setCarma<-function(p,
     
   beta_coeff0<-paste("-",ar.par,sep="")
   beta_coeff<-paste(beta_coeff0,p:1,sep="")
-  coeff_alpha<-c(paste(ma.par1,0:q,sep=""),as.character(matrix(0,1,p-q-1)))
+  if(Cogarch==FALSE){
+    coeff_alpha<-c(paste(ma.par1,0:q,sep=""),as.character(matrix(0,1,p-q-1)))
+  }else{
+    coeff_alpha<-c(paste(ma.par1,1:(q+1),sep=""),as.character(matrix(0,1,p-q-1)))
+  }
   fin_alp<-length(coeff_alpha)
-  
-  Y_coeff<-paste(Latent.var,0:(p-1),sep="")
+  if(Cogarch==FALSE){
+    Y_coeff<-paste(Latent.var,0:(p-1),sep="")
+  }else{
+    Y_coeff<-paste(Latent.var,1:p,sep="")
+  }
   fin_Y<-length(Y_coeff)
   V1<-paste(coeff_alpha,Y_coeff,sep="*")
   V2<-paste(V1,collapse="+")

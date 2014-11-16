@@ -14,25 +14,25 @@
 
 \code{dGt = sqrt(Vt)dZt}
 
-\code{Vt = mu0 + (b0 Yt(0) + ... + b(q) Yt(q))}
+\code{Vt = a0 + (a1 Yt(1) + ... + b(p) Yt(p))}
 
-\code{dYt(0) = Yt(1) dt}  
+\code{dYt(1) = Yt(2) dt}  
   
   \code{...}
   
-  \code{dYt(p-2) = Yt(p-1) dt}
+  \code{dYt(q-1) = Yt(q) dt}
   
-  \code{dYt(p-1) = (-a(p) Yt(0) - ... - a(1) Yt(p-1))dt + (mu0 + (b0 Yt(0) + ... + b(q) Yt(q))d[ZtZt]_{q}}
+  \code{dYt(q) = (-b(q) Yt(1) - ... - b(1) Yt(q))dt + (a0 + (a1 Yt(1) + ... + a(p) Yt(p))d[ZtZt]_{q}}
 
 
 }
 \usage{
-setCogarch(p, q, ar.par = "a", ma.par = "b", loc.par = "mu", Cogarch.var = "g", V.var = "v", Latent.var = "y", jump.variable = "z",  time.variable = "t", measure = NULL, measure.type = NULL, XinExpr = FALSE, startCogarch = 0, work = TRUE, ...)
+setCogarch(p, q, ar.par = "b", ma.par = "a", loc.par = "a0", Cogarch.var = "g", V.var = "v", Latent.var = "y", jump.variable = "z",  time.variable = "t", measure = NULL, measure.type = NULL, XinExpr = FALSE, startCogarch = 0, work = TRUE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{p}{a non negative integer that is the number of the autoregressive coefficients.}
-  \item{q}{a non-negative integer that indicates the number of the moving average coefficients.}
+  \item{p}{a non negative integer that is the number of the moving average coefficients.}
+  \item{q}{a non-negative integer that indicates the number of the autoregressive  coefficients.}
   \item{ar.par}{a character-string that is the label of the autoregressive coefficients.}
   \item{ma.par}{a character-string that is the label of the autoregressive coefficients.}
   \item{loc.par}{the location coefficient.}

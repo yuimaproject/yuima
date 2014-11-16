@@ -33,7 +33,7 @@ Please refer to the vignettes and the examples or the \bold{yuima} documentation
 
 \usage{
 setCarma(p,q,loc.par=NULL,scale.par=NULL,ar.par="a",ma.par="b",
-lin.par=NULL,Carma.var="v",Latent.var="x",XinExpr=FALSE, ...)
+lin.par=NULL,Carma.var="v",Latent.var="x",XinExpr=FALSE, Cogarch=FALSE, ...)
 }
 
 \arguments{
@@ -47,6 +47,7 @@ lin.par=NULL,Carma.var="v",Latent.var="x",XinExpr=FALSE, ...)
   \item{Latent.var}{a character-string that is the label of the unobserved process. Defaults to \code{"x"}.}
   \item{lin.par}{a character-string that is the label of the linear coefficients. If \code{lin.par=NULL}, the default, the 'setCarma' builds the CARMA(p, q) model defined as in Brockwell (2000). }
   \item{XinExpr}{a logical variable. The default value \code{XinExpr=FALSE} implies that the starting condition for \code{Latent.var} is zero. If \code{XinExpr=TRUE}, each component of \code{Latent.var} has a parameter as a initial value.}
+  \item{Cogarch}{a logical variable. The default value \code{Cogarch=FALSE} implies that the parameters are specified according to Brockwell (2000).  }
   \item{...}{Arguments to be passed to 'setCarma', such as the slots of \code{\link{yuima.model-class}}
   \describe{
   \item{\code{measure}}{Levy measure of jump variables.}

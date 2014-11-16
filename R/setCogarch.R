@@ -70,9 +70,9 @@ setMethod("initialize", "yuima.cogarch",
 
 setCogarch<-function(p,
                    q,
-                   ar.par="a",
-                   ma.par="b",
-                   loc.par="mu",
+                   ar.par="b",
+                   ma.par="a",
+                   loc.par="a0",
                    Cogarch.var="g",
                    V.var="v",
                    Latent.var="y",
@@ -109,7 +109,11 @@ setCogarch<-function(p,
                         ar.par=ar.par,
                         ma.par=ma.par,
                         loc.par=loc.par,
-                        lin.par=ma.par)
+                        lin.par=ma.par,
+                        Cogarch=TRUE)
+    #  In order to have a representation of a Cogarch(p,q) model coherent with the 
+    # Chaadra Brockwell and Davis we need to modify the slot xinit and drift[1]
+    
   }else{
     if(!is.null(mydots$xinit)){
       aux.Carma<-setCarma(p=q,
@@ -118,10 +122,13 @@ setCogarch<-function(p,
                           ar.par=ar.par,
                           ma.par=ma.par,
                           lin.par=ma.par,
-                          xinit=mydots$xinit)
+                          xinit=mydots$xinit,
+                          Cogarch=TRUE)
+      #  In order to have a representation of a Cogarch(p,q) model coherent with the 
+      # Chaadra Brockwell and Davis we need to modify the slot xinit and drift[1]
     }
   }   
-  
+
   newdrift<-c(0,as.character(aux.Carma@drift))
   newdiffusion<-c(0,as.character(eval(aux.Carma@diffusion)))
   line1<-c(paste0("sqrt(",V.var,")"),as.character(matrix(0,nrow=(q+1),ncol=1)))

@@ -293,6 +293,7 @@ function(object){
     is.fracdiff <- FALSE
     is.jumpdiff <- FALSE
     is.carma <- FALSE
+    is.cogarch <- FALSE
     is.poisson <- is.Poisson(mod)
 
     if(length(mod@drift)>0) has.drift <- TRUE
@@ -315,9 +316,14 @@ function(object){
     }
     if( class(mod) == "yuima.carma")
      is.carma <- TRUE
-     
+    if( class(mod) == "yuima.cogarch"){
+      is.cogarch <- TRUE
+      is.wienerdiff <- FALSE
+      is.fracdiff <- FALSE
+    }
+      
     if( is.wienerdiff | is.fracdiff | is.jumpdiff  ){
-        if( is.wienerdiff & ! is.carma & !is.poisson){
+        if( is.wienerdiff & ! is.carma & !is.poisson & !is.cogarch){
          cat("\nDiffusion process")
          if( is.fracdiff ){
              if(!is.na(mod@hurst)){
@@ -331,16 +337,20 @@ function(object){
         }
         if(is.carma)
           cat(sprintf("\nCarma process p=%d, q=%d", mod@info@p, mod@info@q))
+        if(is.cogarch)
+          cat(sprintf("\nCogarch process p=%d, q=%d", mod@info@p, mod@info@q))
         if(is.poisson)
           cat("\nCompound Poisson process")
           
-        if( is.jumpdiff ){
+        if( (is.jumpdiff & ! is.cogarch) ){
             if( (is.wienerdiff | is.carma) & !is.poisson ){
                 cat(" with Levy jumps")
             } else {
                 if(!is.poisson)
                 cat("Levy jump process")
             }
+        }else{
+          cat(" with Levy jumps")
         }
         
         cat(sprintf("\nNumber of equations: %d", mod@equation.number))
@@ -348,6 +358,8 @@ function(object){
          cat(sprintf("\nNumber of Wiener noises: %d", mod@noise.number))
         if(is.jumpdiff)
          cat(sprintf("\nNumber of Levy noises: %d", 1))
+        if(is.cogarch)
+          cat(sprintf("\nNumber of quadratic variation: %d", 1))
          if(length(mod@parameter@all)>0){
              cat(sprintf("\nParametric model with %d parameters",length(mod@parameter@all)))
          }
