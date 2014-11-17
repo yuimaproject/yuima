@@ -139,7 +139,7 @@ S3method(print, yuima.lasso)
 S3method(toLatex, yuima)
 S3method(toLatex, yuima.model)
 S3method(toLatex, yuima.carma)
-
+S3method(toLatex, yuima.cogarch)
 
 useDynLib(yuima)
 

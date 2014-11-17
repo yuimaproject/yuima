@@ -14,7 +14,7 @@
 
 \code{dGt = sqrt(Vt)dZt}
 
-\code{Vt = a0 + (a1 Yt(1) + ... + b(p) Yt(p))}
+\code{Vt = a0 + (a1 Yt(1) + ... + a(p) Yt(p))}
 
 \code{dYt(1) = Yt(2) dt}  
   
@@ -27,12 +27,12 @@
 
 }
 \usage{
-setCogarch(p, q, ar.par = "b", ma.par = "a", loc.par = "a0", Cogarch.var = "g", V.var = "v", Latent.var = "y", jump.variable = "z",  time.variable = "t", measure = NULL, measure.type = NULL, XinExpr = FALSE, startCogarch = 0, work = TRUE, ...)
+setCogarch(p, q, ar.par = "b", ma.par = "a", loc.par = "a0", Cogarch.var = "g", V.var = "v", Latent.var = "y", jump.variable = "z",  time.variable = "t", measure = NULL, measure.type = NULL, XinExpr = FALSE, startCogarch = 0, work = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{p}{a non negative integer that is the number of the moving average coefficients.}
-  \item{q}{a non-negative integer that indicates the number of the autoregressive  coefficients.}
+  \item{p}{a non negative integer that is the number of the moving average coefficients of the Variance process.}
+  \item{q}{a non-negative integer that indicates the number of the autoregressive  coefficients of the Variance process.}
   \item{ar.par}{a character-string that is the label of the autoregressive coefficients.}
   \item{ma.par}{a character-string that is the label of the autoregressive coefficients.}
   \item{loc.par}{the location coefficient.}
@@ -49,7 +49,9 @@ setCogarch(p, q, ar.par = "b", ma.par = "a", loc.par = "a0", Cogarch.var = "g", 
   \item{\dots}{Arguments to be passed to \code{setCogarch} such as the slots of the \code{\link{yuima.model-class}}}
 }
 \details{
-Please refer to the vignettes and the examples or to the \pkg{yuimadocs} package.
+We remark that the 
+
+Please refer to the vignettes and the examples.
 
 An object of \code{\link{yuima.cogarch-class}} contains:
 

@@ -82,7 +82,7 @@ setCogarch<-function(p,
                    measure.type=NULL,
                    XinExpr=FALSE,
                    startCogarch=0,
-                   work=TRUE,...){
+                   work=FALSE,...){
 # We use the same parametrization as in Brockwell (2000) 
   call <- match.call()
   mydots <- as.list(call)[-(1:2)]

@@ -4,15 +4,17 @@
 \alias{toLatex.yuima}
 \alias{toLatex.yuima.model}
 \alias{toLatex.yuima.carma}
+\alias{toLatex.yuima.cogarch}
 \description{
   These methods convert \code{\link{yuima-class}},
-   \code{\link{yuima.model-class}} or \code{\link{yuima.carma-class}} objects to character vectors with
+   \code{\link{yuima.model-class}}, \code{\link{yuima.carma-class}} or \code{\link{yuima.cogarch-class}} objects to character vectors with
    LaTeX markup.
 }
 \usage{
 \method{toLatex}{yuima}(object,\dots)
 \method{toLatex}{yuima.model}(object,\dots)
 \method{toLatex}{yuima.carma}(object,\dots)
+\method{toLatex}{yuima.cogarch}(object,\dots)
 }
 \arguments{
   \item{object}{object of a class yuima, yuima.model or yuima.carma.}
@@ -67,5 +69,14 @@ toLatex(cor.mod)
 carma1<-setCarma(p=3,q=1,loc.par="c",scale.par="s")
 str(carma1)
 toLatex(carma1)
+
+# A COGARCH(p=3,q=5) process.
+cogarch1<-setCogarch(p=3,q=5,
+                       measure=list(df=list("rNIG(z, mu00, bu00, 1, 0)")),
+                       measure.type="code")
+str(cogarch1)
+toLatex(cogarch1)
+
+
 }
 \keyword{misc}

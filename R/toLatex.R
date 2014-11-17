@@ -6,10 +6,12 @@ toLatex.yuima <- function (object, ...)
 	mod <- object
     if (class(object) == "yuima.carma") 
   mod <- object
+	if (class(object) == "yuima.cogarch") 
+	  mod <- object
     if (class(object) == "yuima") 
 	mod <- object@model
     #if(class(mod) =="yuima.carma" && length(mod@info@lin.par)==0 )
-      if(class(mod) =="yuima.carma"  )
+      if((class(mod) =="yuima.carma") || (class(mod) =="yuima.cogarch")  )
       { 
 #         yuima.warn("")
         
@@ -31,31 +33,56 @@ toLatex.yuima <- function (object, ...)
         if (!length(mod@jump.variable)==0){noise.var <- mod@jump.variable}
         dr <- paste("\\left\\{\\begin{array}{l} \n")
         main.con <- info@ma.par
-        if(length(info@loc.par)==0 && !length(info@scale.par)==0){
-          main.con<-paste(info@scale.par,"* \\ ", info@ma.par)
+        if(class(mod)=="yuima.carma"){
+          if(length(info@loc.par)==0 && !length(info@scale.par)==0){
+            main.con<-paste(info@scale.par,"* \\ ", info@ma.par)
+          }
+        
+          if(!length(info@loc.par)==0 && length(info@scale.par)==0){
+            main.con<-paste(info@loc.par,"+ \\ ", info@ma.par)
+          }
+          
+          if(!length(info@loc.par)==0 && !length(info@scale.par)==0){
+            main.con<-paste(info@loc.par,"+ \\ ",info@scale.par,"* \\ ", info@ma.par)
+          }
+        }else{
+          if(class(mod)=="yuima.cogarch"){
+            main.con<-paste(info@loc.par,"+ \\ ", info@ma.par)  
+          }
+        }
+        if((class(mod) =="yuima.carma")){
+          dr <- paste(dr, info@Carma.var,
+                      "\\left(", sprintf("%s", mod@time.variable),"\\right) = ",main.con, "'" , 
+                     info@Latent.var,"\\left(", sprintf("%s", mod@time.variable),"\\right) \\\\ \n")
+        }else{
+          if((class(mod) =="yuima.cogarch")){
+            dr <- paste(dr, sprintf("d%s", info@Cogarch.var),
+                        "\\left(", sprintf("%s", mod@time.variable),"\\right) = \\ sqrt{",info@V.var, 
+                        "\\left(", sprintf("%s", mod@time.variable),"\\right)} \\ ",
+                        sprintf("d%s", noise.var),"\\left(", sprintf("%s", mod@time.variable),"\\right) \\\\ \n")
+            dr <- paste(dr, info@V.var,
+                        "\\left(", sprintf("%s", mod@time.variable),"\\right) = ",main.con, "'" , 
+                        info@Latent.var,"\\left(", sprintf("%s", mod@time.variable),"\\right) \\\\ \n")
+                        
+          }
         }
         
-        if(!length(info@loc.par)==0 && length(info@scale.par)==0){
-          main.con<-paste(info@loc.par,"+ \\ ", info@ma.par)
+        if((class(mod) =="yuima.carma")){
+          noise.latent.var <- noise.var
+        }else{
+          if((class(mod) =="yuima.cogarch")){
+            noise.latent.var <- paste0("\\left[",noise.var,",",noise.var,"\\right]^{q}")
+          }
+            
         }
-        
-        if(!length(info@loc.par)==0 && !length(info@scale.par)==0){
-          main.con<-paste(info@loc.par,"+ \\ ",info@scale.par,"* \\ ", info@ma.par)
-        }
-        
-        dr <- paste(dr, info@Carma.var,
-                    "\\left(", sprintf("%s", mod@time.variable),"\\right) = ",main.con, "'" , 
-                   info@Latent.var,"\\left(", sprintf("%s", mod@time.variable),"\\right) \\\\ \n")
-        
-        
-        
         dr <- paste(dr, sprintf("d%s", info@Latent.var),
-                     "\\left(", sprintf("%s", mod@time.variable),"\\right)",
-                     "=","A",info@Latent.var,
-                      "\\left(", sprintf("%s", mod@time.variable),"\\right)",
-                      sprintf("d%s", mod@time.variable),
-                     "+ e",sprintf("d%s", noise.var),"\\left(",
-                     mod@time.variable, "\\right) \\\\ \n")
+                       "\\left(", sprintf("%s", mod@time.variable),"\\right)",
+                       "=","A",info@Latent.var,
+                        "\\left(", sprintf("%s", mod@time.variable),"\\right)",
+                        sprintf("d%s", mod@time.variable),
+                       "+ e",sprintf("d%s", noise.latent.var),"\\left(",
+                       mod@time.variable, "\\right) \\\\ \n")
+        
         dr<- paste(dr, "\\end{array}\\right.")
 #11/12
         for (i in 1:ns) {
@@ -69,7 +96,14 @@ toLatex.yuima <- function (object, ...)
         # Vector Latent Variable.
         
         body <- c(body, paste("$$"))
-        latent.lab0<-paste(info@Latent.var,0:(info@p-1),sep="_")
+        if(class(mod)=="yuima.carma"){
+          latent.lab0<-paste(info@Latent.var,0:(info@p-1),sep="_")
+        }else{
+          if(class(mod)=="yuima.cogarch"){
+              latent.lab0<-paste(info@Latent.var,1:info@q,sep="_")
+          }
+        }
+
         if(length(latent.lab0)==1){latent.lab<-latent.lab0}
         if(length(latent.lab0)==2){
           latent.lab0[1]<-paste(latent.lab0[1],"(",mod@time.variable,")",",\\ ",sep="")
@@ -99,11 +133,17 @@ toLatex.yuima <- function (object, ...)
         #b.nozeros <-c(0:info@q)
         
       #  ma.lab0<-paste(paste(info@ma.par,0:(info@q),sep="_"),collapse=", \\ ")
-        ma.lab0<-paste(info@ma.par,0:(info@q),sep="_")
-        
+        if(class(mod)=="yuima.carma"){
+          ma.lab0<-paste(info@ma.par,0:(info@q),sep="_")
+        }else{
+          if(class(mod)=="yuima.cogarch"){
+            ma.lab0<-paste(info@ma.par,1:(info@p),sep="_")
+          }
+        }
         #if(length(ma.lab0)==1){ma.lab1<-ma.lab0}
-        if(info@q>=0 && info@q<=1){
-          ma.lab1<-paste(ma.lab0,collapse=", \\ ")}
+        if(class(mod)=="yuima.carma"){
+          if(info@q>=0 && info@q<=1){
+            ma.lab1<-paste(ma.lab0,collapse=", \\ ")}
         #if(length(ma.lab0)==2){
 #         if(info@q==1){
 #           ma.lab0[1]<-paste(ma.lab0[1],",\\ ",sep="")
@@ -111,14 +151,30 @@ toLatex.yuima <- function (object, ...)
 #           ma.lab1<-ma.lab0
 #         }
         #if(length(ma.lab0)>2){
-        if(info@q>1){
-          ma.lab1<-paste(ma.lab0[1],
-                            ",\\ ","\\ldots",
-                            " \\ , \\ ",tail(ma.lab0,n=1))
+          if(info@q>1){
+            ma.lab1<-paste(ma.lab0[1],
+                              ",\\ ","\\ldots",
+                              " \\ , \\ ",tail(ma.lab0,n=1))
+          }
+        }else{
+          if(class(mod)=="yuima.cogarch"){
+            if(info@p>=0 && info@p<=2){
+              ma.lab1<-paste(ma.lab0,collapse=", \\ ")
+            }
+            if(info@p>2){
+              ma.lab1<-paste(ma.lab0[1],
+                             ",\\ ","\\ldots",
+                             " \\ , \\ ",tail(ma.lab0,n=1))
+            }
+          }  
         }
-        
-        
-        numb.zero<-(info@p-(info@q+1))
+        if(class(mod)=="yuima.carma"){  
+          numb.zero<-(info@p-(info@q+1))
+        }else{
+          if(class(mod)=="yuima.cogarch"){
+            numb.zero<-(info@q-info@p)
+          }
+        }
         if (numb.zero==0){ma.lab <- ma.lab1}
         if (numb.zero>0&&numb.zero<=2){
           zeros<- 0*c(1:numb.zero)
@@ -148,7 +204,12 @@ toLatex.yuima <- function (object, ...)
         
         if (!length(mod@jump.variable)==0){
           noise.coef <- mod@jump.coeff
-          vect.e0 <- substr(tail(noise.coef,n=1), 2, nchar(tail(noise.coef,n=1)) -1)
+          if(class(mod)=="yuima.carma"){
+            vect.e0 <- substr(tail(noise.coef,n=1), 18, nchar(tail(noise.coef,n=1)) -2)
+          }else{
+            vect.e0 <- substr(tail(noise.coef,n=1), 18, nchar(tail(noise.coef,n=1)) -2)
+          }
+          #vect.e0 <- substr(tail(noise.coef,n=1), 2, nchar(tail(noise.coef,n=1)) -1)
         } else{ 
           if(length(info@lin.par) != 0){
                 
@@ -169,12 +230,19 @@ toLatex.yuima <- function (object, ...)
   #           }
           }  
         }
-        
-        if (info@p==1){vect.e <- vect.e0}
-        if (info@p==2){vect.e <- paste("0, \\ ",vect.e0)}
-        if (info@p==3){vect.e <- paste("0, \\ 0, \\ ",vect.e0)}
-        if (info@p>3){vect.e <- paste("0, \\ \\ldots \\ , \\ 0, \\  ",vect.e0)}
-        
+        if(class(mod)=="yuima.carma"){
+          if (info@p==1){vect.e <- vect.e0}
+          if (info@p==2){vect.e <- paste("0, \\ ",vect.e0)}
+          if (info@p==3){vect.e <- paste("0, \\ 0, \\ ",vect.e0)}
+          if (info@p>3){vect.e <- paste("0, \\ \\ldots \\ , \\ 0, \\  ",vect.e0)}
+        }else{
+          if(class(mod)=="yuima.cogarch"){
+            if (info@q==1){vect.e <- vect.e0}
+            if (info@q==2){vect.e <- paste("0, \\ ",vect.e0)}
+            if (info@q==3){vect.e <- paste("0, \\ 0, \\ ",vect.e0)}
+            if (info@q>3){vect.e <- paste("0, \\ \\ldots \\ , \\ 0, \\  ",vect.e0)}
+          }
+        }
         coeff.e<- paste("e","=","\\left[",  vect.e , "\\right]'")
         
         for (i in 1:ns) {
@@ -188,36 +256,75 @@ toLatex.yuima <- function (object, ...)
         body <- c(body, paste("$$"))
         # Matrix A        
         body <- c(body, paste("$$"))
-        
-        if(info@p==1){
-          cent.col<-"c"
-          last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+
+        if(class(mod)=="yuima.cogarch"){
+          Up.A<-NULL
         }
         
-        if(info@p==2){
-          cent.col<-"cc"
-          Up.A <-" 0 & 1 \\\\ \n"
-          last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+        if(class(mod)=="yuima.carma"){
+          if(info@p==1){
+            cent.col<-"c"
+            last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+          }
+        }else{
+          if(class(mod)=="yuima.cogarch"){ 
+            if(info@q==1){
+              cent.col<-"c"
+              last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@q:1,sep="_"),collapse=" &")
+            }
+          }
         }
-        
-        if(info@p==3){
-          cent.col<-"ccc"
-          Up.A <-" 0 & 1 & 0 \\\\ \n 0 & 0 & 1 \\\\ \n"
-          last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
-          
+       
+        if(class(mod)=="yuima.carma"){
+            if(info@p==2){
+              cent.col<-"cc"
+              Up.A <-" 0 & 1 \\\\ \n"
+              last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+            }
+            
+            if(info@p==3){
+              cent.col<-"ccc"
+              Up.A <-" 0 & 1 & 0 \\\\ \n 0 & 0 & 1 \\\\ \n"
+              last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
+              
+            }
+            
+            if(info@p>3){
+              cent.col<-"cccc"
+              Up.A <-" 0 & 1 & \\ldots & 0 \\\\ \n \\vdots & \\vdots & \\ddots & \\vdots \\\\ \n 0 & 0 & \\ldots & 1 \\\\ \n"
+              dummy.ar<-paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_")
+              last.A <- paste(dummy.ar[1]," & ", dummy.ar[2]," & \\ldots &", tail(dummy.ar,n=1) )
+            
+            }
+        }else{
+          if(class(mod)=="yuima.cogarch"){ 
+              if(info@q==2){
+                cent.col<-"cc"
+                Up.A <-" 0 & 1 \\\\ \n"
+                last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@q:1,sep="_"),collapse=" &")
+              }
+              
+              if(info@q==3){
+                cent.col<-"ccc"
+                Up.A <-" 0 & 1 & 0 \\\\ \n 0 & 0 & 1 \\\\ \n"
+                last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@q:1,sep="_"),collapse=" &")
+                
+              }
+              
+              if(info@q>3){
+                cent.col<-"cccc"
+                Up.A <-" 0 & 1 & \\ldots & 0 \\\\ \n \\vdots & \\vdots & \\ddots & \\vdots \\\\ \n 0 & 0 & \\ldots & 1 \\\\ \n"
+                dummy.ar<-paste(paste("",info@ar.par,sep=" -"),info@q:1,sep="_")
+                last.A <- paste(dummy.ar[1]," & ", dummy.ar[2]," & \\ldots &", tail(dummy.ar,n=1) )
+                
+              }          
+          }
         }
-        
-        if(info@p>3){
-          cent.col<-"cccc"
-          Up.A <-" 0 & 1 & \\ldots & 0 \\\\ \n \\vdots & \\vdots & \\ddots & \\vdots \\\\ \n 0 & 0 & \\ldots & 1 \\\\ \n"
-          dummy.ar<-paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_")
-          last.A <- paste(dummy.ar[1]," & ", dummy.ar[2]," & \\ldots &", tail(dummy.ar,n=1) )
-        
-        }
+
         matrix.A <-paste(Up.A ,last.A," \\\\ \n",sep="")
         
         array.start<-paste0("\\begin{array}{",cent.col,"}\n",collapse="")
-        MATR.A<-paste("A ","=","\\left[",array.start,  matrix.A,  "\\end{array}\\right]'" )
+        MATR.A<-paste("A ","=","\\left[",array.start,  matrix.A,  "\\end{array}\\right]" )
         
         for (i in 1:ns) {
           MATR.A <- gsub(mysymb[i], myrepl[i], MATR.A, fixed = "TRUE")
@@ -230,7 +337,7 @@ toLatex.yuima <- function (object, ...)
         
         return(body)
         
-    } else{
+    } else{ 
     n.eq <- mod@equation.number
     dr <- paste("\\left(\\begin{array}{c}\n")
     for (i in 1:n.eq) {
@@ -326,3 +433,6 @@ toLatex.yuima <- function (object, ...)
 toLatex.yuima.model <- toLatex.yuima 
 
 toLatex.yuima.carma <- toLatex.yuima
+
+toLatex.yuima.cogarch <- toLatex.yuima
+
