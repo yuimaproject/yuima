@@ -10,7 +10,7 @@
 \title{ Continuous-time GARCH (p,q) process
 }
 \description{
-\code{setCogarch} describes the following model:
+\code{setCogarch} describes the Cogarch(p,q) model introduced in Brockwell et al. (2006):
 
 \code{dGt = sqrt(Vt)dZt}
 
@@ -22,7 +22,7 @@
   
   \code{dYt(q-1) = Yt(q) dt}
   
-  \code{dYt(q) = (-b(q) Yt(1) - ... - b(1) Yt(q))dt + (a0 + (a1 Yt(1) + ... + a(p) Yt(p))d[ZtZt]_{q}}
+  \code{dYt(q) = (-b(q) Yt(1) - ... - b(1) Yt(q))dt + (a0 + (a1 Yt(1) + ... + a(p) Yt(p))d[ZtZt]^{q}}
 
 
 }
@@ -43,15 +43,20 @@ setCogarch(p, q, ar.par = "b", ma.par = "a", loc.par = "a0", Cogarch.var = "g", 
   \item{time.variable}{the time variable.}
   \item{measure}{Levy measure of jump variables.}
   \item{measure.type}{type specification for Levy measure.}
-  \item{XinExpr}{a vector of \code{expressions} identyfying the starting conditions for CaGarch model.}
-  \item{startCogarch}{Start condition for the CoGarch process }
+  \item{XinExpr}{a vector of \code{expressions} identyfying the starting conditions for Cogarch model.}
+  \item{startCogarch}{Start condition for the Cogarch process }
   \item{work}{ Internal Variable. In the final release this input will be removed.}
   \item{\dots}{Arguments to be passed to \code{setCogarch} such as the slots of the \code{\link{yuima.model-class}}}
 }
 \details{
-We remark that the 
+We remark that \code{yuima} describes a Cogarch(p,q) model using the formulation proposed in Brockwell et al. (2006). This representation has the Cogarch(1,1) model introduced in Kluppelberg et al. (2004) as a special case. Indeed, by choosing \code{beta = a0 b1, eta = b1} and \code{phi = a1}, we obtain the Cogarch(1,1) model proposed in Kluppelberg et al. (2004) defined as the solution of the SDEs:
+
+\code{dGt = sqrt(Vt)dZt}
+
+\code{dVt = (beta - eta Vt) dt + phi Vt d[ZtZt]^{q}}
 
 Please refer to the vignettes and the examples.
+
 
 An object of \code{\link{yuima.cogarch-class}} contains:
 
@@ -72,6 +77,8 @@ Please contribute with suggestions and fixings.
  \references{
                Brockwell, P., Chadraa, E. and Lindner, A. (2006)
 Continuous-time GARCH processes, \emph{The Annals of Applied Probability}, \bold{16}, 790-826.
+
+Kluppelberg, C., Lindner, A., & Maller, R. (2004) A continuous-time GARCH process driven by a Levy process: Stationarity and second-order behaviour, \emph{Journal of Applied Probability}, \bold{41}, 601-622.
 }
 
 \examples{
