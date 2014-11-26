@@ -1121,6 +1121,9 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
         }
         
         if(aggregation==TRUE){
+          if(floor(yuima@sampling@n/yuima@sampling@Termina)!=yuima@sampling@n/yuima@sampling@Termina){
+            yuima.warn("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
+          }
           inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
                                                to=yuima@sampling@n[1],
                                                by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
@@ -1222,6 +1225,9 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
           return(carma_final_res)
         }
         if(aggregation==TRUE){
+          if(floor(yuima@sampling@n/yuima@sampling@Termina)!=yuima@sampling@n/yuima@sampling@Termina){
+            yuima.warn("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
+          }
          inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
                                               to=yuima@sampling@n[1],
                                               by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
