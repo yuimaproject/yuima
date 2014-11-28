@@ -1056,7 +1056,7 @@ if(!is.CARMA(yuima)){
     # INSERT HERE THE NECESSARY STEPS FOR FINDING THE PARAMETERS OF LEVY
    if(Est.Incr=="Carma.Inc"){
      # inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
-     inc.levy.fin<-zoo(inc.levy[-1],tt[(1+length(tt)-length(inc.levy[-1])):length(tt)])
+     inc.levy.fin<-zoo(inc.levy,tt[(1+length(tt)-length(inc.levy)):length(tt)])
      carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef), 
                           vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
                           method = method, Incr.Lev = inc.levy.fin,
@@ -1124,7 +1124,7 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
           if(floor(yuima@sampling@n/yuima@sampling@Terminal)!=yuima@sampling@n/yuima@sampling@Terminal){
             yuima.stop("the n/Terminal in sampling information is not an integer. Set Aggregation=FALSE")
           }
-          inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
+          inc.levy1<-diff(cumsum(c(0,inc.levy))[seq(from=1,
                                                to=yuima@sampling@n[1],
                                                by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
                                                )])
@@ -1228,7 +1228,7 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
           if(floor(yuima@sampling@n/yuima@sampling@Terminal)!=yuima@sampling@n/yuima@sampling@Terminal){
             yuima.stop("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
           }
-         inc.levy1<-diff(cumsum(inc.levy)[seq(from=1,
+         inc.levy1<-diff(cumsum(c(0,inc.levy))[seq(from=1,
                                               to=yuima@sampling@n[1],
                                               by=(yuima@sampling@n/yuima@sampling@Terminal)[1]
          )])
@@ -1344,7 +1344,7 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
 #    carma_final_res<-list(mle=final_res,Incr=inc.levy,model=yuima) 
     if(Est.Incr=="Carma.IncPar"){
       #inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
-      inc.levy.fin<-zoo(inc.levy[-1],tt[(1+length(tt)-length(inc.levy[-1])):length(tt)])
+      inc.levy.fin<-zoo(inc.levy,tt[(1+length(tt)-length(inc.levy)):length(tt)])
       carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(coef), 
                      vcov = cov, min = min, details = oout, minuslogl = minusquasilogl, 
                      method = method, Incr.Lev = inc.levy.fin,
