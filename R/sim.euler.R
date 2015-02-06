@@ -187,7 +187,7 @@ euler<-function(xinit,yuima,dW,env){
     #    }
     ###
     
-    if(sdeModel@measure.type == "CP"){ ##:: Compound-Poisson type
+    if(sdeModel@measure.type == "CP" ){ ##:: Compound-Poisson type
 
       ##:: delete 2010/09/13 for simulate func bug fix by s.h
             ## eta0 <- eval(sdeModel@measure$intensity)
@@ -256,17 +256,21 @@ euler<-function(xinit,yuima,dW,env){
         if(JAMP==FALSE || sum(i==ij)==0){
           Pi <- 0
         }else{
-          J <- eta0*randJ[j]/lambda
-          j <- j+1
+          if(is.null(dL)){
+            J <- eta0*randJ[j]/lambda
+            j <- j+1
           ##cat(paste(J,"\n"))
           ##Pi <- zeta(dX, J)
-          assign(sdeModel@jump.variable, J, env)
+            assign(sdeModel@jump.variable, J, env)
           
-          if(sdeModel@J.flag){
-            J <- 1
+            if(sdeModel@J.flag){
+              J <- 1
+            }
+          
+            Pi <- p.b.j(t=i*delta,X=dX) * J
+          }else{# we add this part since we allow the user to specify the increment of CP LM 05/02/2015
+            Pi <- p.b.j(t=i*delta,X=dX) %*% dL[, i]
           }
-          
-          Pi <- p.b.j(t=i*delta,X=dX) * J
           ##Pi <- p.b.j(t=i*delta, X=dX)
         }
         dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] + Pi

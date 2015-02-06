@@ -123,11 +123,11 @@ export(qmleR)
 export(qmleL)
 
 export(CarmaNoise) # Estimates the Levy in carma model 
+export(MM.COGARCH) # Estimation COGARCH(P,Q) using Method Of Moments 
+ 
 
 export(qgv)
 export(mmfrac)
-
-
 
 export(cbind.yuima)
 
