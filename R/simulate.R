@@ -479,7 +479,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   model<-yuimaCogarch@model
   info<-model@info
   samp <- yuimaCogarch@sampling
-    aux.Noise<-setModel(drift="1",
+    aux.Noise<-setModel(drift="0",
                         diffusion="0",
                         jump.coeff="1",
                         measure=info@measure,
