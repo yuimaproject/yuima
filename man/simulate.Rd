@@ -4,7 +4,7 @@
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
 simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = FALSE, 
- increment.W = NULL, increment.L = NULL, hurst, methodfGn = "WoodChan",
+ increment.W = NULL, increment.L = NULL, idxCOGARCH = FALSE, hurst, methodfGn = "WoodChan",
  	sampling=sampling, subsampling=subsampling, ...)
 }
 \arguments{
@@ -16,6 +16,7 @@ simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = F
 	Maruyama method.}
   \item{increment.W}{to specify Wiener increment for each time tics in advance.}
   \item{increment.L}{to specify Levy increment for each time tics in advance.}
+  \item{idxCOGARCH}{Logical Variable for simulation scheme used if the model is a COGARCH(P,Q).}
   \item{nsim}{Not used yet. Included only to match the standard genenirc in 
 	package \code{stats}.}
   \item{seed}{Not used yet. Included only to match the standard genenirc in 

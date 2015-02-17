@@ -231,13 +231,26 @@ setCarma<-function(p,
       if(ma.par==lin.par){
         first_term<-paste(coeff_alpha[fin_alp],V,sep="*")
         diffusion_Carma<-matrix(c(first_term,as.character(matrix(0,(p-1),1)),V),(p+1),1)  
-
-        Model_Carma<-setModel(drift=drift_Carma, 
+        if(Cogarch==FALSE){
+          Model_Carma<-setModel(drift=drift_Carma, 
                                diffusion=diffusion_Carma,
                                hurst=mydots$hurst, 
                                state.variable=c(Carma.var,Y_coeff),  
                                solve.variable=c(Carma.var,Y_coeff),
                                xinit=c(Vt,mydots$xinit))
+        }else{# We add this part to have as initial condition for the COGARCH model V_0=a_0+a'X_0 LM 13/02/2015
+           V01<-paste(coeff_alpha,mydots$xinit,sep="*")
+           V02<-paste(V01,collapse="+")
+           V0t<-paste(loc.par,V02,sep="+") 
+           
+           
+           Model_Carma<-setModel(drift=drift_Carma, 
+                              diffusion=diffusion_Carma,
+                              hurst=mydots$hurst, 
+                              state.variable=c(Carma.var,Y_coeff),  
+                              solve.variable=c(Carma.var,Y_coeff),
+                              xinit=c(V0t,mydots$xinit))
+        }
 #         return(Model_Carma1)
       }else{ 
 #         coeff_gamma<-c(paste(lin.par,1:p,sep=""),as.character(matrix(0,1,p-q)))

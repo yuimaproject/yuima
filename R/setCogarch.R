@@ -110,6 +110,7 @@ setCogarch<-function(p,
                         ma.par=ma.par,
                         loc.par=loc.par,
                         lin.par=ma.par,
+                        XinExpr=XinExpr,
                         Cogarch=TRUE)
     #  In order to have a representation of a Cogarch(p,q) model coherent with the 
     # Chaadra Brockwell and Davis we need to modify the slot xinit and drift[1]

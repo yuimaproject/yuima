@@ -10,8 +10,8 @@ is.COGARCH <- function(obj){
 
 # The estimation procedure for cogarch(p,q) implemented in this code are based on the 
 # Chadraa phd's thesis
-MM.COGARCH<-function(yuima, data = NULL, start, method="BFGS", fixed = list(), 
-                           lower, upper){
+gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(), 
+                           lower, upper, lag.max = NULL){
   print <- FALSE
   call <- match.call()
 # First step we check if all inputs are inserted correctly.
@@ -72,7 +72,11 @@ MM.COGARCH<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   ma.name <- paste(info@ma.par,c(1:numb.ma),sep="")
   
   loc.par <- info@loc.par
-  xinit.name <- paste(info@Latent.var, c(1:numb.ar), sep = "")
+  #xinit.name <- paste(info@Latent.var, c(1:numb.ar), sep = "")
+
+  xinit.name0 <- model@parameter@xinit
+  idx <- na.omit(match(c(loc.par, ma.name), xinit.name0))
+  xinit.name <- xinit.name0[-idx]
 
   meas.par <- model@parameter@measure
   
@@ -136,6 +140,9 @@ MM.COGARCH<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   env <- new.env()
   n <- length(observ)[1]
   
+  #Lag
+  assign("lag", lag.max, envir=env)
+  
   # Data
   assign("Data",  as.matrix(onezoo(observ)[,1]), envir=env)
   assign("deltaData",  frequency(onezoo(observ)[,1]), envir=env)
@@ -170,8 +177,10 @@ objectiveFun <- function(p) {
    } 
   ErrTerm(yuima=yuima, param=mycoef, print=print, env)
 }
- out<- optim(start, objectiveFun, method=method)
-# , method = "L-BFGS-B",
+ out<- optim(start, objectiveFun, method = method)
+# ,  
+#              lower = c(0.0001, 0.00001, 0.00001, 0, 0.9), upper = c(1, 1, 1, 1, 1.1))
+
 #              lower=c(0.0001,0.00001,0.00001,0, 0.9,-100,-100),
 #              upper=c(1,1,1,1,1.1,0,0))
 
@@ -188,7 +197,7 @@ ErrTerm <- function(yuima, param, print, env){
   mu_G2 <- mean(G_i^2)
   var_G2 <- mean(G_i^4) - mu_G2^2
   d <- floor(sqrt(length(G_i)))
-  CovQuad <- log(abs(acf(G_i^2,plot=FALSE,lag.max=min(d,10),type=typeacf)$acf[-1]))
+  CovQuad <- log(abs(acf(G_i^2,plot=FALSE,lag.max=min(d,env$lag),type=typeacf)$acf[-1]))
   h <- seq(1, d, by = 1)*r
   cost <- env$loc.idx
   b <- env$ar.idx
@@ -281,7 +290,7 @@ MM_Cogarch <- function(p, q, cost, acoeff, b, meanL1, r, h, type, m2, var){
   }
    
   term <- expm(B_tilde*h)
-  invB <- solve(B_tilde)
+  invB <- solve(B_tilde) # In this case we can use the analytical form for Companion Matrix???
   term1 <- invB%*%(IdentM-expm(-B_tilde*r))
   term2 <- (expm(B_tilde*r)-IdentM)
   

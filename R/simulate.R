@@ -13,7 +13,7 @@ subsampling <- function(x,y) return(x)
 
 setGeneric("simulate",
            function(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized=FALSE, 
-                    increment.W=NULL, increment.L=NULL, hurst, methodfGn="WoodChan", 
+                    increment.W=NULL, increment.L=NULL, idxCOGARCH=FALSE, hurst, methodfGn="WoodChan", 
                     sampling=sampling, subsampling=subsampling, ...
                     #		Initial = 0, Terminal = 1, n = 100, delta, 
                     #		grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL), 
@@ -25,9 +25,9 @@ setGeneric("simulate",
 
 setMethod("simulate", "yuima.model",
           function(object, nsim=1, seed=NULL, xinit, true.parameter, 
-                   space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
+                   space.discretized=FALSE, increment.W=NULL, increment.L=NULL, idxCOGARCH=FALSE,
                    hurst, methodfGn="WoodChan",
-                   sampling, subsampling,
+                   sampling, subsampling, 
                    #Initial = 0, Terminal = 1, n = 100, delta, 
                    #	grid, random = FALSE, sdelta=as.numeric(NULL), 
                    #	sgrid=as.numeric(NULL), interpolation="none"
@@ -47,7 +47,8 @@ setMethod("simulate", "yuima.model",
             out <- simulate(tmpyuima, nsim=nsim, seed=seed, xinit=xinit, 
                             true.parameter=true.parameter, 
                             space.discretized=space.discretized, 
-                            increment.W=increment.W, increment.L=increment.L,
+                            increment.W=increment.W, increment.L=increment.L, 
+                            idxCOGARCH=idxCOGARCH,
                             hurst=hurst,methodfGn=methodfGn, subsampling=subsampling)
             return(out)	
           })
@@ -61,7 +62,8 @@ setMethod("simulate", "yuima.model",
 
 setMethod("simulate", "yuima",
           function(object, nsim=1, seed=NULL, xinit, true.parameter, 
-                   space.discretized=FALSE, increment.W=NULL, increment.L=NULL,
+                   space.discretized=FALSE, increment.W=NULL, increment.L=NULL, 
+                   idxCOGARCH=FALSE,
                    hurst,methodfGn="WoodChan",
                    sampling, subsampling,
                    Initial = 0, Terminal = 1, n = 100, delta, 
@@ -70,7 +72,7 @@ setMethod("simulate", "yuima",
             
             if(is(object@model,"yuima.cogarch")){
               res<-aux.simulateCogarch(object, nsim, seed, xinit, true.parameter, 
-                           space.discretized, increment.W, increment.L,
+                           space.discretized, increment.W, increment.L, idxCOGARCH,
                            hurst,methodfGn,
                            sampling, subsampling,
                            Initial, Terminal, n, delta, 
@@ -469,7 +471,7 @@ aux.simulate<-function(object, nsim, seed, xinit, true.parameter,
 }
 
 aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter, 
-                              space.discretized, increment.W, increment.L,
+                              space.discretized, increment.W, increment.L, idxCOGARCH,
                               hurst,methodfGn,
                               sampling, subsampling,
                               Initial, Terminal, n, delta, 
@@ -479,39 +481,56 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   model<-yuimaCogarch@model
   info<-model@info
   samp <- yuimaCogarch@sampling
-    aux.Noise<-setModel(drift="0",
-                        diffusion="0",
-                        jump.coeff="1",
-                        measure=info@measure,
-                        measure.type=info@measure.type)
+  if(idxCOGARCH==FALSE||(idxCOGARCH==TRUE && model@measure.type=="code")){  
+      aux.Noise<-setModel(drift="0",
+                          diffusion="0",
+                          jump.coeff="1",
+                          measure=info@measure,
+                          measure.type=info@measure.type)
   
-#   aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1], delta = samp@delta, 
-#                         grid=samp@grid, random = samp@random, sdelta=samp@sdelta, 
-#                         sgrid=samp@sgrid, interpolation=samp@interpolation )
+  #    aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1], delta = samp@delta, 
+  #                         grid=samp@grid, random = samp@random, sdelta=samp@sdelta, 
+  #                         sgrid=samp@sgrid, interpolation=samp@interpolation )
 
-    aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1])
-    auxModel<-setYuima(model=aux.Noise, sampling= aux.samp)
+      aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1])
+      auxModel<-setYuima(model=aux.Noise, sampling= aux.samp)
 
-  if(length(model@parameter@measure)==0){
-    aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
-                           space.discretized=space.discretized, increment.W=increment.W, 
-                           increment.L=increment.L,
-                           hurst=0.5,methodfGn=methodfGn)
-  }else{
-    aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
-                            true.parameter = true.parameter[model@parameter@measure], 
-                            space.discretized=space.discretized, increment.W=increment.W, 
-                            increment.L=increment.L,
-                            hurst=0.5,methodfGn=methodfGn)
-  }    
-  increment<-diff(as.numeric(get.zoo.data(aux.incr2)[[1]]))
-  # Using the simulated increment for generating the quadratic variation
-  # As first step we compute it in a crude way. A more fine approach is based on 
-  # the mpv function.
-  quadratVariation <- increment^2
-  incr.L <- t(matrix(c(increment,quadratVariation),ncol=2))
-  incr.W <- matrix(0, nrow=1,ncol=length(increment))
-  # Simulate trajectories Cogarch
+    if(length(model@parameter@measure)==0){
+      aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
+                             space.discretized=space.discretized, increment.W=increment.W, 
+                             increment.L=increment.L,
+                             hurst=0.5,methodfGn=methodfGn)
+    }else{
+      aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
+                              true.parameter = true.parameter[model@parameter@measure], 
+                              space.discretized=space.discretized, increment.W=increment.W, 
+                              increment.L=increment.L,
+                              hurst=0.5,methodfGn=methodfGn)
+    }    
+    increment<-diff(as.numeric(get.zoo.data(aux.incr2)[[1]]))
+    # Using the simulated increment for generating the quadratic variation
+    # As first step we compute it in a crude way. A more fine approach is based on 
+    # the mpv function.
+    quadratVariation <- increment^2
+    incr.L <- t(matrix(c(increment,quadratVariation),ncol=2))
+    incr.W <- matrix(0, nrow=1,ncol=length(increment))
+    # Simulate trajectories Cogarch
+  }
+  d.size <- model@equation.number  
+  if(missing(xinit)){
+    xinit <- yuimaCogarch@model@xinit
+  } else {
+    if(length(xinit) != d.size){
+      if(length(xinit)==1){
+        xinit <- rep(xinit, d.size)
+      } else {
+        yuima.warn("Dimension of xinit variables missmatch.")
+        return(NULL)
+      }
+    }
+  }
+  xinit <- as.expression(xinit)  # force xinit to be an expression
+  if(idxCOGARCH==FALSE){
   result <- aux.simulate(object=yuimaCogarch, nsim=nsim, seed=seed, xinit=xinit,
                          true.parameter = true.parameter, 
                          space.discretized = space.discretized,increment.W =incr.W,
@@ -521,6 +540,155 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
                     Initial=Initial, Terminal=Terminal, n=n, delta=delta, 
                     grid=grid, random=random, sdelta=sdelta, 
                     sgrid=sgrid, interpolation=interpolation)
+  }else{
+    Terminal <- samp@Terminal[1] 
+    n <- samp@n[1]
+    Delta <- Terminal/n
+    name.ar <- paste0(info@ar.par,c(1:info@q))
+    name.ma <- paste0(info@ma.par,c(1:info@p))
+    name.loc <- info@loc.par
+    name.param <- names(true.parameter)
+    parms <- as.numeric(true.parameter)
+    names(parms)<-name.param
+    value.ar <- parms[name.ar] 
+    value.ma <- parms[name.ma]
+    value.a0 <- parms[name.loc]
+    AMatrix <- MatrixA(value.ar)
+    avect<-evect<-matrix(0,info@q,1)
+    evect[info@q,] <- 1
+    avect[c(1,info@p),1] <- value.ma
+    Indent<-diag(info@q)
+    # Inputs: incr.L 
+    tavect<-t(avect)
+    
+    ncolsim <- (info@q+2)
+    sim <- matrix(0,n,ncolsim)
+    
+    par.len <- length(model@parameter@all)
+    if(missing(true.parameter) & par.len>0){
+      true.parameter <- vector(par.len, mode="list")
+      for(i in 1:par.len)
+        true.parameter[[i]] <- 0
+      names(true.parameter) <-   model@parameter@all
+    }
+    
+    yuimaEnv <- new.env()
+    
+    if(par.len>0){
+      for(i in 1:par.len){
+        pars <- model@parameter@all[i]
+        for(j in 1:length(true.parameter)){
+          if( is.na(match(pars, names(true.parameter)[j]))!=TRUE){
+            assign(model@parameter@all[i], true.parameter[[j]], yuimaEnv)
+          }
+        }
+        #assign(sdeModel@parameter@all[i], true.parameter[[i]], yuimaEnv)
+      }
+    }
+   
+    for(i in c(1:ncolsim)){
+      sim[1,i] <- eval(xinit[i], yuimaEnv)
+    }
+    
+    if(yuimaCogarch@model@measure.type=="code"){
+            for(t in c(2:n)){
+        sim[t,3:ncolsim] <- value.a0*expm(AMatrix*Delta)%*%evect*incr.L[2,t-1]+
+          expm(AMatrix*Delta)%*%(Indent+evect%*%tavect*incr.L[2,t-1])%*%sim[t-1,3:ncolsim]
+#         sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
+#         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]  
+#        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
+#        sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+AMatrix*Delta%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
+        sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
+        sim[t,1]<-sim[t-1,1]+sqrt(sim[t-1,2])*incr.L[1,t-1]
+        
+      }
+      X <- ts(sim)
+      Data <- setData(X,delta = Delta)
+      result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
+    }else{
+        lambda <- eval(model@measure$intensity, yuimaEnv)
+        
+        
+        #Simulating jump times 
+      intensity <- lambda*Delta
+      jump_time<-numeric()
+      jump_time[1] <- rexp(1, rate = intensity) 
+      # In yuima this part is evaluated using function eval
+      Time <-numeric()
+      Time[1] <- jump_time[1]
+      j <- 1
+      numb_jum<-numeric()
+      for (i in c(1:n) ){
+        numb_jum[i]<-0
+        while(Time[j]<i){
+          numb_jum[i]<-numb_jum[i]+1
+          jump_time[j+1]<-rexp(1,rate=intensity)
+          Time[j+1]<-Time[j]+jump_time[j+1]
+          j<-j+1
+        }
+      }
+      total_NumbJ <- j-1
+      # Counting the number of jumps 
+      N<-matrix(1,n,1)
+      N[1,1]<-numb_jum[1]
+      for(i in c(2:n)){
+        N[i,1]=N[i-1,1]+numb_jum[i]
+      }
+      # Simulating the driving process
+      F <- suppressWarnings(parse(text=gsub("^d(.+?)\\(.+?,", "r\\1(total_NumbJ,", model@measure$df$expr, perl=TRUE)))
+      assign("total_NumbJ",total_NumbJ, envir=yuimaEnv)
+      dL<-eval(F, envir=yuimaEnv)
+      #dL<-rnorm(total_NumbJ,mean=0,sd=1)
+      L<-matrix(1,total_NumbJ,1)
+      L[1]<-dL[1]
+      for(j in c(2:total_NumbJ)){
+        L[j]<-L[j-1] + dL[j]
+      }
+      # Computing the processes V and Y at jump
+      V<-matrix(1,total_NumbJ,1)
+      Y<-matrix(1,info@q,total_NumbJ)
+      Y[,1]<-matrix(1,info@q,1) #Starting point for unobservable State Space Process.
+      Y[,1]<-expm(AMatrix*jump_time[1])%*%Y[,1]
+      Y[,1]<-Y[,1]+(value.a0+sum(tavect*Y[,1]))*evect*dL[1]^2
+      V[1,]<-value.a0+sum(tavect*Y[,1])
+      for(j in c(2:total_NumbJ)){
+        Y[,j]<-Y[,j-1]
+        Y[,j]<-expm(AMatrix*jump_time[j])%*%Y[,j] 
+        Y[,j]<-Y[,j]+(value.a0+sum(tavect*Y[,j]))*evect*dL[j]^2
+        V[j,]<-value.a0+sum(tavect*Y[,j])
+      }
+      # Computing the process G at jump time
+      G<-matrix(1, total_NumbJ,1)
+      G[1]<-sqrt(V[1])*dL[1]
+      for(j in c(2:total_NumbJ)){
+        G[j]<-G[j-1]+sqrt(V[j])*dL[j] 
+      }
+      # Realizations observed at integer times
+      i<-1
+      while(N[i]==0){
+        i <- i+1 
+      }
+#       G_obs<-numeric()
+       L_obs<-numeric()
+#       V_obs<-numeric()
+#       Y_obs<-matrix(0,info@q,)
+      sim[c(1:(i-1)),1]<-0
+      sim[c(i:n),1]<-G[N[c(i:n)]]
+      L_obs[c(1:(i-1))]<-0
+      L_obs[c(i:n)]<-L[N[c(i:n)]]
+      for(j in c(1:(i-1))){
+        sim[j,3:ncolsim]<-as.numeric(Y[,j])
+        sim[j,2]<-value.a0+tavect%*%expm(AMatrix*j)%*%matrix(1,info@q,1)#Starting point for unobservable State Space Process 
+      }
+      for(j in c(i:n)){
+        sim[j,3:ncolsim]<-as.numeric(Y[,N[j]])
+        sim[j,2]<-value.a0+as.numeric(tavect%*%expm(AMatrix*(j-Time[N[j]]))%*%Y[,N[j]]) 
+      }
+    }
+  X <- ts(sim)
+  Data <- setData(X,delta = Delta)
+  result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
+  }
   return(result)
 }
 

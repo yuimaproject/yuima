@@ -1,5 +1,6 @@
-\name{MM.COGARCH}
-\alias{MM.COGARCH}
+\name{gmm}
+\alias{gmm}
+\alias{gmm.COGARCH}
 \alias{Method of Moment COGARCH}
 \alias{Estimation COGARCH}
 \alias{est. COGARCH}
@@ -12,8 +13,8 @@ Method of Moments for COGARCH(P,Q).
 The function returns the estimated parameters of a COGARCH(P,Q) model. The parameters are abtained by matching theoretical vs empirical autocorrelation function. The theoretical autocorrelation function is computed according the methodology developed in Chadraa (2009).
 }
 \usage{
-MM.COGARCH(yuima, data = NULL, start, 
- method="BFGS", fixed = list(), lower, upper)
+gmm(yuima, data = NULL, start, 
+ method="BFGS", fixed = list(), lower, upper, lag.max = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,8 +23,9 @@ MM.COGARCH(yuima, data = NULL, start,
   \item{start}{a \code{list} containing the starting values for the optimization routine.}
   \item{method}{a string indicating one of the methods available in \code{\link{optim}}.}
   \item{fixed}{a list of fixed parameters in optimization routine.}
-  \item{lower}{a named list for specifying lower bounds of parameters}
-  \item{upper}{a named list for specifying upper bounds of parameters}
+  \item{lower}{a named list for specifying lower bounds of parameters.}
+  \item{upper}{a named list for specifying upper bounds of parameters.}
+  \item{lag.max}{maximum lag at which to calculate the theoretical and empirical acf. Default is \code{sqrt{N}} where \code{N} is the number of observation.}
 }
 %\details{
 %Please complete !!!
