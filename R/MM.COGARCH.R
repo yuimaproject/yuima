@@ -7,14 +7,30 @@ is.COGARCH <- function(obj){
     return(is(obj, "yuima.cogarch"))
   return(FALSE)
 }
+yuima.acf<-function(data,lag.max){
+  mu<-mean(data)
+  leng <-length(data)
+  var1<-sum((data-mu)*(data-mu))/leng
+  res1<-numeric(length=lag.max)
+  for (t in 0:lag.max){
+    h<-leng-lag.max
+    res1[t+1]<-sum((data[(1+t):leng]-mu)*(data[1:h]-mu)) 
+  }
+  res1<-res1/(leng*var1) 
+  acfr<-res1[2:(lag.max+1)]  #analogously to Matlab program
+  
+  
+  
+}
 
 # The estimation procedure for cogarch(p,q) implemented in this code are based on the 
 # Chadraa phd's thesis
 gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(), 
-                           lower, upper, lag.max = NULL){
+                           lower, upper, lag.max = NULL, aggr.G =TRUE){
   print <- FALSE
+
   call <- match.call()
-# First step we check if all inputs are inserted correctly.
+  
   if( missing(yuima))
     yuima.stop("yuima object is missing.")
   
@@ -61,7 +77,7 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
     yuima.warn("The fixed constraints will be implemented as soon as possible")
     fixed <- list()
   }
-
+  
   # We identify the model parameters
   info <- model@info
   
@@ -127,15 +143,6 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   meas.idx <- match(meas.par, fullcoeff)
   fixed.idx <- match(fixed.name, fullcoeff)
   EL1.idx <- match("EL1",fullcoeff)  # We decide to pass EL1 as parameter !!!
-#   if(info@q==1){
-#     phi1.idx <- match("phi1",fullcoeff) # We decide to pass phi1 as parameter !!! 
-#     phi2.idx <- match("phi2",fullcoeff) # We decide to pass phi1 as parameter !!!
-#   }else{
-#     M2Lev.idx <- match("M2Lev",fullcoeff)
-#     M4Lev.idx <- match("M4Lev",fullcoeff)
-#   }
-  # We build the environment used as input in the 
-  # objective function.
 
   env <- new.env()
   n <- length(observ)[1]
@@ -148,6 +155,7 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("deltaData",  frequency(onezoo(observ)[,1]), envir=env)
   assign("time.obs",length(env$Data),envir=env)
   
+  
   # Order
   assign("p", info@p, envir=env)
   assign("q", info@q, envir=env)
@@ -158,18 +166,32 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("loc.idx", loc.idx, envir=env)
   assign("meas.idx", meas.idx, envir=env)
   assign("EL1.idx", EL1.idx, envir=env)
-#   if(info@q==1){ 
-#     assign("phi1.idx", phi1.idx, envir=env)
-#     assign("phi2.idx", phi1.idx, envir=env)
-#   }else{
-#     assign("M2Lev.idx", M2Lev.idx, envir=env) 
-#     assign("M4Lev.idx", M4Lev.idx, envir=env)
-#   }
-    
-objectiveFun <- function(p) {
-  mycoef <- as.list(p)
-  #		 names(mycoef) <- nm
   
+  if(aggr.G==TRUE){
+    #dt<-round(deltat(onezoo(observ)[,1])*10^5)/10^5
+    NumbForUnit<-round(env$deltaData)
+    G_i <- diff(env$Data[seq(1,length(env$Data),by=NumbForUnit)])
+    r<-1
+  }else{
+    G_i <- diff(env$Data)  
+    r <- 1/env$deltaData 
+  }
+  assign("G_i", G_i, envir=env)
+  assign("r", r, envir=env)
+  mu_G2 <- mean(G_i^2)
+  assign("mu_G2", mu_G2, envir=env)
+  var_G2 <- mean(G_i^4) - mu_G2^2
+  assign("var_G2", var_G2, envir=env)
+  d <- floor(sqrt(length(G_i)))
+  assign("d", d, envir=env)
+  typeacf <- "correlation"
+  assign("typeacf", typeacf, envir=env)
+  CovQuad <- log(abs(acf(G_i^2,plot=FALSE,lag.max=min(d,env$lag),type=typeacf)$acf[-1]))
+  #CovQuad <-log(abs(yuima.acf(data=G_i^2,lag.max=min(d,env$lag))))
+  assign("CovQuad", CovQuad, envir=env)
+
+objectiveFun <- function(p,env) {
+  mycoef <- as.list(p)
     if(length(c(fixed.idx, meas.idx))>0){ ## SMI 2/9/14
       names(mycoef) <- nm[-c(fixed.idx,meas.idx)] ## SMI 2/9/14
     }else{
@@ -177,33 +199,35 @@ objectiveFun <- function(p) {
    } 
   ErrTerm(yuima=yuima, param=mycoef, print=print, env)
 }
- out<- optim(start, objectiveFun, method = method)
-# ,  
-#              lower = c(0.0001, 0.00001, 0.00001, 0, 0.9), upper = c(1, 1, 1, 1, 1.1))
+ out<- optim(start, objectiveFun, method = method, env=env)
 
-#              lower=c(0.0001,0.00001,0.00001,0, 0.9,-100,-100),
-#              upper=c(1,1,1,1,1.1,0,0))
+ bvect<-out$par[ar.name]
+ bq<-bvect[1]
+ avect<-out$par[ma.name]
+ a1<-avect[1]
+ out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
 
-  return(out)
+ return(out)
   
 }
 
 ErrTerm <- function(yuima, param, print, env){
- # sample moments
-  typeacf <- "correlation"
+  typeacf <- env$typeacf
   param <- as.numeric(param)
-  G_i <- diff(env$Data)
-  r <- 1/env$deltaData 
-  mu_G2 <- mean(G_i^2)
-  var_G2 <- mean(G_i^4) - mu_G2^2
-  d <- floor(sqrt(length(G_i)))
-  CovQuad <- log(abs(acf(G_i^2,plot=FALSE,lag.max=min(d,env$lag),type=typeacf)$acf[-1]))
+  
+  G_i <- env$G_i
+  r <- env$r
+  mu_G2 <- env$mu_G2
+  var_G2 <- env$var_G2
+  d <- env$d
+  CovQuad <-env$CovQuad
+
   h <- seq(1, d, by = 1)*r
   cost <- env$loc.idx
   b <- env$ar.idx
   a <- env$ma.idx
   meanL1 <- param[env$EL1.idx]
-  #meanL1 <- 1
+#   meanL1 <- 1
 #   if(env$q == 1){
 # 
 #   beta <- param[cost]*param[b]
@@ -227,52 +251,53 @@ ErrTerm <- function(yuima, param, print, env){
 #       exp(-h*abs(phi1))/(var_G2)
 #   }
 #   
-#  } 
+# } 
  if(env$q >= 1){
-#    M2Lev <- param[env$M2Lev.idx] 
-#    M4Lev <- param[env$M4Lev.idx]
-#  }else{
-#    M2Lev <- param[env$phi1.idx]
-#    M4Lev <- param[env$phi2.idx]
-#  }
    TheoCovQuad <- numeric(length = length(h))
+   cost<-param[cost]
    for(i in c(1:length(h))){
-      MomentCog <- MM_Cogarch(p = env$p, q = env$q, cost=param[cost] , acoeff=param[a],
-                              b=param[b], meanL1 = meanL1, r = r, h = h[i], 
+      MomentCog <- MM_Cogarch(p = env$p, q = env$q,  acoeff=param[a],
+                              b=param[b],  r = r, h = h[i], 
                               type = typeacf, m2=mu_G2, var=var_G2)
    
    
    TheoCovQuad[i] <- MomentCog$acfG2
    }
    theo_mu_G2 <- MomentCog$meanG2
+   param[cost]<-MomentCog$cost
  }
  res <- sum((c(log(abs(TheoCovQuad)))-c(CovQuad))^2)
  return(res)
-#  if(env$q == 3){
-#    MomentCog <- MM_Cogarch(p = env$p, q = env$q, a, b, r, h)
-#  }
-#  if(env$q >= 4){
-#    MomentCog <- MM_Cogarch(p = env$p, q = env$q, a, b, r, h)
-#  }
 }
 
-MM_Cogarch <- function(p, q, cost, acoeff, b, meanL1, r, h, type, m2, var){
+MM_Cogarch <- function(p, q, acoeff, b,  r, h, type, m2, var){
   # The code developed here is based on the acf for squared returns derived in the 
   # Chaadra phd Thesis
   a <- e <- matrix(0,nrow=q,ncol=1)
   e[q,1] <- 1
   a[1:p,1] <- acoeff
-#   mu <- M2Lev
+
   bq <- b[1]
   a1 <- a[1]
-  mu <-1/acoeff[1]*(bq-cost*bq*r*meanL1/m2)
-#   rho <- M4Lev
+
+# # Matching only the autocorrelation we are not able to estimate the a_0 parameter
+# nevertheless using the theoretical formula of the expectaion of squared returns we
+# are able to fix this parameter for having a perfect match  between theoretical and 
+# empirical mean
+
+# We recall that under the assumption of levy  process is centered  the mean at time 1 of the 
+# squared returns and the mean of the corresponding levy measure are equals.
+
+  mu<-1 # we assume variance of the underlying L\'evy is one
+  meanL1<-mu
+
+  cost<-(bq-mu*a1)*m2/(bq*r)
+  
   B_tilde <- MatrixA(b[c(q:1)])+mu*e%*%t(a)
-  #beta <- as.numeric(B_tilde[q,])
   meanG2 <- cost*bq*r/(bq-mu*a1)*meanL1
   Inf_eps <- IdentM <- diag(q)
   if(q==1){
-    Inf_eps[q,q] <- 1/(-2*B_tilde[1,1]) 
+    Inf_eps[q,q] <- -1/(2*B_tilde[1,1]) 
   }
   if(q==2){
     Inf_eps[q,q] <- -B_tilde[2,1]
@@ -308,8 +333,6 @@ MM_Cogarch <- function(p, q, cost, acoeff, b, meanL1, r, h, type, m2, var){
   Qh <- mu*term%*%term1%*%(-term2%*%Inf_eps1-invB%*%term2%*%Inf_eps1%*%t(B_tilde))%*%e
   m <- m_overRho*rh0
   
-  
- 
   if(type=="correlation"){
     VarTheo<-as.numeric(rh0*t(a)%*%P0_overRho%*%a+rh0*t(a)%*%Q0_overRho+2*r^2*mu^2+rh0)
     acfG2 <- (t(a)%*%Ph%*%a+t(a)%*%Qh)/VarTheo
@@ -317,7 +340,7 @@ MM_Cogarch <- function(p, q, cost, acoeff, b, meanL1, r, h, type, m2, var){
     coeff <- cost^2*bq^2/((1-m)*(bq-mu*a1)^2)
     acfG2 <- coeff*(t(a)%*%Ph%*%a+t(a)%*%Qh)
   }
-  res <- list(acfG2=acfG2, meanG2=meanG2)
+  res <- list(acfG2=acfG2, meanG2=meanG2, cost=cost)
   return(res)
 }
 AsympVar<-function(B_tilde,e,lower=0,upper=100,delta=0.1){

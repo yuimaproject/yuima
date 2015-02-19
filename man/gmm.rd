@@ -14,7 +14,7 @@ The function returns the estimated parameters of a COGARCH(P,Q) model. The param
 }
 \usage{
 gmm(yuima, data = NULL, start, 
- method="BFGS", fixed = list(), lower, upper, lag.max = NULL)
+ method="BFGS", fixed = list(), lower, upper, lag.max = NULL, aggr.G =TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,6 +26,7 @@ gmm(yuima, data = NULL, start,
   \item{lower}{a named list for specifying lower bounds of parameters.}
   \item{upper}{a named list for specifying upper bounds of parameters.}
   \item{lag.max}{maximum lag at which to calculate the theoretical and empirical acf. Default is \code{sqrt{N}} where \code{N} is the number of observation.}
+  \item{aggr.G}{Logical variable. If \code{aggr.G = TRUE.}, the function use the increments of COGARCH(P,Q) evaluated at unitary length. If \code{aggr.G = FALSE}, the increments are evaluated on the interval with frequency specified in an object of class \code{\link{yuima.data-class}} that contains the observed time series.}
 }
 %\details{
 %Please complete !!!
@@ -56,20 +57,19 @@ The YUIMA Project Team.
 mod1 <- setCogarch(p = 1, q = 1, work = FALSE,
                    measure=list(df="rbgamma(z,1,sqrt(2),1,sqrt(2))"),
                     measure.type = "code", Cogarch.var = "y",
-                    V.var = "v", Latent.var="x")
+                    V.var = "v", Latent.var="x",XinExpr=TRUE)
 
 param <- list(a1 = 0.038,  b1 =  0.053,
-              a0 = 0.04/0.053, x1 = 0)
+              a0 = 0.04/0.053, x01 = 20)
 
 # We generate a trajectory
-
-samp <- setSampling(Terminal=5000, n=5000)
-set.seed(100)
+samp <- setSampling(Terminal=10000, n=100000)
+set.seed(210)
 sim1 <- simulate(mod1, sampling = samp, true.parameter = param)
 
 # We estimate the model
 
-res1 <- MM.COGARCH(yuima = sim1, start = param)
+res1 <- gmm(yuima = sim1, start = param)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
