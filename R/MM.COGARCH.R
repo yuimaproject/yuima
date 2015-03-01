@@ -63,19 +63,19 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
     yuima.stop("Data must be an object of class yuima.data-class")  
   } 
   
-  if( !missing(upper)){
-    yuima.warn("The upper constraints will be implemented as soon as possible")
-    upper <- list()
+  if( !missing(upper) && (method!="L-BFGS-B"||method!="brent")){
+    yuima.warn("The upper requires L-BFGS-B or brent methods. We change method in  L-BFGS-B")
+    method <- "L-BFGS-B"
   }
 
-  if( !missing(lower)){
-    yuima.warn("The lower constraints will be implemented as soon as possible")
-    lower <- list()
+  if( !missing(lower) && (method!="L-BFGS-B"||method!="brent")){
+    yuima.warn("The lower constraints requires L-BFGS-B or brent methods. We change method in  L-BFGS-B")
+    method <- "L-BFGS-B"
   }
 
-  if( !missing(fixed)){
-    yuima.warn("The fixed constraints will be implemented as soon as possible")
-    fixed <- list()
+  if( !missing(fixed) && (method!="L-BFGS-B"||method!="brent")){
+    yuima.warn("The fixed constraints requires L-BFGS-B or brent methods. We change method in  L-BFGS-B")
+    method <- "L-BFGS-B"
   }
   
   # We identify the model parameters
@@ -199,15 +199,86 @@ objectiveFun <- function(p,env) {
    } 
   ErrTerm(yuima=yuima, param=mycoef, print=print, env)
 }
- out<- optim(start, objectiveFun, method = method, env=env)
+if(method!="L-BFGS-B"||method!="brent"){
+  out<- optim(start, objectiveFun, method = method, env=env)
+}else{
+  if(length(fixed)!=0 && !missing(upper) && !missing(lower)){
+    out<- optim(start, objectiveFun, method = method, 
+                fixed=as.numeric(fixed), 
+                lower=as.numeric(lower), 
+                upper=as.numeric(upper), env=env)
+  }else{
+    if(!missing(upper) && !missing(lower)){
+      out<- optim(start, objectiveFun, method = method, 
+                  lower=as.numeric(lower), 
+                  upper=as.numeric(upper), env=env)
+    }
+    if(length(fixed)!=0 && !missing(lower)){
+      out<- optim(start, objectiveFun, method = method, 
+                  fixed=as.numeric(fixed), 
+                  lower=as.numeric(lower), env=env)
+    }
+    if(!missing(upper) && length(fixed)!=0){
+      out<- optim(start, objectiveFun, method = method, 
+                  fixed=as.numeric(fixed), 
+                  upper=as.numeric(upper), env=env)
+    }
+  }
+  
+  if(length(fixed)!=0 && missing(upper) && missing(lower)){
+    out<- optim(start, objectiveFun, method = method, 
+                fixed=as.numeric(fixed), env=env)
+  }
+  
+  if(length(fixed)==0 && !missing(upper) && missing(lower)){
+    out<- optim(start, objectiveFun, method = method,
+                lower=as.numeric(lower), env=env)
+  }
+  
+  if(length(fixed)==0 && missing(upper) && !missing(lower)){
+    out<- optim(start, objectiveFun, method = method, 
+                upper=as.numeric(upper), env=env)
+  }
+  
+}
 
  bvect<-out$par[ar.name]
  bq<-bvect[1]
  avect<-out$par[ma.name]
  a1<-avect[1]
- out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
+ 
+  out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
 
- return(out)
+ # Determine the Variance-Covariance Matrix
+ dimOutp<-length(out$par)-2
+ coef <- out$par[c(1:dimOutp)] 
+ vcov<-matrix(NA, dimOutp, dimOutp)
+  names_coef<-names(coef)
+  colnames(vcov) <- names_coef
+  rownames(vcov) <- names_coef
+  mycoef <- start
+  min <- out$value 
+# # call
+
+ logL.Incr<-cogarchNoise(yuima.cogarch=model, data=observ, 
+                    param=as.list(coef), mu=1)
+
+# Build an object of class mle
+
+ 
+ 
+
+ # Build an object of class cogarch.gmm.incr
+res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
+    vcov = vcov, min = min, details = list(), 
+    method = character(),
+    Incr.Lev=logL.Incr,
+    model = model, nobs=as.integer(length(logL.Incr)+1),
+    logL.Incr = numeric())
+
+
+
+ return(res)
   
 }
 

@@ -28,3 +28,18 @@ setClass("yuima.cogarch",
          representation(info="cogarch.info"),
          contains="yuima.model")
 
+# Class 'gmm.cogarch'
+setClass("cogarch.gmm.incr",representation(Incr.Lev = "ANY",
+                                           model = "yuima.cogarch",
+                                           logL.Incr = "ANY"
+),
+contains="mle"
+)
+
+setClass("cogarch.gmm",representation(
+  model = "yuima.cogarch"),
+  contains="mle"
+)
+# setClass("gmm.cogarch",
+#   contains="mle"
+#   )  
