@@ -65,7 +65,7 @@ cogarchNoise<-function(yuima.cogarch, data=NULL, param, mu=1){
 auxcogarch.noise<-function(cost,b,acoeff,mu,Data,freq){
   
   res<-StationaryMoments(cost,b,acoeff,mu)
-  ExpY0<-res$ExpVar
+  ExpY0<-res$ExpStatVar
   
   q<-length(b) 
   a <- e <- matrix(0,nrow=q,ncol=1)
@@ -76,13 +76,13 @@ auxcogarch.noise<-function(cost,b,acoeff,mu,Data,freq){
   DeltaG <- diff(Data)
   squaredG <- DeltaG^2
   
-  Process_Y <- res$ExpVar
+  Process_Y <- ExpY0
   var_V<-cost + sum(acoeff*Process_Y)
   delta <- 1/freq
   for(t in c(2:(length(Data)))){  
     # Y_t=e^{A\Delta t}Y_{t-\Delta t}+e^{A\left(\Delta t\right)}e\left(\Delta G_{t}\right)^{2}
     Process_Y <- cbind(Process_Y, (expm(B*delta)%*%(Process_Y[,t-1]+e*squaredG[t-1])))
-    var_V[t] <- cost + sum(acoeff*Process_Y[,t])
+    var_V[t] <- cost + sum(a*Process_Y[,t])
   }
   #\Delta L_{t}=\frac{\Delta G_{t}}{\sqrt{V_{t}}}.
   

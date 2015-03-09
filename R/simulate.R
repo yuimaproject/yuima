@@ -562,7 +562,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
     tavect<-t(avect)
     
     ncolsim <- (info@q+2)
-    sim <- matrix(0,n,ncolsim)
+    sim <- matrix(0,n+1,ncolsim)
     
     par.len <- length(model@parameter@all)
     if(missing(true.parameter) & par.len>0){
@@ -610,7 +610,8 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
         
         
         #Simulating jump times 
-      intensity <- lambda*Delta
+      #intensity <- lambda*Delta
+      intensity<-lambda
       jump_time<-numeric()
       jump_time[1] <- rexp(1, rate = intensity) 
       # In yuima this part is evaluated using function eval
@@ -618,74 +619,97 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
       Time[1] <- jump_time[1]
       j <- 1
       numb_jum<-numeric()
-      for (i in c(1:n) ){
-        numb_jum[i]<-0
-        while(Time[j]<i){
-          numb_jum[i]<-numb_jum[i]+1
-          jump_time[j+1]<-rexp(1,rate=intensity)
-          Time[j+1]<-Time[j]+jump_time[j+1]
-          j<-j+1
-        }
+#       for (i in c(1:n) ){
+#         numb_jum[i]<-0
+#         while(Time[j]<i){
+#           numb_jum[i]<-numb_jum[i]+1
+#           jump_time[j+1]<-rexp(1,rate=intensity)
+#           Time[j+1]<-Time[j]+jump_time[j+1]
+#           j<-j+1
+#         } 
+#       }
+    
+      while(Time[j] < Terminal){
+        jump_time[j+1]<-rexp(1,rate=intensity)
+        Time[j+1]<-Time[j]+jump_time[j+1]
+        j<-j+1
       }
-      total_NumbJ <- j-1
+      
+      total_NumbJ <- j
       # Counting the number of jumps 
-      N<-matrix(1,n,1)
-      N[1,1]<-numb_jum[1]
-      for(i in c(2:n)){
-        N[i,1]=N[i-1,1]+numb_jum[i]
-      }
+#       N<-matrix(1,n,1)
+#       N[1,1]<-numb_jum[1]
+#       for(i in c(2:n)){
+#         N[i,1]=N[i-1,1]+numb_jum[i]
+#       }
       # Simulating the driving process
       F <- suppressWarnings(parse(text=gsub("^d(.+?)\\(.+?,", "r\\1(total_NumbJ,", model@measure$df$expr, perl=TRUE)))
       assign("total_NumbJ",total_NumbJ, envir=yuimaEnv)
       dL<-eval(F, envir=yuimaEnv)
       #dL<-rnorm(total_NumbJ,mean=0,sd=1)
-      L<-matrix(1,total_NumbJ,1)
-      L[1]<-dL[1]
-      for(j in c(2:total_NumbJ)){
-        L[j]<-L[j-1] + dL[j]
-      }
+#       L<-matrix(1,total_NumbJ,1)
+#       L[1]<-dL[1]
+#       for(j in c(2:total_NumbJ)){
+#         L[j]<-L[j-1] + dL[j]
+#       }
       # Computing the processes V and Y at jump
       V<-matrix(1,total_NumbJ,1)
       Y<-matrix(1,info@q,total_NumbJ)
-      Y[,1]<-matrix(1,info@q,1) #Starting point for unobservable State Space Process.
-      Y[,1]<-expm(AMatrix*jump_time[1])%*%Y[,1]
-      Y[,1]<-Y[,1]+(value.a0+sum(tavect*Y[,1]))*evect*dL[1]^2
+      Y[,1]<-matrix(sim[1,c(3:info@q)],info@q,1) #Starting point for unobservable State Space Process.
+      
       V[1,]<-value.a0+sum(tavect*Y[,1])
-      for(j in c(2:total_NumbJ)){
-        Y[,j]<-Y[,j-1]
-        Y[,j]<-expm(AMatrix*jump_time[j])%*%Y[,j] 
-        Y[,j]<-Y[,j]+(value.a0+sum(tavect*Y[,j]))*evect*dL[j]^2
-        V[j,]<-value.a0+sum(tavect*Y[,j])
-      }
-      # Computing the process G at jump time
       G<-matrix(1, total_NumbJ,1)
-      G[1]<-sqrt(V[1])*dL[1]
+      G[1]<-0
+
       for(j in c(2:total_NumbJ)){
+        Y[,j]<-as.numeric(expm(AMatrix*jump_time[j])%*%Y[,j-1])+(V[j-1,])*evect*dL[j-1]^2
+        V[j,]<-value.a0+sum(tavect*Y[,j])
+        #       }
+#       # Computing the process G at jump time
+#       
+#       for(j in c(2:total_NumbJ)){
         G[j]<-G[j-1]+sqrt(V[j])*dL[j] 
       }
-      # Realizations observed at integer times
-      i<-1
-      while(N[i]==0){
-        i <- i+1 
-      }
-#       G_obs<-numeric()
-       L_obs<-numeric()
-#       V_obs<-numeric()
-#       Y_obs<-matrix(0,info@q,)
-      sim[c(1:(i-1)),1]<-0
-      sim[c(i:n),1]<-G[N[c(i:n)]]
-      L_obs[c(1:(i-1))]<-0
-      L_obs[c(i:n)]<-L[N[c(i:n)]]
-      for(j in c(1:(i-1))){
-        sim[j,3:ncolsim]<-as.numeric(Y[,j])
-        sim[j,2]<-value.a0+tavect%*%expm(AMatrix*j)%*%matrix(1,info@q,1)#Starting point for unobservable State Space Process 
-      }
-      for(j in c(i:n)){
-        sim[j,3:ncolsim]<-as.numeric(Y[,N[j]])
-        sim[j,2]<-value.a0+as.numeric(tavect%*%expm(AMatrix*(j-Time[N[j]]))%*%Y[,N[j]]) 
-      }
+
+        
+        res<-approx(x=c(0,Time), y = c(0,G), 
+                    xout=seq(0,Terminal, by=Terminal/n), 
+                    method = "constant")
+        sim[,1]<-res$y
+        i<-1
+        for(j in 1:length(Time)){
+          while (i*Delta < Time[j] && i <= n){
+            sim[i+1,3:ncolsim]<-expm(AMatrix*(Time[j]-i*Delta))%*%Y[,j]
+            sim[i+1,2]<-value.a0+as.numeric(tavect%*%sim[i,3:ncolsim])
+            i<-i+1
+            
+          }
+        }
+
+
+#       # Realizations observed at integer times
+#       i<-1
+#       while(N[i]==0){
+#         i <- i+1 
+#       }
+# #       G_obs<-numeric()
+#       # L_obs<-numeric()
+# #       V_obs<-numeric()
+# #       Y_obs<-matrix(0,info@q,)
+#       sim[c(1:(i-1)),1]<-0
+#       sim[c(i:n),1]<-G[N[c(i:n)]]
+# #       L_obs[c(1:(i-1))]<-0
+# #       L_obs[c(i:n)]<-L[N[c(i:n)]]
+#       for(j in c(1:(i-1))){
+#         sim[j,3:ncolsim]<-as.numeric(Y[,j])
+#         sim[j,2]<-value.a0+tavect%*%expm(AMatrix*j)%*%matrix(1,info@q,1)#Starting point for unobservable State Space Process 
+#       }
+#       for(j in c(i:n)){
+#         sim[j,3:ncolsim]<-as.numeric(Y[,N[j]])
+#         sim[j,2]<-value.a0+as.numeric(tavect%*%expm(AMatrix*(j-Time[N[j]]))%*%Y[,N[j]]) 
+#       }
     }
-  X <- ts(sim)
+  X <- ts(sim[-1,])
   Data <- setData(X,delta = Delta)
   result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
   }

@@ -186,7 +186,7 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("d", d, envir=env)
   typeacf <- "correlation"
   assign("typeacf", typeacf, envir=env)
-  CovQuad <- log(abs(acf(G_i^2,plot=FALSE,lag.max=min(d,env$lag),type=typeacf)$acf[-1]))
+  CovQuad <- acf(G_i^2,plot=FALSE,lag.max=min(d,env$lag),type=typeacf)$acf[-1]
   #CovQuad <-log(abs(yuima.acf(data=G_i^2,lag.max=min(d,env$lag))))
   assign("CovQuad", CovQuad, envir=env)
 
@@ -247,7 +247,7 @@ if(method!="L-BFGS-B"||method!="brent"){
  avect<-out$par[ma.name]
  a1<-avect[1]
  
-  out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
+  #out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
 
  # Determine the Variance-Covariance Matrix
  dimOutp<-length(out$par)-2
@@ -328,6 +328,7 @@ ErrTerm <- function(yuima, param, print, env){
    cost<-param[cost]
    for(i in c(1:length(h))){
       MomentCog <- MM_Cogarch(p = env$p, q = env$q,  acoeff=param[a],
+                              cost=cost,
                               b=param[b],  r = r, h = h[i], 
                               type = typeacf, m2=mu_G2, var=var_G2)
    
@@ -337,11 +338,11 @@ ErrTerm <- function(yuima, param, print, env){
    theo_mu_G2 <- MomentCog$meanG2
    param[cost]<-MomentCog$cost
  }
- res <- sum((c(log(abs(TheoCovQuad)))-c(CovQuad))^2)
+ res <- sum((c(theo_mu_G2,TheoCovQuad)-c(mu_G2,CovQuad))^2)
  return(res)
 }
 
-MM_Cogarch <- function(p, q, acoeff, b,  r, h, type, m2, var){
+MM_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
   # The code developed here is based on the acf for squared returns derived in the 
   # Chaadra phd Thesis
   a <- e <- matrix(0,nrow=q,ncol=1)
@@ -362,9 +363,9 @@ MM_Cogarch <- function(p, q, acoeff, b,  r, h, type, m2, var){
   mu<-1 # we assume variance of the underlying L\'evy is one
   meanL1<-mu
 
-  cost<-(bq-mu*a1)*m2/(bq*r)
-  
-  B_tilde <- MatrixA(b[c(q:1)])+mu*e%*%t(a)
+ # cost<-(bq-mu*a1)*m2/(bq*r)
+  B<- MatrixA(b[c(q:1)])
+  B_tilde <- B+mu*e%*%t(a)
   meanG2 <- cost*bq*r/(bq-mu*a1)*meanL1
   Inf_eps <- IdentM <- diag(q)
   if(q==1){
@@ -386,13 +387,19 @@ MM_Cogarch <- function(p, q, acoeff, b,  r, h, type, m2, var){
   }
    
   term <- expm(B_tilde*h)
-  invB <- solve(B_tilde) # In this case we can use the analytical form for Companion Matrix???
+  #invB <- solve(B_tilde) # In this case we can use the analytical form for Companion Matrix???
+  # We invert the B_tilde using the Inverse of companion matrix
+  if(q>1){
+  invB<-rbind(c(-B_tilde[q,-1],1)/B_tilde[q,1],cbind(diag(q-1),matrix(0,q-1,1)))
+  }else{invB<-1/B_tilde}
   term1 <- invB%*%(IdentM-expm(-B_tilde*r))
   term2 <- (expm(B_tilde*r)-IdentM)
   
   P0_overRho <- 2*mu^2*(3*invB%*%(invB%*%term2-r*IdentM)-IdentM)%*%Inf_eps
   Q0_overRho <- 6*mu*((r*IdentM-invB%*%term2)%*%Inf_eps
                       -invB%*%(invB%*%term2-r*IdentM)%*%Inf_eps%*%t(B_tilde))%*%e
+#   Q0_overRho <- 6*mu*((r*IdentM-invB%*%term2)%*%Inf_eps
+#                     -invB%*%(invB%*%term2-r*IdentM)%*%Inf_eps%*%t(B))%*%e
   m_overRho <- as.numeric(t(a)%*%Inf_eps%*%a)
   Den<- (m_overRho*meanL1^2/m2^2*var*r^2+t(a)%*%Q0_overRho+t(a)%*%P0_overRho%*%a+1) 
   num <-(meanL1^2/m2^2*var-2*mu^2)*r^2
@@ -402,6 +409,7 @@ MM_Cogarch <- function(p, q, acoeff, b,  r, h, type, m2, var){
   Inf_eps1 <- Inf_eps*rh0
   Ph <- mu^2*term%*%term1%*%invB%*%term2%*%Inf_eps1
   Qh <- mu*term%*%term1%*%(-term2%*%Inf_eps1-invB%*%term2%*%Inf_eps1%*%t(B_tilde))%*%e
+ # Qh <- mu*term%*%term1%*%(-term2%*%Inf_eps1-invB%*%term2%*%Inf_eps1%*%t(B))%*%e
   m <- m_overRho*rh0
   
   if(type=="correlation"){
