@@ -8,29 +8,66 @@ is.COGARCH <- function(obj){
   return(FALSE)
 }
 yuima.acf<-function(data,lag.max){
-  mu<-mean(data)
-  leng <-length(data)
-  var1<-sum((data-mu)*(data-mu))/leng
+  burndata<-lag.max+1
+  dataused<-as.list(numeric(length=burndata+1))
+  Time<-length(data)
+  dataformean<-data[burndata:Time]
+  dataused[[1]]<-mean(dataformean)
+  dataused[[2]]<-mean(dataformean^2)
+  mu<-mean(dataformean)
+  leng <-length(dataformean)
+  
+  var1<-sum((dataformean-mu)*(dataformean-mu))/leng
+  
+  
   res1<-numeric(length=lag.max)
-  for (t in 0:lag.max){
-    h<-leng-lag.max
-    res1[t+1]<-sum((data[(1+t):leng]-mu)*(data[1:h]-mu)) 
+  elem<-matrix(0,lag.max,(Time-lag.max))
+  for (t in (lag.max+1):(Time)){
+
+#     h<-leng-lag.max
+#     elem<-(data[(1+t):leng]-mu)*(data[1:h]-mu)/(leng*var1) 
+#     res1[t+1]<-sum(elem) 
+    h <-c(lag.max:1)
+    elem[,(t-lag.max)]<-(data[(t-h)[order(t-h,decreasing=TRUE)]]-mu)*(data[t]-mu)/(leng*var1)
   }
-  res1<-res1/(leng*var1) 
-  acfr<-res1[2:(lag.max+1)]  #analogously to Matlab program
+  for(h in 3:(lag.max+2)){
+    dataused[[h]]<-sum(elem[h-2,])
+  }  
   
-  
-  
+  elem0<-rbind(t(as.matrix(dataformean)),elem)
+#   res1<-res1
+#   acfr<-res1[2:(lag.max+1)]  #analogously to Matlab program
+  return(list(dataused=dataused, elem=elem0, leng=leng))
 }
+
 
 # The estimation procedure for cogarch(p,q) implemented in this code are based on the 
 # Chadraa phd's thesis
 gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(), 
-                           lower, upper, lag.max = NULL, aggr.G =TRUE){
+                           lower, upper, lag.max = NULL, aggr.G = TRUE, 
+                           Est.Incr = "NoIncr", objFun = "L2"){
   print <- FALSE
 
   call <- match.call()
   
+  if(objFun=="L1" && method!="Nelder-Mead"){
+    yuima.warn("Mean absolute error minimization is available only for 'method=Nelder-Mead'. yuima sets automatically 'method=Nelder-Mead'  ")
+    method<-"Nelder.Mead"
+  }
+  
+  if(objFun=="L1" && (length(fixed)!=0 || !missing(lower) || !missing(upper))){
+    yuima.stop("Constraints are not allow for the minimization of Mean absolute error")
+  }
+  
+  codelist.objFun <- c("L1","L2","L2CUE")
+  if(is.na(match(objFun,codelist.objFun))){
+    yuima.stop("Value of objFun not available. Please choose among L1, L2, L2CUE ")
+  }
+   
+  codelist.Est.Incr <- c("NoIncr","Incr","IncrPar")
+  if(is.na(match(Est.Incr,codelist.Est.Incr))){
+    yuima.stop("Value of Est.Incr not available. Please choose among NoIncr, Incr, IncrPar ")
+  }
   if( missing(yuima))
     yuima.stop("yuima object is missing.")
   
@@ -96,6 +133,13 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
 
   meas.par <- model@parameter@measure
   
+  if(length(meas.par)==0 && Est.Incr=="IncrPar"){
+    yuima.warn("The dimension of measure parameters is zero, yuima changes 'Est.Incr = IncrPar' into 'Est.Incr = Incr'")
+    Est.Incr <- "Incr"
+  }
+    
+    
+    
   fixed.name <- names(fixed)
   if(info@q==1){
   #  nm <- c(names(start), "EL1", "phi1","phi2")
@@ -152,7 +196,7 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   
   # Data
   assign("Data",  as.matrix(onezoo(observ)[,1]), envir=env)
-  assign("deltaData",  frequency(onezoo(observ)[,1]), envir=env)
+  assign("deltaData",  n/index(observ@zoo.data[[1]])[n], envir=env)
   assign("time.obs",length(env$Data),envir=env)
   
   
@@ -167,26 +211,40 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("meas.idx", meas.idx, envir=env)
   assign("EL1.idx", EL1.idx, envir=env)
   
+  assign("objFun",objFun, envir=env)
+  
   if(aggr.G==TRUE){
     #dt<-round(deltat(onezoo(observ)[,1])*10^5)/10^5
-    NumbForUnit<-round(env$deltaData)
-    G_i <- diff(env$Data[seq(1,length(env$Data),by=NumbForUnit)])
+    # Time<-index(observ@zoo.data[[1]])[n]
+    G_i <- diff(env$Data[seq(1,length(env$Data),by=env$deltaData)])
     r<-1
   }else{
     G_i <- diff(env$Data)  
     r <- 1/env$deltaData 
   }
-  assign("G_i", G_i, envir=env)
-  assign("r", r, envir=env)
-  mu_G2 <- mean(G_i^2)
-  assign("mu_G2", mu_G2, envir=env)
-  var_G2 <- mean(G_i^4) - mu_G2^2
-  assign("var_G2", var_G2, envir=env)
-  d <- floor(sqrt(length(G_i)))
+  d <- min(floor(sqrt(length(G_i))),env$lag)
   assign("d", d, envir=env)
   typeacf <- "correlation"
   assign("typeacf", typeacf, envir=env)
-  CovQuad <- acf(G_i^2,plot=FALSE,lag.max=min(d,env$lag),type=typeacf)$acf[-1]
+  CovQuad <- acf(G_i^2,plot=FALSE,lag.max=d,type=typeacf)$acf[-1]
+  
+  example<-yuima.acf(data=G_i^2,lag.max=d)
+  dummyEmpiricalMoM<-as.numeric(example$dataused)
+  #CovQuad <- as.numeric(example$dataused)[-c(1:2)]
+  
+  
+  
+  
+  assign("G_i", G_i, envir=env)
+  assign("r", r, envir=env)
+  #mu_G2 <- as.numeric(example$dataused)[1]
+  mu_G2<-mean(G_i^2)
+  assign("mu_G2", mu_G2, envir=env)
+  #var_G2 <- as.numeric(example$dataused)[2] - mu_G2^2
+  var_G2 <- mean(G_i^4) - mu_G2^2
+  assign("var_G2", var_G2, envir=env)
+  assign("score",example$elem,envir=env )
+  assign("leng",example$leng,envir=env )
   #CovQuad <-log(abs(yuima.acf(data=G_i^2,lag.max=min(d,env$lag))))
   assign("CovQuad", CovQuad, envir=env)
 
@@ -199,7 +257,7 @@ objectiveFun <- function(p,env) {
    } 
   ErrTerm(yuima=yuima, param=mycoef, print=print, env)
 }
-if(method!="L-BFGS-B"||method!="brent"){
+if(method!="L-BFGS-B"&&method!="brent"){
   out<- optim(start, objectiveFun, method = method, env=env)
 }else{
   if(length(fixed)!=0 && !missing(upper) && !missing(lower)){
@@ -232,12 +290,12 @@ if(method!="L-BFGS-B"||method!="brent"){
   
   if(length(fixed)==0 && !missing(upper) && missing(lower)){
     out<- optim(start, objectiveFun, method = method,
-                lower=as.numeric(lower), env=env)
+                upper=as.numeric(upper), env=env)
   }
   
   if(length(fixed)==0 && missing(upper) && !missing(lower)){
     out<- optim(start, objectiveFun, method = method, 
-                upper=as.numeric(upper), env=env)
+                lower=as.numeric(lower), env=env)
   }
   
 }
@@ -250,7 +308,11 @@ if(method!="L-BFGS-B"||method!="brent"){
   #out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
 
  # Determine the Variance-Covariance Matrix
- dimOutp<-length(out$par)-2
+ if(length(meas.par)!=0){
+   idx.dumm<-match(meas.par,names(out$par))
+   out$par<-out$par[- idx.dumm]
+ }
+ dimOutp<-length(out$par)-(1+info@q)
  coef <- out$par[c(1:dimOutp)] 
  vcov<-matrix(NA, dimOutp, dimOutp)
   names_coef<-names(coef)
@@ -259,28 +321,208 @@ if(method!="L-BFGS-B"||method!="brent"){
   mycoef <- start
   min <- out$value 
 # # call
+  if(objFun!="L1"){
+        gradVect0<-MM_grad_Cogarch(p=info@p, q=info@q, 
+                  acoeff=avect,cost=out$par[loc.par], b=bvect,  
+                  r=env$r, h=seq(1, env$d, by = 1)*env$r, type=typeacf, 
+                  m2=env$mu_G2, var=env$var_G2)
+  
+        score0 <- MM_Cogarch(p=info@p, q=info@q,
+                         acoeff=avect,cost=out$par[loc.par], b=bvect,  
+                         r=env$r, h=seq(1, env$d, by = 1)*env$r, type=typeacf, 
+                         m2=env$mu_G2, var=env$var_G2)
+    
+              
+               
+  gradVect <- gradVect0[names_coef,]
+  score <- c(score0$meanG2, score0$acfG2)%*%matrix(1,1,example$leng)
+  #We need to write the matrix W for the matrix sandwhich
+#plot(as.numeric(example$dataused)[-1],type="h")
+  #S_matrix
 
- logL.Incr<-cogarchNoise(yuima.cogarch=model, data=observ, 
-                    param=as.list(coef), mu=1)
+  EmpirScore <-score-example$elem
+  Omega_est<-tryCatch((1/example$leng*EmpirScore%*%t(EmpirScore)), 
+                   error=function(theta){NULL})
+  if(is.null(Omega_est)){
+    Omega_est<-matrix(NA,dim(EmpirScore)[1],dim(EmpirScore)[1])
+  }
+  Gmatr<-gradVect%*%t(gradVect)
+  CentMat<-gradVect%*%Omega_est%*%t(gradVect)
 
-# Build an object of class mle
+  Var_Matr0 <- tryCatch(solve(Gmatr)%*%CentMat%*%Gmatr/example$leng,
+                        error=function(theta){NULL})
+  if(!is.null(Var_Matr0)){
+     Var_Matr<-Var_Matr0  
+  }
 
- 
- 
+#    Var_Matr <- solve(gradVect%*%t(gradVect))
+  vcov <- Var_Matr
+#    vcov[loc.par,]<-NA
+#    vcov[,loc.par]<-NA
+#out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
+  }
 
- # Build an object of class cogarch.gmm.incr
-res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
-    vcov = vcov, min = min, details = list(), 
-    method = character(),
-    Incr.Lev=logL.Incr,
-    model = model, nobs=as.integer(length(logL.Incr)+1),
-    logL.Incr = numeric())
+  
+  # Build an object of class mle
+  if(Est.Incr=="NoIncr"){
+      res<-new("cogarch.gmm", call = call, coef = coef, fullcoef = unlist(coef), 
+                vcov = vcov, min = min, details = list(), 
+                method = character()
+               )
+  }
+  if(Est.Incr=="Incr"||Est.Incr=="IncrPar"){
+    logL.Incr<-cogarchNoise(yuima.cogarch=model, data=observ, 
+                            param=as.list(coef), mu=1)
+  }
+  if(Est.Incr=="Incr"){
+  # Build an object of class cogarch.gmm.incr
+      res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
+                vcov = vcov, min = min, details = list(), 
+                method = character(),
+                Incr.Lev=logL.Incr,
+                model = model, nobs=as.integer(length(logL.Incr)+1),
+                logL.Incr = numeric())
+  }
+  if(Est.Incr=="IncrPar"){
+    #estimationLevy
+
+    fixedCon <- constdum(fixed, meas.par)
+    lowerCon <- constdum(lower, meas.par)
+    upperCon <- constdum(upper, meas.par)
+    if(aggr.G==TRUE){
+      if(floor(n/index(observ@zoo.data[[1]])[n])!=env$deltaData){
+        yuima.stop("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
+      }
+      inc.levy1<-diff(cumsum(c(0,logL.Incr))[seq(from=1,
+                                                to=yuima@sampling@n[1],
+                                                by=env$deltaData
+      )])
+    }
+    
+    result.Lev <- gmm.Est.Lev(Increment.lev=c(0,inc.levy1), 
+                                  param0=start[meas.par],
+                                  fixed = fixedCon[meas.par],
+                                  lower=lowerCon[meas.par],
+                                  upper=upperCon[meas.par],
+                                  measure=model@measure,
+                                  measure.type=model@measure.type,
+                                  aggregation=aggr.G,
+                                  dt=1/env$deltaData
+                              )   
+    
+    if(is.null(result.Lev)){
+       res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
+             vcov = vcov, min = min, details = list(), 
+             method = character(),
+             Incr.Lev=logL.Incr,
+             model = model, nobs=as.integer(length(logL.Incr)+1),
+             logL.Incr = numeric())
+    
+    }
+    else{
+      Inc.Parm<-result.Lev$estLevpar
+      IncVCOV<-result.Lev$covLev
+      
+      names(Inc.Parm)<-meas.par
+      rownames(IncVCOV)<-as.character(meas.par)
+      colnames(IncVCOV)<-as.character(meas.par)
+      
+      name.parm.cog<-names(coef)
+      coef<-c(coef,Inc.Parm)
+      
+      names.par<-names(coef)
+      cov<-NULL
+      cov<-matrix(NA,length(names.par),length(names.par))
+      rownames(cov)<-names.par
+      colnames(cov)<-names.par
+      
+      cov[unique(name.parm.cog),unique(name.parm.cog)]<-vcov
+      cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
+      cov<-cov
+      
+      res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
+               vcov = cov, min = min, details = list(), 
+               method = character(),
+               Incr.Lev=logL.Incr,
+               model = model, nobs=as.integer(length(logL.Incr)+1),
+               logL.Incr = numeric())
+      
+    }
 
 
-
+ }
  return(res)
   
 }
+
+constdum<-function(fixed, meas.par){
+  fixedCon<-list()
+  if(!missing(fixed)){
+    measure.par.dum.idx<-na.omit(names(fixed[meas.par]))
+    if(length(measure.par.dum.idx)!=0){
+      fixedCon<-fixed[measure.par.dum.idx]
+    }
+  }
+}
+
+
+gmm.Est.Lev<-function(Increment.lev, 
+            param0,
+            fixed=list(),
+            lower=list(),
+            upper=list(),
+            measure,
+            measure.type,
+            aggregation,
+            dt){
+  
+  fixed.carma <- unlist(fixed)    
+  lower.carma <- unlist(lower)
+  upper.carma <- unlist(upper)
+  
+  Dummy <- TRUE 
+  
+  
+  CPlist <- c("dnorm","dgamma", "dexp")
+  codelist <- c("rngamma","rNIG","rIG", "rgamma")
+  if(measure.type=="CP"){
+    tmp <- regexpr("\\(", measure$df$exp)[1]
+    measurefunc <- substring(measure$df$exp, 1, tmp-1)
+    if(is.na(match(measurefunc,CPlist))){
+      yuima.warn("COGARCH(p,q): Other compound poisson processes will be implemented as soon as")
+      Dummy <- FALSE 
+    }
+    
+  }
+  
+  
+  if(measure.type=="code"){
+    tmp <- regexpr("\\(", measure$df$exp)[1]
+    measurefunc <- substring(measure$df$exp, 1, tmp-1)
+    if(is.na(match(measurefunc,codelist))){
+      yuima.warn("COGARCH(p,q): Other Levy measure will be implemented as soon as possible")
+      Dummy <- FALSE
+      
+    }      
+  }  
+  if(Dummy){
+    #env$h<-dt
+    result.Lev <- yuima.Estimation.Lev(Increment.lev=Increment.lev,
+                                     param0=unlist(param0),
+                                     fixed.carma=fixed.carma,
+                                     lower.carma=lower.carma,
+                                     upper.carma=upper.carma,
+                                     measure=measurefunc,
+                                     measure.type=measure.type,
+                                     aggregation=aggregation,
+                                     dt=dt)
+  }else{
+    result.Lev<-NULL
+  }
+  return(result.Lev)
+}
+
+
 
 ErrTerm <- function(yuima, param, print, env){
   typeacf <- env$typeacf
@@ -326,20 +568,42 @@ ErrTerm <- function(yuima, param, print, env){
  if(env$q >= 1){
    TheoCovQuad <- numeric(length = length(h))
    cost<-param[cost]
-   for(i in c(1:length(h))){
+#   for(i in c(1:length(h))){
       MomentCog <- MM_Cogarch(p = env$p, q = env$q,  acoeff=param[a],
                               cost=cost,
-                              b=param[b],  r = r, h = h[i], 
+                              b=param[b],  r = r, h = h, 
                               type = typeacf, m2=mu_G2, var=var_G2)
    
    
-   TheoCovQuad[i] <- MomentCog$acfG2
-   }
+   TheoCovQuad <- MomentCog$acfG2
+ #  }
    theo_mu_G2 <- MomentCog$meanG2
-   param[cost]<-MomentCog$cost
+   #param[cost]<-MomentCog$cost
  }
- res <- sum((c(theo_mu_G2,TheoCovQuad)-c(mu_G2,CovQuad))^2)
- return(res)
+
+ if(env$objFun=="L2"){
+  res <- sum((c(theo_mu_G2,TheoCovQuad)-c(mu_G2,CovQuad))^2)
+  return(res)
+ }
+  
+
+  if(env$objFun=="L1"){
+    res <- sum(abs(c(theo_mu_G2,TheoCovQuad)-c(mu_G2,CovQuad)))
+    return(res)
+  }
+
+
+ if(env$objFun=="L2CUE"){  
+   TheoMoM<-c(theo_mu_G2,TheoCovQuad)
+   dumScore <- (TheoMoM%*%matrix(1,1,env$leng))-env$score
+   W_est<-chol2inv(dumScore%*%t(dumScore)/env$leng)
+   CompMoM0<-TheoMoM-c(mu_G2,CovQuad)
+   CompMoM<-matrix(CompMoM0,1,length(CompMoM0))
+   res <- as.numeric(CompMoM%*%W_est%*%t(CompMoM))
+   return(res)
+ }
+
+ 
 }
 
 MM_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
@@ -386,7 +650,8 @@ MM_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
     Inf_eps <- round(AsympVar(B_tilde,e,lower=0,upper=100,delta=0.01)*10^5)/10^5
   }
    
-  term <- expm(B_tilde*h)
+  #term <- expm(B_tilde*h)
+  term  <- lapply(h,"yuimaExpm",B=B_tilde)
   #invB <- solve(B_tilde) # In this case we can use the analytical form for Companion Matrix???
   # We invert the B_tilde using the Inverse of companion matrix
   if(q>1){
@@ -407,21 +672,58 @@ MM_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
 
 
   Inf_eps1 <- Inf_eps*rh0
-  Ph <- mu^2*term%*%term1%*%invB%*%term2%*%Inf_eps1
-  Qh <- mu*term%*%term1%*%(-term2%*%Inf_eps1-invB%*%term2%*%Inf_eps1%*%t(B_tilde))%*%e
- # Qh <- mu*term%*%term1%*%(-term2%*%Inf_eps1-invB%*%term2%*%Inf_eps1%*%t(B))%*%e
+  Ph_withouterm <- term1%*%invB%*%term2%*%Inf_eps1*mu^2
+  Ph<-lapply(term,"%*%",Ph_withouterm)
+  Qh_without <- term1%*%(-term2%*%Inf_eps1-invB%*%term2%*%Inf_eps1%*%t(B_tilde))%*%e*mu
+  Qh<-lapply(term,"%*%",Qh_without) 
+# Qh <- mu*term%*%term1%*%(-term2%*%Inf_eps1-invB%*%term2%*%Inf_eps1%*%t(B))%*%e
   m <- m_overRho*rh0
-  
+  atrasp<-t(a)
   if(type=="correlation"){
-    VarTheo<-as.numeric(rh0*t(a)%*%P0_overRho%*%a+rh0*t(a)%*%Q0_overRho+2*r^2*mu^2+rh0)
-    acfG2 <- (t(a)%*%Ph%*%a+t(a)%*%Qh)/VarTheo
+    VarTheo<-as.numeric(rh0*atrasp%*%P0_overRho%*%a+rh0*atrasp%*%Q0_overRho+2*r^2*mu^2+rh0)
+    acfG2 <- (as.numeric(lapply(Ph,"yuimaQuadrForm",at=atrasp,a=a)) 
+              + as.numeric(lapply(Qh,"yuimaInnerProd",at=atrasp)))/VarTheo
   }else{
     coeff <- cost^2*bq^2/((1-m)*(bq-mu*a1)^2)
-    acfG2 <- coeff*(t(a)%*%Ph%*%a+t(a)%*%Qh)
+    acfG2 <- coeff*( as.numeric(lapply(Ph,"yuimaQuadrForm",at=atrasp,a=a)) 
+                     + as.numeric(lapply(Qh,"yuimaInnerProd",at=atrasp)) )
   }
-  res <- list(acfG2=acfG2, meanG2=meanG2, cost=cost)
+  res <- list(acfG2=acfG2, meanG2=meanG2)
   return(res)
 }
+
+
+MM_grad_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
+  eps<-10^(-4)
+  PartialP<-matrix(0,p,(length(h)+1))
+  epsA<-eps*diag(p)
+  for(i in c(1:p)){
+    LeftApproxP<-MM_Cogarch(p, q, acoeff-epsA[i,],cost, b,  r, h, type, m2, var)
+    RightApproxP<-MM_Cogarch(p, q, acoeff[i]+epsA[i,],cost, b,  r, h, type, m2, var)
+    PartialP[i,]<-(c(RightApproxP$meanG2,RightApproxP$acfG2)-c(LeftApproxP$meanG2,LeftApproxP$acfG2))/(2*eps)
+  }
+  PartialQ<-matrix(0,q,(length(h)+1))
+  epsB<-eps*diag(q)
+  for(i in c(1:q)){
+    LeftApproxQ<-MM_Cogarch(p, q, acoeff,cost, b-epsB[i,],  r, h, type, m2, var)
+    RightApproxQ<-MM_Cogarch(p, q, acoeff,cost, b+epsB[i,],  r, h, type, m2, var)
+    PartialQ[i,]<-(c(RightApproxQ$meanG2,RightApproxQ$acfG2)-c(LeftApproxQ$meanG2,LeftApproxQ$acfG2))/(2*eps)
+  }
+  LeftApproxCost<-MM_Cogarch(p, q, acoeff,cost-eps, b,  r, h, type, m2, var)
+  RightApproxCost<-MM_Cogarch(p, q, acoeff,cost+eps, b,  r, h, type, m2, var)
+  PartialCost0<-(c(RightApproxCost$meanG2,RightApproxCost$acfG2)-c(LeftApproxCost$meanG2,LeftApproxCost$acfG2))/(2*eps)
+  PartialCost<-matrix(PartialCost0,1, (length(h)+1))
+  namesCoeff<-names(c(acoeff,b,cost))
+  res<-rbind(rbind(PartialP,PartialQ),PartialCost)
+  rownames(res)<-namesCoeff
+  return(res)
+}
+
+yuimaQuadrForm<-function(P,a,at){at%*%P%*%a}
+yuimaInnerProd<-function(P,at){at%*%P}
+
+yuimaExpm<-function(h,B){expm(B*h)}
+
 AsympVar<-function(B_tilde,e,lower=0,upper=100,delta=0.1){
   part<-seq(lower,upper-delta, by=delta)+delta/2
   last <- length(part)

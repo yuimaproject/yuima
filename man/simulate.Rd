@@ -4,7 +4,7 @@
 \description{Simulate multi-dimensional stochastic processes.}
 \usage{
 simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = FALSE, 
- increment.W = NULL, increment.L = NULL, idxCOGARCH = FALSE, hurst, methodfGn = "WoodChan",
+ increment.W = NULL, increment.L = NULL, method = "euler", hurst, methodfGn = "WoodChan",
  	sampling=sampling, subsampling=subsampling, ...)
 }
 \arguments{
@@ -16,7 +16,7 @@ simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = F
 	Maruyama method.}
   \item{increment.W}{to specify Wiener increment for each time tics in advance.}
   \item{increment.L}{to specify Levy increment for each time tics in advance.}
-  \item{idxCOGARCH}{Logical Variable for simulation scheme used if the model is a COGARCH(P,Q).}
+  \item{method}{string Variable for simulation scheme. The default value \code{method=euler} uses the euler discretization  for the simulation of a sample path.}
   \item{nsim}{Not used yet. Included only to match the standard genenirc in 
 	package \code{stats}.}
   \item{seed}{Not used yet. Included only to match the standard genenirc in 
@@ -44,6 +44,8 @@ as input the \code{sampling} argument is used. If this argument is missing
 then the sampling structure is constructed from \code{Initial}, \code{Terminal},
 etc. arguments (see \code{\link{setSampling}} for details on how to use these 
 arguments).
+
+For a COGARCH(p,q) process setting \code{method=mixed} implies that the simulation scheme is based on the solution of the state space process. For the case in which the underlying noise is a compound poisson Levy process, the trajectory is build firstly by simulation of the jump time, then the quadratic variation and the increments noise are simulated exactly at jump time. For the others Levy process, the simulation scheme is based on the discretization of the state space process solution.       
 }
 \value{
   \item{yuima}{a \code{yuima-class} object.}

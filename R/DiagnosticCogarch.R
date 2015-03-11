@@ -60,7 +60,12 @@ StationaryMoments<-function(cost,b,acoeff,mu=1,rho=3){
   p<-length(acoeff)
   a[1:p,1] <- acoeff
   B_tilde <- MatrixA(b[c(q:1)])+mu*e%*%t(a)
-  ExpStatVar <- -cost*mu*solve(B_tilde)%*%e
+  
+  if(q>1){
+    invB<-rbind(c(-B_tilde[q,-1],1)/B_tilde[q,1],cbind(diag(q-1),matrix(0,q-1,1)))
+  }else{invB<-1/B_tilde}
+  
+  ExpStatVar <- -cost*mu*invB%*%e
   ExpVar <- cost+t(a)%*%ExpStatVar
   res <- list(ExpVar=ExpVar, ExpStatVar=ExpStatVar)
   return(res)

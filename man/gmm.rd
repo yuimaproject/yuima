@@ -14,7 +14,8 @@ The function returns the estimated parameters of a COGARCH(P,Q) model. The param
 }
 \usage{
 gmm(yuima, data = NULL, start, 
- method="BFGS", fixed = list(), lower, upper, lag.max = NULL, aggr.G =TRUE)
+ method="BFGS", fixed = list(), lower, upper, lag.max = NULL, 
+ aggr.G = TRUE, Est.Incr = "NoIncr", objFun = "L2")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,6 +28,12 @@ gmm(yuima, data = NULL, start,
   \item{upper}{a named list for specifying upper bounds of parameters.}
   \item{lag.max}{maximum lag at which to calculate the theoretical and empirical acf. Default is \code{sqrt{N}} where \code{N} is the number of observation.}
   \item{aggr.G}{Logical variable. If \code{aggr.G = TRUE.}, the function use the increments of COGARCH(P,Q) evaluated at unitary length. If \code{aggr.G = FALSE}, the increments are evaluated on the interval with frequency specified in an object of class \code{\link{yuima.data-class}} that contains the observed time series.}
+  \item{Est.Incr}{ a string variable, If \code{Est.Incr = "NoIncr"}, default value, \code{gmm} returns an object of class  \code{\link{cogarch.gmm-class}} that contains the COGARCH parameters. 
+  If \code{Est.Incr = "Incr"} or \code{Est.Incr = "IncrPar"} the output is an object of class \code{\link{cogarch.gmm.incr-class}}. In the first case the object contains the increments of underlying noise while in the second case also the estimated parameter of levy measure.}
+  \item{objFun}{a string variable that indentifies the objective function in the optimization step. \code{objFun = "L2"}, default value, the objective function is  a quadratic form where the weighting Matrix is the identity one. \code{objFun = "L2CUE"} the weighting matrix is estimated using Continuously Updating GMM (L2CUE). 
+  \code{objFun = "L1"}, the objective function is the mean absolute error. In the last case the standard error for estimators are not available.
+  
+  }
 }
 %\details{
 %Please complete !!!
