@@ -601,7 +601,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
           #         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]  
           #        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
           sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
-          sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
+          sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
           sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
       }
       X <- ts(sim[-(samp@n[1]+1),])
@@ -676,7 +676,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
 #         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]  
 #        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
 #        sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+AMatrix*Delta%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
-        sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
+        sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
         
       }

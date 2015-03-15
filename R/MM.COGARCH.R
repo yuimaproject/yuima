@@ -367,7 +367,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
   # Build an object of class mle
   if(Est.Incr=="NoIncr"){
       res<-new("cogarch.gmm", call = call, coef = coef, fullcoef = unlist(coef), 
-                vcov = vcov, min = min, details = list(), 
+                vcov = vcov, min = exp(min), details = list(), 
                 method = character(),
                 objFun = objFun 
                )
