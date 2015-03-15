@@ -493,7 +493,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   #                         sgrid=samp@sgrid, interpolation=samp@interpolation )
 
       aux.samp<-setSampling(Initial = samp@Initial, 
-                            Terminal = (samp@Terminal[1]+samp@Terminal[1]/samp@n[1]), 
+                            Terminal = samp@Terminal[1], 
                             n = samp@n[1])
       auxModel<-setYuima(model=aux.Noise, sampling= aux.samp)
 
@@ -514,7 +514,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
     # As first step we compute it in a crude way. A more fine approach is based on 
     # the mpv function.
     quadratVariation <- increment^2
-    incr.L <- t(matrix(c(increment,c(quadratVariation[-1],1)),ncol=2))
+    incr.L <- t(matrix(c(increment,quadratVariation),ncol=2))
     incr.W <- matrix(0, nrow=1,ncol=length(increment))
     # Simulate trajectories Cogarch
   }
@@ -683,6 +683,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
       X <- ts(sim[-(samp@n[1]+1),])
       Data <- setData(X,delta = Delta)
       result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
+    return(result)
     }else{
         lambda <- eval(model@measure$intensity, yuimaEnv)
         

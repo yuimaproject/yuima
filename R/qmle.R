@@ -2857,7 +2857,7 @@ yuima.Estimation.Lev<-function(Increment.lev,param0,
   }else{warning("the start value for levy measure is outside of the admissible region")}
   
   env$aggregation<-aggregation
-  if(is.na(paramLev)){
+  if(is.na(paramLev[1])){
     covLev<-matrix(NA,length(paramLev),length(paramLev))
   }else{
     covLev<-Lev.hessian(params=paramLev,env)

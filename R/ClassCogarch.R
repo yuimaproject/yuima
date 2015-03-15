@@ -29,17 +29,54 @@ setClass("yuima.cogarch",
          contains="yuima.model")
 
 # Class 'gmm.cogarch'
-setClass("cogarch.gmm.incr",representation(Incr.Lev = "ANY",
-                                           model = "yuima.cogarch",
-                                           logL.Incr = "ANY"
-),
-contains="mle"
-)
 
 setClass("cogarch.gmm",representation(
-  model = "yuima.cogarch"),
+  model = "yuima.cogarch",
+  objFun="character"),
   contains="mle"
 )
+
+
+setClass("summary.cogarch.gmm",representation(    objFun = "ANY",
+                                                  objFunVal = "ANY" ),
+         contains="summary.mle"
+)
+
+
+
+setClass("cogarch.gmm.incr",representation(Incr.Lev = "ANY",
+                                           logL.Incr = "ANY"
+),
+contains="cogarch.gmm"
+)
+
+setClass("summary.cogarch.gmm.incr",representation(logL.Incr = "ANY",
+                                                   MeanI = "ANY",
+                                                   SdI = "ANY",
+                                                   logLI = "ANY",
+                                                   TypeI = "ANY",
+                                                   NumbI = "ANY",
+                                                   StatI ="ANY"),
+         contains="summary.cogarch.gmm"
+)
+
+
+
+
+
+# setClass("cogarch.gmm.incr",representation(Incr.Lev = "ANY",
+#                                            model = "yuima.cogarch",
+#                                            logL.Incr = "ANY",
+#                                            objFun="character"
+# ),
+# contains="mle"
+# )
+# 
+# setClass("cogarch.gmm",representation(
+#   model = "yuima.cogarch",
+#   objFun="character"),
+#   contains="mle"
+# )
 # setClass("gmm.cogarch",
 #   contains="mle"
 #   )  
