@@ -367,8 +367,9 @@ if(method!="L-BFGS-B"&&method!="brent"){
   # Build an object of class mle
   if(Est.Incr=="NoIncr"){
       res<-new("cogarch.gmm", call = call, coef = coef, fullcoef = unlist(coef), 
-                vcov = vcov, min = exp(min), details = list(), 
+                vcov = vcov, min = min, details = list(), 
                 method = character(),
+                model = model,
                 objFun = objFun 
                )
   }
@@ -382,7 +383,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
   if(Est.Incr=="Incr"){
   # Build an object of class cogarch.gmm.incr
       res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
-                vcov = vcov, min = exp(min), details = list(), 
+                vcov = vcov, min = min, details = list(), 
                 method = character(),
                 Incr.Lev = L.Incr_Fin,
                 model = model, nobs=as.integer(length(L.Incr)+1),
@@ -404,6 +405,8 @@ if(method!="L-BFGS-B"&&method!="brent"){
                                                 to=yuima@sampling@n[1],
                                                 by=env$deltaData
       )])
+    }else{
+      inc.levy1 <- L.Incr
     }
     
     result.Lev <- gmm.Est.Lev(Increment.lev=c(0,inc.levy1), 
@@ -419,7 +422,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
     
     if(is.null(result.Lev)){
        res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
-             vcov = vcov, min = exp(min), details = list(), 
+             vcov = vcov, min = min, details = list(), 
              method = character(),
              Incr.Lev=L.Incr_Fin,
              model = model, nobs=as.integer(length(L.Incr)+1),
@@ -431,11 +434,11 @@ if(method!="L-BFGS-B"&&method!="brent"){
     else{
       Inc.Parm<-result.Lev$estLevpar
       IncVCOV<-result.Lev$covLev
-      
-      names(Inc.Parm)<-meas.par
-      rownames(IncVCOV)<-as.character(meas.par)
-      colnames(IncVCOV)<-as.character(meas.par)
-      
+      if(length(meas.par)==length(Inc.Parm)){
+        names(Inc.Parm)<-meas.par
+        rownames(IncVCOV)<-as.character(meas.par)
+        colnames(IncVCOV)<-as.character(meas.par)
+      }
       name.parm.cog<-names(coef)
       coef<-c(coef,Inc.Parm)
       
@@ -450,7 +453,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
       cov<-cov
       
       res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef), 
-               vcov = cov, min = exp(min), details = list(), 
+               vcov = cov, min = min, details = list(), 
                method = character(),
                Incr.Lev=L.Incr_Fin,
                model = model, nobs=as.integer(length(L.Incr)+1),
@@ -784,7 +787,7 @@ setMethod("show", "summary.cogarch.gmm",
             print(object@call)
             cat("\nCoefficients:\n")
             print(coef(object))
-            cat("\n",paste0(paste("objFun", object@objFun),":"), object@objFunVal, "\n")
+            cat("\n",paste0(paste("Log.objFun", object@objFun),":"), object@objFunVal, "\n")
             #cat("objFun", object@min, "\n")
           }
 )
@@ -824,7 +827,7 @@ setMethod("show", "summary.cogarch.gmm.incr",
             cat("\nCoefficients:\n")
             print(coef(object))
 #             cat("\n-2 log L:", object@m2logL, "\n")
-            cat("\n",paste0(paste("objFun", object@objFun),":"), object@objFunVal, "\n")
+            cat("\n",paste0(paste("Log.objFun", object@objFun),":"), object@objFunVal, "\n")
             
             cat(sprintf("\n\nNumber of increments: %d\n",object@NumbI))
             cat(sprintf("\nAverage of increments: %f\n",object@MeanI))

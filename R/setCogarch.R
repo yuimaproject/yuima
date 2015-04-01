@@ -110,6 +110,8 @@ setCogarch<-function(p,
                         ma.par=ma.par,
                         loc.par=loc.par,
                         lin.par=ma.par,
+                        Carma.var=V.var,
+                        Latent.var=Latent.var,
                         XinExpr=XinExpr,
                         Cogarch=TRUE)
     #  In order to have a representation of a Cogarch(p,q) model coherent with the 
@@ -123,6 +125,8 @@ setCogarch<-function(p,
                           ar.par=ar.par,
                           ma.par=ma.par,
                           lin.par=ma.par,
+                          Carma.var=V.var,
+                          Latent.var=Latent.var,
                           xinit=mydots$xinit,
                           Cogarch=TRUE)
       #  In order to have a representation of a Cogarch(p,q) model coherent with the 
