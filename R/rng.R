@@ -1,7 +1,7 @@
 ##################################################################
 ######  "Random number generators and 
 ######          related density functions for yuima packages"
-######  (Last modified: March 9, 2010)
+######  (Last modified: Apr 2, 2015)
 ##################################################################
 
 
@@ -255,7 +255,7 @@ dNIG <- function(x,al,be,de,mu){
 ## }
 
 
-## Non-Gaussian stable
+## Non-Gaussian stable: a bug modified on 1 Arp, 2015 (HM).
 
 rstable <- function(x,alpha,beta,sigma,gamma){
   a <- (1 + (beta*tan(alpha*pi/2))^2)^(1/(2*alpha))
@@ -268,7 +268,7 @@ rstable <- function(x,alpha,beta,sigma,gamma){
     s <- a * (sin(alpha*(u+b))/cos(u)^(1/alpha)) * (cos(u-alpha*(u+b))/v)^((1-alpha)/alpha)
 	X <- sigma * s + gamma * rep(1,x)
   }else{
-    s <- (2/pi) * ((pi/2 +beta*u)*tan(u) - beta * log(v*cos(u)/(beta*u + pi/2)))
+    s <- (2/pi) * ((pi/2 +beta*u)*tan(u) - beta * log((pi/2)*v*cos(u)/(beta*u + pi/2)))
 	X <- sigma * s + (gamma + (2/pi)*beta*sigma*log(sigma)) * rep(1,x)
   }
   
