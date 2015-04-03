@@ -28,3 +28,4 @@
             modified cce.Rd
 2014/11/11: fixed a bug in cce.R (method "GME")
             modified the example of cce.Rd
+2015/04/02: fixed a bug in rng.R (function "rstable")
