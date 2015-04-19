@@ -44,7 +44,7 @@ yuima.acf<-function(data,lag.max){
 # The estimation procedure for cogarch(p,q) implemented in this code are based on the 
 # Chadraa phd's thesis
 gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(), 
-                           lower, upper, lag.max = NULL, aggr.G = TRUE, 
+                           lower, upper, lag.max = NULL, aggr.G = TRUE, aggregation=TRUE,
                            Est.Incr = "NoIncr", objFun = "L2"){
   print <- FALSE
 
@@ -214,6 +214,7 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("objFun",objFun, envir=env)
   
   if(aggr.G==TRUE){
+    # Aggregate returns G
     #dt<-round(deltat(onezoo(observ)[,1])*10^5)/10^5
     # Time<-index(observ@zoo.data[[1]])[n]
     G_i <- diff(env$Data[seq(1,length(env$Data),by=env$deltaData)])
@@ -331,8 +332,9 @@ if(method!="L-BFGS-B"&&method!="brent"){
                          acoeff=avect,cost=out$par[loc.par], b=bvect,  
                          r=env$r, h=seq(1, env$d, by = 1)*env$r, type=typeacf, 
                          m2=env$mu_G2, var=env$var_G2)
-    
-              
+    if(objFun == "L2"){
+      min <- log(sum((score0$acfG2[CovQuad>0]-CovQuad[CovQuad>0])^2))
+    }          
   idx.aaa<-match(loc.par,names_coef)           
   gradVect <- gradVect0[names_coef[-idx.aaa],]
   score <- c(score0$acfG2)%*%matrix(1,1,example$leng)
@@ -397,7 +399,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
     fixedCon <- constdum(fixed, meas.par)
     lowerCon <- constdum(lower, meas.par)
     upperCon <- constdum(upper, meas.par)
-    if(aggr.G==TRUE){
+    if(aggregation==TRUE){
       if(floor(n/index(observ@zoo.data[[1]])[n])!=env$deltaData){
         yuima.stop("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
       }
@@ -416,7 +418,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
                                   upper=upperCon[meas.par],
                                   measure=model@measure,
                                   measure.type=model@measure.type,
-                                  aggregation=aggr.G,
+                                  aggregation=aggregation,
                                   dt=1/env$deltaData
                               )   
     
@@ -596,7 +598,13 @@ ErrTerm <- function(yuima, param, print, env){
  }
 
  if(env$objFun=="L2"){
-  res <- sum(log((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2))
+ #  res <- log(sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2))
+#    emp <- log(CovQuad[CovQuad>0])
+#    theo <- log(TheoCovQuad[CovQuad>0])
+   res <- sum((log(TheoCovQuad[CovQuad>0])-log(CovQuad[CovQuad>0]))^2)
+  # res <- sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2)
+ # res <- sum((log(abs(TheoCovQuad))-log(abs(CovQuad)))^2)
+  # res <- sum((log(TheoCovQuad[CovQuad>0]))-log(CovQuad[CovQuad>0]))^2)
   return(res)
  }
   
@@ -778,6 +786,12 @@ setMethod("summary", "cogarch.gmm",
           }
 )
 
+# errorfun <- function(estimates, labelFun = "L2"){
+#   if(LabelFun == "L2"){
+#     
+#   }
+#     
+# }
 
 setMethod("show", "summary.cogarch.gmm",
           function (object)
