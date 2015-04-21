@@ -29,3 +29,6 @@
 2014/11/11: fixed a bug in cce.R (method "GME")
             modified the example of cce.Rd
 2015/04/02: fixed a bug in rng.R (function "rstable")
+2015/04/21: added hyavar.R, hyavar.Rd (asymptotic variance estimator for HY)
+            fixed a bug in llag.R
+            modified cce.Rd, cce_functions.c

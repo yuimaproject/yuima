@@ -41,6 +41,9 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
   ser.diffX <- vector(d, mode="list") # difference of data
   vol <- double(d)
   
+  # Set the tolerance to avoid numerical erros in comparison
+  tol <- 1e-6
+  
   for(i in 1:d){
     
     # NA data must be skipped
@@ -144,9 +147,9 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     as.integer(n-2),
                     as.integer(length(time1)),
                     as.integer(length(time2)),
-                    as.double(y),
-                    as.double(time1),
-                    as.double(time2),
+                    as.double(y/tol),
+                    as.double(time1/tol),
+                    as.double(time2/tol),
                     double(length(time2)),
                     as.double(ser.diffX[[i]]),
                     as.double(ser.diffX[[j]]),
@@ -190,9 +193,9 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     as.integer(length(grid[[num]])),
                     as.integer(length(time1)),
                     as.integer(length(time2)),
-                    as.double(grid[[num]]),
-                    as.double(time1),
-                    as.double(time2),
+                    as.double(grid[[num]]/tol),
+                    as.double(time1/tol),
+                    as.double(time2/tol),
                     double(length(time2)),
                     as.double(ser.diffX[[i]]),
                     as.double(ser.diffX[[j]]),
@@ -296,13 +299,13 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     as.integer(n-2),
                     as.integer(length(time1)),
                     as.integer(length(time2)),
-                    as.double(y),
-                    as.double(time1),
-                    as.double(time2),
+                    as.double(y/tol),
+                    as.double(time1/tol),
+                    as.double(time2/tol),
                     double(length(time2)),
                     as.double(ser.diffX[[i]]),
                     as.double(ser.diffX[[j]]),
-                    value=double(n-2),PACKAGE="yuima")$value
+                    value=double(n-2))$value
           
           idx <- which.max(abs(tmp))
           mlag <- -y[idx] # make the first timing of max or min
@@ -340,13 +343,13 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     as.integer(length(grid[[num]])),
                     as.integer(length(time1)),
                     as.integer(length(time2)),
-                    as.double(grid[[num]]),
-                    as.double(time1),
-                    as.double(time2),
+                    as.double(grid[[num]]/tol),
+                    as.double(time1/tol),
+                    as.double(time2/tol),
                     double(length(time2)),
                     as.double(ser.diffX[[i]]),
                     as.double(ser.diffX[[j]]),
-                    value=double(length(grid[[num]])),PACKAGE="yuima")$value
+                    value=double(length(grid[[num]])))$value
           
           idx <- which.max(abs(tmp))
           mlag <- -grid[[num]][idx] # make the first timing of max or min
