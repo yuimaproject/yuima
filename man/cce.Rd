@@ -94,7 +94,7 @@ a positive integer indicating the number of the end points to be jittered.
 }
   \item{ftregion}{
 %%     ~~Describe \code{ftregion} here~~
-a non-negative number indicating the length of the flat-top region. \code{ftregion=0} (the default) means that a non-flat-top realized kernel studied in Barndorff-Nielsen et al. (2011) is used. \code{ftregion=1/H} means that a flat-top realized kernel studied in Barndorff-Nielsen et al. (2008) is used. See Varneskov (2011) for other values. 
+a non-negative number indicating the length of the flat-top region. \code{ftregion=0} (the default) means that a non-flat-top realized kernel studied in Barndorff-Nielsen et al. (2011) is used. \code{ftregion=1/H} means that a flat-top realized kernel studied in Barndorff-Nielsen et al. (2008) is used. See Varneskov (2015) for other values. 
 }
   \item{vol.init}{
 %%     ~~Describe \code{vol.init} here~~
@@ -254,7 +254,7 @@ Christensen, K., Podolskij, M. and Vetter, M. (2013)
 
 Hansen, P. R., Large, J. and Lunde, A. (2008)
   Moving average-based estimators of integrated variance,
-  \emph{conometric Reviews}, \bold{27}, 79--111.
+  \emph{Econometric Reviews}, \bold{27}, 79--111.
   
 Hayashi, T. and Yoshida, N. (2005)
   On covariance estimation of non-synchronously observed diffusion processes,
@@ -264,9 +264,9 @@ Hayashi, T. and Yoshida, N. (2008)
   Asymptotic normality of a covariance estimator for nonsynchronously observed diffusion processes, 
   \emph{Annals of the Institute of Statistical Mathematics}, \bold{60}, no. 2, 367--406.
 
-Koike, Y. (2013)
+Koike, Y. (2015)
   Estimation of integrated covariances in the simultaneous presence of nonsynchronicity, microstructure noise and jumps,
-  arXiv:1302.5202.
+  \emph{Econometric Theory}, doi:10.1017/S0266466614000954.
   
 Koike, Y. (2014)
   An estimator for the cumulative co-volatility of asynchronously observed semimartingales with jumps,
@@ -280,9 +280,9 @@ Mancini, C. and Gobbi, F. (2012)
   Identifying the Brownian covariation from the co-jumps given discrete observations,
   \emph{Econometric Theory}, \bold{28}, 249--273.
   
-Varneskov, R. T. (2011)
+Varneskov, R. T. (2015)
   Flat-top realized kernel estimation of quadratic covariation with non-synchronous and noisy asset prices,
-  CREATES Research Paper 2011-35, Aarhus University.
+  \emph{Journal of Business & Economic Statistics}, doi:10.1080/07350015.2015.1005622.
   
 Zhang, L. (2006)
   Efficient estimation of stochastic volatility using noisy observations: a multi-scale approach,
@@ -303,15 +303,17 @@ The YUIMA Project Team
 \note{
 %%  ~~further notes~~
 The example shows the central limit theorem for the nonsynchronous 
-covariance estimator.  Estimation of the asymptotic variance with p-values and
-the second-order correction will be provided in a future version of the package.
+covariance estimator.  
+%Estimation of the asymptotic variance with p-values and
+Estimation of the asymptotic variance can be implemented by \code{\link{hyavar}}. 
+The second-order correction will be provided in a future version of the package.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\link{setModel}
+\code{\link{setModel}}, \code{\link{setData}}, \code{\link{hyavar}}
 }
 \examples{
 ## Set a model
