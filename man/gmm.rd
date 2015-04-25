@@ -15,7 +15,7 @@ The function returns the estimated parameters of a COGARCH(P,Q) model. The param
 \usage{
 gmm(yuima, data = NULL, start, 
  method="BFGS", fixed = list(), lower, upper, lag.max = NULL, 
- aggr.G = TRUE, aggregation=TRUE, Est.Incr = "NoIncr", objFun = "L2")
+ equally.spaced = TRUE, aggregation=TRUE, Est.Incr = "NoIncr", objFun = "L2")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,7 +27,7 @@ gmm(yuima, data = NULL, start,
   \item{lower}{a named list for specifying lower bounds of parameters.}
   \item{upper}{a named list for specifying upper bounds of parameters.}
   \item{lag.max}{maximum lag at which to calculate the theoretical and empirical acf. Default is \code{sqrt{N}} where \code{N} is the number of observation.}
-  \item{aggr.G}{Logical variable. If \code{aggr.G = TRUE.}, the function use the returns of COGARCH(P,Q) evaluated at unitary length for the computation of the empirical autocorrelations. If \code{aggr.G = FALSE}, the increments are evaluated on the interval with frequency specified in an object of class \code{\link{yuima.data-class}} that contains the observed time series.}
+  \item{equally.spaced}{Logical variable. If \code{equally.spaced = TRUE.}, the function use the returns of COGARCH(P,Q) evaluated at unitary length for the computation of the empirical autocorrelations. If \code{equally.spaced = FALSE}, the increments are evaluated on the interval with frequency specified in an object of class \code{\link{yuima.data-class}} that contains the observed time series.}
   \item{aggregation}{If \code{aggregation=TRUE}, before the estimation of the levy parameters we aggregate the estimated increments}
   \item{Est.Incr}{ a string variable, If \code{Est.Incr = "NoIncr"}, default value, \code{gmm} returns an object of class  \code{\link{cogarch.gmm-class}} that contains the COGARCH parameters. 
   If \code{Est.Incr = "Incr"} or \code{Est.Incr = "IncrPar"} the output is an object of class \code{\link{cogarch.gmm.incr-class}}. In the first case the object contains the increments of underlying noise while in the second case also the estimated parameter of levy measure.}
@@ -78,6 +78,9 @@ sim1 <- simulate(mod1, sampling = samp, true.parameter = param)
 # We estimate the model
 
 res1 <- gmm(yuima = sim1, start = param)
+
+summary(res1)
+
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

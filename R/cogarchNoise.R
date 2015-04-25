@@ -49,10 +49,10 @@ cogarchNoise<-function(yuima.cogarch, data=NULL, param, mu=1){
   
   
   
-  oo <- match(nm, fullcoeff)
-  
-  if(any(is.na(oo)))
-    yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima.cogarch model")
+#   oo <- match(nm, fullcoeff)
+#   
+#   if(any(is.na(oo)))
+#     yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima.cogarch model")
   
   acoeff <- param[ma.name]
   b <- param[ar.name]
@@ -73,19 +73,24 @@ auxcogarch.noise<-function(cost,b,acoeff,mu,Data,freq){
   p<-length(acoeff)
   a[1:p,1] <- acoeff
   B <- MatrixA(b[c(q:1)])
-  DeltaG <- diff(Data)
+  DeltaG <- c(0,diff(Data))
   squaredG <- DeltaG^2
   
   Process_Y <- ExpY0
+#   Process_Y <- as.matrix(50.33)
   var_V<-cost + sum(acoeff*Process_Y)
   delta <- 1/freq
   for(t in c(2:(length(Data)))){  
     # Y_t=e^{A\Delta t}Y_{t-\Delta t}+e^{A\left(\Delta t\right)}e\left(\Delta G_{t}\right)^{2}
-    Process_Y <- cbind(Process_Y, (expm(B*delta)%*%(Process_Y[,t-1]+e*squaredG[t-1])))
-    var_V[t] <- cost + sum(a*Process_Y[,t])
+    Process_Y <- cbind(Process_Y, (expm(B*delta)%*%(Process_Y[,t-1]+e*squaredG[t])))
+    #Process_Y <- cbind(Process_Y, (Process_Y[,t-1]+delta*B%*%Process_Y[,t-1]+e*squaredG[t]))
+#     sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
+#     sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
+#     sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
+    var_V[t] <- cost + t(a)%*%Process_Y[,t-1]
   }
   #\Delta L_{t}=\frac{\Delta G_{t}}{\sqrt{V_{t}}}.
   
-  incr.L<- DeltaG/sqrt(var_V[c(2:(length(Data)))])
+  incr.L<- DeltaG/sqrt(var_V)
   return(incr.L)
 }

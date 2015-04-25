@@ -2,8 +2,9 @@
 \docType{class}
 \alias{cogarch.gmm.incr-class}
 \alias{plot,cogarch.gmm.incr,ANY-method}
-\alias{gmm.cogarch.class}
-\alias{cogarch.gmm.class}
+\alias{gmm.cogarch.incr-class}
+\alias{cogarch.gmm.incr-class}
+\alias{simulate,cogarch.gmm.incr-method}
 %%\alias{setSampling,yuima.carma-method}
 
 \title{Class for Generalized Method of Moments Estimation for COGARCH(p,q) model with underlying increments}
@@ -27,6 +28,7 @@
 }
 \section{Methods}{
   \describe{
+   \item{simulate}{simulation method. For more information see \code{\link{simulate}}.}
     \item{plot}{Plot method for estimated increment of the noise.}
     \item{Methods mle}{All methods for \code{mle-class} are available.}
   }

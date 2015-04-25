@@ -123,9 +123,12 @@ export(CPoint)
 export(qmleR)
 export(qmleL)
 
+
 export(CarmaNoise) # Estimates the Levy in carma model 
 export(gmm) # Estimation COGARCH(P,Q) using Method Of Moments 
- 
+export(cogarchNoise)
+export(Diagnostic.Cogarch)
+
 
 export(qgv)
 export(mmfrac)

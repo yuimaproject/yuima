@@ -481,35 +481,42 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   model<-yuimaCogarch@model
   info<-model@info
   samp <- yuimaCogarch@sampling
-  if(method=="euler"||(method=="mixed" && model@measure.type=="code")){  
-      aux.Noise<-setModel(drift="0",
-                          diffusion="0",
-                          jump.coeff="1",
-                          measure=info@measure,
-                          measure.type=info@measure.type)
+  if(model@measure.type=="CP" && !is.null(increment.L)){
+    method="euler"
+  }
   
-  #    aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1], delta = samp@delta, 
-  #                         grid=samp@grid, random = samp@random, sdelta=samp@sdelta, 
-  #                         sgrid=samp@sgrid, interpolation=samp@interpolation )
-
-      aux.samp<-setSampling(Initial = samp@Initial, 
-                            Terminal = samp@Terminal[1], 
-                            n = samp@n[1])
-      auxModel<-setYuima(model=aux.Noise, sampling= aux.samp)
-
-    if(length(model@parameter@measure)==0){
-      aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
-                             space.discretized=space.discretized, increment.W=increment.W, 
-                             increment.L=increment.L,
-                             hurst=0.5,methodfGn=methodfGn)
-    }else{
-      aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
-                              true.parameter = true.parameter[model@parameter@measure], 
-                              space.discretized=space.discretized, increment.W=increment.W, 
-                              increment.L=increment.L,
-                              hurst=0.5,methodfGn=methodfGn)
-    }    
-    increment<-diff(as.numeric(get.zoo.data(aux.incr2)[[1]]))
+  if(method=="euler"||(method=="mixed" && model@measure.type=="code")){  
+     if(length(increment.L)==0){
+          aux.Noise<-setModel(drift="0",
+                              diffusion="0",
+                              jump.coeff="1",
+                              measure=info@measure,
+                              measure.type=info@measure.type)
+    
+        
+    #    aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1], delta = samp@delta, 
+    #                         grid=samp@grid, random = samp@random, sdelta=samp@sdelta, 
+    #                         sgrid=samp@sgrid, interpolation=samp@interpolation )
+  
+        aux.samp<-setSampling(Initial = samp@Initial, 
+                              Terminal = samp@Terminal[1], 
+                              n = samp@n[1])
+        auxModel<-setYuima(model=aux.Noise, sampling= aux.samp)
+  
+      if(length(model@parameter@measure)==0){
+        aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
+                               space.discretized=space.discretized, increment.W=increment.W, 
+                               increment.L=increment.L,
+                               hurst=0.5,methodfGn=methodfGn)
+      }else{
+        aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed, 
+                                true.parameter = true.parameter[model@parameter@measure], 
+                                space.discretized=space.discretized, increment.W=increment.W, 
+                                increment.L=increment.L,
+                                hurst=0.5,methodfGn=methodfGn)
+      }    
+      increment<-diff(as.numeric(get.zoo.data(aux.incr2)[[1]]))
+     } else{increment<-increment.L}
     # Using the simulated increment for generating the quadratic variation
     # As first step we compute it in a crude way. A more fine approach is based on 
     # the mpv function.
@@ -600,8 +607,8 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
           #         sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
           #         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]  
           #        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
-          sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
           sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
+          sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t]         
           sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
       }
       X <- ts(sim[-(samp@n[1]+1),])
@@ -670,13 +677,14 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
     
     if(yuimaCogarch@model@measure.type=="code"){
             for(t in c(2:n)){
-        sim[t,3:ncolsim] <- value.a0*expm(AMatrix*Delta)%*%evect*incr.L[2,t-1]+
-          expm(AMatrix*Delta)%*%(Indent+evect%*%tavect*incr.L[2,t-1])%*%sim[t-1,3:ncolsim]
+        
 #         sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
 #         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]  
 #        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
 #        sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+AMatrix*Delta%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
         sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
+        sim[t,3:ncolsim] <- value.a0*expm(AMatrix*Delta)%*%evect*incr.L[2,t]+
+          expm(AMatrix*Delta)%*%(Indent+evect%*%tavect*incr.L[2,t])%*%sim[t-1,3:ncolsim]
         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
         
       }
@@ -795,3 +803,48 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   return(result)
 }
 
+# Simulate method for an object of class cogarch.gmm.incr
+
+setMethod("simulate","cogarch.gmm.incr",
+          function(object, nsim=1, seed=NULL, xinit,  ...){
+  
+              out <-aux.simulategmm(object=object, nsim=nsim, seed=seed, xinit=xinit, ...)
+#             out <- simulate(object = model, nsim = nsim, seed=seed, xinit=xinit,
+#                      sampling = samp,
+#                      method = "euler", 
+#                      increment.L = t(as.matrix(c(0,Incr.L))),  
+#                      true.parameter = true.parameter,
+#                      )
+            
+             return(out)
+          }
+          )
+
+aux.simulategmm<-function(object, nsim=1, seed=NULL, xinit, ...){
+  Time<-index(object@Incr.Lev)
+  Incr.L<-coredata(object@Incr.Lev)
+  
+  model <- object@model
+  EndT <- Time[length(Time)]
+  numb <- (length(Incr.L)+1)
+  valpar<-coef(object)
+  
+  idx <- na.omit(match(names(valpar),model@parameter@xinit))
+  solnam <- model@parameter@xinit[-idx]
+  solval <- as.numeric(Diagnostic.Cogarch(object, display=FALSE)$meanStateVariable)
+  
+#  solval <-50.33
+  
+  names(solval) <- solnam
+  
+  true.parameter <- as.list(c(valpar,solval))
+  
+  samp <- setSampling(Initial = 0, Terminal = EndT, n = numb) 
+  out <- simulate(object = model, nsim = nsim, seed=seed, xinit=xinit,
+                  sampling = samp,
+                  method = "euler", 
+                  increment.L = t(as.matrix(c(0,Incr.L))),  
+                  true.parameter = true.parameter,
+  )
+  return(out)
+}

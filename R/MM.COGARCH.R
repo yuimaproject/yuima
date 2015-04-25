@@ -44,10 +44,11 @@ yuima.acf<-function(data,lag.max){
 # The estimation procedure for cogarch(p,q) implemented in this code are based on the 
 # Chadraa phd's thesis
 gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(), 
-                           lower, upper, lag.max = NULL, aggr.G = TRUE, aggregation=TRUE,
+                           lower, upper, lag.max = NULL, equally.spaced = TRUE, aggregation=TRUE,
                            Est.Incr = "NoIncr", objFun = "L2"){
   print <- FALSE
 
+  aggr.G <- equally.spaced
   call <- match.call()
   
   if(objFun=="L1" && method!="Nelder-Mead"){
@@ -214,14 +215,24 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("objFun",objFun, envir=env)
   
   if(aggr.G==TRUE){
+    if(floor(n/index(observ@zoo.data[[1]])[n])!=env$deltaData){
+      yuima.stop("the n/Terminal in sampling information is not an integer. equally.spaced=FALSE is recommended")
+    }
+  }
+  
+  if(aggr.G==TRUE){
     # Aggregate returns G
     #dt<-round(deltat(onezoo(observ)[,1])*10^5)/10^5
     # Time<-index(observ@zoo.data[[1]])[n]
     G_i <- diff(env$Data[seq(1,length(env$Data),by=env$deltaData)])
     r<-1
   }else{
-    G_i <- diff(env$Data)  
-    r <- 1/env$deltaData 
+    dummydata<-index(onezoo(observ)[,1])
+    unitarytime<-floor(dummydata)
+    index<-!duplicated(unitarytime)
+    G_i <- diff(env$Data[index]) 
+    
+    r <- 1
   }
   d <- min(floor(sqrt(length(G_i))),env$lag)
   assign("d", d, envir=env)
@@ -601,7 +612,7 @@ ErrTerm <- function(yuima, param, print, env){
  #  res <- log(sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2))
 #    emp <- log(CovQuad[CovQuad>0])
 #    theo <- log(TheoCovQuad[CovQuad>0])
-   res <- sum((log(TheoCovQuad[CovQuad>0])-log(CovQuad[CovQuad>0]))^2)
+   res <- sum((log(abs(TheoCovQuad[CovQuad>0]))-log(abs(CovQuad[CovQuad>0])))^2)
   # res <- sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2)
  # res <- sum((log(abs(TheoCovQuad))-log(abs(CovQuad)))^2)
   # res <- sum((log(TheoCovQuad[CovQuad>0]))-log(CovQuad[CovQuad>0]))^2)
@@ -648,6 +659,7 @@ MM_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
 
   mu<-1 # we assume variance of the underlying L\'evy is one
   meanL1<-mu
+  
 
   cost<-(bq-mu*a1)*m2/(bq*r)
   B<- MatrixA(b[c(q:1)])
@@ -765,9 +777,13 @@ setMethod("plot",signature(x="cogarch.gmm.incr"),
               yuima.warn("Complex increments. We plot only the real part")
               Incr.L<-Re(Incr.L)
             }
-            plot(x=Time,y=Incr.L, type=type,...)
+#             model <- x@model
+#             EndT <- Time[length(Time)]
+#             numb <- (length(Incr.L)+1)
+            plot(x= Time,y= Incr.L, type=type,...)
           }
 )
+
 
 setMethod("summary", "cogarch.gmm",
           function (object, ...)
@@ -836,7 +852,7 @@ setMethod("show", "summary.cogarch.gmm.incr",
           function (object)
           {
             
-            cat("Two Stage GMM estimation \n\nCall:\n")
+            cat("Two Stages GMM estimation \n\nCall:\n")
             print(object@call)
             cat("\nCoefficients:\n")
             print(coef(object))
