@@ -120,7 +120,8 @@ cc.theta <- function(T, sigma1, sigma2, rho) {
   integrate(tmp, 0, T) 
 }
 
-cc.theta(T = 1, diff.coef.1, diff.coef.2, cor.rho)$value # contained in the constructed confidence interval
+# contained in the constructed confidence interval
+cc.theta(T = 1, diff.coef.1, diff.coef.2, cor.rho)$value
 
 # Example. A stochastic differential equation with nonlinear feedback. 
 
@@ -162,13 +163,17 @@ se.cov <- sqrt(result$avar.cov[1,2]) # estimated standard error of covariance
 se.cor <- sqrt(result$avar.cor[1,2]) # estimated standard error of correlation
 
 ## 95\% confidence interval for covariance
-c(lower = cov.est + qnorm(0.025) * se.cov, upper = cov.est + qnorm(0.975) * se.cov) # contains cov.true
+c(lower = cov.est + qnorm(0.025) * se.cov,
+ upper = cov.est + qnorm(0.975) * se.cov) # contains cov.true
 
 ## 95\% confidence interval for correlation
-c(lower = cor.est + qnorm(0.025) * se.cor, upper = cor.est + qnorm(0.975) * se.cor) # contains cor.true
+c(lower = cor.est + qnorm(0.025) * se.cor,
+ upper = cor.est + qnorm(0.975) * se.cor) # contains cor.true
 
-## We can also use the Fisher z transformation to construct a 95\% confidence interval for correlation
-## It often improves the finite sample behavior of the asymptotic theory (cf. Section 4.2.3 of Barndorff-Nielsen and Shephard (2004))
+## We can also use the Fisher z transformation to construct a
+## 95\% confidence interval for correlation
+## It often improves the finite sample behavior of the asymptotic
+## theory (cf. Section 4.2.3 of Barndorff-Nielsen and Shephard (2004))
 z <- atanh(cor.est) # the Fisher z transformation of the estimated correlation
 se.z <- se.cor/(1 - cor.est^2) # standard error for z (calculated by the delta method)
 ## 95\% confidence interval for correlation via the Fisher z transformation

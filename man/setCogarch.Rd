@@ -27,7 +27,10 @@
 
 }
 \usage{
-setCogarch(p, q, ar.par = "b", ma.par = "a", loc.par = "a0", Cogarch.var = "g", V.var = "v", Latent.var = "y", jump.variable = "z",  time.variable = "t", measure = NULL, measure.type = NULL, XinExpr = FALSE, startCogarch = 0, work = FALSE, ...)
+setCogarch(p, q, ar.par = "b", ma.par = "a", loc.par = "a0", Cogarch.var = "g",
+   V.var = "v", Latent.var = "y", jump.variable = "z",  time.variable = "t",
+   measure = NULL, measure.type = NULL, XinExpr = FALSE, startCogarch = 0,
+   work = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
