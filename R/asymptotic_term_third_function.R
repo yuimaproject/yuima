@@ -8585,7 +8585,7 @@
 		    tmp[t] <- get_x_rho[,t] %*% tmpY[,j,t]
 		  }
 
-#‚Ç‚¿‚ç‚ª‚Í‚â‚¢‚©H
+#
 #		  for(i in 1:d.size){
 #		    tmp <- tmp + get_x_rho[i,] * tmpY[i,j,]
 #		  }

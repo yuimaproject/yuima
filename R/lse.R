@@ -90,7 +90,7 @@ lse <- function(yuima, start, lower, upper, method="BFGS", ...){
 	mydots$lower <- unlist( lower[ nm[idx.diff] ])
 	
 	
-	if(length(start)>1){ # multidimensional optim				
+	if(length(start)>1){ #multidimensional optim				
 		oout <- do.call(optim, args=mydots)
 	} else { ### one dimensional optim
 		mydots$f <- mydots$fn

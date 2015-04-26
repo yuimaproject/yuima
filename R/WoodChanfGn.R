@@ -57,7 +57,7 @@ function( mesh , H , dimmesh )
 	
 	
 #Traitement des zeros	
-#La matrice est définie positive (voir 17)	
+#La matrice est definie positive (voir 17)	
 	
 return(fGn)
 		

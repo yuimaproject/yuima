@@ -445,7 +445,7 @@ if(length(jump.coeff)==0){
             expr <- expression(0)  # expr must have something
         }
         JUMP <- list(yuima.Simplifyobj(expr))
-    } else { # must be matrix, n.col = dimension of Lévy noise
+    } else { # must be matrix, n.col = dimension of Levy noise
         jump.coeff <- as.matrix(jump.coeff)
         c.j <- ncol(jump.coeff)
         r.j <- nrow(jump.coeff)

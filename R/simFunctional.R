@@ -80,7 +80,7 @@ funcFe. <- function(yuima,X,e,expand.var="e"){
   }
   
   resF <- funcF(yuima,X,e,expand.var=expand.var) #calculate F with X,e. size:vector[k.size]
-  resf <- funcf(yuima,X,e,expand.var=expand.var) #calculate f with X,e. size:array[k.size,division,r.size+1]  ## いま, ここでエラー 2010/11/13
+  resf <- funcf(yuima,X,e,expand.var=expand.var) #calculate f with X,e. size:array[k.size,division,r.size+1]  ## 2010/11/13
   Fe <- numeric(k.size)
   for(k in 1:k.size){
     Fe[k] <- sum(resf[k,1:division,]*dw)+resF[k]  #calculate Fe using resF and resf as (13.2).

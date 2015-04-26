@@ -1,4 +1,4 @@
-# In this code we implement a filter that returns the increments of the undelying lévy process
+# In this code we implement a filter that returns the increments of the undelying levy process
 # if the model is a COGARCH(P,Q)
 # Using the squared of returns, we obtain the increment of Levy process using the relation
 # Y_t=e^{A\Delta t}Y_{t-\Delta t}+e^{A\left(\Delta t\right)}e\left(\Delta G_{t}\right)^{2}.
