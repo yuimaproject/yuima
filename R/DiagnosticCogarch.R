@@ -75,15 +75,22 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
     lambda.eig<-diag(solve(matrixS)%*%Amatr%*%matrixS)
   }
   lambda1<- max(Re(lambda.eig)) # we find lambda1
-  ev.dum<-matrix(0,info@q,1)
-  ev.dum[info@q,1] <- 1
-  av.dum <-matrix(0,1,info@q)
-  av.dum[1,c(1:info@p)]<-acoeff 
+  ev.dum<-matrix(0,1,info@q)
+  ev.dum[1,info@q] <- 1
+  av.dum <-matrix(0,info@q,1)
+  av.dum[c(1:info@p),1]<-acoeff 
   if(display==TRUE){
     cat(paste0("\n COGARCH(",info@p,info@q,") model \n"))
   }
   matrforck<-solve(matrixS)%*%(av.dum%*%ev.dum)%*%matrixS
-  if(matrforck*mu < -lambda1){
+  if(is.complex(matrforck)){
+    A2Matrix<-Conj(t(matrforck))%*%matrforck
+    SpectNorm<-max(sqrt(as.numeric(abs(eigen(A2Matrix)$values))))
+  }else{
+    A2Matrix<-t(matrforck)%*%matrforck
+    SpectNorm<-max(sqrt(abs(eigen(A2Matrix)$values)))
+  }
+  if(SpectNorm*mu < -lambda1){
     if(display==TRUE){
       cat("\n The process is strictly stationary\n The unconditional first moment of the Variance process exists \n")
     }

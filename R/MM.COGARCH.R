@@ -190,8 +190,12 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   EL1.idx <- match("EL1",fullcoeff)  # We decide to pass EL1 as parameter !!!
 
   env <- new.env()
-  n <- length(observ)[1]
+#  n <- length(observ)[1]
+
+  #n <- attr(observ@original.data,"tsp")[2]
   
+  n <- length(index(observ@original.data))
+
   #Lag
   assign("lag", lag.max, envir=env)
   
@@ -344,16 +348,25 @@ if(method!="L-BFGS-B"&&method!="brent"){
                          r=env$r, h=seq(1, env$d, by = 1)*env$r, type=typeacf, 
                          m2=env$mu_G2, var=env$var_G2)
     if(objFun == "L2"){
-      min <- log(sum((score0$acfG2[CovQuad>0]-CovQuad[CovQuad>0])^2))
+    #  min <- log(sum((score0$acfG2[CovQuad>0]-CovQuad[CovQuad>0])^2))
+      
+      min <- log(sum((score0$acfG2-CovQuad)^2))
+      #min <- log(sum((score0$acfG2[CovQuad>0]-CovQuad[CovQuad>0])^2))
     }          
   idx.aaa<-match(loc.par,names_coef)           
-  gradVect <- gradVect0[names_coef[-idx.aaa],]
+  gradVect <- gradVect0[names_coef[-idx.aaa], ]
+  # gradVect <- gradVect0[names_coef[-idx.aaa],CovQuad>0]
   score <- c(score0$acfG2)%*%matrix(1,1,example$leng)
+  #score <- c(score0$acfG2[CovQuad>0])%*%matrix(1,1,example$leng)
+  
   #We need to write the matrix W for the matrix sandwhich
 #plot(as.numeric(example$dataused)[-1],type="h")
   #S_matrix
 
   EmpirScore <-score-example$elem[-1,]
+#   exampelem <-example$elem[-1,]
+#   EmpirScore <-score-exampelem[CovQuad>0,]
+  
   Omega_est<-tryCatch((1/example$leng*EmpirScore%*%t(EmpirScore)), 
                    error=function(theta){NULL})
   if(is.null(Omega_est)){
@@ -609,12 +622,20 @@ ErrTerm <- function(yuima, param, print, env){
  }
 
  if(env$objFun=="L2"){
- #  res <- log(sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2))
+#  res <- log(sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2))
+
 #    emp <- log(CovQuad[CovQuad>0])
 #    theo <- log(TheoCovQuad[CovQuad>0])
-   res <- sum((log(abs(TheoCovQuad[CovQuad>0]))-log(abs(CovQuad[CovQuad>0])))^2)
-  # res <- sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2)
- # res <- sum((log(abs(TheoCovQuad))-log(abs(CovQuad)))^2)
+#   res <- log(sum((abs(TheoCovQuad)-abs(CovQuad))^2))
+   
+   
+ res <- sum((log(TheoCovQuad[CovQuad>0])-log(CovQuad[CovQuad>0]))^2)
+
+  #   res <- sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2)
+  # res <- sum((TheoCovQuad-CovQuad)^2)
+  
+#  res <- sum((log(abs(TheoCovQuad))-log(abs(CovQuad)))^2)
+  
   # res <- sum((log(TheoCovQuad[CovQuad>0]))-log(CovQuad[CovQuad>0]))^2)
   return(res)
  }
@@ -728,7 +749,7 @@ MM_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
 
 
 MM_grad_Cogarch <- function(p, q, acoeff,cost, b,  r, h, type, m2, var){
-  eps<-10^(-4)
+  eps<-10^(-3)
   PartialP<-matrix(0,p,length(h))
   epsA<-eps*diag(p)
   for(i in c(1:p)){

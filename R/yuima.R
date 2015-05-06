@@ -257,7 +257,7 @@ setYuima <-
 #         data<-setData(zoo(x=matrix(as.numeric(data@original.data),length(data@original.data),
 #                                    (model@info@p+1)), order.by=time(data@zoo.data[[1]])))  
         dum.matr<-matrix(0,length(data@original.data),
-                         (model@info@p+2))
+                         (model@info@q+2))
         dum.matr[,1]<-as.numeric(data@original.data)
         data<-setData(zoo(x=dum.matr, order.by=time(data@zoo.data[[1]])))  
         
