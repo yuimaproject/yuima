@@ -7,36 +7,66 @@ is.COGARCH <- function(obj){
     return(is(obj, "yuima.cogarch"))
   return(FALSE)
 }
-yuima.acf<-function(data,lag.max){
-  burndata<-lag.max+1
-  dataused<-as.list(numeric(length=burndata+1))
-  Time<-length(data)
-  dataformean<-data[burndata:Time]
-  dataused[[1]]<-mean(dataformean)
-  dataused[[2]]<-mean(dataformean^2)
-  mu<-mean(dataformean)
-  leng <-length(dataformean)
+yuima.acf<-function(data,lag.max, forward=TRUE){
+  if(forward==FALSE){  
+    burndata<-lag.max+1
+    dataused<-as.list(numeric(length=burndata+1))
+    Time<-length(data)
+    dataformean<-data[burndata:Time]
+    dataused[[1]]<-mean(dataformean)
+    dataused[[2]]<-mean(dataformean^2)
+    mu<-mean(dataformean)
+    leng <-length(dataformean)
+    
+    var1<-sum((dataformean-mu)*(dataformean-mu))/leng
+    
+    
+    res1<-numeric(length=lag.max)
+    elem<-matrix(0,lag.max,(Time-lag.max))
+    for (t in (lag.max+1):(Time)){
   
-  var1<-sum((dataformean-mu)*(dataformean-mu))/leng
-  
-  
-  res1<-numeric(length=lag.max)
-  elem<-matrix(0,lag.max,(Time-lag.max))
-  for (t in (lag.max+1):(Time)){
-
-#     h<-leng-lag.max
-#     elem<-(data[(1+t):leng]-mu)*(data[1:h]-mu)/(leng*var1) 
-#     res1[t+1]<-sum(elem) 
-    h <-c(lag.max:1)
-    elem[,(t-lag.max)]<-(data[(t-h)[order(t-h,decreasing=TRUE)]]-mu)*(data[t]-mu)/(var1)
+  #     h<-leng-lag.max
+  #     elem<-(data[(1+t):leng]-mu)*(data[1:h]-mu)/(leng*var1) 
+  #     res1[t+1]<-sum(elem) 
+      h <-c(lag.max:1)
+      elem[,(t-lag.max)]<-(data[(t-h)[order(t-h,decreasing=TRUE)]]-mu)*(data[t]-mu)/(var1)
+    }
+    for(h in 3:(lag.max+2)){
+      dataused[[h]]<-sum(elem[h-2,])/leng
+    }  
+    
+    elem0<-rbind(t(as.matrix(dataformean)),elem)
+  #   res1<-res1
+  #   acfr<-res1[2:(lag.max+1)]  #analogously to Matlab program
+  }else{
+    burndata<-lag.max
+    dataused<-as.list(numeric(length=burndata+1))
+    Time<-length(data)
+    dataformean<-data[1:(Time-burndata)]
+    dataused[[1]]<-mean(dataformean)
+    dataused[[2]]<-mean(dataformean^2)
+    mu<-mean(dataformean)
+    leng <-length(dataformean)
+    
+    var1<-sum((dataformean-mu)*(dataformean-mu))/leng
+    
+    
+    res1<-numeric(length=lag.max)
+    elem<-matrix(0,lag.max,(Time-lag.max))
+    for (t in 1:(Time-(lag.max))){
+      
+      #     h<-leng-lag.max
+      #     elem<-(data[(1+t):leng]-mu)*(data[1:h]-mu)/(leng*var1) 
+      #     res1[t+1]<-sum(elem) 
+      h <-c(1:lag.max)
+      elem[,t]<-(data[(t+h)]-mu)*(data[t]-mu)/(var1)
+    }
+    for(h in 3:(lag.max+2)){
+      dataused[[h]]<-sum(elem[h-2,])/leng
+    }  
+    
+    elem0<-rbind(t(as.matrix(dataformean)),elem)
   }
-  for(h in 3:(lag.max+2)){
-    dataused[[h]]<-sum(elem[h-2,])/leng
-  }  
-  
-  elem0<-rbind(t(as.matrix(dataformean)),elem)
-#   res1<-res1
-#   acfr<-res1[2:(lag.max+1)]  #analogously to Matlab program
   return(list(dataused=dataused, elem=elem0, leng=leng))
 }
 
@@ -242,12 +272,12 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("d", d, envir=env)
   typeacf <- "correlation"
   assign("typeacf", typeacf, envir=env)
-  CovQuad <- acf(G_i^2,plot=FALSE,lag.max=d,type=typeacf)$acf[-1]
+# CovQuad <- acf(G_i^2,plot=FALSE,lag.max=d,type=typeacf)$acf[-1]
   
   example<-yuima.acf(data=G_i^2,lag.max=d)
   dummyEmpiricalMoM<-as.numeric(example$dataused)
-  #CovQuad <- as.numeric(example$dataused)[-c(1:2)]
-  
+  CovQuad <- as.numeric(example$dataused)[-c(1:2)]
+#   
   
   
   
@@ -629,10 +659,10 @@ ErrTerm <- function(yuima, param, print, env){
 #   res <- log(sum((abs(TheoCovQuad)-abs(CovQuad))^2))
    
    
- res <- sum((log(TheoCovQuad[CovQuad>0])-log(CovQuad[CovQuad>0]))^2)
+  res <- sum((log(TheoCovQuad[CovQuad>0])-log(CovQuad[CovQuad>0]))^2)
 
   #   res <- sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2)
-  # res <- sum((TheoCovQuad-CovQuad)^2)
+ #  res <- sum((TheoCovQuad-CovQuad)^2)
   
 #  res <- sum((log(abs(TheoCovQuad))-log(abs(CovQuad)))^2)
   
