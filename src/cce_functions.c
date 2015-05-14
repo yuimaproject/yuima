@@ -7,9 +7,13 @@ void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse, in
    
   for(t = 0; t < *frequency; t++){
     for(i = 0; i < *nsparse; i++){
-        k = 1;
-      while((ztime[k]<=grid[i])&&(k<*n)){
-        k++;
+      /*k = 1;*/
+      /*while((ztime[k]<=grid[i])&&(k<*n)){*/
+      for(k = 1; k < *n; k++){
+        /*k++;*/
+        if(ztime[k] <= grid[i]){
+          break;
+        }
       }
       result[(*nsparse)*t+i] += znum[k-1];
       grid[i]++;

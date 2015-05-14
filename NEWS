@@ -32,3 +32,4 @@
 2015/04/21: added hyavar.R, hyavar.Rd (asymptotic variance estimator for HY)
             fixed a bug in llag.R
             modified cce.Rd, cce_functions.c
+2015/05/14: fixed a bug in cce_functions.c
