@@ -15,7 +15,7 @@ The function returns the estimated parameters of a COGARCH(P,Q) model. The param
 \usage{
 gmm(yuima, data = NULL, start, 
  method="BFGS", fixed = list(), lower, upper, lag.max = NULL, 
- equally.spaced = TRUE, aggregation=TRUE, Est.Incr = "NoIncr", objFun = "L2")
+ equally.spaced = FALSE, aggregation=TRUE, Est.Incr = "NoIncr", objFun = "L2")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
