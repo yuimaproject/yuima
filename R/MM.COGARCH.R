@@ -74,7 +74,7 @@ yuima.acf<-function(data,lag.max, forward=TRUE){
 # The estimation procedure for cogarch(p,q) implemented in this code are based on the 
 # Chadraa phd's thesis
 gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(), 
-                           lower, upper, lag.max = NULL, equally.spaced = TRUE, aggregation=TRUE,
+                           lower, upper, lag.max = NULL, equally.spaced = FALSE, aggregation=TRUE,
                            Est.Incr = "NoIncr", objFun = "L2"){
   print <- FALSE
 
@@ -90,9 +90,9 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
     yuima.stop("Constraints are not allow for the minimization of Mean absolute error")
   }
   
-  codelist.objFun <- c("L1","L2","L2CUE")
+  codelist.objFun <- c("L1","L2","L2CUE", "TWOSTEPS")
   if(any(is.na(match(objFun,codelist.objFun)))){
-    yuima.stop("Value of objFun not available. Please choose among L1, L2, L2CUE ")
+    yuima.stop("Value of objFun not available. Please choose among L1, L2, L2CUE, TWOSTEPS")
   }
    
   codelist.Est.Incr <- c("NoIncr","Incr","IncrPar")
@@ -246,6 +246,12 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("meas.idx", meas.idx, envir=env)
   assign("EL1.idx", EL1.idx, envir=env)
   
+  objFunDummy <- NULL
+  if(objFun=="TWOSTEPS"||objFun=="L2CUE"){
+    objFunDummy <- objFun
+    objFun <- "L2"
+    
+  }
   assign("objFun",objFun, envir=env)
   
   if(aggr.G==TRUE){
@@ -346,6 +352,116 @@ if(method!="L-BFGS-B"&&method!="brent"){
   
 }
 
+# Alternative way for calculating Variance Covariance Matrix
+
+# sig2eps<-out$value/d
+# 
+# dumHess<- out$hessian[c(ar.name, ma.name),c(ar.name, ma.name)]/(2*sig2eps)
+# vcovgmm<-solve(dumHess)
+# sqrt(diag(vcovgmm))
+ if(!is.null(objFunDummy)){
+   assign("objFun",objFunDummy, envir=env)
+   
+   bvect<-out$par[ar.name]
+   bq<-bvect[1]
+   avect<-out$par[ma.name]
+   a1<-avect[1]
+   
+   out$par[loc.par]<-(bq-a1)*mu_G2/(bq*r)
+   
+   # Determine the Variance-Covariance Matrix
+   if(length(meas.par)!=0){
+     idx.dumm<-match(meas.par,names(out$par))
+     out$par<-out$par[- idx.dumm]
+   }
+   dimOutp<-length(out$par)-(1+info@q)
+   coef <- out$par[c(1:dimOutp)] 
+   vcov<-matrix(NA, dimOutp, dimOutp)
+   names_coef<-names(coef)
+   colnames(vcov) <- names_coef
+   rownames(vcov) <- names_coef
+   mycoef <- start
+   min <- out$value 
+   # # call
+     gradVect0<-MM_grad_Cogarch(p=info@p, q=info@q, 
+                                acoeff=avect,cost=out$par[loc.par], b=bvect,  
+                                r=env$r, h=seq(1, env$d, by = 1)*env$r, type=typeacf, 
+                                m2=env$mu_G2, var=env$var_G2)
+     
+     score0 <- MM_Cogarch(p=info@p, q=info@q,
+                          acoeff=avect,cost=out$par[loc.par], b=bvect,  
+                          r=env$r, h=seq(1, env$d, by = 1)*env$r, type=typeacf, 
+                          m2=env$mu_G2, var=env$var_G2)
+
+     idx.aaa<-match(loc.par,names_coef)           
+     #  gradVect <- gradVect0[names_coef[-idx.aaa], ]
+     gradVect <- gradVect0[names_coef[-idx.aaa],CovQuad>0]
+     #  score <- c(score0$acfG2)%*%matrix(1,1,example$leng)
+     score <- c(score0$acfG2[CovQuad>0])%*%matrix(1,1,example$leng)
+     
+     #We need to write the matrix W for the matrix sandwhich
+     #plot(as.numeric(example$dataused)[-1],type="h")
+     #S_matrix
+     
+     #  EmpirScore <-score-example$elem[-1,]
+     exampelem <-example$elem[-1,]
+     EmpirScore <-score-exampelem[CovQuad>0,]
+     
+     Omega_est <- tryCatch((1/example$leng*EmpirScore%*%t(EmpirScore)), 
+                         error=function(theta){NULL})
+     W_est <-tryCatch(chol2inv(Omega_est),error=function(theta){NULL})
+   if(!is.null(W_est)){
+     assign("W_est",W_est,envir=env)
+     start0<-unlist(start)
+     start0[names(out$par)]<-out$par
+     start <- as.list(start0)
+     #start<-out$par
+    if(method!="L-BFGS-B"&&method!="brent"){
+     out<- optim(start, objectiveFun, method = method, env=env)
+   }else{
+     if(length(fixed)!=0 && !missing(upper) && !missing(lower)){
+       out<- optim(start, objectiveFun, method = method, 
+                   fixed=as.numeric(fixed), 
+                   lower=as.numeric(lower), 
+                   upper=as.numeric(upper), env=env)
+     }else{
+       if(!missing(upper) && !missing(lower)){
+         out<- optim(start, objectiveFun, method = method, 
+                     lower=as.numeric(lower), 
+                     upper=as.numeric(upper), env=env)
+       }
+       if(length(fixed)!=0 && !missing(lower)){
+         out<- optim(start, objectiveFun, method = method, 
+                     fixed=as.numeric(fixed), 
+                     lower=as.numeric(lower), env=env)
+       }
+       if(!missing(upper) && length(fixed)!=0){
+         out<- optim(start, objectiveFun, method = method, 
+                     fixed=as.numeric(fixed), 
+                     upper=as.numeric(upper), env=env)
+       }
+     }
+     
+     if(length(fixed)!=0 && missing(upper) && missing(lower)){
+       out<- optim(start, objectiveFun, method = method, 
+                   fixed=as.numeric(fixed), env=env)
+     }
+     
+     if(length(fixed)==0 && !missing(upper) && missing(lower)){
+       out<- optim(start, objectiveFun, method = method,
+                   upper=as.numeric(upper), env=env)
+     }
+     
+     if(length(fixed)==0 && missing(upper) && !missing(lower)){
+       out<- optim(start, objectiveFun, method = method, 
+                   lower=as.numeric(lower), env=env)
+     }
+     
+   }
+   }else{
+     yuima.warn("Method TWOSTEPS or L2CUE Changed in L2 since First W failed to compute")
+   }
+ }
  bvect<-out$par[ar.name]
  bq<-bvect[1]
  avect<-out$par[ma.name]
@@ -364,7 +480,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
   names_coef<-names(coef)
   colnames(vcov) <- names_coef
   rownames(vcov) <- names_coef
-  mycoef <- start
+ # mycoef <- start
   min <- out$value 
 # # call
   if(objFun!="L1"){
@@ -384,29 +500,38 @@ if(method!="L-BFGS-B"&&method!="brent"){
       #min <- log(sum((score0$acfG2[CovQuad>0]-CovQuad[CovQuad>0])^2))
     }          
   idx.aaa<-match(loc.par,names_coef)           
-  gradVect <- gradVect0[names_coef[-idx.aaa], ]
-  # gradVect <- gradVect0[names_coef[-idx.aaa],CovQuad>0]
-  score <- c(score0$acfG2)%*%matrix(1,1,example$leng)
-  #score <- c(score0$acfG2[CovQuad>0])%*%matrix(1,1,example$leng)
+  #  gradVect <- gradVect0[names_coef[-idx.aaa], ]
+   gradVect <- gradVect0[names_coef[-idx.aaa],CovQuad>0]
+  #  score <- c(score0$acfG2)%*%matrix(1,1,example$leng)
+  score <- c(score0$acfG2[CovQuad>0])%*%matrix(1,1,example$leng)
   
   #We need to write the matrix W for the matrix sandwhich
 #plot(as.numeric(example$dataused)[-1],type="h")
   #S_matrix
 
-  EmpirScore <-score-example$elem[-1,]
-#   exampelem <-example$elem[-1,]
-#   EmpirScore <-score-exampelem[CovQuad>0,]
+#  EmpirScore <-score-example$elem[-1,]
+    exampelem <-example$elem[-1,]
+    EmpirScore <-score-exampelem[CovQuad>0,]
   
   Omega_est<-tryCatch((1/example$leng*EmpirScore%*%t(EmpirScore)), 
                    error=function(theta){NULL})
   if(is.null(Omega_est)){
     Omega_est<-matrix(NA,dim(EmpirScore)[1],dim(EmpirScore)[1])
   }
-  Gmatr<-gradVect%*%t(gradVect)
-  CentMat<-gradVect%*%Omega_est%*%t(gradVect)
+ if(is.null(objFunDummy)){
+    Gmatr<-gradVect%*%t(gradVect)
+    CentMat<-gradVect%*%Omega_est%*%t(gradVect)
+    Var_Matr0 <- tryCatch(solve(Gmatr)%*%CentMat%*%solve(Gmatr)/example$leng,
+                          error=function(theta){NULL})
+ }else{
+   #Gmatr<-gradVect%*%W_est%*%t(gradVect)
+   #CentMat<-gradVect%*%W_est%*%Omega_est%*%W_est%*%t(gradVect)
+   Var_Matr0 <- tryCatch(solve(gradVect%*%solve(Omega_est)%*%t(gradVect))/example$leng,
+                         error=function(theta){NULL})
+   #Var_Matr0 <- solve(Gmatr)/example$leng
+ }
 
-  Var_Matr0 <- tryCatch(solve(Gmatr)%*%CentMat%*%solve(Gmatr)/example$leng,
-                        error=function(theta){NULL})
+  
   if(!is.null(Var_Matr0)){
     aaa<-dimOutp-1
     vcov[c(1:aaa),c(1:aaa)]<-Var_Matr0  
@@ -659,9 +784,9 @@ ErrTerm <- function(yuima, param, print, env){
 #   res <- log(sum((abs(TheoCovQuad)-abs(CovQuad))^2))
    
    
-  res <- sum((log(TheoCovQuad[CovQuad>0])-log(CovQuad[CovQuad>0]))^2)
+ res <- sum((log(TheoCovQuad[CovQuad>0])-log(CovQuad[CovQuad>0]))^2)
 
-  #   res <- sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2)
+ #    res <- sum((TheoCovQuad[CovQuad>0]-CovQuad[CovQuad>0])^2)
  #  res <- sum((TheoCovQuad-CovQuad)^2)
   
 #  res <- sum((log(abs(TheoCovQuad))-log(abs(CovQuad)))^2)
@@ -669,7 +794,34 @@ ErrTerm <- function(yuima, param, print, env){
   # res <- sum((log(TheoCovQuad[CovQuad>0]))-log(CovQuad[CovQuad>0]))^2)
   return(res)
  }
+
+if(env$objFun=="TWOSTEPS"){
+  TheoMoM<-log(TheoCovQuad[CovQuad>0])
+  #TheoMoM<-log(abs(TheoCovQuad))
+  #TheoMoM<-TheoCovQuad[CovQuad>0]
+  #dumScore <- (TheoMoM%*%matrix(1,1,env$leng))-env$score[-1,]
+  #W_est<-chol2inv(dumScore%*%t(dumScore)/env$leng)
+  W_est<-env$W_est
+  CompMoM0<-TheoMoM-c(log(CovQuad[CovQuad>0]))
+  #CompMoM0<-TheoMoM-c(log(abs(CovQuad)))
+  #CompMoM0<-TheoMoM-CovQuad[CovQuad>0]
+  CompMoM<-matrix(CompMoM0,1,length(CompMoM0))
+  res <- as.numeric(CompMoM%*%W_est%*%t(CompMoM))
   
+  
+#   TheoMoM<-TheoCovQuad[CovQuad>0]
+#   intrDum<-env$score[-1,]
+#   
+#   dumScore <- (TheoMoM%*%matrix(1,1,env$leng))-intrDum[CovQuad>0,]
+#   W_est<-chol2inv(dumScore%*%t(dumScore)/env$leng)
+#   CompMoM0<-TheoMoM-c(CovQuad[CovQuad>0])
+#   CompMoM<-matrix(CompMoM0,1,length(CompMoM0))
+#   res <- as.numeric(CompMoM%*%W_est%*%t(CompMoM))
+  
+  
+  return(res)
+}
+
 
   if(env$objFun=="L1"){
     res <- log(sum(abs(c(TheoCovQuad)-c(CovQuad))))
@@ -678,12 +830,17 @@ ErrTerm <- function(yuima, param, print, env){
 
 
  if(env$objFun=="L2CUE"){  
-   TheoMoM<-TheoCovQuad
-   dumScore <- (TheoMoM%*%matrix(1,1,env$leng))-env$score[-1,]
+   #TheoMoM<-TheoCovQuad
+   #
+   #TheoMoM<-log(TheoCovQuad[CovQuad>0])
+   TheoMoM<-TheoCovQuad[CovQuad>0]
+   intrDum<-env$score[-1,]
+   
+   dumScore <- (TheoMoM%*%matrix(1,1,env$leng))-intrDum[CovQuad>0,]
    W_est<-chol2inv(dumScore%*%t(dumScore)/env$leng)
-   CompMoM0<-TheoMoM-c(CovQuad)
+   CompMoM0<-TheoMoM-c(CovQuad[CovQuad>0])
    CompMoM<-matrix(CompMoM0,1,length(CompMoM0))
-   res <- log(as.numeric(CompMoM%*%W_est%*%t(CompMoM)))
+   res <- as.numeric(CompMoM%*%W_est%*%t(CompMoM))
    return(res)
  }
 
