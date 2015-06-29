@@ -14,7 +14,7 @@ The full data records of past temperature, precipitation, and climate and enviro
 The MWK151 is only a small part of the data relative to one tree and contains measurement of a tree's ring width in mm, from -608 to 1957.
 }
 \source{
-\url{http://hurricane.ncdc.noaa.gov/pls/paleox/f?p=519:1:::::P1_STUDY_ID:3376}
+\url{ftp://ftp.ncdc.noaa.gov/pub/data/paleo/treering/measurements/northamerica/usa/ca535.rwl}
 }
 \references{
 Graybill, D.A., and Shiyatov, S.G., Dendroclimatic evidence from the northern Soviet Union, in Climate since A.D. 1500, edited by R.S. Bradley and P.D. Jones, Routledge, London, 393-414, 1992.
