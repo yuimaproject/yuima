@@ -25,7 +25,7 @@ setMethod("initialize", "carma.info",
 
 setMethod("initialize", "yuima.carma",
           function(.Object,
-                   info = new(carma.info),
+                   info = new("carma.info"),
                    drift = expression() ,
                    diffusion = list() ,
                    hurst = 0.5,

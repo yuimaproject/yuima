@@ -12,54 +12,92 @@ import("cubature")
 importFrom(utils, toLatex)
 
 
-
-
+# 03/07/2015
+importFrom(stats, time)
+importFrom(stats, ts)
+importFrom(stats, rnorm)
+importFrom(stats, na.omit)
+importFrom(stats, dgamma)
+importFrom(stats, optimHess)
+importFrom(stats, filter)
+importFrom(utils, tail)
+importFrom(utils, head)
+importFrom(stats, acf)
+importFrom(stats, fft)
+importFrom(stats, rexp)
+importFrom(stats, approx)
+importFrom(stats, arima0)
+importFrom(stats, frequency)
+importFrom(stats, D)
+importFrom(stats, integrate)
+importFrom(stats, rpois)
+importFrom(stats, runif)
+importFrom(stats, optim)
+importFrom(stats, optimize)
+importFrom(stats, deltat)
+importFrom(stats, pchisq)
+importFrom(stats, symnum)
+importFrom(stats, rchisq)
+importFrom(stats, rgamma)
+importFrom(stats, diffinv)
+importFrom(stats, pnorm)
+importFrom(stats, approxfun)
+importFrom(stats, qnorm)
+importFrom(stats, rbinom)
+importFrom(stats, constrOptim)
+importFrom(stats, dnorm)
+importFrom(stats, deriv)
+importFrom(graphics, points)
+importFrom(stats, end)
+importFrom(stats, start)
+importFrom(utils, str)
+importFrom(stats, sd)
 
 
 exportClasses("yuima",
-              "yuima.data",
-              "yuima.sampling",
-              "yuima.characteristic",
-              "yuima.model",
-              "model.parameter",
-	      "yuima.carma",
-	      "carma.info",
-	      "yuima.carma.qmle",
-              "yuima.poisson",
-              "yuima.qmle",
-              "yuima.CP.qmle",
-        "cogarch.info",
-        "yuima.cogarch"
-              )
+"yuima.data",
+"yuima.sampling",
+"yuima.characteristic",
+"yuima.model",
+"model.parameter",
+"yuima.carma",
+"carma.info",
+"yuima.carma.qmle",
+"yuima.poisson",
+"yuima.qmle",
+"yuima.CP.qmle",
+"cogarch.info",
+"yuima.cogarch"
+)
 
 exportMethods(
-              "dim",
-              "length",
-              ## "start",
-              "plot",
-              ## "time",
-              ## "end",
-              "simulate",
-              "cce",
-              "llag",
-              "poisson.random.sampling",
-              "get.zoo.data",
-              "initialize",
+"dim",
+"length",
+## "start",
+"plot",
+## "time",
+## "end",
+"simulate",
+"cce",
+"llag",
+"poisson.random.sampling",
+"get.zoo.data",
+"initialize",
 ##              "ql",
 ##              "rql",
 ##              "ml.ql",
-              "adaBayes",
-              "limiting.gamma",
-			  "getF",
-			  "getf",
-			  "getxinit",
-			  "gete",
-			  "simFunctional",
-			  "F0",
-			  "Fnorm",
-			  "asymptotic_term",
-              "cbind.yuima"
-              )
+"adaBayes",
+"limiting.gamma",
+"getF",
+"getf",
+"getxinit",
+"gete",
+"simFunctional",
+"F0",
+"Fnorm",
+"asymptotic_term",
+"cbind.yuima"
+)
 
 ## function which we want to expose to the user
 ## all other functions are used internally by the
@@ -124,8 +162,8 @@ export(qmleR)
 export(qmleL)
 
 
-export(CarmaNoise) # Estimates the Levy in carma model 
-export(gmm) # Estimation COGARCH(P,Q) using Method Of Moments 
+export(CarmaNoise) # Estimates the Levy in carma model
+export(gmm) # Estimation COGARCH(P,Q) using Method Of Moments
 export(cogarchNoise)
 export(Diagnostic.Cogarch)
 
@@ -146,4 +184,5 @@ S3method(toLatex, yuima.carma)
 S3method(toLatex, yuima.cogarch)
 
 useDynLib(yuima)
+
 
