@@ -130,14 +130,14 @@ logical. If \code{TRUE}, the averaged subsampling estimator is calculated. Other
 }
   \item{threshold}{
 %%     ~~Describe \code{threshold} here~~
-a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in \code{threshold} are recycled if there are two few elements in \code{threshold}. The default value is determined following Koike (2014) (for the method \code{"THY"}) and Koike (2013) (for the method \code{"PTHY"}).
+a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in \code{threshold} are recycled if there are two few elements in \code{threshold}. The default value is determined following Koike (2014) (for the method \code{"THY"}) and Koike (2015) (for the method \code{"PTHY"}).
 }
   \item{utime}{
 %%     ~~Describe \code{utime} here~~
-a positive number indicating what seconds the unit time means. The default value is 23400 (this means 6.5 hours) if the time indices of the (first component) of \code{x} is numeric, otherwise 1.
+a positive number indicating what seconds the number ``1'' corresponds to. The default value is 23400 (this means 6.5 hours) if the time indices of the (first component) of \code{x} is numeric, otherwise 1.
 }
 \item{psd}{
-logical. If \code{TRUE}, the estimated covariance matrix \code{C} is converted to \code{(C\%*\%C)^(1/2)} for ensuring the positive semi-definiteness.
+logical. If \code{TRUE}, the estimated covariance matrix \code{C} is converted to \code{(C\%*\%C)^(1/2)} for ensuring the positive semi-definiteness. In this case the absolute values of the estimated correlations are always ensured to be less than or equal to 1. 
 }
 }
 \details{
@@ -388,7 +388,10 @@ psample<- poisson.random.sampling(yuima, rate = c(0.2,0.3), n = 3000)
 ## The off-diagonal elements are the value of the Hayashi-Yoshida estimator. 
 cce(psample)
 
-# Example. Non-synchronous and noisy observations of a correlated Brownian motions
+
+
+
+# Example. Epps effect for the realized covariance estimator
 
 ## Set a model
 drift <- c(0,0)
@@ -403,15 +406,50 @@ model <- setModel(drift=drift,diffusion=diffusion,
                   state.variable=c("x1","x2"),solve.variable=c("x1","x2"))
                   
 ## Generate a path of the latent process
-set.seed(107)
+set.seed(116)
+
+## We regard the unit interval as 6.5 hours and generate the path on it with the step size equal to 2 seconds
+
 yuima.samp <- setSampling(Terminal = 1, n = 11700) 
 yuima <- setYuima(model = model, sampling = yuima.samp) 
 yuima <- simulate(yuima)
 
-## Poisson random sampling
-psample<- poisson.random.sampling(yuima, rate = c(1/5,1/5), n = 11700) 
+## We extract nonsynchronous observations from the path generated above by Poisson random sampling with the average duration equal to 10 seconds
 
-## Generate noisy observations
+psample <- poisson.random.sampling(yuima, rate = c(1/5,1/5), n = 11700)
+
+## Hayashi-Yoshida estimator consistetly estimates the true correlation
+cce(psample)$cormat[1,2]
+
+## If we synchronize the observation data on some regular grid by previous-tick interpolations and compute the correlation by therealized covariance based on such synchronized observations, we underestimate the true correlation (known as the Epps effect). This is illustrated by the following examples.
+
+## Synchronization on the grid with 5 seconds steps
+suppressWarnings(s1 <- cce(subsampling(psample, sampling = setSampling(n = 4680)))$cormat[1,2])
+s1
+
+## Synchronization on the grid with 10 seconds steps
+suppressWarnings(s2 <- cce(subsampling(psample, sampling = setSampling(n = 2340)))$cormat[1,2])
+s2
+
+## Synchronization on the grid with 20 seconds steps
+suppressWarnings(s3 <- cce(subsampling(psample, sampling = setSampling(n = 1170)))$cormat[1,2])
+s3
+
+## Synchronization on the grid with 30 seconds steps
+suppressWarnings(s4 <- cce(subsampling(psample, sampling = setSampling(n = 780)))$cormat[1,2])
+s4
+
+## Synchronization on the grid with 1 minute steps
+suppressWarnings(s5 <- cce(subsampling(psample, sampling = setSampling(n = 390)))$cormat[1,2])
+s5
+
+plot(zoo(c(s1,s2,s3,s4,s5),c(5,10,20,30,60)),type="b",xlab="seconds",ylab="correlation",main = "Epps effect for the realized covariance")
+
+
+
+# Example. Non-synchronous and noisy observations of a correlated Brownian motions
+
+## Generate noisy observations from the model used in the previous example
 Omega <- 0.005*matrix(c(1,rho,rho,1),2,2) # covariance matrix of noise
 noisy.psample <- noisy.sampling(psample,var.adj=Omega)
 plot(noisy.psample)
@@ -430,6 +468,7 @@ cce(noisy.psample,method="RK")$covmat
 
 ## Nonparametric QMLE: consistent
 cce(noisy.psample,method="QMLE")$covmat
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

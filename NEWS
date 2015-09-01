@@ -33,3 +33,5 @@
             fixed a bug in llag.R
             modified cce.Rd, cce_functions.c
 2015/05/14: fixed a bug in cce_functions.c
+2015/09/01: fixed a bug in cce_functions.c
+                  add some contents to the examples of cce

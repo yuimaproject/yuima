@@ -11,7 +11,7 @@ void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse, in
       /*while((ztime[k]<=grid[i])&&(k<*n)){*/
       for(k = 1; k < *n; k++){
         /*k++;*/
-        if(ztime[k] <= grid[i]){
+        if(ztime[k] > grid[i]){
           break;
         }
       }
