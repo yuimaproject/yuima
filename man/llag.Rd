@@ -5,21 +5,39 @@
 \description{Estimate the lead-lag parameters of discretely observed processes by maximizing the shifted Hayashi-Yoshida covariation contrast functions, following Hoffmann et al. (2013).
 }
 \usage{
-llag(x,from=-Inf,to=Inf,division=FALSE,verbose=FALSE,grid,psd=TRUE,
-     plot=FALSE,ccor=FALSE)
+llag(x, from = -Inf, to = Inf, division = FALSE, verbose = (ci || ccor), 
+     grid, psd = TRUE, plot = ci, ccor = ci, ci = FALSE, alpha = 0.01, 
+     fisher = TRUE, bw)
 }
 \arguments{
-  \item{x}{an object of  \code{\link{yuima-class}} or
-	\code{\link{yuima.data-class}}.}
-  \item{verbose}{whether \code{llag} returns matrices or not.}
+
+\item{x}{an object of  \code{\link{yuima-class}} or \code{\link{yuima.data-class}}.}
+
+\item{verbose}{whether \code{llag} returns matrices or not. The default is \code{FALSE}.}
+
 \item{from}{a numeric vector each of whose component(s) indicates the lower end of a finite grid on which the contrast function is evaluated, if \code{grid} is missing.}
+
 \item{to}{a numeric vector each of whose component(s) indicates the upper end of a finite grid on which the contrast function is evaluated, if \code{grid} is missing.}
+
 \item{division}{a numeric vector each of whose component(s) indicates the number of the points of a finite grid on which the contrast function is evaluated, if \code{grid} is missing.}
-\item{grid}{a numeric vector or a list of numeric vectors. See `Details'.}
-\item{psd}{logical. If \code{TRUE}, the estimated cross-correlation functions are converted to the interval [-1,1]. See `Details'.}
-\item{plot}{logical. If \code{TRUE}, the estimated cross-correlation functions are plotted.}
-\item{ccor}{logical. If \code{TRUE}, the estimated cross-correlation functions are returned. This argument is ignored if \code{verbose} is \code{FALSE}.}
+
+\item{grid}{a numeric vector or a list of numeric vectors. See 'Details'.}
+
+\item{psd}{logical. If \code{TRUE}, the estimated cross-correlation functions are converted to the interval [-1,1]. See 'Details'.}
+
+\item{plot}{logical. If \code{TRUE}, the estimated cross-correlation functions are plotted. If \code{ci} is also \code{TRUE}, the pointwise confidence intervals (under the null hypothesis that the corresponding correlation is zero) are also plotted. The default is \code{FALSE}.}
+
+\item{ccor}{logical. If \code{TRUE}, the estimated cross-correlation functions are returned. This argument is ignored if \code{verbose} is \code{FALSE}. The default is \code{FALSE}.}
+
+\item{ci}{logical. If \code{TRUE}, (pointwise) confidence intervals of the estimated cross-correlation functions and p-values for the significance of the correlations at the estimated lead-lag parameters are calculated. Note that the confidence intervals are only plotted when \code{plot=TRUE}.}
+
+\item{alpha}{a posive number indicating the significance level of the confidence intervals for the cross-correlation functions.}
+
+\item{fisher}{logical. If \code{TRUE}, the p-values and the confidence intervals for the cross-correlation functions is evaluated after applying the Fisher z transformation. This argument is only meaningful if \code{pval = "corr"}.}
+
+\item{bw}{bandwidth parameter to compute the asymptotic variances. See 'Details' and \code{\link{hyavar}} for details.}
 }
+
 \details{
 Let \eqn{d} be the number of the components of the \code{zoo.data} of the object \code{x}.
 
@@ -27,7 +45,7 @@ Let \eqn{Xi_{ti_0},Xi_{ti_1},\dots,Xi_{ti_n(i)}} be the observation data of the 
 
 The shifted Hayashi-Yoshida covariation contrast function \eqn{Uij(\theta)} of the observations \eqn{Xi} and \eqn{Xj} \eqn{(i<j)} is defined by the same way as in Hoffmann et al. (2013), which corresponds to their cross-covariance function. The lead-lag parameter \eqn{\theta_ij} is defined as a maximizer of \eqn{|Uij(\theta)|}. \eqn{Uij(\theta)} is evaluated on a finite grid \eqn{Gij} defined below. Thus \eqn{\theta_ij} belongs to this grid. If there exist more than two maximizers, the lowest one is selected.
 
-If \code{psd} is \code{TRUE}, For any \eqn{i,j} the matrix \eqn{C:=(Ukl(\theta))_{k,l\in{i,j}}} is converted to \code{(C\%*\%C)^(1/2)} for ensuring the positive semi-definiteness, and \eqn{Uij(\theta)} is redefined as the \eqn{(1,2)}-component of the converted \eqn{C}. Here, \eqn{Ukk(\theta)} is set to the realized volatility of \eqn{Xk}. In this case \eqn{\theta_ij} is given as a maximizer of the cross-correlation functions.
+If \code{psd} is \code{TRUE}, for any \eqn{i,j} the matrix \eqn{C:=(Ukl(\theta))_{k,l\in{i,j}}} is converted to \code{(C\%*\%C)^(1/2)} for ensuring the positive semi-definiteness, and \eqn{Uij(\theta)} is redefined as the \eqn{(1,2)}-component of the converted \eqn{C}. Here, \eqn{Ukk(\theta)} is set to the realized volatility of \eqn{Xk}. In this case \eqn{\theta_ij} is given as a maximizer of the cross-correlation functions.
 
 The grid \eqn{Gij} is defined as follows. First, if \code{grid} is missing, \eqn{Gij} is given by  
 \deqn{a, a+(b-a)/(N-1), \dots, a+(N-2)(b-a)/(N-1), b,}
@@ -35,21 +53,45 @@ where \eqn{a,b} and \eqn{N} are the \eqn{(d(i-1)-(i-1)i/2+(j-i))}-th components 
 
 The estimated lead-lag parameters are returned as the skew-symmetric matrix \eqn{(\theta_ij)_{i,j=1,\dots,d}}. If \code{verbose} is \code{TRUE}, the covariance matrix \eqn{(Uij(\theta_ij))_{i,j=1,\dots,d}} corresponding to the estimated lead-lag parameters, the corresponding correlation matrix and the computed contrast functions are also returned. If further \code{ccor} is \code{TRUE},the computed cross-correlation functions are returned as a list with the length \eqn{d(d-1)/2}. For \eqn{i<j}, the \eqn{(d(i-1)-(i-1)i/2+(j-i))}-th component of the list consists of an object \eqn{Uij(\theta)/sqrt(Uii(\theta)*Ujj(\theta))} of class \link{zoo} indexed by \eqn{Gij}.
 
-If \code{plot} is \code{TRUE}, the computed cross-correlation functions are plotted sequentially.}
+If \code{plot} is \code{TRUE}, the computed cross-correlation functions are plotted sequentially.
+
+If \code{ci} is \code{TRUE}, the asymptotic variances of the cross-correlations are calculated at each point of the grid by using the naive kernel approach descrived in Section 8.2 of Hayashi and Yoshida (2011). The implementation is the same as that of \code{\link{hyavar}} and more detailed description is found there.
+}
+
 \value{
-If \code{verbose} is \code{FALSE}, a skew-symmetric matrix corresponding to the estimated lead-lag parameters is returned. If \code{verbose} is \code{TRUE}, a list with the following components is returned:
+If \code{verbose} is \code{FALSE}, a skew-symmetric matrix corresponding to the estimated lead-lag parameters is returned. 
+Otherwise, an object of class \code{"yuima.llag"}, which is a list with the following components, is returned:
 \item{lagcce}{a skew-symmetric matrix corresponding to the estimated lead-lag parameters.}
 \item{covmat}{a covariance matrix corresponding to the estimated lead-lag parameters.}
 \item{cormat}{a correlation matrix corresponding to the estimated lead-lag parameters.}
-If further \code{ccor} is \code{TRUE}, the following component is added to the returned list:
+\item{LLR}{a matrix consisting of lead-lag ratios. See Huth and Abergel (2014) for details.}
+
+If \code{ci} is \code{TRUE}, the following component is added to the returned list:
+\item{p.values}{a matrix of p-values for the significance of the correlations corresponding to the estimated lead-lag parameters.}
+
+If further \code{ccor} is \code{TRUE}, the following components are added to the returned list:
 \item{ccor}{a list of computed cross-correlation functions.}
+\item{avar}{a list of computed asymptotic variances of the cross-correlations (if \code{ci = TRUE}).}
 }
-%\note{TBA
-%}
+
+\note{
+The default \code{grid} usually contains too many points, so it is better for users to specify this argument in order to reduce the computational time. See 'Examples' below for an example of the specification.
+
+The evaluated p-values should carefully be interpreted because they are calculated based on \emph{pointwise confidence intervals} rather than \emph{simultaneous confidence intervals} (so there would be a multiple testing problem). Evaluation of p-values based on the latter will be implemented in the future extension of this function: Indeed, so far no theory has been developed for this. However, it is conjectured that the error distributions of the estimated cross-correlation functions are asymptotically independent if the grid is not dense too much, so p-values evaluated by this function will still be meaningful as long as sufficiently low significance levels are used.
+}
+
 \references{
+Hayashi, T. and Yoshida, N. (2011)
+  Nonsynchronous covariation process and limit theorems,
+  \emph{Stochastic processes and their applications}, \bold{121}, 2416--2454.
+  
 Hoffmann, M., Rosenbaum, M. and Yoshida, N. (2013)
   Estimation of the lead-lag parameter from non-synchronous data, 
   \emph{Bernoulli}, \bold{19}, no. 2, 426--461.
+  
+Huth, N. and Abergel, F. (2014)
+  High frequency lead/lag relationships --- Empirical facts,
+  \emph{Journal of Empirical Finance}, \bold{26}, 41--58.
 }
 \author{The YUIMA Project Team}
 \examples{
@@ -66,12 +108,12 @@ cor.mod <- setModel(drift = drift,
 set.seed(111) 
 
 ## We use a function poisson.random.sampling 
-# to get observation by Poisson sampling.
+## to get observation by Poisson sampling.
 yuima.samp <- setSampling(Terminal = 1, n = 1200) 
 yuima <- setYuima(model = cor.mod, sampling = yuima.samp) 
 yuima <- simulate(yuima,xinit=c(1,7,5)) 
 
-# intentionally displace the second time series
+## intentionally displace the second time series
 
   data2 <- yuima@data@zoo.data[[2]]
   time2 <- time(data2)
@@ -88,25 +130,53 @@ yuima <- simulate(yuima,xinit=c(1,7,5))
 
 
 
-#sampled data by Poisson rules
+## sampled data by Poisson rules
 psample<- poisson.random.sampling(yuima, 
  rate = c(0.2,0.3,0.4), n = 1000) 
 
 
-# plot
+## plot
 plot(psample)
 
 
-#cce
+## cce
 cce(psample)
 
-#lead-lag estimation (with cross-correlation plots)
+## lead-lag estimation (with cross-correlation plots)
 par(mfcol=c(3,1))
-result <- llag(psample,verbose=TRUE,plot=TRUE)
+result <- llag(psample, plot=TRUE)
 
-#estimated lead-lag parameter
-result$lagcce
+## estimated lead-lag parameter
+result
+
+## computing pointwise confidence intervals
+llag(psample, ci = TRUE)
+
+## In practice, it is better to specify the grid because the default grid contains too many points.
+## Here we give an example for how to specify it.
+
+## We search lead-lag parameters on the interval [-0.1, 0.1] with step size 0.01 
+G <- seq(-0.1,0.1,by=0.01)
+
+## lead-lag estimation (with computing confidence intervals)
+result <- llag(psample, grid = G, ci = TRUE)
+
+## Since the true lead-lag parameter 0.12 between x1 and x3 is not contained
+## in the searching grid G, we see that the corresponding cross-correlation 
+## does not exceed the cofidence interval
+
+## detailed output
+## the p-value for the (1,3)-th component is high
+result
+
+## Finally, we can examine confidence intervals of other significant levels
+## and/or without the Fisher z-transformation via the plot-method defined 
+## for yuima.llag-class objects as follows
+plot(result, alpha = 0.001)
+plot(result, fisher = FALSE)
+
+par(mfcol=c(1,1))
 
 }
-\seealso{\link{cce}}
+\seealso{\code{\link{cce}}, \code{\link{hyavar}}, \code{\link{mllag}}}
 \keyword{ts}

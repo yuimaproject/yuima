@@ -1,6 +1,6 @@
 \name{noisy.sampling}
 \alias{noisy.sampling}
-\alias{noisy.sampling,list-method}
+%\alias{noisy.sampling,list-method}
 \alias{noisy.sampling,yuima-method}
 \alias{noisy.sampling,yuima.data-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -57,7 +57,7 @@ a list indicating other sources of noise processes. The default value is \code{a
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
-TBA
+This function simulates microstructure noise and adds it to the path of \code{x}. Currently, this function can deal with Kalnina and Linton (2011) type microstructure noise. See 'Examples' below for more details.
 }
 \value{
 %%  ~Describe the value returned
@@ -68,6 +68,12 @@ TBA
 an object of \code{\link{yuima.data-class}}.
 }
 
+\references{
+%% ~put references to the literature/web site here ~
+Kalnina, I. and Linton, O. (2011)
+  Estimating quadratic variation consistently in the presence of endogenous and diurnal measurement error,
+  \emph{Journal of Econometrics}, \bold{147}, 47--59.
+}
 
 \author{
 %%  ~~who you are~~
@@ -81,7 +87,7 @@ The YUIMA Project Team
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\link{cce}
+\link{cce}, \link{lmm}
 }
 \examples{
 ## Set a model (a two-dimensional normal model sampled by a Poisson random sampling)

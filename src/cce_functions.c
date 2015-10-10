@@ -528,3 +528,189 @@ void hyavar(double *xtime, double *ytime, int *xlength, int *ylength,
     
 }
 
+
+void hycrossavar(double *grid, double *xtime, double *ytime, int *gridL, int *xlength, int *ylength, double *x, double *y,
+                 int *N, double *h, double *v1, double *v2, double *d11, double *d22, double *d12,
+                 double * d23, double *d31, double *covar, double *corr)
+{
+    int I, mu0, w0, i, L, m, j, k;
+    double dSigma11, dSigma12, dSigma22, avar1, avar2, avar3, avar4;
+    int mu[*N], w[*N], q[*N], r[*N];
+    double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N], dS2[*N], dxdy[*N], tmptime[*ylength];
+    
+    for (k = 0; k < *gridL; k++) {
+        
+        for(j = 0; j < *ylength; j++){
+            tmptime[j] = round(ytime[j] + grid[k]);
+        }
+        
+        Sigma11[0] = 0; Sigma12[0] = 0; Sigma22[0] = 0;
+        
+        if(xtime[0] < tmptime[0]){
+            rtimes[0] = tmptime[0];
+            I = 0;
+            while(xtime[I] < tmptime[0]){
+                I++;
+                if(I >= (*xlength-1)){
+                    break;
+                }
+            }
+            mu0 = I;
+            if(tmptime[0] < xtime[mu0]){
+                q[0] = mu0;
+            }else{
+                q[0] = mu0 + 1;
+            }
+            r[0] = 1;
+        }else if(xtime[0] > tmptime[0]){
+            rtimes[0] = xtime[0];
+            I = 0;
+            while(xtime[0] > tmptime[I]){
+                I++;
+                if(I >= (*ylength-1)){
+                    break;
+                }
+            }
+            w0 = I;
+            q[0] = 1;
+            if(xtime[0] < tmptime[w0]){
+                r[0] = w0;
+            }else{
+                r[0] = w0 + 1;
+            }
+        }else{
+            rtimes[0] = xtime[0];
+            q[0] = 1;
+            r[0] = 1;
+        }
+        
+        for(i = 0; (q[i] < (*xlength - 1)) && (r[i] < (*ylength - 1)); i++) {
+            H1[i] = 0; H2[i] = 0; H12[i] = 0; H3[i] = 0;
+            if(xtime[q[i]] < tmptime[r[i]]){
+                /*if(xtime[*xlength - 1] < tmptime[r[i]]){*/
+                if(xtime[*xlength - 2] < tmptime[r[i]]){
+                    break;
+                }
+                Sigma22[i] += pow(y[r[i]] - y[r[i] - 1], 2);
+                H2[i] = pow(tmptime[r[i]] - tmptime[r[i] - 1], 2);
+                I = q[i];
+                while(xtime[I] < tmptime[r[i]]){
+                    Sigma11[i] += pow(x[I] - x[I - 1], 2);
+                    H1[i] += pow(xtime[I] - xtime[I - 1], 2);
+                    I++;
+                }
+                mu[i] = I;
+                w[i] = r[i];
+                r[i+1] = r[i] + 1;
+                if(tmptime[r[i]] < xtime[mu[i]]){
+                    q[i+1] = mu[i];
+                }else{
+                    q[i+1] = mu[i] + 1;
+                    Sigma11[i] += pow(x[mu[i]] - x[mu[i] - 1], 2);
+                    H1[i] += pow(xtime[mu[i]] - xtime[mu[i] - 1], 2);
+                }
+                H12[i] = H1[i] - pow(xtime[q[i]] - xtime[q[i] - 1], 2) + pow(xtime[q[i]] - rtimes[i], 2);
+            }else if(xtime[q[i]] > tmptime[r[i]]){
+                /*if(xtime[q[i]] > tmptime[*ylength - 1]){*/
+                if(xtime[q[i]] > tmptime[*ylength - 2]){
+                    break;
+                }
+                Sigma11[i] += pow(x[q[i]] - x[q[i] - 1], 2);
+                H1[i] = pow(xtime[q[i]] - xtime[q[i] - 1], 2);
+                mu[i] = q[i];
+                I = r[i];
+                while(xtime[q[i]] > tmptime[I]){
+                    Sigma22[i] += pow(y[I] - y[I - 1], 2);
+                    H2[i] += pow(tmptime[I] - tmptime[I - 1], 2);
+                    I++;
+                }
+                w[i] = I;
+                q[i+1] = q[i] + 1;
+                if(xtime[q[i]] < tmptime[w[i]]){
+                    r[i+1] = w[i];
+                }else{
+                    r[i+1] = w[i] + 1;
+                    Sigma22[i] += pow(y[w[i]] - y[w[i] - 1], 2);
+                    H2[i] += pow(tmptime[w[i]] - tmptime[w[i] - 1], 2);
+                }
+                H12[i] = H2[i] - pow(tmptime[r[i]] - tmptime[r[i] - 1], 2) + pow(tmptime[r[i]] - rtimes[i], 2);
+            }else{
+                mu[i] = q[i];
+                w[i] = r[i];
+                q[i+1] = q[i] + 1;
+                r[i+1] = r[i] + 1;
+                Sigma11[i] += pow(x[q[i]] - x[q[i] - 1], 2);
+                Sigma22[i] += pow(y[r[i]] - y[r[i] - 1], 2);
+                H1[i] = pow(xtime[q[i]] - xtime[q[i] - 1], 2);
+                H2[i] = pow(tmptime[r[i]] - tmptime[r[i] - 1], 2);
+                H12[i] = pow(xtime[q[i]] - rtimes[i], 2);
+            }
+            
+            dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
+            Sigma12[i] += (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
+            H3[i] = (xtime[mu[i]] - xtime[q[i] - 1]) * (tmptime[w[i]] - tmptime[r[i] - 1]);
+            rtimes[i + 1] = fmin(xtime[mu[i]], tmptime[w[i]]);
+            dS2[i] = pow(rtimes[i + 1] - rtimes[i], 2);
+            
+            Sigma11[i + 1] = Sigma11[i];
+            Sigma22[i + 1] = Sigma22[i];
+            Sigma12[i + 1] = Sigma12[i];
+            
+        }
+        
+        mu[i] = q[i];
+        w[i] = r[i];
+        dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
+        
+        L = 0;
+        avar1 = 0; avar2 = 0; avar3 = 0; avar4 = 0;
+        
+        for(m = 0; m < (i - 1); m++){
+            
+            while(rtimes[L + 1] <= (rtimes[m + 1] - *h)){
+                L++;
+            }
+            
+            dSigma11 = (Sigma11[m] - Sigma11[L])/(*h);
+            dSigma12 = (Sigma12[m] - Sigma12[L])/(*h);
+            dSigma22 = (Sigma22[m] - Sigma22[L])/(*h);
+            
+            /*result[0] += dxdy[m] * (dxdy[m] + 2 * dxdy[m + 1]) - 2 * dSigma12 * dSigma12 * dS2[m];*/
+            avar1 += dSigma11 * dSigma22 * H3[m] + dSigma12 * dSigma12 * (H1[m] + H2[m] - H12[m]);
+            avar2 += 2 * dSigma11 * dSigma12 * H1[m];
+            avar3 += 2 * dSigma12 * dSigma22 * H2[m];
+            avar4 += 2 * dSigma12 * dSigma12 * H12[m];
+            
+        }
+        
+        covar[k] = avar1;
+        
+        corr[k] = (*v1) * d11[k] + avar1 + (*v2) * d22[k] + avar2 * d12[k] + avar3 * d23[k] + avar4 * d31[k];
+        
+    }
+    
+}
+
+
+void krprod(double *X, int *nrow, int *ncol, double *result)
+{
+    int i, j, k, tmpcol;
+    
+    for (k = 0; k < *ncol; k++) {
+        
+        tmpcol = k * (*nrow);
+        
+        for (i = 0; i < *nrow; i++) {
+            
+            for (j = i; j < *nrow; j++) {
+                
+                result[tmpcol * (*nrow) + i * (*nrow) + j] = X[tmpcol + i] * X[tmpcol + j];
+                result[tmpcol * (*nrow) + j * (*nrow) + i] = result[tmpcol * (*nrow) + i * (*nrow) + j];
+                
+            }
+            
+        }
+        
+    }
+    
+}

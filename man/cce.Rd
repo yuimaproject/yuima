@@ -1,6 +1,6 @@
 \name{cce}
 \alias{cce}
-\alias{cce,list-method}
+%\alias{cce,list-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
@@ -313,7 +313,7 @@ The second-order correction will be provided in a future version of the package.
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{setModel}}, \code{\link{setData}}, \code{\link{hyavar}}
+\code{\link{setModel}}, \code{\link{setData}}, \code{\link{hyavar}}, \code{\link{lmm}}
 }
 \examples{
 ## Set a model
@@ -408,20 +408,26 @@ model <- setModel(drift=drift,diffusion=diffusion,
 ## Generate a path of the latent process
 set.seed(116)
 
-## We regard the unit interval as 6.5 hours and generate the path on it with the step size equal to 2 seconds
+## We regard the unit interval as 6.5 hours and generate the path on it 
+## with the step size equal to 2 seconds
 
 yuima.samp <- setSampling(Terminal = 1, n = 11700) 
 yuima <- setYuima(model = model, sampling = yuima.samp) 
 yuima <- simulate(yuima)
 
-## We extract nonsynchronous observations from the path generated above by Poisson random sampling with the average duration equal to 10 seconds
+## We extract nonsynchronous observations from the path generated above 
+## by Poisson random sampling with the average duration equal to 10 seconds
 
 psample <- poisson.random.sampling(yuima, rate = c(1/5,1/5), n = 11700)
 
 ## Hayashi-Yoshida estimator consistetly estimates the true correlation
 cce(psample)$cormat[1,2]
 
-## If we synchronize the observation data on some regular grid by previous-tick interpolations and compute the correlation by therealized covariance based on such synchronized observations, we underestimate the true correlation (known as the Epps effect). This is illustrated by the following examples.
+## If we synchronize the observation data on some regular grid 
+## by previous-tick interpolations and compute the correlation 
+## by therealized covariance based on such synchronized observations, 
+## we underestimate the true correlation (known as the Epps effect). 
+## This is illustrated by the following examples.
 
 ## Synchronization on the grid with 5 seconds steps
 suppressWarnings(s1 <- cce(subsampling(psample, sampling = setSampling(n = 4680)))$cormat[1,2])
@@ -443,11 +449,12 @@ s4
 suppressWarnings(s5 <- cce(subsampling(psample, sampling = setSampling(n = 390)))$cormat[1,2])
 s5
 
-plot(zoo(c(s1,s2,s3,s4,s5),c(5,10,20,30,60)),type="b",xlab="seconds",ylab="correlation",main = "Epps effect for the realized covariance")
+plot(zoo(c(s1,s2,s3,s4,s5),c(5,10,20,30,60)),type="b",xlab="seconds",ylab="correlation",
+main = "Epps effect for the realized covariance")
 
 
 
-# Example. Non-synchronous and noisy observations of a correlated Brownian motions
+# Example. Non-synchronous and noisy observations of a correlated bivariate Brownian motion
 
 ## Generate noisy observations from the model used in the previous example
 Omega <- 0.005*matrix(c(1,rho,rho,1),2,2) # covariance matrix of noise

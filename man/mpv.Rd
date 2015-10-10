@@ -1,6 +1,6 @@
 \name{mpv}
 \alias{mpv}
-\alias{mpv,list-method}
+%\alias{mpv,list-method}
 \alias{mpv,yuima-method}
 \alias{mpv,yuima.data-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -37,7 +37,7 @@ When \eqn{r} is a \eqn{k}-dimensional vector of non-negative numbers, \code{mpv(
 \deqn{\mu_{r[1]}^{-1}\cdots\mu_{r[k]}^{-1}n^{\frac{r[1]+\cdots+r[k]}{2}-1}\sum_{j=1}^{n-k+1}|\Delta X^i_{t_{j}}|^{r[1]}|\Delta X^i_{t_{j+1}}|^{r[2]}\cdots|\Delta X^i_{t_{j+k-1}}|^{r[k]},}
 where \eqn{\mu_p} is the p-th absolute moment of the standard normal distribution and \eqn{\Delta X^i_{t_{j}}=X^i_{t_j}-X^i_{t_{j-1}}}. If \code{normalize} is \code{FALSE} the result is not multiplied by \eqn{\mu_{r[1]}^{-1}\cdots\mu_{r[k]}^{-1}}.
 
-When \eqn{r} is a list of vectors of non-negative numbers, \code{mpv(yuima,r,normalize=FALSE)} is defined as the \code{d}-dimensional vector with \code{i}-th element equal to
+When \eqn{r} is a list of vectors of non-negative numbers, \code{mpv(yuima,r,normalize=TRUE)} is defined as the \code{d}-dimensional vector with \code{i}-th element equal to
 \deqn{\mu_{r^i_1}^{-1}\cdots\mu_{r^i_{k_i}}^{-1}n^{\frac{r^i_1+\cdots+r^i_{k_i}}{2}-1}\sum_{j=1}^{n-k_i+1}|\Delta X^i_{t_{j}}|^{r^i_1}|\Delta X^i_{t_{j+1}}|^{r^i_2}\cdots|\Delta X^i_{t_{j+k_i-1}}|^{r^i_{k_i}},}
 where \eqn{r^i_1,\dots,r^i_{k_i}} is the \code{i}-th component of \code{r}. If \code{normalize} is \code{FALSE} the result is not multiplied by \eqn{\mu_{r^i_1}^{-1}\cdots\mu_{r^i_{k_i}}^{-1}}.
 }

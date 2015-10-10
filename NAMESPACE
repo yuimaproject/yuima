@@ -130,6 +130,8 @@ export(noisy.sampling)
 export(mpv)
 export(bns.test)
 export(hyavar) # asymptotic variance estimator for the Hayashi-Yoshida estimator
+export(lmm) # Oct. 10, 2015: local methods of moment estimator
+export(mllag) # Oct. 10, 2015: multiple lead-lag detector
 
 export(get.zoo.data)
 
@@ -177,11 +179,18 @@ S3method(print, phitest)
 S3method(print, qgv)
 S3method(print, mmfrac)
 S3method(print, yuima.lasso)
+S3method(print, yuima.llag) # Oct. 10, 2015
+S3method(print, yuima.mllag) # Oct. 10, 2015
+S3method(print, yuima.specv) # Oct. 10, 2015
+
 
 S3method(toLatex, yuima)
 S3method(toLatex, yuima.model)
 S3method(toLatex, yuima.carma)
 S3method(toLatex, yuima.cogarch)
+
+S3method(plot, yuima.llag) # Oct. 10, 2015
+S3method(plot, yuima.mllag) # Oct. 10, 2015
 
 useDynLib(yuima)
 
