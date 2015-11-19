@@ -7,10 +7,12 @@
 %\alias{ml.ql2}
 \alias{rql}
 \alias{lse}
-%\alias{ql,ANY-method} 
-%\alias{ml.ql,ANY-method} 
-%\alias{ml.ql2,ANY-method} 
-%\alias{rql,ANY-method} 
+\alias{pseudologlikelihood}
+\alias{pseudologlikelihood.COGARCH}
+%\alias{ql,ANY-method}
+%\alias{ml.ql,ANY-method}
+%\alias{ml.ql2,ANY-method}
+%\alias{rql,ANY-method}
 \title{Calculate quasi-likelihood and ML estimator of least squares estimator}
 \description{Calculate the quasi-likelihood and estimate of the parameters of the
   stochastic differential equation by the maximum likelihood method or least squares estimator
@@ -19,7 +21,7 @@
 %ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
-qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper, 
+qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper,
  joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, threshold=NULL, ...)
 quasilogl(yuima, param, print=FALSE)
 lse(yuima, start, lower, upper, method = "BFGS", ...)
@@ -52,35 +54,40 @@ lse(yuima, start, lower, upper, method = "BFGS", ...)
 %   parameters. A function ml.pl estimates parameters of the sdeModel by
 %   maximizing the quasi-likelihood.
   \code{qmle} behaves more likely the standard \code{mle} function in \pkg{stats4} and
-  argument \code{method} is one of the methods available in \code{\link{optim}}. 
+  argument \code{method} is one of the methods available in \code{\link{optim}}.
 
   \code{lse} calculates least squares estimators of the drift parameters. This is
   useful for initial guess of \code{qmle} estimation.
-  
+
   \code{quasilogl} returns the valueof the  quasi loglikelihood for a given
   \code{yuima} object and list of parameters \code{coef}.
-  
+
 }
 \value{
   \item{QL}{a real value.}
   \item{opt}{a list with components the same as 'optim' function.}
   \item{carmaopt}{if the model is an object of \code{\link{yuima.carma-class}}, \code{qmle} returns an object \code{\link{yuima.carma.qmle-class}}}
+  \item{cogarchopt}{if the model is an object of \code{\link{yuima.cogarch-class}}, \code{qmle} returns an object of class \code{\link{cogarch.gmm-class}}. The estimates are obtained by  maximizing the pseudo-loglikelihood function as shown in Iacus et al. (2015)}
 }
+\references{
+Iacus S. M., Mercuri L. and Rroji E.(2015) Discrete time approximation of a COGARCH (p, q) model and its estimation. \href{http://arxiv.org/abs/1511.00253}{http://arxiv.org/abs/1511.00253}
+}
+
 \author{The YUIMA Project Team}
 \note{
   %The function ml.ql uses the function optim internally.
   The function qmle uses the function optim internally.
-  
+
   The function qmle uses the function \code{\link{CarmaNoise}} internally for estimation of underlying Levy if the model is an object of \code{\link{yuima.carma-class}}.
 }
 \examples{
 #dXt^e = -theta2 * Xt^e * dt + theta1 * dWt
 diff.matrix <- matrix(c("theta1"), 1, 1)
-ymodel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix, 
+ymodel <- setModel(drift=c("(-1)*theta2*x"), diffusion=diff.matrix,
   time.variable="t", state.variable="x", solve.variable="x")
 n <- 100
 
-ysamp <- setSampling(Terminal=(n)^(1/3), n=n) 
+ysamp <- setSampling(Terminal=(n)^(1/3), n=n)
 yuima <- setYuima(model=ymodel, sampling=ysamp)
 set.seed(123)
 yuima <- simulate(yuima, xinit=1, true.parameter=list(theta1=0.3,
@@ -104,7 +111,7 @@ QL
 
 
 system.time(
-opt2 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=0,theta2=0), 
+opt2 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=0,theta2=0),
  upper=list(theta1=1,theta2=1), method="L-BFGS-B")
 )
 cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
@@ -115,7 +122,7 @@ tmp <- lse(yuima, start=list(theta2=0.7), lower=list(theta2=0), upper=list(theta
 tmp
 
 system.time(
-opt3 <- qmle(yuima, start=list(theta1=0.8, theta2=tmp), lower=list(theta1=0,theta2=0), 
+opt3 <- qmle(yuima, start=list(theta1=0.8, theta2=tmp), lower=list(theta1=0,theta2=0),
  upper=list(theta1=1,theta2=1), method="L-BFGS-B")
 )
 cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
@@ -124,7 +131,7 @@ print(coef(opt3))
 
 ## perform joint estimation? Non-optimal, just for didactic purposes
 system.time(
-opt4 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=0,theta2=0), 
+opt4 <- qmle(yuima, start=list(theta1=0.8, theta2=0.7), lower=list(theta1=0,theta2=0),
  upper=list(theta1=1,theta2=1), method="L-BFGS-B", joint=TRUE)
 )
 cat(sprintf("\nTrue param. theta2 = .3, theta1 = .1\n"))
@@ -155,7 +162,7 @@ yuima <- setYuima(model=ymodel, sampling=ysamp)
 set.seed(123)
 
 ##xinit=c(x1, x2) #true.parameter=c(theta2.1, theta2.2, theta1.1, theta1.2)
-yuima <- simulate(yuima, xinit=c(1, 1), 
+yuima <- simulate(yuima, xinit=c(1, 1),
 true.parameter=list(theta2.1=0.5, theta2.2=0.3, theta1.1=0.6, theta1.2=0.2))
 
 ## theta2 <- c(0.8, 0.2) #c(theta2.1, theta2.2)
@@ -207,9 +214,9 @@ quasilogl(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0
 # carma(p=2,q=0) driven by a brownian motion without location parameter
 
 
-mod0<-setCarma(p=2,                
+mod0<-setCarma(p=2,
                q=0,
-               scale.par="sigma") 
+               scale.par="sigma")
 
 true.parm0 <-list(a1=1.39631,
                  a2=0.05029,
@@ -223,7 +230,7 @@ sim0<-simulate(mod0,
                sampling=samp0)
 
 system.time(
-carmaopt0 <- qmle(sim0, start=list(a1=1.39631,a2=0.05029, 
+carmaopt0 <- qmle(sim0, start=list(a1=1.39631,a2=0.05029,
                               b0=1,
                                sigma=0.23))
 )
@@ -236,8 +243,8 @@ summary(carmaopt0)
 
 # carma(p=2,q=1) driven by a brownian motion without location parameter
 
-mod1<-setCarma(p=2,                
-               q=1) 
+mod1<-setCarma(p=2,
+               q=1)
 
 true.parm1 <-list(a1=1.39631,
                   a2=0.05029,
@@ -251,7 +258,7 @@ sim1<-simulate(mod1,
                sampling=samp1)
 
 system.time(
-  carmaopt1 <- qmle(sim1, start=list(a1=1.39631,a2=0.05029, 
+  carmaopt1 <- qmle(sim1, start=list(a1=1.39631,a2=0.05029,
                                      b0=1,b1=2),joint=TRUE)
 )
 
@@ -261,10 +268,10 @@ plot(carmaopt1)
 
 # carma(p=2,q=1) driven by a compound poisson process where the jump size is normally distributed.
 
-mod2<-setCarma(p=2,                
+mod2<-setCarma(p=2,
                q=1,
                measure=list(intensity="1",df=list("dnorm(z, 0, 1)")),
-               measure.type="CP") 
+               measure.type="CP")
 
 true.parm2 <-list(a1=1.39631,
                   a2=0.05029,
@@ -278,7 +285,7 @@ sim2<-simulate(mod2,
                sampling=samp2)
 
 system.time(
-  carmaopt2 <- qmle(sim2, start=list(a1=1.39631,a2=0.05029, 
+  carmaopt2 <- qmle(sim2, start=list(a1=1.39631,a2=0.05029,
                                      b0=1,b1=2),joint=TRUE)
 )
 
@@ -315,6 +322,105 @@ carmaopt3<-qmle(sim3,start=true.param3)
 summary(carmaopt3)
 
 plot(carmaopt3)
+
+# Simulation and Estimation of COGARCH(1,1) with CP driven noise
+
+# Model parameters
+eta<-0.053
+b1 <- eta
+beta <- 0.04
+a0 <- beta/b1
+phi<- 0.038
+a1 <- phi
+
+
+# Definition
+
+cog11<-setCogarch(p = 1,q = 1,
+  measure = list(intensity = "1",
+                 df = list("dnorm(z, 0, 1)")),
+  measure.type = "CP",
+  XinExpr=TRUE)
+
+# Parameter
+paramCP11 <- list(a1 = a1, b1 =  b1,
+                  a0 = a0, y01 = 50.31)
+# Sampling scheme
+samp11 <- setSampling(0, 3200, n=64000)
+
+# Simulation
+set.seed(125)
+
+SimTime11 <- system.time(
+  sim11 <- simulate(object = cog11,
+    true.parameter = paramCP11,
+    sampling = samp11,
+    method="mixed")
+)
+
+plot(sim11)
+
+# Estimation
+
+timeComp11<-system.time(
+  res11 <- qmle(yuima = sim11,
+    start = paramCP11,
+    grideq = TRUE,
+    method = "Nelder-Mead")
+)
+
+timeComp11
+
+unlist(paramCP11)
+
+coef(res11)
+
+# COGARCH(2,2) model driven by CP
+
+cog22 <- setCogarch(p = 2,q = 2,
+  measure = list(intensity = "1",
+                 df = list("dnorm(z, 0, 1)")),
+  measure.type = "CP",
+  XinExpr=TRUE)
+
+# Parameter
+
+paramCP22 <- list(a1 = 0.04, a2 = 0.001,
+  b1 =  0.705, b2 = 0.1, a0 = 0.1, y01 = (1 + 2 / 3),
+  y02=0)
+
+# Use diagnostic.cog for checking the stat and positivity
+
+check22 <- Diagnostic.Cogarch(cog22, param = paramCP22)
+
+# Sampling scheme
+
+samp22 <- setSampling(0, 3600, n = 64000)
+
+# Simulation
+
+set.seed(125)
+SimTime22 <- system.time(
+  sim22 <- simulate(object = cog22,
+    true.parameter = paramCP22,
+    sampling = samp22,
+    method = "Mixed")
+)
+
+plot(sim22)
+
+timeComp22 <- system.time(
+  res22 <- qmle(yuima = sim22,
+    start = paramCP22,
+    grideq=TRUE,
+    method = "Nelder-Mead")
+)
+
+timeComp22
+
+unlist(paramCP22)
+
+coef(res22)
 
 }
 }
