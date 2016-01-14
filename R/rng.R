@@ -1,7 +1,6 @@
 ##################################################################
 ######  "Random number generators and 
 ######          related density functions for yuima packages"
-######  (Last modified: Apr 2, 2015)
 ##################################################################
 
 
@@ -18,6 +17,31 @@ rbgamma <- function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
    stop("gamma.minus must be positive.")
  X <- rgamma(x,delta.plus,gamma.plus) - rgamma(x,delta.minus,gamma.minus)
  return(X)
+}
+
+# "dbgamma" by YU.
+dbgamma<-function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
+  ## Error check
+  if(length(delta.plus)!=1||length(gamma.plus)!=1||length(delta.minus)!=1||length(gamma.minus)!=1)
+  stop("All of the parameters are numeric.")
+  if(delta.plus<=0||gamma.plus<=0||delta.minus<=0||gamma.minus<=0)
+  stop("All of the parameters are positive.")
+  
+  ## On the positive line
+  funcp<-function(x,y){y^{delta.minus-1}*(x+y/(gamma.plus+gamma.minus))^{delta.plus-1}*exp(-y)}
+  intp<-function(x){integrate(funcp,lower=0,upper=Inf,x=x)$value}
+  intvecp<-function(x)sapply(x,intp)
+  densp<-gamma.plus^delta.plus*gamma.minus^delta.minus/((gamma.plus+gamma.minus)^delta.minus*gamma(delta.plus)*gamma(delta.minus))*exp(-gamma.plus*x)*intvecp(x)
+  
+  ## On the negative line
+  funcm<-function(x,y){y^{delta.plus-1}*(-x+y/(gamma.plus+gamma.minus))^{delta.minus-1}*exp(-y)}
+  intm<-function(x){integrate(funcm,lower=0,upper=Inf,x=x)$value}
+  intvecm<-function(x)sapply(x,intm)
+  densm<-gamma.plus^delta.plus*gamma.minus^delta.minus/((gamma.plus+gamma.minus)^delta.plus*gamma(delta.minus)*gamma(delta.plus))*exp(gamma.minus*x)*intvecm(x)
+
+  dens<-ifelse(0<=x,densp,densm)
+  dens
+  
 }
 
 
@@ -61,12 +85,14 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     if( nrow(Lambda)!=length(beta)){
       stop("Dimension of Lambda and beta must be equal.")
     }
-    if( sum(eigen(Lambda)$values <= 0 ) > 0){
+    
+    if( min(eigen(Lambda)$value) <= 10^(-15) ){
       stop("Lambda must be positive definite.")
     }
-    if( det(Lambda) < 10^(-15)){
-      stop("Determinant of Lambda must be one.")
+    if( det(Lambda) > 1+10^(-15) || det(Lambda) < 1-10^(-15) ){
+    	stop("The determinant of Lambda must be 1.")
     }
+
     tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
   
     if( lambda <= 0 )
@@ -88,58 +114,52 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
 }
 
 
-dngamma <- function(x,lam,al,be,mu){
-    if( lam <= 0 )
-	stop("lambda must be positive.")
-    if( al <= 0 )
-	stop("alpha must be positive.")
-    if( al^2 - be^2 <= 0 )
-	stop("alpha^2 - beta^2 must be positive.")
-	
-	dens <- exp(be*(x-mu))*((al^2 - be^2)^(lam))*besselK(al*abs(x-mu),lam-1/2)*abs(x-mu)^(lam-1/2)/(gamma(lam)*sqrt(pi)*((2*al)^(lam-1/2)))
-	dens
+dngamma <- function(x,lambda,alpha,beta,mu,Lambda){
+  ## Error check
+  if(length(lambda)!=1||length(alpha)!=1)
+    stop("alpha and lambda must be positive reals.")
+  if( lambda <= 0 )
+    stop("lambda must be positive.")
+  if( alpha <= 0 )
+    stop("alpha must be positive.")
+  if(length(mu)!=length(beta)){
+    stop("Error: wrong input dimension.")
+  }
+  if(missing(Lambda))
+    Lambda <- NA
+  if(is.na(Lambda)){
+    ## univariate case
+    if(length(mu)!=1 || length(beta)!=1){
+      stop("Error: wrong input dimension.")
+    }
+    if( alpha^2 - beta^2 <= 0 )
+      stop("alpha^2 - beta^2 must be positive.")
+    
+    dens <- exp(beta*(x-mu))*((alpha^2 - beta^2)^(lambda))*besselK(alpha*abs(x-mu),lambda-1/2)*abs(x-mu)^(lambda-1/2)/(gamma(lambda)*sqrt(pi)*((2*alpha)^(lambda-1/2)))
+    dens}
+  else{ ## multivariate case
+    if( nrow(Lambda)!=ncol(Lambda)){
+      stop("Lambda must be a square matrix.")
+    }
+    if( nrow(Lambda)!=length(beta)){
+      stop("Dimension of Lambda and beta must be equal.")
+    }
+    
+    if( min(eigen(Lambda)$value) <= 10^(-15) ){
+      stop("Lambda must be positive definite.")
+    }
+    if( det(Lambda) > 1+10^(-15) || det(Lambda) < 1-10^(-15) ){
+    	stop("The determinant of Lambda must be 1.")
+    }
+
+    tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
+    if( tmp <=0)
+      stop("alpha^2 - t(beta) %*% Lambda %*% must be positive.")
+    Lambdainv<-solve(Lambda)
+    dens<- exp(t(beta)%*%(x-mu))*(alpha^2-t(beta)%*%Lambda%*%beta)^(lambda)*besselK(alpha*sqrt(t(x-mu)%*%Lambdainv%*%(x-mu)),lambda-nrow(Lambda)/2)*sqrt(t(x-mu)%*%Lambdainv%*%(x-mu))^{lambda-nrow(Lambda)/2}/(gamma(lambda)*pi^{nrow(Lambda)/2}*2^{nrow(Lambda)/2+lambda-1}*alpha^{lambda-nrow(Lambda)/2})
+    dens
+  }
 }
-
-
-## ## One-dim. normal gamma
-## rngamma <- function(x,lambda,alpha,beta,mu){
-##   tmp <- alpha^2 - beta^2
-##   if( lambda <= 0 )
-##     stop("lambda must be positive value.")
-##   if( alpha <= 0 )
-##     stop("alpha must be positive value.")
-##   if( tmp <= 0 )
-##     stop("alpha^2 - beta^2*mu must be positive value.")
-## #  if( det(Lambda) != 1)
-## ##  if( Lambda !=1)
-## ##    stop("Determinant of Lambda must be one.")
-  
-##   tau <- rgamma(x,lambda,tmp/2)
-##   eta <- rnorm(x)
-## ##  z <- mu + beta * tau * Lambda + sqrt(tau * Lambda) * eta
-##   z <- mu + beta * tau + sqrt(tau) * eta
-##   X <- z
-##   return(X)
-## }
-
-## rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
-##   tmp <- alpha^2 - t(beta) %*% Lambda %*% beta
-##   if( lambda <= 0 )
-##     stop("lambda must be positive value.")
-##   if( alpha <= 0 )
-##     stop("alpha must be positive value.")
-##   if( tmp <= 0 )
-##     stop("alpha^2 - beta^2*mu must be positive value.")
-## #  if( det(Lambda) != 1)
-##   if( Lambda !=1)
-##     stop("Determinant of Lambda must be one.")
-  
-##   tau <- rgamma(x,lambda,tmp/2)
-##   eta <- rnorm(x)
-##   z <- mu + beta * tau * Lambda + sqrt(tau * Lambda) * eta
-##   X <- z
-##   return(X)
-## }
 
 
 ## Inverse Gaussian
@@ -176,7 +196,7 @@ dIG <- function(x,delta,gamma){
 
 ## (Multivariate) Normal inverse Gaussian
 
-rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
+rNIG <- function(x,alpha,beta,delta,mu,Lambda){
   ## Error check
   #print(match.call())
   if(length(mu)!=length(beta)){
@@ -204,9 +224,14 @@ rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
     return(X)
     
   }else{  ## multivariate case
-    if( det(Lambda) < 10^(-15)){
-      stop("Determinant of Lambda must be one.")
+  	
+	if( min(eigen(Lambda)$value) <= 10^(-15) ){
+      stop("Lambda must be positive definite.")
     }
+    if( det(Lambda) > 1+10^(-15) || det(Lambda) < 1-10^(-15) ){
+    	stop("The determinant of Lambda must be 1.")
+    }
+
     tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
     if(tmp <0){
       stop("alpha^2 - t(beta) %*% Lambda %*% beta must be nonnegative.")
@@ -226,18 +251,56 @@ rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0,Lambda){
 }
 
 
-dNIG <- function(x,al,be,de,mu){
-	if( al < 0 )
-	stop("alpha must be nonnegative.")
-    if( al^2 - be^2 < 0 )
-	stop("alpha^2 - beta^2 must be nonnegative.")
-    if( de <= 0 )
-	stop("delta must be positive.")
+dNIG <- function(x,alpha,beta,delta,mu,Lambda){
+  ## Error check
+  #print(match.call())
+  if(length(alpha)>1||length(delta)>1)
+    stop("alpha and delta must be positive reals.")
+  if(length(mu)!=length(beta)){
+    stop("Error: wrong input dimension.")
+  }
+  if( alpha < 0 )
+    stop("alpha must be nonnegative.")
+  if( delta <= 0 )
+    stop("delta must be positive.")
+  if(missing(Lambda))
+    Lambda <- NA
+  if(is.na(Lambda)){
+    #univraiate case
+    if(length(beta)>1||length(mu)>1)
+      stop("beta and mu must be numeric")
+    if( alpha^2 - beta^2 < 0 )
+      stop("alpha^2 - beta^2 must be nonnegative.")
+    dens <- alpha*delta*exp(delta*sqrt(alpha^{2}-beta^{2})+beta*(x-mu))*besselK(alpha*sqrt(delta^{2}+(x-mu)^{2}),1)/(pi*sqrt(delta^{2}+(x-mu)^{2}))
+    dens
+  }else{
+    #multivariate case
+    if( nrow(Lambda)!=ncol(Lambda)){
+      stop("Lambda must be a square matrix.")
+    }
+    if( nrow(Lambda)!=length(beta)){
+      stop("Dimension of Lambda and beta must be equal.")
+    }
+    if(nrow(Lambda)!=length(mu)){
+      stop("Dimension of Lambda and mu must be equal.")
+    }
 
-	dens <- al*de*exp(de*sqrt(al^{2}-be^{2})+be*(x-mu))*besselK(al*sqrt(de^{2}+(x-mu)^{2}),1)/(pi*sqrt(de^{2}+(x-mu)^{2}))
-	dens
+	if( min(eigen(Lambda)$value) <= 10^(-15) ){
+      stop("Lambda must be positive definite.")
+    }
+    if( det(Lambda) > 1+10^(-15) || det(Lambda) < 1-10^(-15) ){
+    	stop("The determinant of Lambda must be 1.")
+    }
+    
+    tmp<-alpha-t(beta)%*%Lambda%*%beta
+    if(tmp <0){
+      stop("alpha^2 - t(beta) %*% Lambda %*% beta must be nonnegative.")
+    }
+    Lambdainv<-solve(Lambda)
+    dens<- alpha^{(nrow(Lambda)+1)/2}*delta*exp(delta*sqrt(tmp)+t(beta)%*%(x-mu))*besselK(alpha*sqrt(delta^2+t(x-mu)%*%Lambdainv%*%(x-mu)),nrow(Lambda))/(2^{(nrow(Lambda)-1)/2}*pi^{(nrow(Lambda)+1)/2}*(sqrt(delta^2+t(x-mu)%*%Lambdainv%*%(x-mu)))^{(nrow(Lambda)+1)/2})
+    dens
+  }	
 }
-
 
 ## ## One-dim. NIG
 ## rNIG <- function(x,alpha=1,beta=0,delta=1,mu=0){
@@ -255,9 +318,17 @@ dNIG <- function(x,al,be,de,mu){
 ## }
 
 
-## Non-Gaussian stable: a bug modified on 1 Arp, 2015 (HM).
+## Univariate non-Gaussian stable: corrected Weron's algorithm incorporated
+## (20160114, HM) "dstable" still unavailable in YUIMA... incorporate "stabledist" package?
 
 rstable <- function(x,alpha,beta,sigma,gamma){
+	if( alpha <= 0 || alpha > 2)
+	stop("The index alpha must take values in (0,2].")
+	if( beta < -1 || beta > 1)
+	stop("The skeweness beta must take values in [-1,1].")
+	if( sigma <= 0 )
+	stop("The scale sigma must be positive.")
+	
   a <- (1 + (beta*tan(alpha*pi/2))^2)^(1/(2*alpha))
   b <- atan(beta*tan(alpha*pi/2))/alpha
   
@@ -291,6 +362,7 @@ rstable <- function(x,alpha,beta,sigma,gamma){
 ##   X <- (eps^(1/alpha)) * sigma * s + gamma * eps * rep(1,x)
 ##   return(X)
 ## }
+
 
 
 ## Positive exponentially tempered stable (AR method)
