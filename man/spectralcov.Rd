@@ -1,4 +1,5 @@
 \name{spectralcov}
+\alias{spectralcov}
 \alias{lmm}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
