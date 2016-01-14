@@ -1,6 +1,5 @@
 \name{rng}
 \alias{rng}
-
 \alias{rIG}
 \alias{dIG}
 \alias{rNIG}
@@ -14,14 +13,32 @@
 \title{Random numbers and densities}
 \description{\code{simulate} function can use the specific random number generators to generate Levy paths.}
 \usage{
-rIG(x,delta,gamma), dIG(x,delta,gamma)
-rNIG(x,alpha,beta,delta,mu,Lambda), dNIG(x,alpha,beta,delta,mu,Lambda)
-rbgamma(x,delta.plus,gamma.plus,delta.minus,gamma.minus), dbgamma(x,delta.plus,gamma.plus,delta.minus,gamma.minus)
-rngamma(x,lambda,alpha,beta,mu,Lambda), dngamma(x,lambda,alpha,beta,mu,Lambda)
-rstable(x,alpha,beta,sigma,gamma), dstable(x,alpha,beta,sigma,gamma)
+rIG(x,delta,gamma)
+dIG(x,delta,gamma)
+rNIG(x,alpha,beta,delta,mu,Lambda)
+dNIG(x,alpha,beta,delta,mu,Lambda)
+rbgamma(x,delta.plus,gamma.plus,delta.minus,gamma.minus)
+dbgamma(x,delta.plus,gamma.plus,delta.minus,gamma.minus)
+rngamma(x,lambda,alpha,beta,mu,Lambda)
+dngamma(x,lambda,alpha,beta,mu,Lambda)
+rstable(x,alpha,beta,sigma,gamma)
+%dstable(x,alpha,beta,sigma,gamma)
 }
 \arguments{
   \item{x}{Number of R.Ns to be geneated.}
+  \item{delta}{parameter}
+  \item{gamma}{parameter}
+  \item{mu}{parameter}
+  \item{Lambda}{parameter}
+  \item{alpha}{parameter}
+  \item{lambda}{parameter}
+  \item{sigma}{parameter}
+  \item{beta}{parameter}
+  \item{delta.plus}{parameter}
+  \item{gamma.plus}{parameter}
+  \item{delta.minus}{parameter}
+  \item{gamma.minus}{parameter}
+
   % \item{IG (inverse Gaussian)}{delta and gamma are positive valued parameter.}
   % \item{NIG (normal inverse Gaussian)}{alpha and delta are nonnegative number, beta and mu are vector and Lambda is matrix.}
   % \item{bgamma (bilateral gamma)}{All of parameters are positive number.}
@@ -68,6 +85,9 @@ rstable(x,1,0,1,0)
 # Choose the value of sigma, gamma, x.
 # alpha = 0.5, beta=1
 x<-10 # the number of r.n
+beta <- 1
+sigma <- 0.1
+gamma <- 0.1
 rstable(x,0.5,beta,sigma,gamma)
 
 # Ex 3. (Symmetric bilateral gamma)

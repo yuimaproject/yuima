@@ -138,7 +138,8 @@ str(mod2)
 
 # Ex 3. (Process with jumps (compound Poisson process))
 # To describe
-# dXt = -theta*Xt*dt+sigma*dZtmod3 <- setModel(drift=c("-theta*x"), diffusion="sigma",
+# dXt = -theta*Xt*dt+sigma*dZt
+mod3 <- setModel(drift=c("-theta*x"), diffusion="sigma",
 jump.coeff="1", measure=list(intensity="1", df=list("dnorm(z, 0, 1)")),
 measure.type="CP", solve.variable="x")
 # Look at the model structure by

@@ -1,4 +1,4 @@
-# In order to deal the cogarch model in the \texttt{yuima} package 
+# In order to deal the cogarch model in the \texttt{yuima} package
 # We define a new class called \texttt{yuima.cogarch} and its structure 
 # is similar to those used for the carma model.
 # The class \texttt{yuima.cogarch} extends the \texttt{yuima.model} and has

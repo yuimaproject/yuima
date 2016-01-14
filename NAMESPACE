@@ -11,6 +11,9 @@ import("cubature")
 
 importFrom(utils, toLatex)
 
+importFrom("graphics", "lines")
+importFrom("stats", "qchisq")
+importFrom("utils", "relist")
 
 # 03/07/2015
 importFrom(stats, time)
