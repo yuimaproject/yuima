@@ -4,19 +4,18 @@
 \title{Adaptive Bayes estimator for the parameters in sde model}
 \description{Adaptive Bayes estimator for the parameters in a specific type of sde.}
 \usage{
-adaBayes(yuima, start, prior, 
-    lower, upper, method = "nomcmc")
+adaBayes(yuima, start, prior, lower, upper, method = "nomcmc")
 }
 \arguments{
   \item{yuima}{a 'yuima' object.}
   \item{start}{ initial suggestion for parameter values }
   \item{prior}{ a list of prior distributions for the parameters [function].}
-  \item{lower}{ ... }
-  \item{upper}{ ... }
+  \item{lower}{a named list for specifying lower bounds of parameters}
+  \item{upper}{a named list for specifying upper bounds of parameters}
   \item{method}{ \code{nomcmc} requires package \code{cubature} }
 }
 \details{
-  Calculate the values of the parameters theta1 and theta2. When the quasi-likelihood is too large for the given data, the integral in the Bayes estimator may diverges. For such a case, offset values for the parameters can be specified not to diverge.}
+  Calculate the values of the parameters theta1 and theta2. When the quasi-likelihood is too large for the given data, the integral in the Bayes estimator may diverge. For such a case, offset values for the parameters can be specified not to diverge.}
 \value{
   \item{vector}{a vector of the paramter estimate}
 }
