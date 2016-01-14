@@ -38,3 +38,4 @@
 2015/10/10: modified llag.R, cce.Rd, llag.Rd, mpv.Rd, noisy.sampling.Rd, cce_functions.c
                   added mllag.R, mllag.Rd (multiple lead-lag detector);
                           spectralcov.R, spectralcov.Rd (spectral covariance estimator)
+2016/01/14: modified rng.R, rng.Rd, adaBayes.Rd, qmle.Rd, setModel.Rd, spectralcov.Rd
