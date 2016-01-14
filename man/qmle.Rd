@@ -59,7 +59,7 @@ lse(yuima, start, lower, upper, method = "BFGS", ...)
   \code{lse} calculates least squares estimators of the drift parameters. This is
   useful for initial guess of \code{qmle} estimation.
 
-  \code{quasilogl} returns the valueof the  quasi loglikelihood for a given
+  \code{quasilogl} returns the value of the  quasi loglikelihood for a given
   \code{yuima} object and list of parameters \code{coef}.
 
 }
