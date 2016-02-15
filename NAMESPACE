@@ -70,7 +70,11 @@ exportClasses("yuima",
 "yuima.qmle",
 "yuima.CP.qmle",
 "cogarch.info",
-"yuima.cogarch"
+"yuima.cogarch",
+"yuima.Output",
+"info.Output",
+"param.Output",
+"yuima.multimodel"
 )
 
 exportMethods(
@@ -116,6 +120,8 @@ export(dconst)
 export(rconst)
 
 export(setCogarch)
+export(setMaps)
+export(setMultiModel)
 
 export(dim)
 export(length)

@@ -79,13 +79,23 @@ setMethod("simulate", "yuima",
                            grid, random, sdelta,
                            sgrid, interpolation)
             }else{
-              res<-aux.simulate(object, nsim, seed, xinit, true.parameter,
-                                   space.discretized, increment.W, increment.L,method,
-                                   hurst,methodfGn,
-                                   sampling, subsampling,
-                                   Initial, Terminal, n, delta,
-                                   grid, random, sdelta,
-                                   sgrid, interpolation)
+              if(is(object@model,"yuima.multimodel")){
+                res <- aux.simulate.multimodel(object, nsim, seed, xinit, true.parameter,
+                                               space.discretized, increment.W, increment.L,method,
+                                               hurst,methodfGn,
+                                               sampling, subsampling,
+                                               Initial, Terminal, n, delta,
+                                               grid, random, sdelta,
+                                               sgrid, interpolation)
+              }else{
+                res<-aux.simulate(object, nsim, seed, xinit, true.parameter,
+                                     space.discretized, increment.W, increment.L,method,
+                                     hurst,methodfGn,
+                                     sampling, subsampling,
+                                     Initial, Terminal, n, delta,
+                                     grid, random, sdelta,
+                                     sgrid, interpolation)
+              }
             }
             return(res)
 
