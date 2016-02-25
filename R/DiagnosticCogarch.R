@@ -146,7 +146,7 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
               meanStateVariable=res1$ExpStatVar,
               stationary = res.stationarity,
               positivity = res.pos)
-  return(res)
+  return(invisible(res))
 
 }
 
