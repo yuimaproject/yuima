@@ -135,8 +135,8 @@ PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
   mycoef <- start
   # min <- out$value
   objFun <- "PseudoLogLik"
-  min <- numeric()
-
+ # min <- numeric()
+  min <- out$value
 
   res<-new("cogarch.gmm", call = call, coef = coef, fullcoef = unlist(coef),
            vcov = vcov, min = min, details = list(),
