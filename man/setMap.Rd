@@ -1,16 +1,16 @@
-\name{setMaps}
-\alias{setMaps}
-\alias{Maps of SDE}
-\alias{Maps of yuima}
+\name{setMap}
+\alias{setMap}
+\alias{Map of SDE}
+\alias{Map of yuima}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Maps of a Stochastic Differential Equation
+Map of a Stochastic Differential Equation
 }
 \description{
-'\code{setMaps}' is the constructor of an object of class \code{\link{yuima.Output}} that describes a map of a SDE
+'\code{setMap}' is the constructor of an object of class \code{\link{yuima.Output}} that describes a map of a SDE
 }
 \usage{
-setMaps(func, yuima, out.var = "", nrow = 1, ncol = 1)
+setMap(func, yuima, out.var = "", nrow = 1, ncol = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -48,7 +48,7 @@ my.Map <- matrix(c("(X+Y)","-X-Y",
 
 # Construction of yuima.Output
 
-yuimaMap <- setMaps(func = my.Map, yuima = mod,
+yuimaMap <- setMap(func = my.Map, yuima = mod,
   out.var = c("f11","f21","f12","f22"))
 
 # Simulation of a Map

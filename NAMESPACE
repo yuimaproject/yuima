@@ -120,7 +120,7 @@ export(dconst)
 export(rconst)
 
 export(setCogarch)
-export(setMaps)
+export(setMap)
 export(setMultiModel)
 
 export(dim)

@@ -1,6 +1,6 @@
 # Method for construction of function and operator of yuima
 # object
-setMaps <- function(func, yuima, out.var = "", nrow =1 ,ncol=1){
+setMap <- function(func, yuima, out.var = "", nrow =1 ,ncol=1){
   # A function has three kind of inputs
   # parameters that is a scalar
   # Process that is an object of class yuima
