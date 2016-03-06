@@ -374,6 +374,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     start <- start[order(oo)]
     nm <- names(start)
 
+
 	idx.diff <- match(diff.par, nm)
 	idx.drift <- match(drift.par, nm)
     # SMI-2/9/14: idx.measure for CP

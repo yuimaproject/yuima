@@ -71,27 +71,27 @@ setMethod("initialize",
           }
 )
 #
-# # Class for yuima.integral  is structured as follows:
+# Class for yuima.integral  is structured as follows:
+
+#   param.Integral
+#     Integral$param$allparam
+#     Integral$param$common
+#     Integral$param$IntegrandParam
+
+setClass("param.Integral",representation(allparam = "character",
+  common = "character", Integrandparam = "character")
+)
 #
-# #   param.Integral
-# #     Integral$param$allparam
-# #     Integral$param$common
-# #     Integral$param$IntegrandParam
-#
-# setClass("param.Integral",representation(allparam = "character",
-#   common = "character", Integrandparam = "character")
-# )
-#
-# setMethod("initialize","param.Integral",
-#           function(.Object, allparam = character(),
-#                    common = character(),
-#                    Integrandparam = character()){
-#             .Object@allparam <- allparam
-#             .Object@common <- common
-#             .Object@Integrandparam <- Integrandparam
-#             return(.Object)
-#           }
-# )
+setMethod("initialize","param.Integral",
+          function(.Object, allparam = character(),
+                   common = character(),
+                   Integrandparam = character()){
+            .Object@allparam <- allparam
+            .Object@common <- common
+            .Object@Integrandparam <- Integrandparam
+            return(.Object)
+          }
+)
 #
 # #   variable.Integral
 # #     Integral$var.dx
@@ -100,88 +100,88 @@ setMethod("initialize",
 # #     Integral$out.var
 # #     Integral$var.time <-"s"
 #
-# setClass("variable.Integral",
-#          representation(var.dx = "character",
-#                         lower.var = "character",
-#                         upper.var = "character",
-#                         out.var = "character",
-#                         var.time = "character")
-# )
+setClass("variable.Integral",
+         representation(var.dx = "character",
+                        lower.var = "character",
+                        upper.var = "character",
+                        out.var = "character",
+                        var.time = "character")
+)
 #
-# setMethod("initialize","variable.Integral",
-#           function(.Object,
-#                    var.dx = character(),
-#                    lower.var = character(),
-#                    upper.var = character(),
-#                    out.var = character(),
-#                    var.time = character()){
-#             .Object@var.dx <- var.dx
-#             .Object@lower.var <- lower.var
-#             .Object@upper.var <- upper.var
-#             .Object@out.var <- out.var
-#             .Object@var.time <- var.time
-#             return(.Object)
-#           }
-#           )
-#
-# #   Integrand
-# #     Integral$IntegrandList
-# #     Integral$dimIntegrand
-#
-# setClass("Integrand",
-#          representation(IntegrandList = "list",
-#                         dimIntegrand = "numeric")
-#          )
-# setMethod("initialize","Integrand",
-#           function(.Object,
-#                    IntegrandList = list(),
-#                    dimIntegrand = numeric()){
-#             .Object@IntegrandList <- IntegrandList
-#             .Object@dimIntegrand <- dimIntegrand
-#             return(.Object)
-#           }
-#           )
+setMethod("initialize","variable.Integral",
+          function(.Object,
+                   var.dx = character(),
+                   lower.var = character(),
+                   upper.var = character(),
+                   out.var = character(),
+                   var.time = character()){
+            .Object@var.dx <- var.dx
+            .Object@lower.var <- lower.var
+            .Object@upper.var <- upper.var
+            .Object@out.var <- out.var
+            .Object@var.time <- var.time
+            return(.Object)
+          }
+          )
+
+#   Integrand
+#     Integral$IntegrandList
+#     Integral$dimIntegrand
+
+setClass("Integrand",
+         representation(IntegrandList = "list",
+                        dimIntegrand = "numeric")
+         )
+setMethod("initialize","Integrand",
+          function(.Object,
+                   IntegrandList = list(),
+                   dimIntegrand = numeric()){
+            .Object@IntegrandList <- IntegrandList
+            .Object@dimIntegrand <- dimIntegrand
+            return(.Object)
+          }
+          )
 #
 # #   Integral.sde
 #
-# setClass("Integral.sde", representation(param.Integral = "param.Integral",
-#                                         variable.Integral = "variable.Integral", Integrand = "Integrand")
-# )
+setClass("Integral.sde", representation(param.Integral = "param.Integral",
+                                        variable.Integral = "variable.Integral", Integrand = "Integrand")
+)
 #
-# setMethod("initialize", "Integral.sde",
-#           function(.Object,
-#                    param.Integral = new("param.Integral"),
-#                    variable.Integral = new("variable.Integral"),
-#                    Integrand = new("Integrand")){
-#             .Object@param.Integral <- param.Integral
-#             .Object@variable.Integral <- variable.Integral
-#             .Object@Integrand <- Integrand
-#             return(.Object)
-#           }
-# )
+setMethod("initialize", "Integral.sde",
+          function(.Object,
+                   param.Integral = new("param.Integral"),
+                   variable.Integral = new("variable.Integral"),
+                   Integrand = new("Integrand")){
+            .Object@param.Integral <- param.Integral
+            .Object@variable.Integral <- variable.Integral
+            .Object@Integrand <- Integrand
+            return(.Object)
+          }
+)
 #
 # # yuima.Integral
 #
-# setClass("yuima.Integral", representation(
-#   Integral = "Integral.sde"),
-#   contains = "yuima"
-# )
+setClass("yuima.Integral", representation(
+  Integral = "Integral.sde"),
+  contains = "yuima"
+)
 #
-# setMethod("initialize", "yuima.Integral",
-#           function(.Object,
-#                    Integral = new("Integral.sde"),
-#                    yuima = new("yuima")){
-#             .Object@Integral <- Integral
-#             #.Object@param <- param
-#             #.Object@Output <- Output
-#             .Object@data <- yuima@data
-#             .Object@model <- yuima@model
-#             .Object@sampling <- yuima@sampling
-#             .Object@characteristic <- yuima@characteristic
-#             .Object@functional <- yuima@functional
-#             return(.Object)
-#           }
-# )
+setMethod("initialize", "yuima.Integral",
+          function(.Object,
+                   Integral = new("Integral.sde"),
+                   yuima = new("yuima")){
+            .Object@Integral <- Integral
+            #.Object@param <- param
+            #.Object@Output <- Output
+            .Object@data <- yuima@data
+            .Object@model <- yuima@model
+            .Object@sampling <- yuima@sampling
+            .Object@characteristic <- yuima@characteristic
+            .Object@functional <- yuima@functional
+            return(.Object)
+          }
+)
 #
 
 

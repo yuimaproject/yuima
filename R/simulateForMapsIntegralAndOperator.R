@@ -57,3 +57,122 @@ aux.simulatOutput<-function(object, nsim, seed, xinit,
   return(object)
 
 }
+
+# Method for Map
+setMethod("simulate", "yuima.Integral",
+          function(object, nsim=1, seed=NULL, xinit, true.parameter,
+                   space.discretized=FALSE, increment.W=NULL, increment.L=NULL, method="euler",
+                   hurst, methodfGn="WoodChan",
+                   sampling, subsampling,
+                   #Initial = 0, Terminal = 1, n = 100, delta,
+                   #	grid, random = FALSE, sdelta=as.numeric(NULL),
+                   #	sgrid=as.numeric(NULL), interpolation="none"
+                   ...){
+            res <- aux.simulatIntegral(object, nsim = nsim, seed = seed,
+                                     xinit = xinit, true.parameter = true.parameter,
+                                     space.discretized = space.discretized, increment.W = increment.W,
+                                     increment.L = increment.L, method = method, hurst = hurst,
+                                     methodfGn = methodfGn, sampling = sampling, subsampling = subsampling)
+
+            return(res)
+          }
+)
+
+aux.simulatIntegral <- function(object, nsim = nsim, seed = seed,
+  xinit = xinit, true.parameter = true.parameter, space.discretized = space.discretized,
+  increment.W = increment.W, increment.L = increment.L, method = method, hurst = hurst,
+  methodfGn = methodfGn, sampling = sampling, subsampling = subsampling){
+
+  if(missing(sampling)){
+    sampling <- setSampling()
+  }
+
+  param <- unlist(true.parameter)
+  info.par <- object@Integral@param.Integral
+  info.var <- object@Integral@variable.Integral
+  info.int <- object@Integral@Integrand
+
+  mod1 <- object@model
+  labmod.par <- mod1@parameter@all
+
+  nm <- names(param)
+  CondModPar <- nm%in%labmod.par
+  ValModPar <- param[CondModPar]
+  IntModPar <- param[!CondModPar]
+
+  #Simulation Internal trajectories
+  sim.Inputs <- simulate(mod1, nsim, seed, xinit, true.parameter,
+    space.discretized, increment.W, increment.L, method, hurst,
+    methodfGn, sampling, subsampling)
+
+  # Data of underlying SDE
+
+  Data <- get.zoo.data(sim.Inputs)
+  time <- index(sim.Inputs@data@original.data)
+  my.env <- new.env()
+  assign(info.var@var.time,time,envir=my.env)
+  for(i in c(1:mod1@equation.number)){
+    assign(mod1@solve.variable[i],
+           as.numeric(Data[[i]]), envir = my.env)
+  }
+  df <- character(length=info.int@dimIntegrand[2])
+  M.dX <- matrix(0,
+     nrow = info.int@dimIntegrand[2],
+     ncol = sim.Inputs@sampling@n)
+
+  for(i in c(1:info.int@dimIntegrand[2])){
+    df[i] <- paste0("diff(as.numeric(",info.var@var.dx[i],"))")
+    M.dX[i,] <- eval(parse(text = df[i]), envir = my.env)
+  }
+  for(i in c(1:length(info.par@Integrandparam))){
+    cond <- nm%in%info.par@Integrandparam[i]
+    if(any(cond))
+      assign(nm[cond],param[nm[cond]], envir = my.env)
+  }
+
+  #assign(info.var@var.time,time[-length(time)],envir=my.env)
+
+
+
+#   matrInt <-matrix(0, nrow = info.int@dimIntegrand[1],
+#                    ncol = info.int@dimIntegrand[2])
+  res <- NULL
+  PosInMatr <- matrix(c(1:(info.int@dimIntegrand[2]*info.int@dimIntegrand[1])),
+    nrow = info.int@dimIntegrand[1], ncol = info.int@dimIntegrand[2])
+  for(i in c(1:(length(time)-1))){
+    assign(info.var@upper.var,time[i+1],envir=my.env)
+#    assign("jj",1,envir = my.env)
+#    CondW <- paste0(info.var@var.time,"[jj] < ",info.var@upper.var)
+#     while(eval(parse(text=CondW),envir = my.env)){
+#
+#
+# #       *eval(parse(text = paste0(info.var@var.time,"<",info.var@upper.var)),
+# #            envir= my.env)
+#       my.env$jj <- my.env$jj+1
+#     }
+#    Inter <- eval(c(info.int@IntegrandList[[1]]),envir = my.env)[1:i]
+    my.fun <- function(my.list, my.env, i){
+        dum <- eval(my.list,envir = my.env)
+        if(length(dum)==1){
+          return(rep(dum,i))
+        }else{
+          return(dum[1:i])
+        }
+      }
+
+    Inter2 <- lapply(info.int@IntegrandList,
+      FUN = my.fun, my.env = my.env, i = i)
+    element <- matrix(0, nrow =info.int@dimIntegrand[1], ncol = 1)
+    for(j in c(1:info.int@dimIntegrand[1])){
+      element[j,] <- sum(diag(matrix(unlist(Inter2[PosInMatr[j,]]),
+        ncol = info.int@dimIntegrand[2])%*%M.dX[,c(1:i)]))
+    }
+    res <- cbind(res, element)
+  }
+  res <- cbind(0,res)
+  rownames(res) <- object@Integral@variable.Integral@out.var
+  my.data <- zoo(x = t(res), order.by = time)
+  data1 <- setData(my.data)
+  object@data <- data1
+ return(object)
+}

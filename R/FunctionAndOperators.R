@@ -197,99 +197,112 @@ aux.setMaps <- function(func, yuima, out.var = "",
 }
 
 
-# setIntegral <- function(yuima, integrand, var.dx,
-#   lower.var, upper.var, out.var = "", nrow =1 ,ncol=1,
-#   type = "Integral"){
-#   if(missing(yuima)){
-#     yuima.stop("yuima object is missing.")
-#   }
-#   if(missing(integrand)){
-#     yuima.stop("Integrand function is missing")
-#   }
-#   if(missing(var.dx)){
-#     yuima.stop("dx object is missing.")
-#   }
+setIntegral <- function(yuima, integrand, var.dx,
+  lower.var, upper.var, out.var = "", nrow =1 ,ncol=1){
+  type <- "Integral"
+  res <- aux.setIntegral(yuima = yuima, integrand = integrand,
+    var.dx = var.dx, lower.var = lower.var, upper.var = upper.var,
+    out.var = out.var, nrow = nrow , ncol = ncol,
+    type = type)
+
+  return(res)
+
+#   param <- list(allparam=unique(allparam), common=common,
+#     IntegrandParam = paramIntegrand)
 #
-#   resFunc<-constFunc(func=integrand, nrow, ncol)
-#   Integrand <- resFunc$func
-#   dimension <- resFunc$dimens
-#
-#   modDum <- ExtYuimaMod(yuima)
-#   mod <- modDum$mod
-#   yuima <- modDum$yuima
-#   paramIntegrand <- NULL
-#   ddd <- prod(dimension)
-#   IntegrandList <- as.list(character(length=ddd))
-#   Integrand <- as.character(Integrand)
-#
-#   for(i in c(1:ddd)){
-#     IntegrandList[[i]]<-parse(text=Integrand[i])
-#     paramIntegrand<-c(paramIntegrand,all.vars(IntegrandList[[i]]))
-#   }
-#
-#   paramIntegrand<-unique(paramIntegrand)
-#   common<-mod@parameter@common
-#
-#   Cond<-(mod@parameter@all %in% paramIntegrand)
-#   common <- c(common,mod@parameter@all[Cond])
-#   # solve variable
-#   Cond <- (paramIntegrand %in% mod@solve.variable)
-#   if(sum(Cond)==0){
-#     yuima.warn("Integrand fuction does not depend on solve.variable")
-#   }
-#
-#   paramIntegrand <- paramIntegrand[!Cond]
-#   # time variable
-#   Cond <- (paramIntegrand %in% mod@time.variable)
-#   paramIntegrand <- paramIntegrand[!Cond]
-#   # upper.var
-#   if((upper.var == mod@time.variable)||(lower.var == mod@time.variable)){
-#     yuima.stop("upper.var or lower.var must be different from time.variable")
-#   }
-#
-#   Cond <- (paramIntegrand %in% upper.var)
-#   paramIntegrand <- paramIntegrand[!Cond]
-#
-#   Cond <- (paramIntegrand %in% lower.var)
-#   paramIntegrand <- paramIntegrand[!Cond]
-#
-#   allparam <- c(mod@parameter@all, unique(paramIntegrand))
-#
-#   if(type == "Integral"){
-#     cond1 <-c(var.dx %in% c(mod@solve.variable, mod@time.variable))
-#     if(sum(cond1)!=dimension[2]){
-#       yuima.stop("var.dx must be contains only components of solve variable or time variable")
-#     }
-#   }
-#   my.param.Integral <- new("param.Integral",
-#                            allparam = unique(allparam),
-#                            common = common,
-#                            Integrandparam = paramIntegrand)
-#   my.variable.Integral <- new("variable.Integral",
-#                               var.dx = var.dx,
-#                               lower.var = lower.var,
-#                               upper.var = upper.var,
-#                               out.var = out.var,
-#                               var.time = yuima@model@time.variable)
-#   my.integrand <- new("Integrand",
-#                       IntegrandList=IntegrandList,
-#                       dimIntegrand = dimension)
-#
-#   my.Integral<-new("Integral.sde",
-#                    param.Integral = my.param.Integral,
-#                    variable.Integral = my.variable.Integral,
-#                    Integrand = my.integrand)
-#   res<-new("yuima.Integral",Integral=my.Integral, yuima=yuima)
-#   return(res)
-#
-# #   param <- list(allparam=unique(allparam), common=common,
-# #     IntegrandParam = paramIntegrand)
-# #
-# #   return(list(param = param, IntegrandList=IntegrandList,
-# #     var.dx=var.dx, lower.var=lower.var, upper.var=upper.var,
-# #     out.var=out.var, dimIntegrand = dimension))
-# }
-#
+#   return(list(param = param, IntegrandList=IntegrandList,
+#     var.dx=var.dx, lower.var=lower.var, upper.var=upper.var,
+#     out.var=out.var, dimIntegrand = dimension))
+}
+
+aux.setIntegral <- function(yuima, integrand, var.dx,
+  lower.var, upper.var, out.var = "", nrow =1 ,ncol=1,
+  type = "Integral"){
+
+
+  if(missing(yuima)){
+    yuima.stop("yuima object is missing.")
+  }
+  if(missing(integrand)){
+    yuima.stop("Integrand function is missing")
+  }
+  if(missing(var.dx)){
+    yuima.stop("dx object is missing.")
+  }
+
+  resFunc<-constFunc(func=integrand, nrow, ncol)
+  Integrand <- resFunc$func
+  dimension <- resFunc$dimens
+
+  modDum <- ExtYuimaMod(yuima)
+  mod <- modDum$mod
+  yuima <- modDum$yuima
+  paramIntegrand <- NULL
+  ddd <- prod(dimension)
+  IntegrandList <- as.list(character(length=ddd))
+  Integrand <- as.character(Integrand)
+
+  for(i in c(1:ddd)){
+    IntegrandList[[i]]<-parse(text=Integrand[i])
+    paramIntegrand<-c(paramIntegrand,all.vars(IntegrandList[[i]]))
+  }
+
+  paramIntegrand<-unique(paramIntegrand)
+  common<-mod@parameter@common
+
+  Cond<-(mod@parameter@all %in% paramIntegrand)
+  common <- c(common,mod@parameter@all[Cond])
+  # solve variable
+  Cond <- (paramIntegrand %in% mod@solve.variable)
+  if(sum(Cond)==0){
+    yuima.warn("Integrand fuction does not depend on solve.variable")
+  }
+
+  paramIntegrand <- paramIntegrand[!Cond]
+  # time variable
+  Cond <- (paramIntegrand %in% mod@time.variable)
+  paramIntegrand <- paramIntegrand[!Cond]
+  # upper.var
+  if((upper.var == mod@time.variable)||(lower.var == mod@time.variable)){
+    yuima.stop("upper.var or lower.var must be different from time.variable")
+  }
+
+  Cond <- (paramIntegrand %in% upper.var)
+  paramIntegrand <- paramIntegrand[!Cond]
+
+  Cond <- (paramIntegrand %in% lower.var)
+  paramIntegrand <- paramIntegrand[!Cond]
+
+  allparam <- c(mod@parameter@all, unique(paramIntegrand))
+
+  if(type == "Integral"){
+    cond1 <-c(var.dx %in% c(mod@solve.variable, mod@time.variable))
+    if(sum(cond1)!=dimension[2]){
+      yuima.stop("var.dx must be contains only components of solve variable or time variable")
+    }
+  }
+  my.param.Integral <- new("param.Integral",
+                           allparam = unique(allparam),
+                           common = common,
+                           Integrandparam = paramIntegrand)
+  my.variable.Integral <- new("variable.Integral",
+                              var.dx = var.dx,
+                              lower.var = lower.var,
+                              upper.var = upper.var,
+                              out.var = out.var,
+                              var.time = yuima@model@time.variable)
+  my.integrand <- new("Integrand",
+                      IntegrandList=IntegrandList,
+                      dimIntegrand = dimension)
+
+  my.Integral<-new("Integral.sde",
+                   param.Integral = my.param.Integral,
+                   variable.Integral = my.variable.Integral,
+                   Integrand = my.integrand)
+  res<-new("yuima.Integral",Integral=my.Integral, yuima=yuima)
+  return(res)
+}
+
 # setOperator <- function(operator, X, Y,
 #   out.var = "", nrow =1 ,ncol=1){
 #   if(is(X, "yuima.model")&& is(Y, "yuima.model")){

@@ -18,7 +18,7 @@ or an operator between two independent stochasic process:
 
   \code{ zt = h(theta, Xt, Yt, t)}
 
-where \code{Xt} and \code{Yt}  areobject of class \code{\link{yuima.model-class}} or \code{\link{yuima-class}} with the same dimension.
+where \code{Xt} and \code{Yt}  are object of class \code{\link{yuima.model-class}} or \code{\link{yuima-class}} with the same dimension.
 }
 
 \section{Slots}{

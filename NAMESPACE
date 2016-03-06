@@ -74,7 +74,12 @@ exportClasses("yuima",
 "yuima.Output",
 "info.Output",
 "param.Output",
-"yuima.multimodel"
+"yuima.multimodel",
+"param.Integral",
+"variable.Integral",
+"Integrand",
+"Integral.sde",
+"yuima.Integral"
 )
 
 exportMethods(
@@ -122,6 +127,7 @@ export(rconst)
 export(setCogarch)
 export(setMap)
 export(setMultiModel)
+export(setIntegral)
 
 export(dim)
 export(length)
