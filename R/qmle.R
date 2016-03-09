@@ -620,6 +620,8 @@ if(length(measure.par)>0){
 			mydots$hessian <- FALSE
 			mydots$upper <- as.numeric(unlist( upper[ nm[idx.diff] ]))
 			mydots$lower <- as.numeric(unlist( lower[ nm[idx.diff] ]))
+			mydots$joint <- NULL # LM 08/03/16
+			mydots$aggregation <- NULL # LM 08/03/16
             mydots$threshold <- NULL #SMI 2/9/14
 
            if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
@@ -676,7 +678,8 @@ if(length(measure.par)>0){
 			mydots$hessian <- FALSE
 			mydots$upper <- unlist( upper[ nm[idx.drift] ])
 			mydots$lower <- unlist( lower[ nm[idx.drift] ])
-
+			mydots$joint <- NULL # LM 08/03/16
+			mydots$aggregation <- NULL # LM 08/03/16# LM 08/03/16
 
 
 
