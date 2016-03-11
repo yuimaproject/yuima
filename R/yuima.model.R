@@ -602,15 +602,25 @@ if(length(jump.coeff)==0){
 # )
 
 rbind.yuima.model <- function(x, ...){
+
   y.list <- list(x, ...)
+#  y.list1 <- lapply(y.list, FUN = only.yuima.model)
   y.num <- length(y.list)
-  res <- aux.rbind.model(y.list,y.num)
+  new.list <- list()
+  for(i in (1:y.num)){
+    if(is(y.list[[i]],"yuima.model"))
+          new.list[i] <- y.list[[i]]
+  }
+  new.y.num <- length(new.list)
+  res <- aux.rbind.model(y.list = new.list,
+        y.num = new.y.num, mycall = y.list)
   return(res)
 }
 
-aux.rbind.model<-function(y.list,y.num){
+aux.rbind.model<-function(y.list,y.num, mycall=list()){
   lapply(y.list, FUN = check.yuima.model)
-
+  check.lev <- lapply(y.list, FUN = check.yuima.levy)
+  check.lev <- unlist(check.lev)
   drift <- lapply(y.list, FUN = extract.model, type = "drift")
   diffusion <- lapply(y.list, FUN = extract.model, type = "diffusion")
   solve.variable <- lapply(y.list, FUN = extract.model, type = "solve.variable")
@@ -651,10 +661,100 @@ aux.rbind.model<-function(y.list,y.num){
   state.variable <- unlist(state.variable)
   xinit <- lapply(xinit, FUN = ExpToString, cond = FALSE)
   xinit <- unlist(xinit)
-  mod <- setModel(drift = drift, diffusion = matr.diff,
-    solve.variable = solve.variable, state.variable = state.variable,
-    xinit = xinit)
+  if(!any(check.lev)){
+    mod <- setModel(drift = drift, diffusion = matr.diff,
+      solve.variable = solve.variable, state.variable = state.variable,
+      xinit = xinit)
+  }else{
+    MultiLevy <- y.list[check.lev]
+    jump.coeff <- lapply(MultiLevy,
+      FUN = extract.model, type = "jump.coeff")
+    ncol.jump <- lapply(jump.coeff, FUN = numb.jump)
+    dum.ncolj <- unlist(ncol.jump)
+    ncol.jump <- sum(unlist(dum.ncolj))
+    jump.coeff <- lapply(y.list,
+      FUN = extract.model, type = "jump.coeff")
+    #ncol.jump1 <- lapply(jump.coeff, FUN = numb.jump)
+    matr.jump <- matrix("0",nrow = nrow.diff,
+      ncol = ncol.jump)
+    j <- 1
+    h <- 0
+    cond.eqa <- equation.number[[j]]
+    cond.eqb <- 1
+    extrinf <- 1
+    extrsup <- 1
+    if(check.lev[j])
+      extrsup <- dum.ncolj[j]
+    else{
+      h <- h+1
+    }
+    for(i in c(1:nrow.diff)){
+      if(i <= cond.eqa){
+        if(check.lev[j]){
+          dum <- ExpToString(jump.coeff[[j]][[i-cond.eqb]])
+          matr.jump[i, extrinf:extrsup] <- dum
+        }else{
+#          matr.jump[i,] <- matr.jump[i,]
+        }
+        if(i == cond.eqa){
+          cond.eqb <- i
+          j <- j+1
+          if(j<=length(equation.number))
+                cond.eqa <- cond.eqa + equation.number[[j]]
+          if(check.lev[j-1]){
+            extrinf <- extrsup + 1
+            extrsup <- extrsup + dum.ncolj[j-h]
+          }else{
+            extrinf <- extrinf
+            extrsup <- extrsup
+            h <- h+1
+          }
+        }
+      }
+    }
+
+    # mod <- matr.jump
+#     measure <- lapply(y.list,
+#        FUN = extract.model, type = "measure")
+#     measure
+    df <- NULL
+  if("df" %in% names(unlist(mycall)))
+      df <- mycall$df
+    measure.type <- NULL
+  if("measure.type" %in% names(unlist(mycall)))
+      measure.type <- mycall$measure.type
+    intensity <-NULL
+    if("intensity" %in% names(unlist(mycall)))
+      intensity <- mycall$intensity
+    time.variable <- "t"
+    if("time.variable" %in% names(unlist(mycall)))
+      time.variable <- mycall$time.variable
+  mod <- setMultiModel(drift=drift, diffusion = matr.diff,
+    jump.coeff =  matr.jump, solve.variable = solve.variable,
+    xinit = xinit, time.variable = time.variable, df= df,
+    intensity = intensity, measure.type = measure.type)
+
+  }
   return(mod)
+}
+# only.yuima.model<- function(y.list){
+#   if(is(y.list,"yuima.model")){
+#     return(y.list)
+#   }else{
+#     NULL
+#   }
+# }
+numb.jump <- function(x){length(x[[1]])}
+
+check.yuima.levy <- function(x){
+  Levy <- FALSE
+  if(length(x@measure.type)>0){
+    if(!is(x, "yuima.multimodel")){
+      yuima.stop("the Levy model have to belong to the yuima.multimodel class")
+    }
+    Levy <- TRUE
+  }
+  return(Levy)
 }
 
 ExpToString <- function(x, cond = TRUE){
