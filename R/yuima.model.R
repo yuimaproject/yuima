@@ -680,7 +680,7 @@ aux.rbind.model<-function(y.list,y.num, mycall=list()){
     j <- 1
     h <- 0
     cond.eqa <- equation.number[[j]]
-    cond.eqb <- 1
+    cond.eqb <- 0
     extrinf <- 1
     extrsup <- 1
     if(check.lev[j])
@@ -718,16 +718,16 @@ aux.rbind.model<-function(y.list,y.num, mycall=list()){
 #        FUN = extract.model, type = "measure")
 #     measure
     df <- NULL
-  if("df" %in% names(unlist(mycall)))
+  if("df" %in% names(mycall))
       df <- mycall$df
     measure.type <- NULL
-  if("measure.type" %in% names(unlist(mycall)))
+  if("measure.type" %in% names(mycall))
       measure.type <- mycall$measure.type
     intensity <-NULL
-    if("intensity" %in% names(unlist(mycall)))
+    if("intensity" %in% names(mycall))
       intensity <- mycall$intensity
     time.variable <- "t"
-    if("time.variable" %in% names(unlist(mycall)))
+    if("time.variable" %in% names(mycall))
       time.variable <- mycall$time.variable
   mod <- setMultiModel(drift=drift, diffusion = matr.diff,
     jump.coeff =  matr.jump, solve.variable = solve.variable,
