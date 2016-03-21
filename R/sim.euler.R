@@ -1,7 +1,7 @@
 euler<-function(xinit,yuima,dW,env){
-	
+
 	sdeModel<-yuima@model
-	
+
 	modelstate <- sdeModel@solve.variable
 	modeltime <- sdeModel@time.variable
 	V0 <- sdeModel@drift
@@ -11,10 +11,10 @@ euler<-function(xinit,yuima,dW,env){
 	Terminal <- yuima@sampling@Terminal[1]
 	n <- yuima@sampling@n[1]
 	dL <- env$dL
-    
+
 #	dX <- xinit
-  
-	# 06/11 xinit is an expression: the structure is equal to that of V0   
+
+	# 06/11 xinit is an expression: the structure is equal to that of V0
   if(length(unique(as.character(xinit)))==1 &&
        is.numeric(tryCatch(eval(xinit[1],env),error=function(...) FALSE))){
     dX_dummy<-xinit[1]
@@ -24,7 +24,7 @@ euler<-function(xinit,yuima,dW,env){
       assign(modelstate[i],dummy.val[i] ,env)
     }
     dX<-vector(mode="numeric",length(dX_dummy))
-    
+
     for(i in 1:length(xinit)){
       dX[i] <- dummy.val[i]
     }
@@ -38,21 +38,22 @@ euler<-function(xinit,yuima,dW,env){
 	      assign(modelstate[i], 0, env)
 	    }
 	  }
-	}else{ 
+	}else{
 	    yuima.warn("the number of model states do not match the number of initial conditions")
 	    return(NULL)
 	  }
-  
+
 	# 06/11 we need a initial variable for X_0
 	  dX<-vector(mode="numeric",length(dX_dummy))
-	
+
 	  for(i in 1:length(dX_dummy)){
 	    dX[i] <- eval(dX_dummy[i], env)
 	  }
   }
-##:: set time step	
-	delta <- Terminal/n 
-	
+##:: set time step
+	# delta <- Terminal/n
+	delta <- yuima@sampling@delta
+
 ##:: check if DRIFT and/or DIFFUSION has values
 	has.drift <- sum(as.character(sdeModel@drift) != "(0)")
 	var.in.diff <- is.logical(any(match(unlist(lapply(sdeModel@diffusion, all.vars)), sdeModel@state.variable)))
@@ -87,37 +88,38 @@ euler<-function(xinit,yuima,dW,env){
     } # else
     return(tmp)
   }
-  
+
   X_mat <- matrix(0, d.size, n+1)
   X_mat[,1] <- dX
-  
-	if(has.drift){  ##:: consider drift term to be one of the diffusion term(dW=1) 
+
+	if(has.drift){  ##:: consider drift term to be one of the diffusion term(dW=1)
 		dW <- rbind( rep(1, n)*delta , dW)
 	}
-	
-  
+
+
   if(!length(sdeModel@measure.type)){ ##:: Wiener Proc
     ##:: using Euler-Maruyama method
-        
+
     if(var.in.diff & (!is.Poisson(sdeModel))){  ##:: diffusions have state variables and it is not Poisson
-      ##:: calcurate difference eq.    
+      ##:: calcurate difference eq.
       for( i in 1:n){
-        dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i]
+        # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i]
+        dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] # LM
         X_mat[,i+1] <- dX
       }
     }else{  ##:: diffusions have no state variables (not use p.b(). faster)
       sde.tics <- seq(0, Terminal, length=(n+1))
       sde.tics <- sde.tics[2:length(sde.tics)]
-      
+
       X_mat[, 1] <- dX
-      
+
       ##:: assign names of variables
       for(i in 1:length(modelstate)){
         assign(modelstate[i], dX[i])
       }
       assign(modeltime, sde.tics)
       t.size <- length(sde.tics)
-      
+
       ##:: solve diffusion term
       if(has.drift){
         pbdata <- matrix(0, d.size*(r.size+1), t.size)
@@ -139,9 +141,9 @@ euler<-function(xinit,yuima,dW,env){
         } # !is.Poisson
         dim(pbdata)<-(c(r.size, d.size*t.size))
       } # else
-    
+
       pbdata <- t(pbdata)
-      
+
       ##:: calcurate difference eq.
       for( i in 1:n){
         if(!is.Poisson(sdeModel))
@@ -149,8 +151,8 @@ euler<-function(xinit,yuima,dW,env){
         X_mat[, i+1] <- dX
       }
     }
-    tsX <- ts(data=t(X_mat), deltat=delta , start=0)
-    
+    #tsX <- ts(data=t(X_mat), deltat=delta , start=0)
+    tsX <- ts(data=t(X_mat), deltat=delta , start = yuima@sampling@Initial) #LM
   }else{ ##:: Levy
     JP <- sdeModel@jump.coeff
     mu.size <- length(JP)
@@ -175,7 +177,7 @@ euler<-function(xinit,yuima,dW,env){
       return(tmp)
     }
     #  print(ls(env))
-    
+
     ### WHY I AM DOING THIS?
     #    tmp <- matrix(0, d.size, r.size)
     #
@@ -186,12 +188,12 @@ euler<-function(xinit,yuima,dW,env){
     #        } # for j
     #    }
     ###
-    
+
     if(sdeModel@measure.type == "CP" ){ ##:: Compound-Poisson type
 
       ##:: delete 2010/09/13 for simulate func bug fix by s.h
             ## eta0 <- eval(sdeModel@measure$intensity)
-      
+
       ##:: add 2010/09/13 for simulate func bug fix by s.h
       eta0 <- eval(sdeModel@measure$intensity, env) ## intensity param
 
@@ -202,7 +204,7 @@ euler<-function(xinit,yuima,dW,env){
       }
       #lambda <- integrate(sdeModel@measure$df$func, 0, Inf)$value * eta0
       #lambda <- integrate(tmp.expr, 0, Inf)$value * eta0 ##bug:2013/10/28
-      
+
       dummyList<-as.list(env)
       #   print(str(dummyList))
       #print(str(idx.dummy))
@@ -215,10 +217,10 @@ euler<-function(xinit,yuima,dW,env){
           assign(idx.dummy,as.numeric(dummyList[idx.dummy]))
         }
       }
-      
-      
+
+
       lambda <- integrate(tmp.expr, -Inf, Inf)$value * eta0
-      
+
       ##:: lambda = nu() (p6)
       N_sharp <- rpois(1,Terminal*eta0)	##:: Po(Ne)
       if(N_sharp == 0){
@@ -232,7 +234,7 @@ euler<-function(xinit,yuima,dW,env){
           ij <- c(ij, Min)
         }
       }
-      
+
       ##:: make expression to create iid rand J
       if(grep("^[dexp|dnorm|dgamma|dconst]", sdeModel@measure$df$expr)){
         ##:: e.g. dnorm(z,1,1) -> rnorm(mu.size*N_sharp,1,1)
@@ -248,9 +250,9 @@ euler<-function(xinit,yuima,dW,env){
       F.env <- new.env(parent=env)
       assign("mu.size", mu.size, envir=F.env)
       assign("N_sharp", N_sharp, envir=F.env)
-   
+
       randJ <- eval(F, F.env)  ## this expression is evaluated in the F.env
-      
+
       j <- 1
       for(i in 1:n){
         if(JAMP==FALSE || sum(i==ij)==0){
@@ -262,21 +264,25 @@ euler<-function(xinit,yuima,dW,env){
           ##cat(paste(J,"\n"))
           ##Pi <- zeta(dX, J)
             assign(sdeModel@jump.variable, J, env)
-          
+
             if(sdeModel@J.flag){
               J <- 1
             }
-          
-            Pi <- p.b.j(t=i*delta,X=dX) * J
+
+            # Pi <- p.b.j(t=i*delta,X=dX) * J #LM
+            Pi <- p.b.j(t=yuima@sampling@Initial+i*delta,X=dX) * J
           }else{# we add this part since we allow the user to specify the increment of CP LM 05/02/2015
-            Pi <- p.b.j(t=i*delta,X=dX) %*% dL[, i]
+          #  Pi <- p.b.j(t=i*delta,X=dX) %*% dL[, i] #LM
+            Pi <- p.b.j(t=yuima@sampling@Initial+i*delta,X=dX) %*% dL[, i]
           }
           ##Pi <- p.b.j(t=i*delta, X=dX)
         }
-        dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] + Pi
+        # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] + Pi # LM
+        dX <- dX + p.b(t=yuima@sampling@Initial + i*delta, X=dX) %*% dW[, i] + Pi
         X_mat[, i+1] <- dX
       }
-      tsX <- ts(data=t(X_mat), deltat=delta, start=0)
+      # tsX <- ts(data=t(X_mat), deltat=delta, start=0) #LM
+      tsX <- ts(data=t(X_mat), deltat=delta, start=yuima@sampling@Initial)
       ##::end CP
     }else if(sdeModel@measure.type=="code"){  ##:: code type
       ##:: Jump terms
@@ -309,7 +315,7 @@ euler<-function(xinit,yuima,dW,env){
           #print(get(idx.dummy))
         }
       }
-      
+
       if(is.null(dZ)){  ##:: "otherwise"
         cat(paste("Code \"", code, "\" not supported yet.\n", sep=""))
         return(NULL)
@@ -326,12 +332,13 @@ euler<-function(xinit,yuima,dW,env){
         #  print(str(sdeModel@jump.variable))
       for(i in 1:n){
         assign(sdeModel@jump.variable, dZ[,i], env)
-        
+
         if(sdeModel@J.flag){
           dZ[,i] <- 1
         }
         #           cat("\np.b.j call\n")
-            tmp.j <- p.b.j(t=i*delta, X=dX)
+            # tmp.j <- p.b.j(t=i*delta, X=dX) #LM
+            tmp.j <- p.b.j(t=yuima@sampling@Initial+i*delta, X=dX)
             #print(str(tmp.j))
             #cat("\np.b.j cback and dZ\n")
             # print(str(dZ[,i]))
@@ -340,10 +347,12 @@ euler<-function(xinit,yuima,dW,env){
          tmp.j <- as.numeric(tmp.j)
          #print(str(tmp.j))
          #print(str(p.b(t = i * delta, X = dX) %*% dW[, i]))
-        dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i]
+        # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i] #LM
+          dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i]
         X_mat[, i+1] <- dX
       }
-      tsX <- ts(data=t(X_mat), deltat=delta, start=0)
+      # tsX <- ts(data=t(X_mat), deltat=delta, start=0) #LM
+      tsX <- ts(data=t(X_mat), deltat=delta, start=yuima@sampling@Initial)
       ##::end code
     }else{
       cat(paste("Type \"", sdeModel@measure.type, "\" not supported yet.\n", sep=""))
