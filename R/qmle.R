@@ -122,7 +122,7 @@ is.CARMA <- function(obj){
 }
 
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
- lower, upper, joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, threshold=NULL, ...){
+ lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL, ...){
   if(is(yuima@model, "yuima.carma")){
     NoNeg.Noise<-FALSE
     cat("\nStarting qmle for carma ... \n")
@@ -144,10 +144,10 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 res <- NULL
 	 if("grideq" %in% names(as.list(call)[-(1:2)])){
 	 res  <- PseudoLogLik.COGARCH(yuima, start, method=method, fixed = list(),
-	                       lower, upper, Est.Incr, call, ...)
+	                       lower, upper, Est.Incr, call, aggregation = aggregation, ...)
 	 }else{
 	   res  <- PseudoLogLik.COGARCH(yuima, start, method=method, fixed = list(),
-	                         lower, upper, Est.Incr, call, grideq = FALSE,...)
+	                         lower, upper, Est.Incr, call, grideq = FALSE, aggregation = aggregation,...)
 	 }
 
 	 return(res)
@@ -1007,12 +1007,12 @@ if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
           method = method, nobs=yuima.nobs, model=yuima@model)
       }
   } else {
-    if( Est.Incr=="Carma.IncPar" || Est.Incr=="Carma.Inc" ){
+    if( Est.Incr=="IncrPar" || Est.Incr=="Incr" ){
     final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef),
                    vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl,
                     method = method, nobs=yuima.nobs, logL.Incr = NULL)
     }else{
-      if(Est.Incr=="Carma.Par"){
+      if(Est.Incr=="NoIncr"){
       final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef),
                      vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl,
                      method = method, nobs=yuima.nobs)

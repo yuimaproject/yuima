@@ -1,8 +1,8 @@
 # In order to deal the cogarch model in the \texttt{yuima} package
-# We define a new class called \texttt{yuima.cogarch} and its structure 
+# We define a new class called \texttt{yuima.cogarch} and its structure
 # is similar to those used for the carma model.
 # The class \texttt{yuima.cogarch} extends the \texttt{yuima.model} and has
-# an additional slot that contains informations about the model stored in an object of 
+# an additional slot that contains informations about the model stored in an object of
 # class \texttt{cogarch.info}.
 # The class \texttt{cogarch.info} is build  internally by the function \texttt{setCogarch} and it is a
 # the first slot of an object of class \texttt{yuima.cogarch}.
@@ -30,34 +30,37 @@ setClass("yuima.cogarch",
 
 # Class 'gmm.cogarch'
 
-setClass("cogarch.gmm",representation(
-  model = "yuima.cogarch",
+setClass("cogarch.est",representation(
+  model = "yuima",
   objFun="character"),
   contains="mle"
 )
 
 
-setClass("summary.cogarch.gmm",representation(    objFun = "ANY",
-                                                  objFunVal = "ANY" ),
-         contains="summary.mle"
+setClass("summary.cogarch.est",
+  representation(objFun = "ANY",
+  objFunVal = "ANY"),
+  contains="summary.mle"
 )
 
 
 
-setClass("cogarch.gmm.incr",representation(Incr.Lev = "ANY",
-                                           logL.Incr = "ANY"
+setClass("cogarch.est.incr",
+         representation(Incr.Lev = "ANY",
+         logL.Incr = "ANY"
 ),
-contains="cogarch.gmm"
+contains="cogarch.est"
 )
 
-setClass("summary.cogarch.gmm.incr",representation(logL.Incr = "ANY",
-                                                   MeanI = "ANY",
-                                                   SdI = "ANY",
-                                                   logLI = "ANY",
-                                                   TypeI = "ANY",
-                                                   NumbI = "ANY",
-                                                   StatI ="ANY"),
-         contains="summary.cogarch.gmm"
+setClass("summary.cogarch.est.incr",
+         representation(logL.Incr = "ANY",
+                        MeanI = "ANY",
+                        SdI = "ANY",
+                        logLI = "ANY",
+                        TypeI = "ANY",
+                        NumbI = "ANY",
+                        StatI ="ANY"),
+         contains="summary.cogarch.est"
 )
 
 
@@ -71,7 +74,7 @@ setClass("summary.cogarch.gmm.incr",representation(logL.Incr = "ANY",
 # ),
 # contains="mle"
 # )
-# 
+#
 # setClass("cogarch.gmm",representation(
 #   model = "yuima.cogarch",
 #   objFun="character"),
@@ -79,4 +82,4 @@ setClass("summary.cogarch.gmm.incr",representation(logL.Incr = "ANY",
 # )
 # setClass("gmm.cogarch",
 #   contains="mle"
-#   )  
+#   )

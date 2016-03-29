@@ -2,19 +2,19 @@
 \alias{gmm}
 \alias{gmm.COGARCH}
 \alias{Method of Moment COGARCH}
-\alias{Estimation COGARCH}
-\alias{est. COGARCH}
-\alias{est. yuima Cog}
+%\alias{Estimation COGARCH}
+%\alias{est.COGARCH}
+%\alias{est.yuima Cog}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Method of Moments for COGARCH(P,Q). 
+Method of Moments for COGARCH(P,Q).
 }
 \description{
 The function returns the estimated parameters of a COGARCH(P,Q) model. The parameters are abtained by matching theoretical vs empirical autocorrelation function. The theoretical autocorrelation function is computed according the methodology developed in Chadraa (2009).
 }
 \usage{
-gmm(yuima, data = NULL, start, 
- method="BFGS", fixed = list(), lower, upper, lag.max = NULL, 
+gmm(yuima, data = NULL, start,
+ method="BFGS", fixed = list(), lower, upper, lag.max = NULL,
  equally.spaced = FALSE, aggregation=TRUE, Est.Incr = "NoIncr", objFun = "L2")
 }
 %- maybe also 'usage' for other objects documented here.
@@ -29,15 +29,14 @@ gmm(yuima, data = NULL, start,
   \item{lag.max}{maximum lag at which to calculate the theoretical and empirical acf. Default is \code{sqrt{N}} where \code{N} is the number of observation.}
   \item{equally.spaced}{Logical variable. If \code{equally.spaced = TRUE.}, the function use the returns of COGARCH(P,Q) evaluated at unitary length for the computation of the empirical autocorrelations. If \code{equally.spaced = FALSE}, the increments are evaluated on the interval with frequency specified in an object of class \code{\link{yuima.data-class}} that contains the observed time series.}
   \item{aggregation}{If \code{aggregation=TRUE}, before the estimation of the levy parameters we aggregate the estimated increments}
-  \item{Est.Incr}{ a string variable, If \code{Est.Incr = "NoIncr"}, default value, \code{gmm} returns an object of class  \code{\link{cogarch.gmm-class}} that contains the COGARCH parameters. 
-  If \code{Est.Incr = "Incr"} or \code{Est.Incr = "IncrPar"} the output is an object of class \code{\link{cogarch.gmm.incr-class}}. In the first case the object contains the increments of underlying noise while in the second case also the estimated parameter of levy measure.}
-  \item{objFun}{a string variable that indentifies the objective function in the optimization step. \code{objFun = "L2"}, default value, the objective function is  a quadratic form where the weighting Matrix is the identity one. \code{objFun = "L2CUE"} the weighting matrix is estimated using Continuously Updating GMM (L2CUE). 
+  \item{Est.Incr}{ a string variable, If \code{Est.Incr = "NoIncr"}, default value, \code{gmm} returns an object of class  \code{\link{cogarch.est-class}} that contains the COGARCH parameters.
+  If \code{Est.Incr = "Incr"} or \code{Est.Incr = "IncrPar"} the output is an object of class \code{\link{cogarch.est.incr-class}}. In the first case the object contains the increments of underlying noise while in the second case also the estimated parameter of levy measure.}
+  \item{objFun}{a string variable that indentifies the objective function in the optimization step. \code{objFun = "L2"}, default value, the objective function is  a quadratic form where the weighting Matrix is the identity one. \code{objFun = "L2CUE"} the weighting matrix is estimated using Continuously Updating GMM (L2CUE).
   \code{objFun = "L1"}, the objective function is the mean absolute error. In the last case the standard error for estimators are not available.
-  
   }
 }
 \details{
-The routine is based on three steps: estimation of the COGARCH parameters, recovering the increments of the underlying Levy process and estimation of the levy measure parameters. The last two steps are available on request by the user. 
+The routine is based on three steps: estimation of the COGARCH parameters, recovering the increments of the underlying Levy process and estimation of the levy measure parameters. The last two steps are available on request by the user.
 }
 \value{ The function returns a list with the same components of the object obtained when the function  \code{\link{optim}} is used.
 }
@@ -58,7 +57,7 @@ The YUIMA Project Team.
 %}
 \examples{
 \dontrun{
-# Example COGARCH(1,1): the parameters are the same used in Haugh et al. 2005. In this case 
+# Example COGARCH(1,1): the parameters are the same used in Haugh et al. 2005. In this case
 # we assume the underlying noise is a symmetric variance gamma.
 # As first step we define the COGARCH(1,1) in yuima:
 

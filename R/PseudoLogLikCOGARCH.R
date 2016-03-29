@@ -3,7 +3,7 @@
 #
 
 PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
-                     lower, upper, Est.Incr, call, grideq, ...){
+                     lower, upper, Est.Incr, call, grideq, aggregation,...){
 
   if(is(yuima,"yuima")){
     model <- yuima@model
@@ -55,49 +55,49 @@ PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
 
   I <- diag(info@q)
   assign("I",I, envir = my.env)
-
+  param1 <- param[c(my.env$loc.par, ma.names, ar.names)]
   out<-NULL
   if(length(lower)==0 && length(upper)>0 && length(fixed)==0){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                    method = method, upper=upper, env = my.env,...)
 
 
   }
 
   if(length(lower)==0 && length(upper)==0 && length(fixed)>0){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                    method = method, fixed=fixed, env = my.env,...)
 
   }
 
 
   if(length(lower)>0 && length(upper)==0 && length(fixed)==0){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                    method = method, lower=lower, env = my.env,...)
     }
 
   if(length(lower)>0 && length(upper)>0 && length(fixed)==0){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                    method = method, upper = upper,
                    lower=lower, env = my.env,...)
   }
 
 
   if(length(lower)==0 && length(upper)>0 && length(fixed)>0){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                    method = method, upper = upper,
                    fixed = fixed, env = my.env,...)
   }
 
   if(length(lower)>0 && length(upper)==0 && length(fixed)>0){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                    method = method, lower = lower,
                    fixed = fixed, env = my.env,...)
   }
 
 
   if(length(lower)>0 && length(upper)>0 && length(fixed)>0){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                    method = method, lower = lower,
                    fixed = fixed, upper = upper,
                    env = my.env,...)
@@ -105,12 +105,16 @@ PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
 
 
   if(is.null(out)){
-    out <- optim(par=param, fn=minusloglik.COGARCH1,
+    out <- optim(par=param1, fn=minusloglik.COGARCH1,
                  method = method, env = my.env,...)
   }
 
 #                 control= list(maxit=100),
    # Write the object mle with result
+#   my.env1 <- my.env
+#   my.env1$grideq <- TRUE
+  resHessian<-tryCatch(optimHess(par = out$par, fn = minusloglik.COGARCH1,
+     env = my.env),error=function(theta){NULL})
 
 
   bvect<-out$par[ar.names]
@@ -120,31 +124,43 @@ PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
 
   a0<-out$par[info@loc.par]
 
-  if(length(meas.par)!=0){
-    idx.dumm<-match(meas.par,names(out$par))
-    out$par<-out$par[- idx.dumm]
+#   if(length(meas.par)!=0){
+#     idx.dumm<-match(meas.par,names(out$par))
+#     out$par<-out$par[- idx.dumm]
+#   }
+#
+#  idx.dumm1<-match(start.state,names(out$par))
+  coef <- out$par
+  #coef <- out$par
+  vcov<-matrix(NA, length(coef), length(coef))
+
+
+
+  names_coef<-names(coef)
+  colnames(vcov)[1:length(names_coef)] <- names_coef
+  rownames(vcov)[1:length(names_coef)] <- names_coef
+
+  if(!is.null(resHessian)){
+    vcov[c(1:length(names_coef)),c(1:length(names_coef))]<- solve(resHessian)
   }
 
-  idx.dumm1<-match(start.state,names(out$par))
-  coef <- out$par[-idx.dumm1]
-
-  vcov<-matrix(NA, length(coef), length(coef))
-  names_coef<-names(coef)
-  colnames(vcov) <- names_coef
-  rownames(vcov) <- names_coef
   mycoef <- start
   # min <- out$value
   objFun <- "PseudoLogLik"
  # min <- numeric()
   min <- out$value
 
-  res<-new("cogarch.gmm", call = call, coef = coef, fullcoef = unlist(coef),
-           vcov = vcov, min = min, details = list(),
-           method = character(),
-           model = model,
-           objFun = objFun
-  )
-
+#   res<-new("cogarch.est", call = call, coef = coef, fullcoef = unlist(coef),
+#            vcov = vcov, min = min, details = list(),
+#            method = character(),
+#            model = model,
+#            objFun = objFun
+#   )
+  env <- list(deltaData = yuima@sampling@delta)
+   res <- ExtraNoiseFromEst(Est.Incr,
+                    call, coef, vcov, min, details = list(),
+                    method = character(), model, objFun, observ=yuima@data,
+                    fixed, meas.par, lower, upper, env, yuima, start, aggregation)
 
     return(res)
 }
@@ -166,7 +182,7 @@ minusloglik.COGARCH1<-function(param,env){
 
   stateMean <- a0/(bq-a1)*as.matrix(c(1,numeric(length=(env$q-1))))
 
- param[env$start.state]<-stateMean
+ #param[env$start.state]<-stateMean
  state <- stateMean
 #  state <- param[env$start.state]
   DeltaG2 <- env$Obs

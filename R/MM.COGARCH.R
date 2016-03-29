@@ -546,31 +546,151 @@ if(method!="L-BFGS-B"&&method!="brent"){
 
 
   # Build an object of class mle
+#   if(Est.Incr=="NoIncr"){
+#       res<-new("cogarch.est", call = call, coef = coef, fullcoef = unlist(coef),
+#                 vcov = vcov, min = min, details = list(),
+#                 method = character(),
+#                 model = setYuima(model=model),
+#                 objFun = objFun
+#                )
+#   }
+#   if(Est.Incr=="Incr"||Est.Incr=="IncrPar"){
+#     L.Incr<-cogarchNoise(yuima.cogarch=model, data=observ,
+#                             param=as.list(coef), mu=1)
+#     ttt<-observ@zoo.data[[1]]
+#     tt<-index(ttt)
+#     L.Incr_Fin <- zoo(L.Incr$incr.L,tt[(1+length(tt)-length(L.Incr$incr.L)):length(tt)])
+#   }
+#   if(Est.Incr=="Incr"){
+#   # Build an object of class cogarch.gmm.incr
+#       res<-new("cogarch.est.incr", call = call, coef = coef, fullcoef = unlist(coef),
+#                 vcov = vcov, min = min, details = list(),
+#                 method = character(),
+#                 Incr.Lev = L.Incr_Fin,
+#                 model = setYuima(data = L.Incr$Cogarch,
+#                                  model=model), nobs=as.integer(length(L.Incr)+1),
+#                 logL.Incr = numeric(),
+#                 objFun= objFun
+#                  )
+#   }
+#   if(Est.Incr=="IncrPar"){
+#     #estimationLevy
+#
+#     fixedCon <- constdum(fixed, meas.par)
+#     lowerCon <- constdum(lower, meas.par)
+#     upperCon <- constdum(upper, meas.par)
+#     if(aggregation==TRUE){
+#       if(floor(n/index(observ@zoo.data[[1]])[n])!=env$deltaData){
+#         yuima.stop("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
+#       }
+#       inc.levy1<-diff(cumsum(c(0,L.Incr$incr.L))[seq(from=1,
+#                                                 to=yuima@sampling@n[1],
+#                                                 by=env$deltaData
+#       )])
+#     }else{
+#       inc.levy1 <- L.Incr$incr.L
+#     }
+#
+#     result.Lev <- gmm.Est.Lev(Increment.lev=c(0,inc.levy1),
+#                                   param0=start[meas.par],
+#                                   fixed = fixedCon[meas.par],
+#                                   lower=lowerCon[meas.par],
+#                                   upper=upperCon[meas.par],
+#                                   measure=model@measure,
+#                                   measure.type=model@measure.type,
+#                                   aggregation=aggregation,
+#                                   dt=1/env$deltaData
+#                               )
+#
+#     if(is.null(result.Lev)){
+#        res<-new("cogarch.est.incr", call = call, coef = coef, fullcoef = unlist(coef),
+#              vcov = vcov, min = min, details = list(),
+#              method = character(),
+#              Incr.Lev=L.Incr_Fin,
+#              model = setYuima(data = L.Incr$Cogarch,
+#                model=model),
+#              nobs=as.integer(length(L.Incr)+1),
+#              logL.Incr = numeric(),
+#              objFun= objFun
+#              )
+#
+#     }
+#     else{
+#       Inc.Parm<-result.Lev$estLevpar
+#       IncVCOV<-result.Lev$covLev
+#       if(length(meas.par)==length(Inc.Parm)){
+#         names(Inc.Parm)<-meas.par
+#         rownames(IncVCOV)<-as.character(meas.par)
+#         colnames(IncVCOV)<-as.character(meas.par)
+#       }
+#       name.parm.cog<-names(coef)
+#       coef<-c(coef,Inc.Parm)
+#
+#       names.par<-names(coef)
+#       cov<-NULL
+#       cov<-matrix(NA,length(names.par),length(names.par))
+#       rownames(cov)<-names.par
+#       colnames(cov)<-names.par
+#
+#       cov[unique(name.parm.cog),unique(name.parm.cog)]<-vcov
+#       cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
+#       cov<-cov
+#
+#       res<-new("cogarch.est.incr", call = call, coef = coef, fullcoef = unlist(coef),
+#                vcov = cov, min = min, details = list(),
+#                method = character(),
+#                Incr.Lev=L.Incr_Fin,
+#                model = setYuima(data = L.Incr$Cogarch,
+#                                 model=model), nobs=as.integer(length(L.Incr)+1),
+#                logL.Incr = tryCatch(-result.Lev$value,error=function(theta){NULL}),
+#                objFun= objFun
+#                )
+#
+#     }
+#
+#
+#  }
+
+ res <- ExtraNoiseFromEst(Est.Incr,
+    call, coef, vcov, min, details = list(),
+    method = character(), model, objFun, observ,
+    fixed, meas.par, lower, upper, env, yuima, start, aggregation)
+ return(res)
+
+}
+
+ExtraNoiseFromEst <- function(Est.Incr,
+  call, coef, vcov, min, details = list(),
+  method = character(), model, objFun, observ,
+  fixed, meas.par, lower, upper, env, yuima, start, aggregation){
+  n <- length(index(observ@original.data))
   if(Est.Incr=="NoIncr"){
-      res<-new("cogarch.gmm", call = call, coef = coef, fullcoef = unlist(coef),
-                vcov = vcov, min = min, details = list(),
-                method = character(),
-                model = model,
-                objFun = objFun
-               )
+    res<-new("cogarch.est", call = call, coef = coef,
+             fullcoef = unlist(coef),
+             vcov = vcov, min = min, details = details,
+             method = method,
+             model = setYuima(model=model),
+             objFun = objFun
+    )
   }
   if(Est.Incr=="Incr"||Est.Incr=="IncrPar"){
     L.Incr<-cogarchNoise(yuima.cogarch=model, data=observ,
-                            param=as.list(coef), mu=1)
+                         param=as.list(coef), mu=1)
     ttt<-observ@zoo.data[[1]]
     tt<-index(ttt)
-    L.Incr_Fin <- zoo(L.Incr,tt[(1+length(tt)-length(L.Incr)):length(tt)])
+    L.Incr_Fin <- zoo(L.Incr$incr.L,tt[(1+length(tt)-length(L.Incr$incr.L)):length(tt)])
   }
   if(Est.Incr=="Incr"){
-  # Build an object of class cogarch.gmm.incr
-      res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef),
-                vcov = vcov, min = min, details = list(),
-                method = character(),
-                Incr.Lev = L.Incr_Fin,
-                model = model, nobs=as.integer(length(L.Incr)+1),
-                logL.Incr = numeric(),
-                objFun= objFun
-                 )
+    # Build an object of class cogarch.gmm.incr
+    res<-new("cogarch.est.incr", call = call, coef = coef, fullcoef = unlist(coef),
+             vcov = vcov, min = min, details = list(),
+             method = character(),
+             Incr.Lev = L.Incr_Fin,
+             model = setYuima(data = L.Incr$Cogarch,
+                              model=model), nobs=as.integer(length(L.Incr)+1),
+             logL.Incr = numeric(),
+             objFun= objFun
+    )
   }
   if(Est.Incr=="IncrPar"){
     #estimationLevy
@@ -580,36 +700,38 @@ if(method!="L-BFGS-B"&&method!="brent"){
     upperCon <- constdum(upper, meas.par)
     if(aggregation==TRUE){
       if(floor(n/index(observ@zoo.data[[1]])[n])!=env$deltaData){
-        yuima.stop("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
+        yuima.stop("the n/Terminal in sampling information is not an integer. aggregation=FALSE is recommended")
       }
-      inc.levy1<-diff(cumsum(c(0,L.Incr))[seq(from=1,
-                                                to=yuima@sampling@n[1],
-                                                by=env$deltaData
+      inc.levy1<-diff(cumsum(c(0,L.Incr$incr.L))[seq(from=1,
+                                                     to=yuima@sampling@n[1],
+                                                     by=env$deltaData
       )])
     }else{
-      inc.levy1 <- L.Incr
+      inc.levy1 <- L.Incr$incr.L
     }
 
     result.Lev <- gmm.Est.Lev(Increment.lev=c(0,inc.levy1),
-                                  param0=start[meas.par],
-                                  fixed = fixedCon[meas.par],
-                                  lower=lowerCon[meas.par],
-                                  upper=upperCon[meas.par],
-                                  measure=model@measure,
-                                  measure.type=model@measure.type,
-                                  aggregation=aggregation,
-                                  dt=1/env$deltaData
-                              )
+                              param0=start[meas.par],
+                              fixed = fixedCon[meas.par],
+                              lower=lowerCon[meas.par],
+                              upper=upperCon[meas.par],
+                              measure=model@measure,
+                              measure.type=model@measure.type,
+                              aggregation=aggregation,
+                              dt=1/env$deltaData
+    )
 
     if(is.null(result.Lev)){
-       res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef),
-             vcov = vcov, min = min, details = list(),
-             method = character(),
-             Incr.Lev=L.Incr_Fin,
-             model = model, nobs=as.integer(length(L.Incr)+1),
-             logL.Incr = numeric(),
-             objFun= objFun
-             )
+      res<-new("cogarch.est.incr", call = call, coef = coef, fullcoef = unlist(coef),
+               vcov = vcov, min = min, details = list(),
+               method = character(),
+               Incr.Lev=L.Incr_Fin,
+               model = setYuima(data = L.Incr$Cogarch,
+                                model=model),
+               nobs=as.integer(length(L.Incr)+1),
+               logL.Incr = numeric(),
+               objFun= objFun
+      )
 
     }
     else{
@@ -633,21 +755,21 @@ if(method!="L-BFGS-B"&&method!="brent"){
       cov[names(Inc.Parm),names(Inc.Parm)]<-IncVCOV
       cov<-cov
 
-      res<-new("cogarch.gmm.incr", call = call, coef = coef, fullcoef = unlist(coef),
+      res<-new("cogarch.est.incr", call = call, coef = coef, fullcoef = unlist(coef),
                vcov = cov, min = min, details = list(),
                method = character(),
                Incr.Lev=L.Incr_Fin,
-               model = model, nobs=as.integer(length(L.Incr)+1),
+               model = setYuima(data = L.Incr$Cogarch,
+                                model=model), nobs=as.integer(length(L.Incr)+1),
                logL.Incr = tryCatch(-result.Lev$value,error=function(theta){NULL}),
                objFun= objFun
-               )
+      )
 
     }
 
 
- }
- return(res)
-
+  }
+  return(res)
 }
 
 constdum<-function(fixed, meas.par){
@@ -977,7 +1099,7 @@ AsympVar<-function(B_tilde,e,lower=0,upper=100,delta=0.1){
 }
 
 
-setMethod("plot",signature(x="cogarch.gmm.incr"),
+setMethod("plot",signature(x="cogarch.est.incr"),
           function(x, type="l" ,...){
             Time<-index(x@Incr.Lev)
             Incr.L<-coredata(x@Incr.Lev)
@@ -993,14 +1115,14 @@ setMethod("plot",signature(x="cogarch.gmm.incr"),
 )
 
 
-setMethod("summary", "cogarch.gmm",
+setMethod("summary", "cogarch.est",
           function (object, ...)
           {
             cmat <- cbind(Estimate = object@coef, `Std. Error` = sqrt(diag(object@vcov)))
             obj<- object@min
             labFun <- object@objFun
 
-            tmp <- new("summary.cogarch.gmm", call = object@call, coef = cmat,
+            tmp <- new("summary.cogarch.est", call = object@call, coef = cmat,
                        m2logL = 0,
                        #model = object@model,
                        objFun = labFun,
@@ -1017,7 +1139,7 @@ setMethod("summary", "cogarch.gmm",
 #
 # }
 
-setMethod("show", "summary.cogarch.gmm",
+setMethod("show", "summary.cogarch.est",
           function (object)
           {
 
@@ -1041,7 +1163,7 @@ setMethod("show", "summary.cogarch.gmm",
 )
 
 
-setMethod("summary", "cogarch.gmm.incr",
+setMethod("summary", "cogarch.est.incr",
           function (object, ...)
           {
             cmat <- cbind(Estimate = object@coef, `Std. Error` = sqrt(diag(object@vcov)))
@@ -1051,14 +1173,14 @@ setMethod("summary", "cogarch.gmm.incr",
             obj<- object@min
             labFun <- object@objFun
 
-            tmp <- new("summary.cogarch.gmm.incr", call = object@call, coef = cmat,
+            tmp <- new("summary.cogarch.est.incr", call = object@call, coef = cmat,
                        m2logL = m2logL,
                        objFun = labFun,
                        objFunVal = obj,
                        MeanI = mean(data),
                        SdI = sd(data),
                        logLI = object@logL.Incr,
-                       TypeI = object@model@measure.type,
+                       TypeI = object@model@model@measure.type,
                        NumbI = length(data),
                        StatI =summary(data)
             )
@@ -1066,11 +1188,16 @@ setMethod("summary", "cogarch.gmm.incr",
           }
 )
 #
-setMethod("show", "summary.cogarch.gmm.incr",
+setMethod("show", "summary.cogarch.est.incr",
           function (object)
           {
+            if(!is.null(object@logLI)){
 
-            cat("Two Stages GMM estimation \n\nCall:\n")
+              cat("Two Stages PSEUDO-LogLik estimation \n\nCall:\n")
+            }else{
+
+              cat("Two Stages GMM estimation \n\nCall:\n")
+            }
             print(object@call)
             cat("\nCoefficients:\n")
             print(coef(object))

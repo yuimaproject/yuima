@@ -1,22 +1,22 @@
-\name{cogarch.gmm.incr-class}
+\name{cogarch.est.incr-class}
 \docType{class}
-\alias{cogarch.gmm.incr-class}
-\alias{plot,cogarch.gmm.incr,ANY-method}
-\alias{gmm.cogarch.incr-class}
-\alias{cogarch.gmm.incr-class}
-\alias{simulate,cogarch.gmm.incr-method}
+\alias{cogarch.est.incr-class}
+\alias{plot,cogarch.est.incr,ANY-method}
+\alias{est.cogarch.incr-class}
+\alias{cogarch.est.incr-class}
+\alias{simulate,cogarch.est.incr-method}
 %%\alias{setSampling,yuima.carma-method}
 
-\title{Class for Generalized Method of Moments Estimation for COGARCH(p,q) model with underlying increments}
+\title{Class for Estimation of COGARCH(p,q) model with underlying increments}
 \description{
-  The \code{cogarch.gmm.incr} class is a class of the  \pkg{yuima} package that extends the \code{\link{cogarch.gmm-class}} and is filled by the function \code{\link{gmm}}.  
+  The \code{cogarch.est.incr} class is a class of the  \pkg{yuima} package that extends the \code{\link{cogarch.est-class}} and is filled by the function \code{\link{gmm}} or \code{\link{qmle}}.
 }
 \section{Slots}{
   \describe{
     \item{\code{Incr.Lev}:}{is an object of class \code{\link{zoo}} that contains the estimated increments of the noise obtained using \code{\link{cogarchNoise}}.}
-    \item{\code{model}:}{is an object of of \code{\link{yuima.cogarch-class}}.}
+    \item{\code{model}:}{is an object of of \code{\link{yuima-class}}.}
     \item{\code{logL.Incr}:}{is an object of class \code{numeric} that contains the value of the log-likelihood for estimated Levy increments.}
-    \item{\code{objFun}:}{is an object of class \code{character} that indicates the objective function used in the minimization problem. See the documentation of the function \code{\link{gmm}} for more details.}
+    \item{\code{objFun}:}{is an object of class \code{character} that indicates the objective function used in the minimization problem. See the documentation of the function \code{\link{gmm}} or \code{\link{qmle}}  for more details.}
     \item{\code{call}:}{is an object of class \code{language}. }
     \item{\code{coef}:}{is an object of class \code{numeric} that contains estimated parameters.}
     \item{\code{fullcoef}:}{is an object of class \code{numeric} that contains estimated and fixed parameters.}

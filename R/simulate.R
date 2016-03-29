@@ -815,7 +815,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
 
 # Simulate method for an object of class cogarch.gmm.incr
 
-setMethod("simulate","cogarch.gmm.incr",
+setMethod("simulate","cogarch.est.incr",
           function(object, nsim=1, seed=NULL, xinit,  ...){
 
               out <-aux.simulategmm(object=object, nsim=nsim, seed=seed, xinit=xinit, ...)

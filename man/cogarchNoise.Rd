@@ -18,12 +18,13 @@ cogarchNoise(yuima.cogarch, data=NULL, param, mu=1)
 \value{
   %\item{QL}{a real value.}
   \item{incr.Levy}{a numeric object contains the estimated increments.}
+  \item{model}{an object of class yuima containing the state, the variance and the cogarch process.}
   }
 \author{The YUIMA Project Team}
 \note{
   %The function ml.ql uses the function optim internally.
   The function \code{cogarchNoise} assumes the underlying Levy process is centered in zero.
-  
+
   The function \code{gmm} uses the function \code{cogarchNoise} for estimation of underlying Levy in the COGARCH(p,q) model.
   }
 

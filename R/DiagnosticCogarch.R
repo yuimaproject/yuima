@@ -1,56 +1,56 @@
 # We write a Diagnostic function that evaluates the following quantity
-Diagnostic.Cogarch <- function(yuima.cogarch, param = list(), 
+Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
                                matrixS = NULL , mu = 1,
                                display =TRUE){
-  
-  
+
+
   if(missing(yuima.cogarch))
     yuima.stop("yuima.cogarch or yuima object is missing.")
-  
-  if((length(param)==0 && !is(yuima.cogarch, "cogarch.gmm"))){
+
+  if((length(param)==0 && !is(yuima.cogarch, "cogarch.est"))){
       yuima.stop("missing values parameters")
   }
-  
-  
+
+
   if(is(yuima.cogarch,"yuima")){
     model<-yuima.cogarch@model
   }else{
     if(is(yuima.cogarch,"yuima.cogarch")){
       model<-yuima.cogarch
     }else{
-      if(is(yuima.cogarch,"cogarch.gmm")){
-        model<-yuima.cogarch@model
+      if(is(yuima.cogarch,"cogarch.est")){
+        model<-yuima.cogarch@model@model
         if(length(param)==0){
           param<-coef(yuima.cogarch)
         }
       }
     }
   }
-  
+
   if(!is.COGARCH(model)){
     yuima.warn("The model does not belong to the class yuima.cogarch")
   }
-  
+
   info <- model@info
   numb.ar <- info@q
   ar.name <- paste(info@ar.par,c(numb.ar:1),sep="")
   numb.ma <- info@p
   ma.name <- paste(info@ma.par,c(1:numb.ma),sep="")
   loc.par <- info@loc.par
-  
+
   if(is.list(param)){
     param <- unlist(param)
-  }  
-  
+  }
+
   xinit.name0 <- model@parameter@xinit
   idx <- na.omit(match(c(loc.par, ma.name), xinit.name0))
   xinit.name <- xinit.name0[-idx]
 
-  
+
   fullcoeff <- c(ar.name, ma.name, loc.par,xinit.name)
   nm<-names(param)
   oo <- match(nm, fullcoeff)
-  if(!is(yuima.cogarch,"cogarch.gmm")){
+  if(!is(yuima.cogarch,"cogarch.est")){
     if(length(na.omit(oo))!=length(fullcoeff))
       yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima.cogarch model")
   }
@@ -78,7 +78,7 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
   ev.dum<-matrix(0,1,info@q)
   ev.dum[1,info@q] <- 1
   av.dum <-matrix(0,info@q,1)
-  av.dum[c(1:info@p),1]<-acoeff 
+  av.dum[c(1:info@p),1]<-acoeff
   if(display==TRUE){
     cat(paste0("\n COGARCH(",info@p,info@q,") model \n"))
   }
@@ -113,7 +113,7 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
     if(is.complex(lambda.eig) && all(Im(lambda.eig)==0) && all(Re(lambda.eig) < 0)){
       massage <- "\n the Variance is a positive process \n"
       res.pos <- TRUE
-    } 
+    }
   }
   if((info@q==2 && info@p==2 )){
     if(is.numeric(lambda.eig)|| (is.complex(lambda.eig) && all(Im(lambda.eig)==0))){
@@ -140,7 +140,7 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
   if(display==TRUE){
     cat(massage)
   }
-  
+
   res1<-StationaryMoments(cost,b,acoeff,mu)
   res <- list(meanVarianceProc=res1$ExpVar,
               meanStateVariable=res1$ExpStatVar,
@@ -157,19 +157,19 @@ yuima.norm2<-function(x){
 
 StationaryMoments<-function(cost,b,acoeff,mu=1){
   # We obtain stationary mean of State process
-  # stationary mean of the variance 
+  # stationary mean of the variance
   # E\left(Y\right)=-a_{0}m_{2}\left(A+m_{2}ea'\right)^{-1}e
-  q<-length(b) 
+  q<-length(b)
   a <- e <- matrix(0,nrow=q,ncol=1)
   e[q,1] <- 1
   p<-length(acoeff)
   a[1:p,1] <- acoeff
   B_tilde <- MatrixA(b[c(q:1)])+mu*e%*%t(a)
-  
+
   if(q>1){
     invB<-rbind(c(-B_tilde[q,-1],1)/B_tilde[q,1],cbind(diag(q-1),matrix(0,q-1,1)))
   }else{invB<-1/B_tilde}
-  
+
   ExpStatVar <- -cost*mu*invB%*%e
   ExpVar <- cost+t(a)%*%ExpStatVar
   res <- list(ExpVar=ExpVar, ExpStatVar=ExpStatVar)
