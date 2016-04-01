@@ -127,7 +127,7 @@ export(rconst)
 
 export(setCogarch)
 export(setMap)
-export(setMultiModel)
+#export(setMultiModel)
 export(setIntegral)
 
 export(dim)

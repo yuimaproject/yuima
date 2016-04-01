@@ -130,6 +130,24 @@ setModel <- function(drift=NULL,
                      solve.variable,
                      xinit=NULL){
   ## we need a temp env for simplifications
+  if(!is.null(jump.coeff)){
+    if(is.matrix(jump.coeff)){
+      if(dim(jump.coeff)[2]!=1){
+        intensity <- NULL
+        df <- as.list(measure[["df"]])
+        if(any(measure.type=="CP")){
+          intensity <- measure[["intensity"]]
+        }
+        res <- setMultiModel(drift = drift, diffusion = diffusion,
+          hurst = hurst, jump.coeff = jump.coeff,
+          intensity = intensity, df = df,
+          measure.type = measure.type, state.variable = state.variable,
+          jump.variable = jump.variable, time.variable = time.variable,
+          solve.variable = solve.variable, xinit= xinit)
+        return(res)
+      }
+    }
+  }
 
   yuimaENV <- new.env()
   ##::measure and jump term #####################################
@@ -749,7 +767,7 @@ numb.jump <- function(x){length(x[[1]])}
 check.yuima.levy <- function(x){
   Levy <- FALSE
   if(length(x@measure.type)>0){
-    if(!is(x, "yuima.multimodel")){
+    if(!is(x, "yuima.model")){
       yuima.stop("the Levy model have to belong to the yuima.multimodel class")
     }
     Levy <- TRUE
