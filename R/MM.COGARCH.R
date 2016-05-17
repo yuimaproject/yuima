@@ -669,7 +669,7 @@ ExtraNoiseFromEst <- function(Est.Incr,
              fullcoef = unlist(coef),
              vcov = vcov, min = min, details = details,
              method = method,
-             model = setYuima(model=model),
+             yuima = setYuima(model=model),
              objFun = objFun
     )
   }
@@ -686,7 +686,7 @@ ExtraNoiseFromEst <- function(Est.Incr,
              vcov = vcov, min = min, details = list(),
              method = character(),
              Incr.Lev = L.Incr_Fin,
-             model = setYuima(data = L.Incr$Cogarch,
+             yuima = setYuima(data = L.Incr$Cogarch,
                               model=model), nobs=as.integer(length(L.Incr)+1),
              logL.Incr = numeric(),
              objFun= objFun
@@ -718,15 +718,15 @@ ExtraNoiseFromEst <- function(Est.Incr,
                               measure=model@measure,
                               measure.type=model@measure.type,
                               aggregation=aggregation,
-                              dt=1/env$deltaData
-    )
+                              dt=env$deltaData
+    )##Modified 17/05/2016
 
     if(is.null(result.Lev)){
       res<-new("cogarch.est.incr", call = call, coef = coef, fullcoef = unlist(coef),
                vcov = vcov, min = min, details = list(),
                method = character(),
                Incr.Lev=L.Incr_Fin,
-               model = setYuima(data = L.Incr$Cogarch,
+               yuima = setYuima(data = L.Incr$Cogarch,
                                 model=model),
                nobs=as.integer(length(L.Incr)+1),
                logL.Incr = numeric(),
@@ -759,7 +759,7 @@ ExtraNoiseFromEst <- function(Est.Incr,
                vcov = cov, min = min, details = list(),
                method = character(),
                Incr.Lev=L.Incr_Fin,
-               model = setYuima(data = L.Incr$Cogarch,
+               yuima = setYuima(data = L.Incr$Cogarch,
                                 model=model), nobs=as.integer(length(L.Incr)+1),
                logL.Incr = tryCatch(-result.Lev$value,error=function(theta){NULL}),
                objFun= objFun
@@ -1180,7 +1180,7 @@ setMethod("summary", "cogarch.est.incr",
                        MeanI = mean(data),
                        SdI = sd(data),
                        logLI = object@logL.Incr,
-                       TypeI = object@model@model@measure.type,
+                       TypeI = object@yuima@model@measure.type,
                        NumbI = length(data),
                        StatI =summary(data)
             )

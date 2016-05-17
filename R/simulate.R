@@ -834,7 +834,7 @@ aux.simulategmm<-function(object, nsim=1, seed=NULL, xinit, ...){
   Time<-index(object@Incr.Lev)
   Incr.L<-coredata(object@Incr.Lev)
 
-  model <- object@model
+  model <- object@yuima@model
   EndT <- Time[length(Time)]
   numb <- (length(Incr.L)+1)
   valpar<-coef(object)

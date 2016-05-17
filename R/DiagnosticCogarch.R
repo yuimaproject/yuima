@@ -19,7 +19,7 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
       model<-yuima.cogarch
     }else{
       if(is(yuima.cogarch,"cogarch.est")){
-        model<-yuima.cogarch@model@model
+        model<-yuima.cogarch@yuima@model
         if(length(param)==0){
           param<-coef(yuima.cogarch)
         }

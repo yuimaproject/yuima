@@ -31,7 +31,7 @@ setClass("yuima.cogarch",
 # Class 'gmm.cogarch'
 
 setClass("cogarch.est",representation(
-  model = "yuima",
+  yuima = "yuima",
   objFun="character"),
   contains="mle"
 )
