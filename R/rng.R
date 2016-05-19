@@ -45,9 +45,9 @@ dbgamma<-function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
 }
 
 
-## (Multivariate) Normal gamma
+## (Multivariate) Variance gamma
 
-rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
+rvgamma <- function(x,lambda,alpha,beta,mu,Lambda){
   ## Error check
   if(length(mu)!=length(beta)){
     stop("Error: wrong input dimension.")
@@ -82,10 +82,12 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     if( nrow(Lambda)!=ncol(Lambda)){
       stop("Lambda must be a square matrix.")
     }
+    if(sum((Lambda-t(Lambda))*(Lambda-t(Lambda)))!=0){
+      stop("Lambda must be a symmetric matrix")
+    }
     if( nrow(Lambda)!=length(beta)){
       stop("Dimension of Lambda and beta must be equal.")
     }
-    
     if( min(eigen(Lambda)$value) <= 10^(-15) ){
       stop("Lambda must be positive definite.")
     }
@@ -100,7 +102,7 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     if( alpha <= 0 )
       stop("alpha must be positive.")
     if( tmp <=0)
-      stop("alpha^2 - t(beta) %*% Lambda %*% must be positive.")
+      stop("alpha^2 - t(beta) %*% Lambda %*% beta must be positive.")
     
     tau <- rgamma(x,lambda,tmp/2)
     eta <- rnorm(x*length(beta))
@@ -114,7 +116,7 @@ rngamma <- function(x,lambda,alpha,beta,mu,Lambda){
 }
 
 
-dngamma <- function(x,lambda,alpha,beta,mu,Lambda){
+dvgamma <- function(x,lambda,alpha,beta,mu,Lambda){
   ## Error check
   if(length(lambda)!=1||length(alpha)!=1)
     stop("alpha and lambda must be positive reals.")
@@ -141,6 +143,9 @@ dngamma <- function(x,lambda,alpha,beta,mu,Lambda){
     if( nrow(Lambda)!=ncol(Lambda)){
       stop("Lambda must be a square matrix.")
     }
+    if(sum((Lambda-t(Lambda))*(Lambda-t(Lambda)))!=0){
+      stop("Lambda must be a symmetric matrix")
+    }
     if( nrow(Lambda)!=length(beta)){
       stop("Dimension of Lambda and beta must be equal.")
     }
@@ -154,7 +159,7 @@ dngamma <- function(x,lambda,alpha,beta,mu,Lambda){
 
     tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
     if( tmp <=0)
-      stop("alpha^2 - t(beta) %*% Lambda %*% must be positive.")
+      stop("alpha^2 - t(beta) %*% Lambda %*% beta must be positive.")
     Lambdainv<-solve(Lambda)
     dens<- exp(t(beta)%*%(x-mu))*(alpha^2-t(beta)%*%Lambda%*%beta)^(lambda)*besselK(alpha*sqrt(t(x-mu)%*%Lambdainv%*%(x-mu)),lambda-nrow(Lambda)/2)*sqrt(t(x-mu)%*%Lambdainv%*%(x-mu))^{lambda-nrow(Lambda)/2}/(gamma(lambda)*pi^{nrow(Lambda)/2}*2^{nrow(Lambda)/2+lambda-1}*alpha^{lambda-nrow(Lambda)/2})
     dens
@@ -202,6 +207,13 @@ rNIG <- function(x,alpha,beta,delta,mu,Lambda){
   if(length(mu)!=length(beta)){
     stop("Error: wrong input dimension.")
   }
+  if(length(alpha)>1||length(delta)>1)
+    stop("alpha and delta must be positive reals.")
+  if( alpha < 0 )
+    stop("alpha must be nonnegative.")
+  if( delta <= 0 )
+    stop("delta must be positive.")
+  
   if(missing(Lambda))
    Lambda <- NA
 
@@ -224,7 +236,15 @@ rNIG <- function(x,alpha,beta,delta,mu,Lambda){
     return(X)
     
   }else{  ## multivariate case
-  	
+    if( nrow(Lambda)!=ncol(Lambda)){
+      stop("Lambda must be a square matrix.")
+    }
+    if(sum((Lambda-t(Lambda))*(Lambda-t(Lambda)))!=0){
+      stop("Lambda must be a symmetric matrix")
+    }
+    if( nrow(Lambda)!=length(beta)){
+      stop("Dimension of Lambda and beta must be equal.")
+    }
 	if( min(eigen(Lambda)$value) <= 10^(-15) ){
       stop("Lambda must be positive definite.")
     }
@@ -277,6 +297,9 @@ dNIG <- function(x,alpha,beta,delta,mu,Lambda){
     #multivariate case
     if( nrow(Lambda)!=ncol(Lambda)){
       stop("Lambda must be a square matrix.")
+    }
+    if(sum((Lambda-t(Lambda))*(Lambda-t(Lambda)))!=0){
+      stop("Lambda must be a symmetric matrix")
     }
     if( nrow(Lambda)!=length(beta)){
       stop("Dimension of Lambda and beta must be equal.")
