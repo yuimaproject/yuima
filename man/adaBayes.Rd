@@ -23,7 +23,7 @@ adaBayes(yuima, start, prior, lower, upper, method = "nomcmc")
 \note{
   This routine is not stable and accurate. Dr.Kamatani is now working for improvements.
 }
-\reference{
+\references{
 Yoshida, N. (2011). Polynomial type large deviation inequalities and quasi-likelihood analysis for stochastic differential equations. Annals of the Institute of Statistical Mathematics, 63(3), 431-479.
 
 Uchida, M., & Yoshida, N. (2014). Adaptive Bayes type estimators of ergodic diffusion processes from discrete observations. Statistical Inference for Stochastic Processes, 17(2), 181-219.
