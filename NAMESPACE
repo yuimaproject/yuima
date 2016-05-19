@@ -154,8 +154,8 @@ export(get.zoo.data)
 ##export(ql,rql,ml.ql)
 ##export(rql)
 export(adaBayes)
-export(rIG, rNIG, rbgamma, rngamma, rstable) ##:: random number generator for Inverse Gaussian
-export(dIG, dNIG, dbgamma, dngamma) ##:: random number generator for I\
+export(rIG, rNIG, rbgamma, rvgamma, rstable) ## random number generators in rng.R
+export(dIG, dNIG, dbgamma, dvgamma) ## pdfs in rng.R
 export(limiting.gamma)
 
 
