@@ -389,28 +389,70 @@ rstable <- function(x,alpha,beta,sigma,gamma){
 
 
 ## Positive exponentially tempered stable (AR method)
-## ## This must be re-coded later!! (temporarily, rather inefficient)
-rpts <- function(x,al,a,b) {
-    if( al <= 0 | al>= 1 )
-    stop("al must lie in (0,1).")
-    if( a <= 0 )
+rpts<-function(x,alpha,a,b){
+  if( alpha <= 0 | alpha>= 1 )
+    stop("alpha must lie in (0,1).")
+  if( a <= 0 )
     stop("a must be positive value.")
-    if( b <= 0 )
+  if( b <= 0 )
     stop("b must be positive value.")
+  else
+    .C("rpts",as.integer(x),as.double(alpha),as.double(a),as.double(b),rn=double(length=x))$rn}
 
-	sig <- (-a*gamma(-al)*cos(pi*al/2))^(1/al)
-	y <- c()
-	i <- 1
-	while (i <= x) {
-		u <- runif(1)
-		v <- rstable(1,al,1,sig,0)
-		w <- exp(-b*v)
-		if (u < w ){
-			y <- append(y,v)
-			i <- i+1
-		}
-	}
-	return(y)
+
+## Normal tempered stable 
+rnts<-function(x,alpha,a,b,beta,mu,Lambda){
+  ## Error check
+  if(length(mu)!=length(beta)){
+    stop("Error: wrong input dimension.")
+  }
+  if(missing(Lambda))
+    Lambda <- NA
+  if( alpha <= 0 || alpha > 2 ){
+    stop("The index alpha must take values in (0,2].")
+  }
+  if( a <= 0 )
+    stop("a must be positive value.")
+  if( b <= 0 )
+    stop("b must be positive value.")
+  
+  if(is.na(Lambda)){
+    ## univariate case
+    if(length(mu)!=1 || length(beta)!=1){
+      stop("Error: wrong input dimension.")
+    }
+    
+    tau <- rpts(x,alpha,a,b)
+    eta <- rnorm(x)
+    ##  z <- mu + beta * tau * Lambda + sqrt(tau * Lambda) * eta
+    z <- mu + beta * tau + sqrt(tau) * eta
+    X <- z
+    return(X)
+    
+  }else{ ## multivariate case
+    if( nrow(Lambda)!=ncol(Lambda)){
+      stop("Lambda must be a square matrix.")
+    }
+    if( nrow(Lambda)!=length(beta)){
+      stop("Dimension of Lambda and beta must be equal.")
+    }
+    if(nrow(Lambda)!=length(mu)){
+      stop("Dimension of Lambda and mu must be equal.")
+    }
+    if( min(eigen(Lambda)$value) <= 10^(-15) ){
+      stop("Lambda must be positive definite.")
+    }
+    if( det(Lambda) > 1+10^(-15) || det(Lambda) < 1-10^(-15) ){
+      stop("The determinant of Lambda must be 1.")
+    }
+    tau<-rpts(x,alpha,a,b)
+    eta <- rnorm(x*length(beta))
+    sqrt.L <- svd(Lambda)
+    sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
+    
+    z <- mu + t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(sqrt(tau),length(beta)),x,length(beta))) * (sqrt.L %*% t(matrix(eta,x,length(beta))))
+    z<-mu+ t(matrix(rep(tau,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(sqrt(tau),length(beta)),x,length(beta))) * (sqrt.L %*% t(matrix(eta,x,length(beta))))
+    X <- z
+    return(X)
+  }
 }
-
-
