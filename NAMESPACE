@@ -154,7 +154,7 @@ export(get.zoo.data)
 ##export(ql,rql,ml.ql)
 ##export(rql)
 export(adaBayes)
-export(rIG, rNIG, rbgamma, rvgamma, rstable) ## random number generators in rng.R
+export(rIG, rNIG, rbgamma, rvgamma, rstable,rpts,rnts) ## random number generators in rng.R
 export(dIG, dNIG, dbgamma, dvgamma) ## pdfs in rng.R
 export(limiting.gamma)
 
