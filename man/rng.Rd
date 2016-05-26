@@ -9,6 +9,8 @@
 \alias{rvgamma}
 \alias{dvgamma}
 \alias{rstable}
+\alias{rpts}
+\alias{rnts}
 
 \title{Random numbers and densities}
 \description{\code{simulate} function can use the specific random number generators to generate Levy paths.}
@@ -23,8 +25,8 @@ rvgamma(x,lambda,alpha,beta,mu,Lambda)
 dvgamma(x,lambda,alpha,beta,mu,Lambda)
 rstable(x,alpha,beta,sigma,gamma)
 %dstable(x,alpha,beta,sigma,gamma)
-%rpts(x,alpha,a,b)
-%nts(x,alpha,a,b,beta,mu,Lambda)
+rpts(x,alpha,a,b)
+rnts(x,alpha,a,b,beta,mu,Lambda)
 }
 \arguments{
   \item{x}{Number of R.Ns to be geneated.}
@@ -64,9 +66,9 @@ Lambda is symmetric and positive definite with det(Lambda)=1; lambda>0; alpha>0 
 
 \code{stable} (stable): Parameters alpha, beta, sigma and gamma express stability, degree of skewness, scale and location, respectively. They satisfy the following condition: 0<alpha<=2; -1<=beta<=1; scale>0; gamma is a real number.
 
-%\code{pts}(positive tempered stable): Positive tempered stable distribution is defined by the tilting of positive stable distribution. The parameters alpha, a and b express stability, scale and degree of tilting, respectively. They satisfy the following condition: 0<alpha<1; a>0; b>0.
+\code{pts}(positive tempered stable): Positive tempered stable distribution is defined by the tilting of positive stable distribution. The parameters alpha, a and b express stability, scale and degree of tilting, respectively. They satisfy the following condition: 0<alpha<1; a>0; b>0.
 
-%\code{nts}(normal tempered stable): Normal tempered stable distribution is defined by the normal mean-variance mixture of positive tempered stable distribution. The parameters alpha, a, b, beta, mu and Lambda express stability, scale, degree of tilting, degree of asymemtry, location and degree of mixture, respectively. They satisfy the following condition: Lambda is symmetric and positive definite with det(Lambda)=1; 0<alpha<1; a>0; b>0.
+\code{nts}(normal tempered stable): Normal tempered stable distribution is defined by the normal mean-variance mixture of positive tempered stable distribution. The parameters alpha, a, b, beta, mu and Lambda express stability, scale, degree of tilting, degree of asymemtry, location and degree of mixture, respectively. They satisfy the following condition: Lambda is symmetric and positive definite with det(Lambda)=1; 0<alpha<1; a>0; b>0.
 }
 
 \value{
@@ -104,11 +106,11 @@ Eberlein, E. (2001). Application of generalized hyperbolic Lévy motions to fina
 
 Madan, D. B., Carr, P. P., & Chang, E. C. (1998). The variance gamma process and option pricing. European finance review, 2(1), 79-105.
 
-%## rpts
-%Kawai, R., & Masuda, H. (2011). On simulation of tempered stable random variates. Journal of Computational and Applied Mathematics, 235(8), 2873-2887.
+## rpts
+Kawai, R., & Masuda, H. (2011). On simulation of tempered stable random variates. Journal of Computational and Applied Mathematics, 235(8), 2873-2887.
 
-%## rnts
-%Barndorff-Nielsen, O. E., & Shephard, N. (2001). Normal modified stable processes. Aarhus: MaPhySto, Department of Mathematical Sciences, University of Aarhus.
+## rnts
+Barndorff-Nielsen, O. E., & Shephard, N. (2001). Normal modified stable processes. Aarhus: MaPhySto, Department of Mathematical Sciences, University of Aarhus.
 
 }
 
@@ -145,7 +147,7 @@ rvgamma(x,2,1,-0.5,0)
 
 # Ex 5. (One-dimensional normal inverse Gaussian distribution)
 # Lambda=1.
-# Choose the parameters values and x.
+# Choose the parameter values and x.
 x<-10 # the number of r.n
 rNIG(x,1,1,1,1)
 
@@ -157,6 +159,13 @@ Lambda<-matrix(c(1,0,0,1),2,2)
 x<-10 # the number of r.n
 rNIG(x,1,beta,1,mu,Lambda)
 
+# Ex 7. (Positive tempered stable)
+# Choose the parameter values and x.
+alpha<-0.7
+a<-0.2
+b<-1
+x<-10 # the number of r.n
+rpts(1,alpha,a,b)
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
