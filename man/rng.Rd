@@ -78,7 +78,7 @@ Lambda is symmetric and positive definite with det(Lambda)=1; lambda>0; alpha>0 
 \author{The YUIMA Project Team}
 \note{
   Some density-plot functions are still missing: as for the non-Gaussian stable densities, one can use, e.g., stabledist package.
-  The rejection-acceptance method is used for generating pts and nts. It should be noted that its acceptance rate decreases at exponential order as a and b become larger: specifically, the rate is given by exp( a*gamma(-alpha)*b^(a) )
+  The rejection-acceptance method is used for generating pts and nts. It should be noted that its acceptance rate decreases at exponential order as a and b become larger: specifically, the rate is given by exp( a*gamma(-alpha)*b^(alpha) )
 }
 
 \references{
