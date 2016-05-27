@@ -396,6 +396,9 @@ rpts<-function(x,alpha,a,b){
     stop("a must be positive value.")
   if( b <= 0 )
     stop("b must be positive value.")
+  ar<-exp(a*gamma(-alpha)*b^(alpha))
+  if(ar <= 0.1)
+    stop("Acceptance rate is too small.")
   else
     .C("rpts",as.integer(x),as.double(alpha),as.double(a),as.double(b),rn=double(length=x))$rn}
 
