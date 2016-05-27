@@ -1232,7 +1232,7 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
 
       }
       if(yuima@model@measure.type=="code"){
-  #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rngamma"
+  #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rvgamma"
         name.func.dummy <- as.character(model@measure$df$expr[1])
         name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
         names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
@@ -1306,7 +1306,7 @@ dummycovCarmaNoise<-vcov[unique(measure.par),unique(c(measure.par))] #we need to
                                          length(coef[ names.measpar]))
                            )
         }
-        if(measurefunc=="rngamma"){
+        if(measurefunc=="rvgamma"){
 #           result.Lev<-yuima.Estimation.VG(Increment.lev=inc.levy1,param0=coef[ names.measpar],
 #                                           fixed.carma=fixed.carma,
 #                                           lower.carma=lower.carma,
@@ -2557,7 +2557,7 @@ dCPGam<-function(x,lambda,shape,scale){
 }
 
 
-minusloglik.Lev<-function(par,env){
+minusloglik.Lev <- function(par,env){
   if(env$measure.type=="code"){
     if(env$measure=="rNIG"){
       alpha<-par[1]
@@ -2569,12 +2569,12 @@ minusloglik.Lev<-function(par,env){
       v1<-v[!is.infinite(v)]
       -sum(v1)
     }else{
-      if(env$measure=="rngamma"){
+      if(env$measure=="rvgamma"){
         lambda<-par[1]
         alpha<-par[2]
         beta<-par[3]
         mu<-par[4]
-        f<-dngamma(env$data,lambda,alpha,beta,mu)
+        f<-dvgamma(env$data,lambda,alpha,beta,mu)
         v<-log(as.numeric(na.omit(f)))
         v1<-v[!is.infinite(v)]
         -sum(v1)
@@ -2644,13 +2644,13 @@ Lev.hessian<-function (params,env){
         v1<-v[!is.infinite(v)]
         return(sum(v1))
       }else{
-        if(env$measure=="rngamma"){
+        if(env$measure=="rvgamma"){
           lambda<-params[1]
           alpha<-params[2]
           beta<-params[3]
           mu<-params[4]
-          #return(sum(log(dngamma(env$data,lambda,alpha,beta,mu))))
-          f<-dngamma(env$data,lambda,alpha,beta,mu)
+          #return(sum(log(dvgamma(env$data,lambda,alpha,beta,mu))))
+          f<-dvgamma(env$data,lambda,alpha,beta,mu)
           v<-log(as.numeric(na.omit(f)))
           v1<-v[!is.infinite(v)]
           return(sum(v1))
@@ -2706,7 +2706,7 @@ Lev.hessian<-function (params,env){
       if(env$measure=="rNIG"){
         Matr.dum<-diag(c(1,1,1/env$dt,1/env$dt))
       }else{
-        if(env$measure=="rngamma"){
+        if(env$measure=="rvgamma"){
           Matr.dum<-diag(c(1/env$dt,1,1,1/env$dt))
         }else{
           if(env$measure=="rIG"){
@@ -2753,7 +2753,7 @@ yuima.Estimation.Lev<-function(Increment.lev,param0,
         param0[3]<-param0[3]*dt
         param0[4]<-param0[4]*dt
       }else{
-        if(env$measure=="rngamma"){
+        if(env$measure=="rvgamma"){
           #Matr.dum<-diag(c(1/env$dt,1,1,1/env$dt))
           param0[1]<-param0[1]*dt
           param0[4]<-param0[4]*dt
@@ -2782,7 +2782,7 @@ yuima.Estimation.Lev<-function(Increment.lev,param0,
       ui<-rbind(c(1, -1, 0, 0),c(1, 1, 0, 0),c(1, 0, 0, 0),c(0, 0, 1, 0))
       ci<-c(0,0,0,10^(-6))
     }else{
-      if(measure=="rngamma"){
+      if(measure=="rvgamma"){
         ui<-rbind(c(1,0, 0, 0),c(0, 1, 1, 0),c(0, 1,-1, 0),c(0, 1,0, 0))
         ci<-c(10^-6,10^-6,10^(-6), 0)
       }else{
@@ -2899,7 +2899,7 @@ yuima.Estimation.Lev<-function(Increment.lev,param0,
         paramLev[3]<-paramLev[3]/dt
         paramLev[4]<-paramLev[4]/dt
         }else{
-          if(env$measure=="rngamma"){
+          if(env$measure=="rvgamma"){
             #Matr.dum<-diag(c(1/env$dt,1,1,1/env$dt))
             paramLev[1]<-paramLev[1]/dt
             paramLev[4]<-paramLev[4]/dt
@@ -3056,7 +3056,7 @@ yuima.Estimation.Lev<-function(Increment.lev,param0,
 #     alpha<-par[2]
 #     beta<-par[3]
 #     mu<-par[4]
-#     -sum(log(dngamma(data,lambda,alpha,beta,mu)))
+#     -sum(log(dvgamma(data,lambda,alpha,beta,mu)))
 #   }
 #
 #   data<-Increment.lev
@@ -3134,7 +3134,7 @@ yuima.Estimation.Lev<-function(Increment.lev,param0,
 #       beta<-params[3]
 #       mu<-params[4]
 #
-#       return(sum(log(dngamma(data,lambda,alpha,beta,mu))))
+#       return(sum(log(dvgamma(data,lambda,alpha,beta,mu))))
 #     }
 #     # hessian <- tsHessian(param = params, fun = logLik.VG)
 #     #hessian<-optimHess(par, fn, gr = NULL,data=data)

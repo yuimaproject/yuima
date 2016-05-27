@@ -159,7 +159,7 @@ setModel <- function(drift=NULL,
 
   ##::make type function list ####
   CPlist <- c("dnorm", "dgamma", "dexp", "dconst")
-  codelist <- c("rIG", "rNIG", "rgamma", "rbgamma", "rngamma", "rstable")
+  codelist <- c("rIG", "rNIG", "rgamma", "rbgamma", "rvgamma", "rstable")
   ##::end make type function list ####
 
   if(!length(measure.type)){

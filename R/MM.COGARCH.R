@@ -791,7 +791,8 @@ gmm.Est.Lev<-function(Increment.lev,
             measure,
             measure.type,
             aggregation,
-            dt){
+            dt,
+            noCPFFT = TRUE){
 
   fixed.carma <- unlist(fixed)
   lower.carma <- unlist(lower)
@@ -800,8 +801,23 @@ gmm.Est.Lev<-function(Increment.lev,
   Dummy <- TRUE
 
 
+  if(noCPFFT && measure.type=="CP"){
+    L<-cumsum(c(0,Increment.lev))
+    mod1 <- setPoisson(intensity=as.character(measure$intensity),
+                       df=list(as.character(measure$df$expr)))
+    Yui1<-setYuima(data=setData(L,delta=dt), model=mod1)
+    Noise <- qmle(yuima=Yui1,
+                  start=param0,
+                  upper = upper.carma,
+                  lower=lower.carma,
+                  fixed = fixed.carma)
+    result.Lev <- list(estLevpar = coef(Noise), covLev = Noise@vcov, value = Noise@min)
+
+    return(result.Lev)
+  }
+
   CPlist <- c("dnorm","dgamma", "dexp")
-  codelist <- c("rngamma","rNIG","rIG", "rgamma")
+  codelist <- c("rvgamma","rNIG","rIG", "rgamma")
   if(measure.type=="CP"){
     tmp <- regexpr("\\(", measure$df$exp)[1]
     measurefunc <- substring(measure$df$exp, 1, tmp-1)

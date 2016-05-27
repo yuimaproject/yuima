@@ -1,3 +1,4 @@
+\encoding{UTF-8}
 \name{rng}
 \alias{rng}
 \alias{rIG}
@@ -55,12 +56,12 @@ rnts(x,alpha,a,b,beta,mu,Lambda)
 \details{
 \code{IG} (inverse Gaussian): Delta and gamma are positive (the case of gamma=0 corresponds to the positive half stable, provided by the "rstable").
 
-\code{NIG} (normal inverse Gaussian): It is defined by the normal mean-variance mixuture of inverse Gaussian distribution. The parameters alpha, beta, delta and mu express the heaviness of tails, degree of asymmetry, scale and location, respectively. They satisfy the following conditions: 
+\code{NIG} (normal inverse Gaussian): It is defined by the normal mean-variance mixuture of inverse Gaussian distribution. The parameters alpha, beta, delta and mu express the heaviness of tails, degree of asymmetry, scale and location, respectively. They satisfy the following conditions:
 Lambda is symmetric and positive definite with det(Lambda)=1; delta>0; alpha>0 with alpha^2-beta^T Lambda beta >0.
 
 \code{bgamma} (bilateral gamma): Bilateral gamma distribution is defined by the difference of independent gamma distributions Gamma(delta.plus,gamma.plus) and Gamma(delta.minus,gamma.minus).
 
-\code{vgamma} (variance gamma): Variance gamma distribution is defined by the normal mean-variance mixture of gamma distribution. The parameters satisfy the following conditions: 
+\code{vgamma} (variance gamma): Variance gamma distribution is defined by the normal mean-variance mixture of gamma distribution. The parameters satisfy the following conditions:
 Lambda is symmetric and positive definite with det(Lambda)=1; lambda>0; alpha>0 with alpha^2-beta^T Lambda beta >0. Especially in the case of beta=0 it is variance gamma distribution.
 
 \code{stable} (stable): Parameters alpha, beta, sigma and gamma express stability, degree of skewness, scale and location, respectively. They satisfy the following condition: 0<alpha<=2; -1<=beta<=1; scale>0; gamma is a real number.
@@ -86,15 +87,15 @@ Lambda is symmetric and positive definite with det(Lambda)=1; lambda>0; alpha>0 
 
 Chambers, John M., Colin L. Mallows, and B. W. Stuck.  (1976) A method for simulating stable random variables, Journal of the american statistical association, 71(354), 340-344.
 
-Weron, Rafał. (1996) On the Chambers-Mallows-Stuck method for simulating skewed stable random variables, Statistics & probability letters, 28.2, 165-171.
+Weron, \enc{Rafał}{Rafal}. (1996) On the Chambers-Mallows-Stuck method for simulating skewed stable random variables, Statistics & probability letters, 28.2, 165-171.
 
-Weron, Rafał. (2010) Correction to:" On the Chambers–Mallows–Stuck Method for Simulating Skewed Stable Random Variables", No. 20761, University Library of Munich, Germany.
+Weron, \enc{Rafał}{Rafal}. (2010) Correction to:" On the Chambers-Mallows-Stuck Method for Simulating Skewed Stable Random Variables", No. 20761, University Library of Munich, Germany.
 
 ## rbgamma, dbgamma
 
-Küchler, U., & Tappe, S. (2008). Bilateral Gamma distributions and processes in financial mathematics. Stochastic Processes and their Applications, 118(2), 261-283.
+\enc{Küchler}{Kuchler}, U., & Tappe, S. (2008). Bilateral Gamma distributions and processes in financial mathematics. Stochastic Processes and their Applications, 118(2), 261-283.
 
-Küchler, U., & Tappe, S. (2008). On the shapes of bilateral Gamma densities. Statistics & Probability Letters, 78(15), 2478-2484.
+\enc{Küchler}{Kuchler}, U., & Tappe, S. (2008). On the shapes of bilateral Gamma densities. Statistics & Probability Letters, 78(15), 2478-2484.
 
 ## rIG, dIG
 
@@ -106,7 +107,7 @@ Michael, J. R., Schucany, W. R., & Haas, R. W. (1976). Generating random variate
 
 Barndorff-Nielsen, O. E. (1997). Processes of normal inverse Gaussian type. Finance and stochastics, 2(1), 41-68.
 
-Eberlein, E. (2001). Application of generalized hyperbolic Lévy motions to finance. In Lévy processes (pp. 319-336). Birkhäuser Boston.
+Eberlein, E. (2001). Application of generalized hyperbolic \enc{Lévy}{Levy} motions to finance. In \enc{Lévy}{Levy} processes (pp. 319-336). \enc{Birkhäuser}{Birkhauser} Boston.
 
 Madan, D. B., Carr, P. P., & Chang, E. C. (1998). The variance gamma process and option pricing. European finance review, 2(1), 79-105.
 

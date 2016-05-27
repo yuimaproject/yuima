@@ -162,6 +162,7 @@ PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
                     method = character(), model, objFun, observ=yuima@data,
                     fixed, meas.par, lower, upper, env, yuima, start, aggregation)
 
+
     return(res)
 }
 

@@ -1,3 +1,4 @@
+\encoding{UTF-8}
 \name{qmle}
 %\alias{ql}
 %\alias{ml.ql}
@@ -22,7 +23,7 @@
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
 qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper,
- joint=FALSE, Est.Incr="Carma.IncPar",aggregation=TRUE, threshold=NULL, ...)
+ joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL, ...)
 quasilogl(yuima, param, print=FALSE)
 lse(yuima, start, lower, upper, method = "BFGS", ...)
 }
@@ -67,23 +68,27 @@ lse(yuima, start, lower, upper, method = "BFGS", ...)
   \item{QL}{a real value.}
   \item{opt}{a list with components the same as 'optim' function.}
   \item{carmaopt}{if the model is an object of \code{\link{yuima.carma-class}}, \code{qmle} returns an object \code{\link{yuima.carma.qmle-class}}}
-  \item{cogarchopt}{if the model is an object of \code{\link{yuima.cogarch-class}}, \code{qmle} returns an object of class \code{\link{cogarch.gmm-class}}. The estimates are obtained by  maximizing the pseudo-loglikelihood function as shown in Iacus et al. (2015)}
+  \item{cogarchopt}{if the model is an object of \code{\link{yuima.cogarch-class}}, \code{qmle} returns an object of class \code{\link{cogarch.est-class}}. The estimates are obtained by  maximizing the pseudo-loglikelihood function as shown in Iacus et al. (2015)}
 }
 \references{
 ## Non-ergodic diffucion
-Genon-Catalot, V., & Jacod, J. (1993). On the estimation of the diffusion coefficient for multi-dimensional diffusion processes. In Annales de l'IHP Probabilités et statistiques, 29(1), 119-151.
+
+Genon-Catalot, V., & Jacod, J. (1993). On the estimation of the diffusion coefficient for multi-dimensional diffusion processes. In Annales de l'IHP \enc{Probabilités}{Probabilit?s} et statistiques, 29(1), 119-151.
 
 Uchida, M., & Yoshida, N. (2013). Quasi likelihood analysis of volatility and nondegeneracy of statistical random field. Stochastic Processes and their Applications, 123(7), 2851-2876.
 
 ## Ergodic diffusion
+
 Kessler, M. (1997). Estimation of an ergodic diffusion from discrete observations. Scandinavian Journal of Statistics, 24(2), 211-229.
 
 ## Jump diffusion
+
 Shimizu, Y., & Yoshida, N. (2006). Estimation of parameters for diffusion processes with jumps from discrete observations. Statistical Inference for Stochastic Processes, 9(3), 227-277.
 
 Ogihara, T., & Yoshida, N. (2011). Quasi-likelihood analysis for the stochastic differential equation with jumps. Statistical Inference for Stochastic Processes, 14(3), 189-229.
 
 ## COGARCH
+
 Iacus S. M., Mercuri L. and Rroji E.(2015) Discrete time approximation of a COGARCH (p, q) model and its estimation. \href{http://arxiv.org/abs/1511.00253}{http://arxiv.org/abs/1511.00253}
 }
 
