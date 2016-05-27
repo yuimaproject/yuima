@@ -24,7 +24,6 @@ dbgamma(x,delta.plus,gamma.plus,delta.minus,gamma.minus)
 rvgamma(x,lambda,alpha,beta,mu,Lambda)
 dvgamma(x,lambda,alpha,beta,mu,Lambda)
 rstable(x,alpha,beta,sigma,gamma)
-%dstable(x,alpha,beta,sigma,gamma)
 rpts(x,alpha,a,b)
 rnts(x,alpha,a,b,beta,mu,Lambda)
 }
@@ -78,11 +77,13 @@ Lambda is symmetric and positive definite with det(Lambda)=1; lambda>0; alpha>0 
 
 \author{The YUIMA Project Team}
 \note{
-  Some density-plot functions ar estill missing: as for the non-Gaussian stable densities, one can use, e.g., stabledist package.
+  Some density-plot functions are still missing: as for the non-Gaussian stable densities, one can use, e.g., stabledist package.
+  The rejection-acceptance method is used for generating pts and nts. It should be noted that its acceptance rate decreases at exponential order as a and b become larger: specifically, the rate is given by exp( a*gamma(-alpha)*b^(a) )
 }
 
 \references{
 ## rstable
+
 Chambers, John M., Colin L. Mallows, and B. W. Stuck.  (1976) A method for simulating stable random variables, Journal of the american statistical association, 71(354), 340-344.
 
 Weron, Rafał. (1996) On the Chambers-Mallows-Stuck method for simulating skewed stable random variables, Statistics & probability letters, 28.2, 165-171.
@@ -90,16 +91,19 @@ Weron, Rafał. (1996) On the Chambers-Mallows-Stuck method for simulating skewed
 Weron, Rafał. (2010) Correction to:" On the Chambers–Mallows–Stuck Method for Simulating Skewed Stable Random Variables", No. 20761, University Library of Munich, Germany.
 
 ## rbgamma, dbgamma
+
 Küchler, U., & Tappe, S. (2008). Bilateral Gamma distributions and processes in financial mathematics. Stochastic Processes and their Applications, 118(2), 261-283.
 
 Küchler, U., & Tappe, S. (2008). On the shapes of bilateral Gamma densities. Statistics & Probability Letters, 78(15), 2478-2484.
 
 ## rIG, dIG
+
 Chhikara, R. (1988). The Inverse Gaussian Distribution: Theory: Methodology, and Applications (Vol. 95). CRC Press.
 
 Michael, J. R., Schucany, W. R., & Haas, R. W. (1976). Generating random variates using transformations with multiple roots. The American Statistician, 30(2), 88-90.
 
 ## rNIG, dNIG, rvgamma, dvgamma (the elements of GH distribution)
+
 Barndorff-Nielsen, O. E. (1997). Processes of normal inverse Gaussian type. Finance and stochastics, 2(1), 41-68.
 
 Eberlein, E. (2001). Application of generalized hyperbolic Lévy motions to finance. In Lévy processes (pp. 319-336). Birkhäuser Boston.
@@ -107,9 +111,11 @@ Eberlein, E. (2001). Application of generalized hyperbolic Lévy motions to fina
 Madan, D. B., Carr, P. P., & Chang, E. C. (1998). The variance gamma process and option pricing. European finance review, 2(1), 79-105.
 
 ## rpts
+
 Kawai, R., & Masuda, H. (2011). On simulation of tempered stable random variates. Journal of Computational and Applied Mathematics, 235(8), 2873-2887.
 
 ## rnts
+
 Barndorff-Nielsen, O. E., & Shephard, N. (2001). Normal modified stable processes. Aarhus: MaPhySto, Department of Mathematical Sciences, University of Aarhus.
 
 }
@@ -165,7 +171,7 @@ alpha<-0.7
 a<-0.2
 b<-1
 x<-10 # the number of r.n
-rpts(1,alpha,a,b)
+rpts(x,alpha,a,b)
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
