@@ -295,7 +295,7 @@ euler<-function(xinit,yuima,dW,env){
                    rgamma=paste("rgamma(n, ", args[2], "*delta, ", args[3], ")"),
                    rbgamma=paste("rbgamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], "*delta, ", args[5], ")"),
 ##                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
-                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta,", args[6],")"),
+                   rvgamma=paste("rvgamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta,", args[6],")"),
 ##                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
                    rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)")
                    )
