@@ -1207,7 +1207,7 @@ setMethod("summary", "cogarch.est.incr",
 setMethod("show", "summary.cogarch.est.incr",
           function (object)
           {
-            if(!is.null(object@logLI)){
+            if(object@objFun == "PseudoLogLik"){
 
               cat("Two Stages PSEUDO-LogLik estimation \n\nCall:\n")
             }else{
