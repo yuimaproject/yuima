@@ -555,7 +555,7 @@ if(method!="L-BFGS-B"&&method!="brent"){
 #                )
 #   }
 #   if(Est.Incr=="Incr"||Est.Incr=="IncrPar"){
-#     L.Incr<-cogarchNoise(yuima.cogarch=model, data=observ,
+#     L.Incr<-cogarchNoise(yuima = model, data=observ,
 #                             param=as.list(coef), mu=1)
 #     ttt<-observ@zoo.data[[1]]
 #     tt<-index(ttt)
@@ -674,7 +674,7 @@ ExtraNoiseFromEst <- function(Est.Incr,
     )
   }
   if(Est.Incr=="Incr"||Est.Incr=="IncrPar"){
-    L.Incr<-cogarchNoise(yuima.cogarch=model, data=observ,
+    L.Incr<-cogarchNoise(yuima=model, data=observ,
                          param=as.list(coef), mu=1)
     ttt<-observ@zoo.data[[1]]
     tt<-index(ttt)

@@ -5,7 +5,8 @@
 # for the state process $Y_t$ and then the levy increments definely are:
 # \Delta L_{t}=\frac{\Delta G_{t}}{\sqrt{V_{t}}}.
 
-cogarchNoise<-function(yuima.cogarch, data=NULL, param, mu=1){
+cogarchNoise<-function(yuima, data=NULL, param, mu=1){
+  yuima.cogarch <- yuima
   if(missing(yuima.cogarch))
     yuima.stop("yuima.cogarch or yuima object is missing.")
 
