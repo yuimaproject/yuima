@@ -15,6 +15,10 @@ importFrom("graphics", "lines")
 importFrom("stats", "qchisq")
 importFrom("utils", "relist")
 
+#08/07/2016
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+
 # 03/07/2015
 importFrom(stats, time)
 importFrom(stats, ts)
