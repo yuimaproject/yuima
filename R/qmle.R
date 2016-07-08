@@ -122,7 +122,7 @@ is.CARMA <- function(obj){
 }
 
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
- lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL, ...){
+ lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL,rcpp=FALSE, ...){
   if(is(yuima@model, "yuima.carma")){
     NoNeg.Noise<-FALSE
     cat("\nStarting qmle for carma ... \n")
@@ -480,7 +480,6 @@ if(length(measure.par)>0){
     assign("measure.var", args[1], envir=env)
 }
 
-
 	f <- function(p) {
         mycoef <- as.list(p)
         if(!is.CARMA(yuima)){
@@ -495,7 +494,7 @@ if(length(measure.par)>0){
             names(mycoef) <- nm
         }
         mycoef[fixed.par] <- fixed
-	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+	    minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
     }
 
 # SMI-2/9/14:
@@ -528,7 +527,7 @@ if(length(measure.par)>0){
              mycoef[fixed.par] <- fixed
 	     }
          mycoef[fixed.par] <- fixed
-		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
 	 }
 
 	 oout <- NULL
@@ -765,7 +764,7 @@ if(length(measure.par)>0){
        names(mycoef) <- drift.par
   		 mycoef[diff.par] <- coef[diff.par]
      }
-		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
 	 }
 
 	 fDiff <- function(p) {
@@ -774,7 +773,7 @@ if(length(measure.par)>0){
   		 names(mycoef) <- diff.par
   		 mycoef[drift.par] <- coef[drift.par]
      }
-		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
 	 }
 
      # coef <- oout$par
@@ -963,10 +962,10 @@ if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
 
 
     if(length(c(diff.par,drift.par))>0 & !is.CARMA(yuima)){ # LM 04/09/14
-	    min.diff <- minusquasilogl(yuima=yuima, param=mycoef[c(diff.par,drift.par)], print=print, env)
+	    min.diff <- minusquasilogl(yuima=yuima, param=mycoef[c(diff.par,drift.par)], print=print, env,rcpp=rcpp)
     }else{
       if(length(c(diff.par,drift.par))>0 & is.CARMA(yuima)){
-        min.diff <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
+        min.diff <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
       }
     }
 
@@ -1499,7 +1498,7 @@ minusquasipsi <- function(yuima, param, print=FALSE, env){
 }
 
 
-quasilogl <- function(yuima, param, print=FALSE){
+quasilogl <- function(yuima, param, print=FALSE,rcpp=FALSE){
 
 	d.size <- yuima@model@equation.number
 	if (is(yuima@model, "yuima.carma")){
@@ -1530,11 +1529,11 @@ quasilogl <- function(yuima, param, print=FALSE){
 	assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
 	assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env)
 
-	-minusquasilogl(yuima=yuima, param=param, print=print, env)
+	-minusquasilogl(yuima=yuima, param=param, print=print, env,rcpp=rcpp)
 }
 
 
-minusquasilogl <- function(yuima, param, print=FALSE, env){
+minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
 
 	diff.par <- yuima@model@parameter@diffusion
 
@@ -1758,7 +1757,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
 #         yuima.warn("carma(p,q): the scale parameter is equal to 1. We will implemented as soon as possible")
 #         return(NULL)
 #     }
-	} else{
+	} else if (!rcpp) {
   	drift <- drift.term(yuima, param, env)
   	diff <- diffusion.term(yuima, param, env)
 
@@ -1796,7 +1795,59 @@ minusquasilogl <- function(yuima, param, print=FALSE, env){
   		}
   	 }
   	}
-  }
+    } else {
+        b <- yuima@model@drift
+        a <- yuima@model@diffusion
+        d <- d.size
+        ####data <- yuima@data@original.data
+        data <- matrix(0,length(yuima@data@zoo.data[[1]]),d.size)
+        for(i in 1:d) data[,i] <- as.numeric(yuima@data@zoo.data[[i]])
+        ####delta <- yuima@sampling@delta
+        delta <- deltat(yuima@data@zoo.data[[1]])
+        thetadim <- length(yuima@model@parameter@all)
+        ####r <- length(a[[1]])
+        r <- yuima@model@noise.number
+        xdim <- length(yuima@model@state.variable)
+        
+        #if(thetadim!=length(initial)) stop("check dim of initial") #error check
+        
+        d_b <- NULL
+        for(i in 1:d){
+            check_x <- NULL
+            for(k in 1:xdim) check_x <- cbind(check_x,length(grep(yuima@model@state.variable[k],b[[i]])))
+            if(sum(check_x)>0){
+                d_b[[i]] <- b[[i]] #this part of model includes "x"(state.variable)
+            }
+            else{
+                d_b[[i]] <- parse(text=paste("(",b[[i]][2],")*rep(1,length(data[,1])-1)",sep="")) #vectorization
+            }
+        }
+        #d_b <- c(d_b,b[[i]])
+        
+        v_a<-matrix(list(NULL),d,r)
+        for(i in 1:d){
+            for(j in 1:r){
+                check_x <- NULL
+                for(k in 1:xdim) check_x <- cbind(check_x,length(grep(yuima@model@state.variable[k],a[[i]][[j]])))
+                if(sum(check_x)>0){
+                    v_a[[i,j]] <- a[[i]][[j]] #this part of model includes "x"(state.variable)
+                }
+                else{
+                    v_a[[i,j]] <- parse(text=paste("(",a[[i]][[j]][2],")*rep(1,length(data[,1])-1)",sep="")) #vectorization
+                }
+            }
+        }
+        
+        for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
+        dx <- as.matrix((data-rbind(numeric(d),as.matrix(data[-length(data[,1]),])))[-1,])
+        drift <- diffusion <- NULL
+        for(i in 1:thetadim) assign(names(param)[i], param[[i]])
+        for(i in 1:d) drift <- cbind(drift,eval(d_b[[i]]))
+        for(i in 1:r){
+            for(j in 1:d) diffusion <- cbind(diffusion,eval(v_a[[j,i]]))
+        }
+        QL <- (likndim(dx,drift,diffusion,delta)*(-0.5) + (n-1)*(-0.5*d.size * log( (2*pi*h) )))
+    }
 
 
 	if(!is.finite(QL)){
