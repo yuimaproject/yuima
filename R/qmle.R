@@ -612,6 +612,7 @@ if(length(measure.par)>0){
 
 			mydots <- as.list(call)[-(1:2)]
 			mydots$print <- NULL
+            mydots$rcpp <- NULL #KK 08/07/16
 			mydots$fixed <- NULL
 			mydots$fn <- as.name("f")
 			mydots$start <- NULL
@@ -668,6 +669,7 @@ if(length(measure.par)>0){
 
 			mydots <- as.list(call)[-(1:2)]
 			mydots$print <- NULL
+            mydots$rcpp <- NULL #KK 08/07/16
 			mydots$fixed <- NULL
 			mydots$fn <- as.name("f")
             mydots$threshold <- NULL #SMI 2/9/14
