@@ -210,11 +210,16 @@ setMethod("llag", "list", function(x, from, to, division, verbose, grid, psd, pl
                                    ccor, ci, alpha, fisher, bw) {
   
   d <- length(x)
+  d.size <- d*(d-1)/2
   
   # allocate memory
   ser.times <- vector(d, mode="list") # time index in 'x'
   ser.diffX <- vector(d, mode="list") # difference of data
   vol <- double(d)
+  
+  # treatment of the grid (2016-07-04: we implement this before the NA treatment)
+  if(missing(grid)) 
+    grid <- make.grid(d, d.size, x, from, to, division)
   
   # Set the tolerance to avoid numerical erros in comparison
   tol <- 1e-6
@@ -239,13 +244,13 @@ setMethod("llag", "list", function(x, from, to, division, verbose, grid, psd, pl
   
   theta <- matrix(0,d,d)
   
-  d.size <- d*(d-1)/2
+  #d.size <- d*(d-1)/2
   crosscor <- vector(d.size,mode="list")
   idx <- integer(d.size)
   
   # treatment of the grid
-  if(missing(grid)) 
-    grid <- make.grid(d, d.size, x, from, to, division)
+  #if(missing(grid)) 
+  #  grid <- make.grid(d, d.size, x, from, to, division)
   
   if(is.list(grid)){
     G <- relist(unlist(grid)/tol, grid)

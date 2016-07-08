@@ -40,4 +40,5 @@
                           spectralcov.R, spectralcov.Rd (spectral covariance estimator)
 2016/01/14: modified rng.R, rng.Rd, adaBayes.Rd, qmle.Rd, setModel.Rd, spectralcov.Rd
 2016/05/26: added rpts and rnts in rng.R and the corresponding c language file
+2016/07/08: fixed some bugs in llag.R and cce_functions.c
            

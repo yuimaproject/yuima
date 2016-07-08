@@ -372,7 +372,15 @@ void HYcrosscorr(int *gridL, int *xL, int *yL, double *grid, double *xtime,
         B = (*xvol + *yvol)*value[i];
         C = (*yvol)*(*yvol) + value[i]*value[i];
         
-        s = sqrt(A*C-B*B);
+        /* correct a bug (2016-06-30) */
+        /* s = sqrt(A*C-B*B); */
+        s = A*C-B*B;
+        if(s > 0){
+            s = sqrt(s);
+        }else{
+            s = 0;
+        }
+
         
         value[i] = B/sqrt((A + s)*(C + s));
         
