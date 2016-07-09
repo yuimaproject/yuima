@@ -83,7 +83,10 @@ exportClasses("yuima",
 "variable.Integral",
 "Integrand",
 "Integral.sde",
-"yuima.Integral"
+"yuima.Integral",
+"info.Ppr",
+"yuima.Ppr",
+"yuima.Hawkes"
 )
 
 exportMethods(
@@ -126,6 +129,8 @@ export(setSampling)
 export(setCharacteristic)
 export(setCarma)
 export(setPoisson)
+export(setPpr)
+export(setHawkes)
 export(dconst)
 export(rconst)
 

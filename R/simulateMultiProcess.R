@@ -218,6 +218,7 @@ setMethod("simulate", "yuima.multimodel",
         if(sdeModel@measure.type=="CP"){
           intens <- as.character(sdeModel@measure$intensity)
           dens <- as.character(sdeModel@measure$df$expr)
+
           dumCP <- setPoisson(intensity = intens, df = dens,
             dimension = length(sdeModel@jump.coeff[[1]]))
           dummSamp <- yuima@sampling
@@ -329,7 +330,10 @@ setMethod("simulate", "yuima.multimodel",
 
 
         # yuima.stop("Levy with CP and/or code")
-      }
+     }
+     if(!is.null(increment.L))
+       Incr.levy<-t(increment.L)
+
       assign("dL",t(Incr.levy),envir=yuimaEnv)
       sim <- Multi.Euler(xinit,yuima,dW,env=yuimaEnv)
 

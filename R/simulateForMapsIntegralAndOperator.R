@@ -46,10 +46,12 @@ aux.simulatOutput<-function(object, nsim, seed, xinit,
     assign(nam[i],par[i])
   }
   my.data<-eval(object@Output@formula[[1]])
-  for(i in c(2:prod(object@Output@dimension))){
-    my.data<-cbind(my.data,
-      eval(object@Output@formula[[i]]))
-  }
+  if(prod(object@Output@dimension)>1){
+    for(i in c(2:prod(object@Output@dimension))){
+      my.data<-cbind(my.data,
+        eval(object@Output@formula[[i]]))
+    }
+  }  
   names(my.data)<-object@Output@param@out.var
 
   data1 <- setData(my.data)
