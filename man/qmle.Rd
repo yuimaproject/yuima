@@ -22,9 +22,11 @@
 %ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
 %ql(yuima,theta2,theta1,h,print=FALSE,param)
 %rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
-qmle(yuima, start, method="BFGS", fixed = list(), print=FALSE, lower, upper,
- joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL, ...)
-quasilogl(yuima, param, print=FALSE)
+qmle(yuima, start, method = "BFGS", fixed = list(), print =
+FALSE, lower, upper, joint = FALSE, Est.Incr =
+"NoIncr", aggregation = TRUE, threshold = NULL, rcpp =
+FALSE, ...)
+quasilogl(yuima, param, print = FALSE, rcpp = FALSE)
 lse(yuima, start, lower, upper, method = "BFGS", ...)
 }
 \arguments{
@@ -49,6 +51,7 @@ lse(yuima, start, lower, upper, method = "BFGS", ...)
   \item{threshold}{If the model has Compund Poisson type jumps, the threshold is
   used to perform thresholding of the increments.}
   \item{...}{passed to \code{\link{optim}} method. See Examples.}
+  \item{rcpp}{use C++ code?}
 }
 \details{
 %   A function ql calculate the quasi-likelihood of a time series data X with any
