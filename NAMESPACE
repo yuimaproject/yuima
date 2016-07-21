@@ -16,7 +16,7 @@ importFrom("stats", "qchisq")
 importFrom("utils", "relist")
 
 #08/07/2016
-exportPattern("^[[:alpha:]]+")
+#exportPattern("^[[:alpha:]]+") # NEVER DO THIS AGAIN PLEASE!
 importFrom(Rcpp, evalCpp)
 
 # 03/07/2015
