@@ -166,6 +166,7 @@ export(adaBayes)
 export(rIG, rNIG, rbgamma, rvgamma, rstable,rpts,rnts) ## random number generators in rng.R
 export(dIG, dNIG, dbgamma, dvgamma) ## pdfs in rng.R
 export(limiting.gamma)
+export(lambdaFromData)
 
 
 export(setFunctional)

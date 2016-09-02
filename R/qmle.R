@@ -153,6 +153,25 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 	 return(res)
 	}
 
+	if(is.Ppr(yuima)){
+	  if(missing(lower))
+	    lower <- list()
+
+	  if(missing(upper))
+	    upper <- list()
+
+	  # res <- NULL
+	  # if("grideq" %in% names(as.list(call)[-(1:2)])){
+	    res  <- quasiLogLik.Ppr(yuimaPpr = yuima, parLambda = start, method=method, fixed = list(),
+	                                 lower, upper, call, ...)
+	  # }else{
+	  #   res  <- PseudoLogLik.COGARCH(yuima, start, method=method, fixed = list(),
+	  #                                lower, upper, Est.Incr, call, grideq = FALSE, aggregation = aggregation,...)
+	  # }
+
+	  return(res)
+	}
+
     orig.fixed <- fixed
     orig.fixed.par <- names(orig.fixed)
     if(is.Poisson(yuima))
@@ -1810,9 +1829,9 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
         ####r <- length(a[[1]])
         r <- yuima@model@noise.number
         xdim <- length(yuima@model@state.variable)
-        
+
         #if(thetadim!=length(initial)) stop("check dim of initial") #error check
-        
+
         d_b <- NULL
         for(i in 1:d){
             check_x <- NULL
@@ -1825,7 +1844,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
             }
         }
         #d_b <- c(d_b,b[[i]])
-        
+
         v_a<-matrix(list(NULL),d,r)
         for(i in 1:d){
             for(j in 1:r){
@@ -1839,7 +1858,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
                 }
             }
         }
-        
+
         for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
         dx <- as.matrix((data-rbind(numeric(d),as.matrix(data[-length(data[,1]),])))[-1,])
         drift <- diffusion <- NULL
