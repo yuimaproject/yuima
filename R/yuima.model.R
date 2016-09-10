@@ -130,24 +130,7 @@ setModel <- function(drift=NULL,
                      solve.variable,
                      xinit=NULL){
   ## we need a temp env for simplifications
-  if(!is.null(jump.coeff)){
-    if(is.matrix(jump.coeff)){
-      if(dim(jump.coeff)[2]!=1){
-        intensity <- NULL
-        df <- as.list(measure[["df"]])
-        if(any(measure.type=="CP")){
-          intensity <- measure[["intensity"]]
-        }
-        res <- setMultiModel(drift = drift, diffusion = diffusion,
-          hurst = hurst, jump.coeff = jump.coeff,
-          intensity = intensity, df = df,
-          measure.type = measure.type, state.variable = state.variable,
-          jump.variable = jump.variable, time.variable = time.variable,
-          solve.variable = solve.variable, xinit= xinit)
-        return(res)
-      }
-    }
-  }
+
 
   yuimaENV <- new.env()
   ##::measure and jump term #####################################
@@ -161,6 +144,38 @@ setModel <- function(drift=NULL,
   CPlist <- c("dnorm", "dgamma", "dexp", "dconst")
   codelist <- c("rIG", "rNIG", "rgamma", "rbgamma", "rvgamma", "rstable")
   ##::end make type function list ####
+
+  ## Multivariate YUIMA model
+
+
+  if(!is.null(jump.coeff)){
+    if(is.matrix(jump.coeff)){
+
+      if(dim(jump.coeff)[2]!=1){
+        intensity <- NULL
+        df <- as.list(measure[["df"]])
+        if(any(measure.type=="CP")){
+          intensity <- measure[["intensity"]]
+        }
+        my.cond <- TRUE
+        tmp <- regexpr("\\(", measure$df)[1]
+        measurefunc <- substring(measure$df, 1, tmp-1)
+        if(!is.na(match(measurefunc, codelist))){
+          my.cond <- FALSE
+        }
+        if(my.cond){
+          res <- setMultiModel(drift = drift, diffusion = diffusion,
+                               hurst = hurst, jump.coeff = jump.coeff,
+                               intensity = intensity, df = df,
+                               measure.type = measure.type, state.variable = state.variable,
+                               jump.variable = jump.variable, time.variable = time.variable,
+                               solve.variable = solve.variable, xinit= xinit)
+          return(res)
+        }
+      }
+    }
+  }
+
 
   if(!length(measure.type)){
     if( length(jump.coeff) || length(measure) ){
@@ -324,6 +339,9 @@ setModel <- function(drift=NULL,
     n.eqn3 <- 1
     n.jump <- 1
   }
+
+
+
 
   ##::end measure and jump term #####################################
 
