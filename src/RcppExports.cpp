@@ -40,14 +40,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // trace
-double trace(NumericMatrix S, NumericVector b);
-RcppExport SEXP yuima_trace(SEXP SSEXP, SEXP bSEXP) {
+double sub_f(NumericMatrix S, NumericVector b);
+RcppExport SEXP yuima_sub_f(SEXP SSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< NumericMatrix >::type S(SSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    __result = Rcpp::wrap(trace(S, b));
+    __result = Rcpp::wrap(sub_f(S, b));
     return __result;
 END_RCPP
 }
