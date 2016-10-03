@@ -177,7 +177,7 @@ aux.setMaps <- function(func, yuima, out.var = "",
   if(length(out.var)==1){
     out.var<-rep(out.var,ddd)
   }
-  param <- new("param.Output",
+  param <- new("param.Map",
                out.var = out.var,
                allparam = unique(c(paramfunc,mod@parameter@all)),
                allparamMap = paramfunc,
@@ -185,11 +185,11 @@ aux.setMaps <- function(func, yuima, out.var = "",
                Input.var = mod@solve.variable,
                time.var=mod@time.variable)
 
-  objFunc <- new("info.Output", formula = funcList,
+  objFunc <- new("info.Map", formula = funcList,
                  dimension=dimens, type = type,
                  param=param)
 
-  res<-new("yuima.Output",
+  res<-new("yuima.Map",
            Output = objFunc,
            yuima=yuima )
 

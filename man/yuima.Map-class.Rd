@@ -1,16 +1,16 @@
-\name{yuima.Output-class}
+\name{yuima.Map-class}
 \docType{class}
-\alias{yuima.Output-class}
-\alias{yuima.Output}
-%\alias{info.Output}
-%\alias{param.Output}
-\alias{initialize,yuima.Output-method}
-\alias{simulate,yuima.Output-method}
+\alias{yuima.Map-class}
+\alias{yuima.Map}
+%\alias{info.Map}
+%\alias{param.Map}
+\alias{initialize,yuima.Map-method}
+\alias{simulate,yuima.Map-method}
 
 
 \title{Class for the mathematical description of function of a stochastic process}
 \description{
-  The \code{yuima.Output} class is a class of the  \pkg{yuima} package that extends the \code{\link{yuima-class}} it represents a map of a stochastic process
+  The \code{yuima.Map} class is a class of the  \pkg{yuima} package that extends the \code{\link{yuima-class}} it represents a map of a stochastic process
 
   \code{ zt = g(theta, Xt, t) : R^{q x d x 1} -> R^{l1 x l2 x ...}}
 
@@ -22,16 +22,16 @@ where \code{Xt} and \code{Yt}  are object of class \code{\link{yuima.model-class
 }
 
 \section{Slots}{
-Here we report the additional slots of an object of class \code{yuima.Output} with respect to the \code{\link{yuima-class}}:
+Here we report the additional slots of an object of class \code{yuima.Map} with respect to the \code{\link{yuima-class}}:
   \describe{
-    \item{\code{Output}:}{It is an object of class \code{info.Output} and it is composed by the following slots:
+    \item{\code{Output}:}{It is an object of class \code{info.Map} and it is composed by the following slots:
     \describe{
         \item{\code{formula}:}{It is a \code{list} that contains the components of map \code{g(theta, Xt, t)} or the operator \code{h(theta, Xt, Yt, t)} }
-        \item{\code{dimension}:}{a \code{numeric} object that is the dimensions of the output.}
-        \item{\code{type}:}{If \code{type = "Maps"}, the output is a map of stochastic process, If \code{type = "Operator"}, the result is an operator between two independent stochastic process}
-       \item{\code{param}}{it is an object of class \code{param.Output} and it is composed by the following slots:
+        \item{\code{dimension}:}{a \code{numeric} object that is the dimensions of the Map.}
+        \item{\code{type}:}{If \code{type = "Maps"}, the Map is a map of stochastic process, If \code{type = "Operator"}, the result is an operator between two independent stochastic process}
+       \item{\code{param}}{it is an object of class \code{param.Map} and it is composed by the following slots:
        \describe{
-          \item{\code{out.var}:}{labels for output.}
+          \item{\code{out.var}:}{labels for Map.}
           \item{\code{allparam}:}{labels of all parameters (model and  map/operators).}
           \item{\code{allparamMap}:}{labels of map/operator parameters.}
           \item{\code{common}:}{common parameters.}

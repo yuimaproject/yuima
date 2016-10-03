@@ -14,7 +14,7 @@ setClass("info.Ppr",
 
 setClass("yuima.Ppr",
          representation(Ppr = "info.Ppr",
-                        gFun = "info.Output",
+                        gFun = "info.Map",
                         Kernel = "Integral.sde"),
          contains="yuima"
 )
@@ -52,7 +52,7 @@ setMethod("initialize",
           "yuima.Ppr",
           function(.Object,
                    Ppr = new("info.Ppr"),
-                   gFun = new("info.Output"),
+                   gFun = new("info.Map"),
                    Kernel = new("Integral.sde"),
                    yuima = new("yuima")){
             #.Object@param <- param

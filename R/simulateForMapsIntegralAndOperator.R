@@ -1,5 +1,5 @@
 # Method for Map
-setMethod("simulate", "yuima.Output",
+setMethod("simulate", "yuima.Map",
                     function(object, nsim=1, seed=NULL, xinit, true.parameter,
                              space.discretized=FALSE, increment.W=NULL, increment.L=NULL, method="euler",
                              hurst, methodfGn="WoodChan",
@@ -51,7 +51,7 @@ aux.simulatOutput<-function(object, nsim, seed, xinit,
       my.data<-cbind(my.data,
         eval(object@Output@formula[[i]]))
     }
-  }  
+  }
   names(my.data)<-object@Output@param@out.var
 
   data1 <- setData(my.data)

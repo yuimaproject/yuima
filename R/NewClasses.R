@@ -1,5 +1,5 @@
 # Here we insert new classes for extending the object of classes yuima
-setClass("param.Output",
+setClass("param.Map",
          representation(out.var = "character",
                         allparam = "character",
                         allparamMap = "character",
@@ -7,22 +7,22 @@ setClass("param.Output",
                         Input.var = "character",
                         time.var = "character"))
 
-setClass("info.Output",
+setClass("info.Map",
          representation(formula="list",
                         dimension="numeric",
                         type="character",
-                        param = "param.Output"))
+                        param = "param.Map"))
 
 
-setClass("yuima.Output",
-         representation(Output = "info.Output"),
+setClass("yuima.Map",
+         representation(Output = "info.Map"),
          contains="yuima"
            )
 
 # Initialization
 
 setMethod("initialize",
-           "param.Output",
+           "param.Map",
            function(.Object, out.var = character(),
                     allparam = character(),
                     allparamMap = character(),
@@ -40,11 +40,11 @@ setMethod("initialize",
 )
 #
 setMethod("initialize",
-          "info.Output", function(.Object,
+          "info.Map", function(.Object,
                                   formula = list(),
                                   dimension = numeric(),
                                   type = character(),
-                                  param = new("param.Output")){
+                                  param = new("param.Map")){
                             .Object@formula <- formula
                             .Object@dimension <- dimension
                             .Object@type <- type
@@ -54,10 +54,10 @@ setMethod("initialize",
           )
 
 setMethod("initialize",
-          "yuima.Output",
+          "yuima.Map",
           function(.Object,
-                   #param = new("param.Output"),
-                   Output = new("info.Output"),
+                   #param = new("param.Map"),
+                   Output = new("info.Map"),
                    yuima = new("yuima")){
             #.Object@param <- param
             .Object@Output <- Output

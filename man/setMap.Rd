@@ -7,7 +7,7 @@
 Map of a Stochastic Differential Equation
 }
 \description{
-'\code{setMap}' is the constructor of an object of class \code{\link{yuima.Output}} that describes a map of a SDE
+'\code{setMap}' is the constructor of an object of class \code{\link{yuima.Map}} that describes a map of a SDE
 }
 \usage{
 setMap(func, yuima, out.var = "", nrow = 1, ncol = 1)
@@ -17,13 +17,13 @@ setMap(func, yuima, out.var = "", nrow = 1, ncol = 1)
   \item{func}{a matrix or a vector of strings that describe each component of the map.}
   \item{yuima}{ an object of class \code{\link{yuima.model}} that is the SDE.}
   \item{out.var}{ label for the output}
-  \item{nrow}{ dimension of output if \code{func} is a vector of string. }
+  \item{nrow}{ dimension of Map if \code{func} is a vector of string. }
   \item{ncol}{ dimension of output if \code{func} is a vector of string.}
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
 %}
-\value{The constructor returns an object of class \code{\link{yuima.Output}}.}
+\value{The constructor returns an object of class \code{\link{yuima.Map}}.}
 \references{Yuima Documentation}
 \author{The YUIMA Project Team}
 %\note{
@@ -46,7 +46,7 @@ my.Map <- matrix(c("(X+Y)","-X-Y",
   "a*exp(X-a1*t)","b*exp(Y-a2*t)"),
   nrow=2,ncol=2)
 
-# Construction of yuima.Output
+# Construction of yuima.Map
 
 yuimaMap <- setMap(func = my.Map, yuima = mod,
   out.var = c("f11","f21","f12","f22"))

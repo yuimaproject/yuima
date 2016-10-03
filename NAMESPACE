@@ -63,6 +63,7 @@ importFrom(stats, sd)
 
 exportClasses("yuima",
 "yuima.data",
+"yuima.law",
 "yuima.sampling",
 "yuima.characteristic",
 "yuima.model",
@@ -75,9 +76,9 @@ exportClasses("yuima",
 "yuima.CP.qmle",
 "cogarch.info",
 "yuima.cogarch",
-"yuima.Output",
-"info.Output",
-"param.Output",
+"yuima.Map",
+"info.Map",
+"param.Map",
 "yuima.multimodel",
 "param.Integral",
 "variable.Integral",
@@ -133,7 +134,7 @@ export(setPpr)
 export(setHawkes)
 export(dconst)
 export(rconst)
-
+export(setLaw)
 export(setCogarch)
 export(setMap)
 #export(setMultiModel)
