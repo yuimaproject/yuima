@@ -297,8 +297,11 @@ euler<-function(xinit,yuima,dW,env){
 ##                   rngamma=paste("rngamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta, ", args[6], ")"),
                    rvgamma=paste("rvgamma(n, ", args[2], "*delta, ", args[3], ", ", args[4], ", ", args[5], "*delta,", args[6],")"),
 ##                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], ", ", args[5], ", ", args[6], ")")
-                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)")
+                   rstable=paste("rstable(n, ", args[2], ", ", args[3], ", ", args[4], "*delta^(1/",args[2],"), ", args[5], "*delta)"),
+                   rpts=paste("rpts(n, ", args[2], ", ", args[3], "*delta,", args[4],")"),
+                   rnts=paste("rnts(n, ", args[2], ", ", args[3], "*delta,", args[4], ", ", args[5], ", ", args[6],"*delta,", args[7], ")")
                    )
+                   ## added "rpts" and "rnts" by YU (2016/10/4)
       dummyList<-as.list(env)
       #print(str(dummyList))
       lgth.meas<-length(yuima@model@parameter@measure)
