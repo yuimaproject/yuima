@@ -67,7 +67,7 @@ setMultiModel <- function(drift=NULL,
 
   ##::make type function list ####
   CPlist <- c("dnorm", "dgamma", "dexp", "dconst")
-  codelist <- c("rIG", "rNIG", "rgamma", "rbgamma", "rvgamma", "rstable")
+  codelist <- c("rIG", "rNIG", "rgamma", "rbgamma", "rvgamma", "rstable","rpts","rnts") ## added "rpts" and "rnts" by YU (2016/10/4)
   ##::end make type function list ####
   jump.dimens <- dim(jump.coeff)[2]
   numbMeasure <- length(measure.type)
