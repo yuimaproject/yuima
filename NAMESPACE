@@ -116,7 +116,12 @@ exportMethods(
 "F0",
 "Fnorm",
 "asymptotic_term",
-"cbind.yuima"
+"cbind.yuima",
+"rand",
+"dens",
+"cdf",
+"quant",
+"char"
 #"rbind.yuima"
 )
 
@@ -197,6 +202,13 @@ export(CarmaNoise) # Estimates the Levy in carma model
 export(gmm) # Estimation COGARCH(P,Q) using Method Of Moments
 export(cogarchNoise)
 export(Diagnostic.Cogarch)
+
+# Methods
+export(rand)# random number generator of a Levy process specified by user
+export(dens)
+export(cdf)
+export(quant)
+export(char)
 
 
 export(qgv)

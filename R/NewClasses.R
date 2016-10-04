@@ -8,7 +8,7 @@ setClass("param.Map",
                         time.var = "character"))
 
 setClass("info.Map",
-         representation(formula="list",
+         representation(formula="vector",
                         dimension="numeric",
                         type="character",
                         param = "param.Map"))
@@ -41,7 +41,7 @@ setMethod("initialize",
 #
 setMethod("initialize",
           "info.Map", function(.Object,
-                                  formula = list(),
+                                  formula = vector(mode = expression),
                                   dimension = numeric(),
                                   type = character(),
                                   param = new("param.Map")){

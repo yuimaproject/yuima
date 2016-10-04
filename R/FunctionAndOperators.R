@@ -149,9 +149,11 @@ aux.setMaps <- function(func, yuima, out.var = "",
   paramfunc<-NULL
   ddd<-prod(dimens)
   funcList<-as.list(character(length=ddd))
+  funcList <-  vector(mode ="expression", length=ddd)
   func<-as.character(func)
   for(i in c(1:ddd)){
-    funcList[[i]]<-parse(text=func[i])
+    #funcList[[i]]<-parse(text=func[i])
+    funcList[i]<-parse(text=func[i])
     paramfunc<-c(paramfunc,all.vars(funcList[[i]]))
   }
   #  funcList<-array(funcList,dim=dimens)
@@ -229,8 +231,17 @@ aux.setIntegral <- function(yuima, integrand, var.dx,
   if(missing(var.dx)){
     yuima.stop("dx object is missing.")
   }
+  if(!is(integrand,"yuima.Map")){
+    resFunc<-constFunc(func=integrand, nrow, ncol)
+  }else{
+    resFunc <-list()
+    resFunc$func <- integrand@Output@formula
+    resFunc$dimens <- integrand@Output@dimension
+    if(!(integrand@Output@param@Input.var%in%yuima@solve.variable)){
+      yuima.warn("check integrand function")
+    }
+  }
 
-  resFunc<-constFunc(func=integrand, nrow, ncol)
   Integrand <- resFunc$func
   dimension <- resFunc$dimens
 
