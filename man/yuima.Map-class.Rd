@@ -26,7 +26,7 @@ Here we report the additional slots of an object of class \code{yuima.Map} with 
   \describe{
     \item{\code{Output}:}{It is an object of class \code{info.Map} and it is composed by the following slots:
     \describe{
-        \item{\code{formula}:}{It is a \code{list} that contains the components of map \code{g(theta, Xt, t)} or the operator \code{h(theta, Xt, Yt, t)} }
+        \item{\code{formula}:}{It is a \code{vector} that contains the components of map \code{g(theta, Xt, t)} or the operator \code{h(theta, Xt, Yt, t)} }
         \item{\code{dimension}:}{a \code{numeric} object that is the dimensions of the Map.}
         \item{\code{type}:}{If \code{type = "Maps"}, the Map is a map of stochastic process, If \code{type = "Operator"}, the result is an operator between two independent stochastic process}
        \item{\code{param}}{it is an object of class \code{param.Map} and it is composed by the following slots:

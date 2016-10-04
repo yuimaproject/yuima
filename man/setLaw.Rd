@@ -4,15 +4,17 @@
 \title{Random variable constructor }
 \description{Constructor of a random variable}
 \usage{
-setLaw(rng = function(x, ...) {
+setLaw(rng = function(n, ...) {
     NULL
 }, density = function(x, ...) {
     NULL
-}, cdf = function(x, ...) {
+}, cdf = function(q, ...) {
+    NULL
+}, quant = function(p, ...) {
     NULL
 }, characteristic = function(u, ...) {
     NULL
-}, time.var = "t", rand.var = "x", character.var = "u", dim = NA)
+}, time.var = "t", dim = NA)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,13 +25,10 @@ function}
   \item{cdf}{
 function}
   \item{characteristic}{
-function
-}
+function}
+  \item{quant}{
+function}
   \item{time.var}{
-label}
-  \item{rand.var}{
-label}
-  \item{character.var}{
 label}
   \item{dim}{
 label}
