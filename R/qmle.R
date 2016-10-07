@@ -1096,7 +1096,7 @@ if(!is.CARMA(yuima)){
       inc.levy<-diff(t(levy))
     }
     # INSERT HERE THE NECESSARY STEPS FOR FINDING THE PARAMETERS OF LEVY
-   if(Est.Incr=="Carma.Inc"){
+   if(Est.Incr=="Carma.Inc"||Est.Incr=="Incr"){
      # inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
      inc.levy.fin<-zoo(inc.levy,tt[(1+length(tt)-length(inc.levy)):length(tt)])
      carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef),
