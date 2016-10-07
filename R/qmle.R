@@ -1036,6 +1036,7 @@ if(length(c(idx.fixed,idx.measure)>0))  # SMI 2/9/14
       final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef),
                      vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl,
                      method = method, nobs=yuima.nobs)
+      return(final_res)
       }else{
         yuima.warn("The variable Est.Incr is not correct. See qmle documentation for the allowed values ")
         final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef),
@@ -1555,57 +1556,57 @@ quasilogl <- function(yuima, param, print=FALSE,rcpp=FALSE){
 
 
 minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
-  
+
   diff.par <- yuima@model@parameter@diffusion
-  
+
   drift.par <- yuima@model@parameter@drift
   if(is.CARMA(yuima)){
     if(length(yuima@model@info@scale.par)!=0){
       xinit.par <- yuima@model@parameter@xinit
     }
   }
-  
-  
+
+
   if(is.CARMA(yuima) && length(yuima@model@info@lin.par)==0
      && length(yuima@model@parameter@jump)!=0){
     diff.par<-yuima@model@parameter@jump
     # measure.par<-yuima@model@parameter@measure
   }
-  
+
   if(is.CARMA(yuima) && length(yuima@model@info@lin.par)==0
      && length(yuima@model@parameter@measure)!=0){
     measure.par<-yuima@model@parameter@measure
   }
-  
+
   # 24/12
   if(is.CARMA(yuima) && length(yuima@model@info@lin.par)>0  ){
     yuima.warn("carma(p,q): the case of lin.par will be implemented as soon as")
     return(NULL)
   }
-  
+
   if(is.CARMA(yuima)){
     xinit.par <- yuima@model@parameter@xinit
   }
-  
-  
+
+
   drift.par <- yuima@model@parameter@drift
-  
+
   fullcoef <- NULL
-  
+
   if(length(diff.par)>0)
     fullcoef <- diff.par
-  
+
   if(length(drift.par)>0)
     fullcoef <- c(fullcoef, drift.par)
-  
+
   if(is.CARMA(yuima)){
     if(length(xinit.par)>0)
       fullcoef <- c(fullcoef, xinit.par)
   }
-  
+
   if(is.CARMA(yuima) && (length(yuima@model@parameter@measure)!=0))
     fullcoef<-c(fullcoef, measure.par)
-  
+
   if(is.CARMA(yuima)){
     if("mean.noise" %in% names(param)){
       mean.noise<-"mean.noise"
@@ -1613,52 +1614,52 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
       NoNeg.Noise<-TRUE
     }
   }
-  
-  
+
+
   npar <- length(fullcoef)
-  
+
   nm <- names(param)
   oo <- match(nm, fullcoef)
-  
+
   if(any(is.na(oo)))
     yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
   param <- param[order(oo)]
   nm <- names(param)
-  
+
   idx.diff <- match(diff.par, nm)
   idx.drift <- match(drift.par, nm)
-  
-  
+
+
   if(is.CARMA(yuima)){
     idx.xinit <-as.integer(na.omit(match(xinit.par, nm)))
   }
-  
+
   h <- env$h
-  
+
   Cn.r <- env$Cn.r
-  
+
   theta1 <- unlist(param[idx.diff])
   theta2 <- unlist(param[idx.drift])
-  
-  
+
+
   n.theta1 <- length(theta1)
   n.theta2 <- length(theta2)
   n.theta <- n.theta1+n.theta2
-  
-  
+
+
   if(is.CARMA(yuima)){
     theta3 <- unlist(param[idx.xinit])
     n.theta3 <- length(theta3)
     n.theta <- n.theta1+n.theta2+n.theta3
   }
-  
-  
+
+
   d.size <- yuima@model@equation.number
-  
-  
+
+
   n <- length(yuima)[1]
-  
-  
+
+
   if (is.CARMA(yuima)){
     # 24/12
     d.size <-1
@@ -1680,7 +1681,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     ma.par <- yuima@model@info@ma.par
     name.ma<-paste0(ma.par, c(0:q))
     if (length(yuima@model@info@loc.par)==0){
-      
+
       a<-param[name.ar]
       #        a_names<-names(param[c(1:p)])
       #        names(a)<-a_names
@@ -1699,7 +1700,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
       NoNeg.Noise<-FALSE
       if(is.CARMA(yuima)){
         if("mean.noise" %in% names(param)){
-          
+
           NoNeg.Noise<-TRUE
         }
       }
@@ -1741,15 +1742,15 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
       } else{sigma <- 1}
       loc.par <- yuima@model@info@loc.par
       mu <- param[loc.par]
-      
+
       NoNeg.Noise<-FALSE
       if(is.CARMA(yuima)){
         if("mean.noise" %in% names(param)){
-          
+
           NoNeg.Noise<-TRUE
         }
       }
-      
+
       # Lines 883:840 work if we have a no negative noise
       if(is.CARMA(yuima)&&(NoNeg.Noise==TRUE)){
         if (length(b)==p){
@@ -1757,14 +1758,14 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
           # Be useful for carma driven by levy process
           #   mean.y<-mean.noise*tail(b,n=1)/tail(a,n=1)*sigma
           mean.y<-mean(y-mu)
-          
+
         }else{
           mean.y<-0
         }
         y<-y-mean.y
       }
-      
-      
+
+
       y.start <- y-mu
       #V_inf0<-matrix(diag(rep(1,p)),p,p)
       V_inf0<-env$V_inf0
@@ -1772,7 +1773,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
       q<-env$q
       strLog<-yuima.carma.loglik1(y.start, u, a, b, sigma,time.obs,V_inf0,p,q)
     }
-    
+
     QL<-strLog$loglikCdiag
     #       }else {
     #         yuima.warn("carma(p,q): the scale parameter is equal to 1. We will implemented as soon as possible")
@@ -1781,25 +1782,25 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
   } else if (!rcpp) {
     drift <- drift.term(yuima, param, env)
     diff <- diffusion.term(yuima, param, env)
-    
+
     QL <- 0
-    
+
     pn <- 0
-    
-    
+
+
     vec <- env$deltaX-h*drift[-n,]
-    
+
     K <- -0.5*d.size * log( (2*pi*h) )
-    
+
     dimB <- dim(diff[, , 1])
-    
+
     if(is.null(dimB)){  # one dimensional X
       for(t in 1:(n-1)){
         yB <- diff[, , t]^2
         logdet <- log(yB)
         pn <- Cn.r[t]*(K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB))
         QL <- QL+pn
-        
+
       }
     } else {  # multidimensional X
       for(t in 1:(n-1)){
@@ -1829,26 +1830,26 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     ####r <- length(a[[1]])
     r <- yuima@model@noise.number
     xdim <- length(yuima@model@state.variable)
-    
+
     #if(thetadim!=length(initial)) stop("check dim of initial") #error check
-    
+
     for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
     for(i in 1:thetadim) assign(names(param)[i], param[[i]])
-    
+
     d_b <- NULL
     for(i in 1:d){
       if(length(eval(b[[i]]))==(length(data[,1])-1)){
         d_b[[i]] <- b[[i]] #this part of model includes "x"(state.variable)
       }
       else{
-        if(is.na(c(b[[i]][2]))){ #ex. yuima@model@drift=expression(0) (we hope "expression((0))") 
+        if(is.na(c(b[[i]][2]))){ #ex. yuima@model@drift=expression(0) (we hope "expression((0))")
           b[[i]] <- parse(text=paste(sprintf("(%s)", b[[i]])))[[1]]
         }
         d_b[[i]] <- parse(text=paste("(",b[[i]][2],")*rep(1,length(data[,1])-1)",sep="")) #vectorization
       }
     }
     #d_b <- c(d_b,b[[i]])
-    
+
     v_a<-matrix(list(NULL),d,r)
     for(i in 1:d){
       for(j in 1:r){
@@ -1863,7 +1864,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
         }
       }
     }
-    
+
     #for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
     dx <- as.matrix((data-rbind(numeric(d),as.matrix(data[-length(data[,1]),])))[-1,])
     drift <- diffusion <- NULL
@@ -1874,8 +1875,8 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     }
     QL <- (likndim(dx,drift,diffusion,delta)*(-0.5) + (n-1)*(-0.5*d.size * log( (2*pi*h) )))
   }
-  
-  
+
+
   if(!is.finite(QL)){
     yuima.warn("quasi likelihood is too small to calculate.")
     return(1e10)
@@ -1885,7 +1886,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
   }
   if(is.infinite(QL)) return(1e10)
   return(as.numeric(-QL))
-  
+
 }
 
 
