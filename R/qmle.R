@@ -958,11 +958,16 @@ if(length(measure.par)>0){
         oout$hessian[measure.par,measure.par] <- hess1
      }
 
-    vcov <- if (length(coef))
-	  solve(oout$hessian)
-    else matrix(numeric(0L), 0L, 0L)
+#    vcov <- if (length(coef))
+#	  solve(oout$hessian)
+#   else matrix(numeric(0L), 0L, 0L)
 
-
+    vcov <- matrix(NA, length(coef), length(coef))
+    if (length(coef)) {
+        rrr <- try(solve(oout$hessian), TRUE)
+        if(class(rrr) != "try-error")
+            vcov <- rrr
+    }
 
     mycoef <- as.list(coef)
 
