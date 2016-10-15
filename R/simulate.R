@@ -810,7 +810,10 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   Data <- setData(X,delta = Delta)
   result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
   }
-  return(result)
+  if(missing(subsampling))
+    return(result)
+  subsampling(result, subsampling)
+  #return(result)
 }
 
 # Simulate method for an object of class cogarch.gmm.incr
