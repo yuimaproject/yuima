@@ -31,7 +31,10 @@ onezoo <- function(ydata) {
       dats <- merge(dats,dat[[i]])
     }
   }
-  colnames(dats) <- colnames(ydata@data@original.data)
+  if(length(dat)>1){
+   colnames(dats) <- colnames(ydata@data@original.data)
+  }
+  
   return(dats)
 }
 
