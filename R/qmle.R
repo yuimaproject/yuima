@@ -2089,7 +2089,7 @@ V0inf<-function(a,p,sigma){
   }
   Vdiag <- -solve(B)[,p]*0.5*sigma^2
   #V <- diag(Vdiag)
-  if(is(Vdiag,"matrix")){
+  if(length(Vdiag)>1){
     V <- diag(Vdiag)
   }else{V <- as.matrix(Vdiag)}
   # we insert the values outside the diagonal
