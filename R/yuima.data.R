@@ -31,8 +31,14 @@ onezoo <- function(ydata) {
       dats <- merge(dats,dat[[i]])
     }
   }
-  if(length(dat)>1){
-   colnames(dats) <- colnames(ydata@data@original.data)
+  
+  if(!is.null(dim(dats))){
+    if(class(ydata)=="yuima")
+     colnames(dats) <- colnames(ydata@data@original.data)
+    if(class(ydata)=="yuima.data")
+      colnames(dats) <- colnames(ydata@original.data)
+     
+      
   }
   
   return(dats)
