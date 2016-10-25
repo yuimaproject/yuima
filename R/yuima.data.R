@@ -4,7 +4,7 @@
 
  
 setMethod("initialize", "yuima.data",
-           function(.Object, original.data, delta=NULL){
+           function(.Object, original.data, delta=NULL, t0=0){
              .Object@original.data <- original.data
              if(is.list(original.data) && is.zoo(original.data[[1]])) {
                .Object@zoo.data <- original.data
@@ -15,7 +15,7 @@ setMethod("initialize", "yuima.data",
                  delta <- rep(delta, length(.Object@zoo.data))
                  for(i in 1:length(.Object@zoo.data)){
                     n <- length(.Object@zoo.data[[i]])
-                    t <- seq(0, delta[i]*n, length=n)
+                    t <- t0 + (0:(n-1))*delta[i]
                     index(.Object@zoo.data[[i]]) <- t
                  }
              }
@@ -46,8 +46,8 @@ onezoo <- function(ydata) {
 
 # accessors
 setData <-
-  function(original.data, delta=NULL){
-    return(new("yuima.data", original.data=original.data, delta=delta ))
+  function(original.data, delta=NULL, t0=0){
+    return(new("yuima.data", original.data=original.data, delta=delta, t0=t0 ))
   }
 
 

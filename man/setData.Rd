@@ -26,7 +26,7 @@ Set and access data of an object of type "yuima.data" or "yuima".
 \code{cbind.yuima} bind yuima.data object.
 }
 \usage{
-  setData(original.data, delta=NULL)
+  setData(original.data, delta=NULL, t0=0)
   get.zoo.data(x)
 }
 \arguments{  
@@ -36,6 +36,7 @@ Set and access data of an object of type "yuima.data" or "yuima".
   \item{x}{an object of type \code{\link{yuima.data-class}} or 
   \code{\link{yuima-class}}.}
   \item{delta}{If there is the need to redefine on the fly the \code{delta} increment of the data to make it consistent to statistical theory. See Details.}
+\item{t0}{the time origin for the internal \code{zoo.data} slot, defaults to 0.}
 }
 \details{
 Objects in the  \code{\link{yuima.data-class}} contain two slots:
@@ -83,6 +84,14 @@ str(get.zoo.data(mysde2))
 plot(mysde2)
 dim(mysde2)
 length(mysde2)
+
+# changing delta on the fly to 1/252 and shifting time to t0=1
+mysde2 <- setYuima(data=setData(X, delta=1/252, t0=1))
+str(get.zoo.data(mysde2))
+plot(mysde2)
+dim(mysde2)
+length(mysde2)
+
 
 }
 \keyword{ts}
