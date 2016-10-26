@@ -9,6 +9,8 @@ euler<-function(xinit,yuima,dW,env){
 	r.size <- sdeModel@noise.number
 	d.size <- sdeModel@equation.number
 	Terminal <- yuima@sampling@Terminal[1]
+    Initial <- yuima@sampling@Initial[1]
+
 	n <- yuima@sampling@n[1]
 	dL <- env$dL
 
@@ -222,15 +224,18 @@ euler<-function(xinit,yuima,dW,env){
       lambda <- integrate(tmp.expr, -Inf, Inf)$value * eta0
 
       ##:: lambda = nu() (p6)
-      N_sharp <- rpois(1,Terminal*eta0)	##:: Po(Ne)
+      #     N_sharp <- rpois(1,Terminal*eta0)	##:: Po(Ne)
+      N_sharp <- rpois(1,(Terminal-Initial)*eta0)	##:: Po(Ne)
       if(N_sharp == 0){
         JAMP <- FALSE
       }else{
         JAMP <- TRUE
-        Uj <- sort( runif(N_sharp, 0, Terminal) )
+        Uj <- sort( runif(N_sharp, Initial, Terminal) )
+        #       Uj <- sort( runif(N_sharp, 0, Terminal) )
         ij <- NULL
         for(i in 1:length(Uj)){
-          Min <- min(which(c(1:n)*delta > Uj[i]))
+          Min <- min(which(Initial+ c(1:n)*delta > Uj[i]))
+          #         Min <- min(which(c(1:n)*delta > Uj[i]))
           ij <- c(ij, Min)
         }
       }
