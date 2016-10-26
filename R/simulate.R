@@ -333,6 +333,8 @@ aux.simulate<-function(object, nsim, seed, xinit, true.parameter,
 
   sdeModel <- yuima@model
   Terminal <- yuima@sampling@Terminal[1]
+  Initial <- yuima@sampling@Initial[1]
+  
   n <- yuima@sampling@n[1]
   r.size <- sdeModel@noise.number
   d.size <- sdeModel@equation.number
@@ -432,7 +434,7 @@ aux.simulate<-function(object, nsim, seed, xinit, true.parameter,
 
 
   ##:: using Euler-Maruyama method
-  delta <- Terminal/n
+  delta <- (Terminal-Initial)/n
 
   if(missing(increment.W) | is.null(increment.W)){
 
@@ -450,7 +452,7 @@ aux.simulate<-function(object, nsim, seed, xinit, true.parameter,
 
     } else {
 
-      delta<-Terminal/n
+      delta<-(Terminal-Initial)/n
       if(!is.Poisson(sdeModel)){ # if pure CP no need to setup dW
         dW <- rnorm(n * r.size, 0, sqrt(delta))
         dW <- matrix(dW, ncol=n, nrow=r.size,byrow=TRUE)
