@@ -334,7 +334,7 @@ aux.simulate<-function(object, nsim, seed, xinit, true.parameter,
   sdeModel <- yuima@model
   Terminal <- yuima@sampling@Terminal[1]
   Initial <- yuima@sampling@Initial[1]
-  
+
   n <- yuima@sampling@n[1]
   r.size <- sdeModel@noise.number
   d.size <- sdeModel@equation.number
@@ -528,7 +528,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
                                 hurst=0.5,methodfGn=methodfGn)
       }
       increment<-diff(as.numeric(get.zoo.data(aux.incr2)[[1]]))
-     } else{increment<-increment.L}
+     } else{increment<-c(0,increment.L)}
     # Using the simulated increment for generating the quadratic variation
     # As first step we compute it in a crude way. A more fine approach is based on
     # the mpv function.
