@@ -333,7 +333,12 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 
   if(is.CARMA(yuima)){
     if(length(yuima@model@parameter@xinit)>1){
-      fullcoef<-unique(c(fullcoef,yuima@model@parameter@xinit))
+      #fullcoef<-unique(c(fullcoef,yuima@model@parameter@xinit))
+      condIniCarma<-!(yuima@model@parameter@xinit%in%fullcoef)
+      if(sum(condIniCarma)>0){
+        NamesInitial<- yuima@model@parameter@xinit[condIniCarma]
+        start <- as.list(unlist(start)[!names(unlist(start))%in%(NamesInitial)])
+      }
     }
   }
 
@@ -1893,6 +1898,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
   if(print==TRUE){
     yuima.warn(sprintf("NEG-QL: %f, %s", -QL, paste(names(param),param,sep="=",collapse=", ")))
   }
+  #cat(sprintf("\n%.5f ", -QL))
   if(is.infinite(QL)) return(1e10)
   return(as.numeric(-QL))
 

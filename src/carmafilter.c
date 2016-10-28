@@ -44,7 +44,7 @@
 SEXP carma_tmp(SEXP V, SEXP P, SEXP A);
 
 SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
-                SEXP Qmatr, SEXP SigMatr, SEXP Zc, SEXP Result,SEXP Kgain, 
+                SEXP Qmatr, SEXP SigMatr, SEXP Zc, SEXP Result,SEXP Kgain,
                 SEXP dum_zc, SEXP Mat22int);
 
 
@@ -113,7 +113,7 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
 
                 int times_obs, p;
                 int i, j, h,  t;
-                
+
 
                 /* Declare pointer */
 
@@ -122,9 +122,10 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                 double Uobs=0;
                 double dummy=0;
                 double dummy1=0;
+                /*FILE *fd;*/
                 /* Declare SEXP */
 
-                
+
 
                 /* Check the type of variables*/
 
@@ -157,16 +158,16 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
 
                 PROTECT(Zc = AS_NUMERIC(Zc));
                 rZc = REAL(Zc);
-                
+
                 PROTECT(Result = AS_NUMERIC(Result));
                 rResult = REAL(Result);
-                
+
                 PROTECT(Kgain = AS_NUMERIC(Kgain));
                 rKgain = REAL(Kgain);
-                
+
                 PROTECT(dum_zc = AS_NUMERIC(dum_zc));
                 rdum_zc = REAL(dum_zc);
-                
+
                 PROTECT(Mat22int = AS_NUMERIC(Mat22int));
                 rMat22int = REAL(Mat22int);
 
@@ -180,7 +181,7 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                 p = *INTEGER(P);
 
 
-               /* Main Code 
+               /* Main Code
                  Dimension of Inputs:
                 Y = Vector p dimension;
                 StateVar = matrix p x 1;
@@ -261,9 +262,18 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                         }
                        }
                        /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/
+                       /*fd=fopen("dueinteri.txt", "w+");*/
+                      if(rResult[1]>0){
                       rResult[0] += -0.5 * (log(rResult[1])+ Uobs * Uobs /rResult[1]);
+                      }else{
+                        rResult[0] += -1000000;
+                      }
+                      /*printf("\n res %.5f", rResult[0]);*/
                       /* manual debug */
                    }
+
+
+                 /*fclose(fd);*/
 
                    UNPROTECT(10);
                    return Result;
