@@ -1823,67 +1823,64 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
       }
     }
   } else {
-    b <- yuima@model@drift
-    a <- yuima@model@diffusion
-    d <- d.size
-    ####data <- yuima@data@original.data
-    data <- matrix(0,length(yuima@data@zoo.data[[1]]),d.size)
-    for(i in 1:d) data[,i] <- as.numeric(yuima@data@zoo.data[[i]])
-    ####delta <- yuima@sampling@delta
-    delta <- deltat(yuima@data@zoo.data[[1]])
-    thetadim <- length(yuima@model@parameter@all)
-    ####r <- length(a[[1]])
-    r <- yuima@model@noise.number
-    xdim <- length(yuima@model@state.variable)
-
-    #if(thetadim!=length(initial)) stop("check dim of initial") #error check
-
-    for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
-    for(i in 1:thetadim) assign(names(param)[i], param[[i]])
-
-    d_b <- NULL
-    for(i in 1:d){
-      if(length(eval(b[[i]]))==(length(data[,1])-1)){
-        d_b[[i]] <- b[[i]] #this part of model includes "x"(state.variable)
-      }
-      else{
-        if(is.na(c(b[[i]][2]))){ #ex. yuima@model@drift=expression(0) (we hope "expression((0))")
-          b[[i]] <- parse(text=paste(sprintf("(%s)", b[[i]])))[[1]]
-        }
-        d_b[[i]] <- parse(text=paste("(",b[[i]][2],")*rep(1,length(data[,1])-1)",sep="")) #vectorization
-      }
-    }
-    #d_b <- c(d_b,b[[i]])
-
-    v_a<-matrix(list(NULL),d,r)
-    for(i in 1:d){
-      for(j in 1:r){
-        if(length(eval(a[[i]][[j]]))==(length(data[,1])-1)){
-          v_a[[i,j]] <- a[[i]][[j]] #this part of model includes "x"(state.variable)
-        }
-        else{
-          if(is.na(c(a[[i]][[j]][2]))){
-            a[[i]][[j]] <- parse(text=paste(sprintf("(%s)", a[[i]][[j]])))[[1]]
+      drift_name <- yuima@model@drift
+      diffusion_name <- yuima@model@diffusion
+      ####data <- yuima@data@original.data
+      data <- matrix(0,length(yuima@data@zoo.data[[1]]),d.size)
+      for(i in 1:d.size) data[,i] <- as.numeric(yuima@data@zoo.data[[i]])
+      
+      thetadim <- length(yuima@model@parameter@all)
+      
+      noise_number <- yuima@model@noise.number
+      
+      assign(yuima@model@time.variable,env$time[-length(env$time)])
+      for(i in 1:d.size) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
+      for(i in 1:thetadim) assign(names(param)[i], param[[i]])
+      
+      d_b <- NULL
+      for(i in 1:d.size){
+          if(length(eval(drift_name[[i]]))==(length(data[,1])-1)){
+              d_b[[i]] <- drift_name[[i]] #this part of model includes "x"(state.variable)
           }
-          v_a[[i,j]] <- parse(text=paste("(",a[[i]][[j]][2],")*rep(1,length(data[,1])-1)",sep="")) #vectorization
-        }
+          else{
+              if(is.na(c(drift_name[[i]][2]))){ #ex. yuima@model@drift=expression(0) (we hope "expression((0))")
+                  drift_name[[i]] <- parse(text=paste(sprintf("(%s)", drift_name[[i]])))[[1]]
+              }
+              d_b[[i]] <- parse(text=paste("(",drift_name[[i]][2],")*rep(1,length(data[,1])-1)",sep=""))
+              #vectorization
+          }
       }
-    }
-
-    #for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
-    dx <- as.matrix((data-rbind(numeric(d),as.matrix(data[-length(data[,1]),])))[-1,])
-    drift <- diffusion <- NULL
-    #for(i in 1:thetadim) assign(names(param)[i], param[[i]])
-    for(i in 1:d) drift <- cbind(drift,eval(d_b[[i]]))
-    for(i in 1:r){
-      for(j in 1:d) diffusion <- cbind(diffusion,eval(v_a[[j,i]]))
-    }
-    QL <- (likndim(dx,drift,diffusion,delta)*(-0.5) + (n-1)*(-0.5*d.size * log( (2*pi*h) )))
+      
+      v_a<-matrix(list(NULL),d.size,noise_number)
+      for(i in 1:d.size){
+          for(j in 1:noise_number){
+              if(length(eval(diffusion_name[[i]][[j]]))==(length(data[,1])-1)){
+                  v_a[[i,j]] <- diffusion_name[[i]][[j]] #this part of model includes "x"(state.variable)
+              }
+              else{
+                  if(is.na(c(diffusion_name[[i]][[j]][2]))){
+                      diffusion_name[[i]][[j]] <- parse(text=paste(sprintf("(%s)", diffusion_name[[i]][[j]])))[[1]]
+                  }
+                  v_a[[i,j]] <- parse(text=paste("(",diffusion_name[[i]][[j]][2],")*rep(1,length(data[,1])-1)",sep=""))
+                  #vectorization
+              }
+          }
+      }
+      
+      #for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
+      dx_set <- as.matrix((data-rbind(numeric(d.size),as.matrix(data[-length(data[,1]),])))[-1,])
+      drift_set <- diffusion_set <- NULL
+      #for(i in 1:thetadim) assign(names(param)[i], param[[i]])
+      for(i in 1:d.size) drift_set <- cbind(drift_set,eval(d_b[[i]]))
+      for(i in 1:noise_number){
+          for(j in 1:d.size) diffusion_set <- cbind(diffusion_set,eval(v_a[[j,i]]))
+      }
+      QL <- (likndim(dx_set,drift_set,diffusion_set,env$h)*(-0.5) + (n-1)*(-0.5*d.size * log( (2*pi*env$h) )))
   }
-
-
+  
+  
   if(!is.finite(QL)){
-    yuima.warn("quasi likelihood is too small to calculate.")
+      yuima.warn("quasi likelihood is too small to calculate.")
     return(1e10)
   }
   if(print==TRUE){
