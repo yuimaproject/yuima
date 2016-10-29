@@ -263,11 +263,11 @@ SEXP Cycle_Carma(SEXP Y, SEXP StateVar, SEXP ExpA, SEXP Times_Obs, SEXP P,
                        }
                        /*term_int = -0.5 * (log(Sd_2)+ Uobs * Uobs * 1/Sd_2)  every entries are scalars*/
                        /*fd=fopen("dueinteri.txt", "w+");*/
-                      if(rResult[1]>0){
+                      /*if(rResult[1]>0){*/
                       rResult[0] += -0.5 * (log(rResult[1])+ Uobs * Uobs /rResult[1]);
-                      }else{
+                      /*}else{
                         rResult[0] += -1000000;
-                      }
+                      }*/
                       /*printf("\n res %.5f", rResult[0]);*/
                       /* manual debug */
                    }
