@@ -123,6 +123,15 @@ is.CARMA <- function(obj){
 
 qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
                  lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL,rcpp=FALSE, ...){
+  if(Est.Incr=="Carma.Inc"){
+    Est.Incr<-"Incr"
+  }
+  if(Est.Incr=="Carma.Par"){
+    Est.Incr<-"NoIncr"
+  }
+  if(Est.Incr=="Carma.IncPar"){
+    Est.Incr<-"IncrPar"
+  }
   if(is(yuima@model, "yuima.carma")){
     NoNeg.Noise<-FALSE
     cat("\nStarting qmle for carma ... \n")
@@ -1402,7 +1411,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     #     cov[unique(c(measure.par)),unique(c(measure.par))]<-dummycovCarmaNoise
 
     #    carma_final_res<-list(mle=final_res,Incr=inc.levy,model=yuima)
-    if(Est.Incr=="Carma.IncPar"){
+    if(Est.Incr=="Carma.IncPar"||Est.Incr=="IncrPar"){
       #inc.levy.fin<-zoo(inc.levy,tt,frequency=1/env$h)
       inc.levy.fin<-zoo(inc.levy,tt[(1+length(tt)-length(inc.levy)):length(tt)])
       carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(coef),
@@ -1411,7 +1420,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
                            model = yuima@model, nobs=yuima.nobs,
                            logL.Incr = tryCatch(-result.Lev$value,error=function(theta){NULL}))
     }else{
-      if(Est.Incr=="Carma.Par"){
+      if(Est.Incr=="Carma.Par"||Est.Incr=="NoIncr"){
         carma_final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(coef),
                              vcov = cov, min = min, details = oout, minuslogl = minusquasilogl,
                              method = method, nobs=yuima.nobs)
