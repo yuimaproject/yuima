@@ -46,7 +46,7 @@ lse(yuima, start, lower, upper, method = "BFGS", ...)
   \item{start}{initial values to be passed to the optimizer.}
   \item{fixed}{for conditional (quasi)maximum likelihood estimation.}
   \item{joint}{perform joint estimation or two stage estimation? by default \code{joint=FALSE}.}
-  \item{Est.Incr}{If the yuima model is an object of \code{\link{yuima.carma-class}} the \code{qmle} returns an object of \code{\link{yuima.carma.qmle-class}} or object of class \code{mle-class}. By default \code{Est.Incr="Carma.IncPar"}.}
+  \item{Est.Incr}{If the yuima model is an object of \code{\link{yuima.carma-class}} or \code{\link{yuima.cogarch-class}}  the \code{qmle} returns an object of \code{\link{yuima.carma.qmle-class}}, \code{\link{cogarch.est.incr-class}},\code{\link{cogarch.est-class}}  or object of class \code{mle-class}. By default \code{Est.Incr="NoIncr"}, alternative values are \code{IncrPar} and \code{Incr}. }
   \item{aggregation}{If \code{aggregation=TRUE}, before the estimation of the levy parameters we aggregate the increments.}
   \item{threshold}{If the model has Compund Poisson type jumps, the threshold is
   used to perform thresholding of the increments.}
@@ -62,7 +62,6 @@ lse(yuima, start, lower, upper, method = "BFGS", ...)
 
   \code{lse} calculates least squares estimators of the drift parameters. This is
   useful for initial guess of \code{qmle} estimation.
-
   \code{quasilogl} returns the value of the  quasi loglikelihood for a given
   \code{yuima} object and list of parameters \code{coef}.
 
@@ -93,6 +92,10 @@ Ogihara, T., & Yoshida, N. (2011). Quasi-likelihood analysis for the stochastic 
 ## COGARCH
 
 Iacus S. M., Mercuri L. and Rroji E.(2015) Discrete time approximation of a COGARCH (p, q) model and its estimation. \href{http://arxiv.org/abs/1511.00253}{http://arxiv.org/abs/1511.00253}
+
+## CARMA
+
+Iacus S. M., Mercuri L. (2015) Implementation of Levy CARMA model in Yuima package. Comp. Stat. (30) 1111-1141. \href{http://link.springer.com/article/10.1007/s00180-015-0569-7}{http://link.springer.com/article/10.1007/s00180-015-0569-7}
 }
 
 \author{The YUIMA Project Team}
@@ -102,6 +105,7 @@ Iacus S. M., Mercuri L. and Rroji E.(2015) Discrete time approximation of a COGA
 
   The function qmle uses the function \code{\link{CarmaNoise}} internally for estimation of underlying Levy if the model is an object of \code{\link{yuima.carma-class}}.
 }
+
 \examples{
 #dXt^e = -theta2 * Xt^e * dt + theta1 * dWt
 diff.matrix <- matrix(c("theta1"), 1, 1)
@@ -168,7 +172,6 @@ print(coef(opt4))
 
 
 \dontrun{
-
 ###multidimension case
 ##dXt^e = - drift.matrix * Xt^e * dt + diff.matrix * dWt
 diff.matrix <- matrix(c("theta1.1","theta1.2", "1", "1"), 2, 2)
@@ -224,7 +227,6 @@ opt3 <- qmle(yuima, start=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.
 opt3@coef
 summary(opt3)
 
-
 quasilogl(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0.1))
 
 ##system.time(
@@ -234,7 +236,6 @@ quasilogl(yuima, param=list(theta2.1=0.8, theta2.2=0.2, theta1.1=0.7, theta1.2=0
 ##
 
 # carma(p=2,q=0) driven by a brownian motion without location parameter
-
 
 mod0<-setCarma(p=2,
                q=0,
@@ -259,10 +260,6 @@ carmaopt0 <- qmle(sim0, start=list(a1=1.39631,a2=0.05029,
 
 summary(carmaopt0)
 
-
-
-
-
 # carma(p=2,q=1) driven by a brownian motion without location parameter
 
 mod1<-setCarma(p=2,
@@ -285,8 +282,6 @@ system.time(
 )
 
 summary(carmaopt1)
-
-plot(carmaopt1)
 
 # carma(p=2,q=1) driven by a compound poisson process where the jump size is normally distributed.
 
@@ -312,8 +307,6 @@ system.time(
 )
 
 summary(carmaopt2)
-
-plot(carmaopt2)
 
 # carma(p=2,q=1) driven by a normal inverse gaussian process
 mod3<-setCarma(p=2,q=1,
@@ -342,8 +335,6 @@ sim3<-simulate(mod3,
 carmaopt3<-qmle(sim3,start=true.param3)
 
 summary(carmaopt3)
-
-plot(carmaopt3)
 
 # Simulation and Estimation of COGARCH(1,1) with CP driven noise
 
