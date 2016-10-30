@@ -489,6 +489,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
                               Initial, Terminal, n, delta,
                               grid, random, sdelta,
                               sgrid, interpolation){
+
   yuimaCogarch<-object
   model<-yuimaCogarch@model
   info<-model@info
@@ -498,28 +499,28 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   }
 
   if(method=="euler"||(method=="mixed" && model@measure.type=="code")){
-     if(length(increment.L)==0){
-          aux.Noise<-setModel(drift="0",
-                              diffusion="0",
-                              jump.coeff="1",
-                              measure=info@measure,
-                              measure.type=info@measure.type)
+    if(length(increment.L)==0){
+      aux.Noise<-setModel(drift="0",
+                          diffusion="0",
+                          jump.coeff="1",
+                          measure=info@measure,
+                          measure.type=info@measure.type)
 
 
-    #    aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1], delta = samp@delta,
-    #                         grid=samp@grid, random = samp@random, sdelta=samp@sdelta,
-    #                         sgrid=samp@sgrid, interpolation=samp@interpolation )
+      #    aux.samp<-setSampling(Initial = samp@Initial, Terminal = samp@Terminal[1], n = samp@n[1], delta = samp@delta,
+      #                         grid=samp@grid, random = samp@random, sdelta=samp@sdelta,
+      #                         sgrid=samp@sgrid, interpolation=samp@interpolation )
 
-        aux.samp<-setSampling(Initial = samp@Initial,
-                              Terminal = samp@Terminal[1]+samp@delta,
-                              n = samp@n[1]+1)
-        auxModel<-setYuima(model=aux.Noise, sampling= aux.samp)
+      aux.samp<-setSampling(Initial = samp@Initial,
+                            Terminal = samp@Terminal[1],
+                            n = samp@n[1])
+      auxModel<-setYuima(model=aux.Noise, sampling= aux.samp)
 
       if(length(model@parameter@measure)==0){
         aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed,
-                               space.discretized=space.discretized, increment.W=increment.W,
-                               increment.L=increment.L,
-                               hurst=0.5,methodfGn=methodfGn)
+                                space.discretized=space.discretized, increment.W=increment.W,
+                                increment.L=increment.L,
+                                hurst=0.5,methodfGn=methodfGn)
       }else{
         aux.incr2<-aux.simulate(object=auxModel, nsim=nsim, seed=seed,
                                 true.parameter = true.parameter[model@parameter@measure],
@@ -528,7 +529,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
                                 hurst=0.5,methodfGn=methodfGn)
       }
       increment<-diff(as.numeric(get.zoo.data(aux.incr2)[[1]]))
-     } else{increment<-c(0,increment.L)}
+    } else{increment<-increment.L}
     # Using the simulated increment for generating the quadratic variation
     # As first step we compute it in a crude way. A more fine approach is based on
     # the mpv function.
@@ -552,22 +553,22 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
   }
   xinit <- as.expression(xinit)  # force xinit to be an expression
   if(method=="euler"){
-#   result <- aux.simulate(object=yuimaCogarch, nsim=nsim, seed=seed, xinit=xinit,
-#                          true.parameter = true.parameter,
-#                          space.discretized = space.discretized,increment.W =incr.W,
-#                          increment.L=incr.L, method=method,
-#                     hurst=hurst,methodfGn=methodfGn,
-#                     sampling=sampling, subsampling=subsampling,
-#                     Initial=Initial, Terminal=Terminal, n=n, delta=delta,
-#                     grid=grid, random=random, sdelta=sdelta,
-#                     sgrid=sgrid, interpolation=interpolation)
+    #   result <- aux.simulate(object=yuimaCogarch, nsim=nsim, seed=seed, xinit=xinit,
+    #                          true.parameter = true.parameter,
+    #                          space.discretized = space.discretized,increment.W =incr.W,
+    #                          increment.L=incr.L, method=method,
+    #                     hurst=hurst,methodfGn=methodfGn,
+    #                     sampling=sampling, subsampling=subsampling,
+    #                     Initial=Initial, Terminal=Terminal, n=n, delta=delta,
+    #                     grid=grid, random=random, sdelta=sdelta,
+    #                     sgrid=sgrid, interpolation=interpolation)
 
 
-    Initial <- samp@Initial[1]
+
     Terminal <- samp@Terminal[1]
+    Initial <- samp@Initial[1]
     n <- samp@n[1]
-    #Delta <- Terminal/n
-    Delta <- samp@delta
+    Delta <- (Terminal-Initial)/n
     name.ar <- paste0(info@ar.par,c(1:info@q))
     name.ma <- paste0(info@ma.par,c(1:info@p))
     name.loc <- info@loc.par
@@ -582,7 +583,7 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
     evect[info@q,] <- 1
     avect[c(1,info@p),1] <- value.ma
     Indent<-diag(info@q)
-  # Inputs: incr.L
+    # Inputs: incr.L
     tavect<-t(avect)
 
     ncolsim <- (info@q+2)
@@ -593,46 +594,40 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
       true.parameter <- vector(par.len, mode="list")
       for(i in 1:par.len)
         true.parameter[[i]] <- 0
-        names(true.parameter) <-   model@parameter@all
-      }
+      names(true.parameter) <-   model@parameter@all
+    }
 
-      yuimaEnv <- new.env()
+    yuimaEnv <- new.env()
 
-      if(par.len>0){
-        for(i in 1:par.len){
-          pars <- model@parameter@all[i]
-          for(j in 1:length(true.parameter)){
-            if( is.na(match(pars, names(true.parameter)[j]))!=TRUE){
-              assign(model@parameter@all[i], true.parameter[[j]], yuimaEnv)
-            }
+    if(par.len>0){
+      for(i in 1:par.len){
+        pars <- model@parameter@all[i]
+        for(j in 1:length(true.parameter)){
+          if( is.na(match(pars, names(true.parameter)[j]))!=TRUE){
+            assign(model@parameter@all[i], true.parameter[[j]], yuimaEnv)
           }
-        #assign(sdeModel@parameter@all[i], true.parameter[[i]], yuimaEnv)
         }
+        #assign(sdeModel@parameter@all[i], true.parameter[[i]], yuimaEnv)
       }
+    }
 
-      for(i in c(1:ncolsim)){
-        sim[1,i] <- eval(xinit[i], yuimaEnv)
-      }
+    for(i in c(1:ncolsim)){
+      sim[1,i] <- eval(xinit[i], yuimaEnv)
+    }
 
-      for(t in c(2:(n+1))){
-          #sim[t,3:ncolsim] <- value.a0*expm(AMatrix*Delta)%*%evect*incr.L[2,t-1]+
-          #  expm(AMatrix*Delta)%*%(Indent+evect%*%tavect*incr.L[2,t-1])%*%sim[t-1,3:ncolsim]
-          #         sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
-          #         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
-          #        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
-          sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
-          sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t]
-          sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
-      }
-      # t<-t+1
-      # sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
-      # sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t]
-      # sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
-    #  X <- ts(sim[-(samp@n[1]+1),])
-    #  X <- sim[-(samp@n[1]+1),]
-      X<-zoo(x=sim, order.by=samp@grid[[1]])
-      Data <- setData(X)
-      result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=samp)
+    for(t in c(2:n)){
+      #sim[t,3:ncolsim] <- value.a0*expm(AMatrix*Delta)%*%evect*incr.L[2,t-1]+
+      #  expm(AMatrix*Delta)%*%(Indent+evect%*%tavect*incr.L[2,t-1])%*%sim[t-1,3:ncolsim]
+      #         sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
+      #         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
+      #        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
+      sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
+      sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t]
+      sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
+    }
+    X <- ts(sim[-(samp@n[1]+1),])
+    Data <- setData(X,delta = Delta,t0=Initial)
+    result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
 
 
 
@@ -645,10 +640,10 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
 
 
   }else{
-    Initial <- samp@Initial[1]
     Terminal <- samp@Terminal[1]
+    Initial <- samp@Initial[1]
     n <- samp@n[1]
-    Delta <- samp@delta
+    Delta <- (Terminal-Initial)/n
     name.ar <- paste0(info@ar.par,c(1:info@q))
     name.ma <- paste0(info@ma.par,c(1:info@p))
     name.loc <- info@loc.par
@@ -696,30 +691,27 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
     }
 
     if(yuimaCogarch@model@measure.type=="code"){
-            for(t in c(2:(n+1))){
+      for(t in c(2:n)){
 
-#         sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
-#         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
-#        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
-#        sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+AMatrix*Delta%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
+        #         sim[t,2]<-value.a0+tavect%*%sim[t,3:ncolsim]
+        #         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
+        #        sim[t,3:ncolsim]<-expm(AMatrix*Delta)%*%sim[t-1,3:ncolsim]+expm(AMatrix)%*%evect*sim[t-1,2]*incr.L[2,t]
+        #        sim[t,3:ncolsim]<-sim[t-1,3:ncolsim]+AMatrix*Delta%*%sim[t-1,3:ncolsim]+evect*sim[t-1,2]*incr.L[2,t-1]
         sim[t,2]<-value.a0+tavect%*%sim[t-1,3:ncolsim]
         sim[t,3:ncolsim] <- value.a0*expm(AMatrix*Delta)%*%evect*incr.L[2,t]+
           expm(AMatrix*Delta)%*%(Indent+evect%*%tavect*incr.L[2,t])%*%sim[t-1,3:ncolsim]
         sim[t,1]<-sim[t-1,1]+sqrt(sim[t,2])*incr.L[1,t]
 
       }
-      X<-zoo(x=sim, order.by=samp@grid[[1]])
-      Data <- setData(X)
-      result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=samp)
-
-      # Data <- setData(X,delta = Delta)
-      # result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
-  #  return(result)
+      X <- ts(sim[-(samp@n[1]+1),])
+      Data <- setData(X,delta = Delta, t0=Initial)
+      result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
+      return(result)
     }else{
-        lambda <- eval(model@measure$intensity, yuimaEnv)
+      lambda <- eval(model@measure$intensity, yuimaEnv)
 
 
-        #Simulating jump times
+      #Simulating jump times
       #intensity <- lambda*Delta
       intensity<-lambda
       jump_time<-numeric()
@@ -729,15 +721,15 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
       Time[1] <- jump_time[1]
       j <- 1
       numb_jum<-numeric()
-#       for (i in c(1:n) ){
-#         numb_jum[i]<-0
-#         while(Time[j]<i){
-#           numb_jum[i]<-numb_jum[i]+1
-#           jump_time[j+1]<-rexp(1,rate=intensity)
-#           Time[j+1]<-Time[j]+jump_time[j+1]
-#           j<-j+1
-#         }
-#       }
+      #       for (i in c(1:n) ){
+      #         numb_jum[i]<-0
+      #         while(Time[j]<i){
+      #           numb_jum[i]<-numb_jum[i]+1
+      #           jump_time[j+1]<-rexp(1,rate=intensity)
+      #           Time[j+1]<-Time[j]+jump_time[j+1]
+      #           j<-j+1
+      #         }
+      #       }
 
       while(Time[j] < (Terminal-Initial)){
         jump_time[j+1]<-rexp(1,rate=intensity)
@@ -747,21 +739,21 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
 
       total_NumbJ <- j
       # Counting the number of jumps
-#       N<-matrix(1,n,1)
-#       N[1,1]<-numb_jum[1]
-#       for(i in c(2:n)){
-#         N[i,1]=N[i-1,1]+numb_jum[i]
-#       }
+      #       N<-matrix(1,n,1)
+      #       N[1,1]<-numb_jum[1]
+      #       for(i in c(2:n)){
+      #         N[i,1]=N[i-1,1]+numb_jum[i]
+      #       }
       # Simulating the driving process
       F <- suppressWarnings(parse(text=gsub("^d(.+?)\\(.+?,", "r\\1(total_NumbJ,", model@measure$df$expr, perl=TRUE)))
       assign("total_NumbJ",total_NumbJ, envir=yuimaEnv)
       dL<-eval(F, envir=yuimaEnv)
       #dL<-rnorm(total_NumbJ,mean=0,sd=1)
-#       L<-matrix(1,total_NumbJ,1)
-#       L[1]<-dL[1]
-#       for(j in c(2:total_NumbJ)){
-#         L[j]<-L[j-1] + dL[j]
-#       }
+      #       L<-matrix(1,total_NumbJ,1)
+      #       L[1]<-dL[1]
+      #       for(j in c(2:total_NumbJ)){
+      #         L[j]<-L[j-1] + dL[j]
+      #       }
       # Computing the processes V and Y at jump
       V<-matrix(1,total_NumbJ,1)
       Y<-matrix(1,info@q,total_NumbJ)
@@ -775,56 +767,53 @@ aux.simulateCogarch<-function(object, nsim, seed, xinit, true.parameter,
         Y[,j]<-as.numeric(expm(AMatrix*jump_time[j])%*%Y[,j-1])+(V[j-1,])*evect*dL[j]^2
         V[j,]<-value.a0+sum(tavect*Y[,j])
         #       }
-#       # Computing the process G at jump time
-#
-#       for(j in c(2:total_NumbJ)){
+        #       # Computing the process G at jump time
+        #
+        #       for(j in c(2:total_NumbJ)){
         G[j]<-G[j-1]+sqrt(V[j-1])*dL[j]
       }
 
 
-        res<-approx(x=c(Initial,(Time+Initial)), y = c(0,G),
-                    xout=seq(Initial,Terminal, by=Delta),
-                    method = "constant")
-        sim[,1]<-res$y
-        i<-1
-        for(j in 1:length(Time)){
-          while (i*Delta < Time[j] && i <= n){
-            sim[i+1,3:ncolsim]<-expm(AMatrix*(Time[j]-i*Delta))%*%Y[,j]
-            sim[i+1,2]<-value.a0+as.numeric(tavect%*%sim[i,3:ncolsim])
-            i<-i+1
+      res<-approx(x=c(0,Time), y = c(0,G),
+                  xout=seq(0,(Terminal-Initial), by=(Terminal-Initial)/n),
+                  method = "constant")
+      sim[,1]<-res$y
+      i<-1
+      for(j in 1:length(Time)){
+        while (i*Delta < Time[j] && i <= n){
+          sim[i+1,3:ncolsim]<-expm(AMatrix*(Time[j]-i*Delta))%*%Y[,j]
+          sim[i+1,2]<-value.a0+as.numeric(tavect%*%sim[i,3:ncolsim])
+          i<-i+1
 
-          }
         }
+      }
 
 
-#       # Realizations observed at integer times
-#       i<-1
-#       while(N[i]==0){
-#         i <- i+1
-#       }
-# #       G_obs<-numeric()
-#       # L_obs<-numeric()
-# #       V_obs<-numeric()
-# #       Y_obs<-matrix(0,info@q,)
-#       sim[c(1:(i-1)),1]<-0
-#       sim[c(i:n),1]<-G[N[c(i:n)]]
-# #       L_obs[c(1:(i-1))]<-0
-# #       L_obs[c(i:n)]<-L[N[c(i:n)]]
-#       for(j in c(1:(i-1))){
-#         sim[j,3:ncolsim]<-as.numeric(Y[,j])
-#         sim[j,2]<-value.a0+tavect%*%expm(AMatrix*j)%*%matrix(1,info@q,1)#Starting point for unobservable State Space Process
-#       }
-#       for(j in c(i:n)){
-#         sim[j,3:ncolsim]<-as.numeric(Y[,N[j]])
-#         sim[j,2]<-value.a0+as.numeric(tavect%*%expm(AMatrix*(j-Time[N[j]]))%*%Y[,N[j]])
-#       }
+      #       # Realizations observed at integer times
+      #       i<-1
+      #       while(N[i]==0){
+      #         i <- i+1
+      #       }
+      # #       G_obs<-numeric()
+      #       # L_obs<-numeric()
+      # #       V_obs<-numeric()
+      # #       Y_obs<-matrix(0,info@q,)
+      #       sim[c(1:(i-1)),1]<-0
+      #       sim[c(i:n),1]<-G[N[c(i:n)]]
+      # #       L_obs[c(1:(i-1))]<-0
+      # #       L_obs[c(i:n)]<-L[N[c(i:n)]]
+      #       for(j in c(1:(i-1))){
+      #         sim[j,3:ncolsim]<-as.numeric(Y[,j])
+      #         sim[j,2]<-value.a0+tavect%*%expm(AMatrix*j)%*%matrix(1,info@q,1)#Starting point for unobservable State Space Process
+      #       }
+      #       for(j in c(i:n)){
+      #         sim[j,3:ncolsim]<-as.numeric(Y[,N[j]])
+      #         sim[j,2]<-value.a0+as.numeric(tavect%*%expm(AMatrix*(j-Time[N[j]]))%*%Y[,N[j]])
+      #       }
     }
-    X<-zoo(x=sim, order.by=samp@grid[[1]])
-    Data <- setData(X)
-    result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=samp)
-  # X <- ts(sim[-1,])
-  # Data <- setData(X,delta = Delta)
-  # result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
+    X <- ts(sim[-1,])
+    Data <- setData(X,delta = Delta, t0 = Initial)
+    result <- setYuima(data=Data,model=yuimaCogarch@model, sampling=yuimaCogarch@sampling)
   }
   if(missing(subsampling))
     return(result)

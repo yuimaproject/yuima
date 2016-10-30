@@ -231,7 +231,8 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
 
   # Data
   assign("Data",  as.matrix(onezoo(observ)[,1]), envir=env)
-  assign("deltaData",  n/index(observ@zoo.data[[1]])[n], envir=env)
+  #assign("deltaData",  (n-1)/index(observ@zoo.data[[1]])[n], envir=env)
+  assign("deltaData",  1/yuima@sampling@delta, envir=env)
   assign("time.obs",length(env$Data),envir=env)
 
 
@@ -255,7 +256,7 @@ gmm<-function(yuima, data = NULL, start, method="BFGS", fixed = list(),
   assign("objFun",objFun, envir=env)
 
   if(aggr.G==TRUE){
-    if(floor(n/index(observ@zoo.data[[1]])[n])!=env$deltaData){
+    if(floor(env$deltaData)!=env$deltaData){
       yuima.stop("the n/Terminal in sampling information is not an integer. equally.spaced=FALSE is recommended")
     }
   }

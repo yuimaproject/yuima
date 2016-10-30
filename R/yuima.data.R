@@ -2,7 +2,7 @@
 
 # we convert objects to "zoo" internally
 
- 
+
 setMethod("initialize", "yuima.data",
            function(.Object, original.data, delta=NULL, t0=0){
              .Object@original.data <- original.data
@@ -16,6 +16,8 @@ setMethod("initialize", "yuima.data",
                  for(i in 1:length(.Object@zoo.data)){
                     n <- length(.Object@zoo.data[[i]])
                     t <- t0 + (0:(n-1))*delta[i]
+                  #  t<-seq(0, n*delta[i], length=n)+t0
+                  ## L.M. Using this mod we get the same result on JSS
                     index(.Object@zoo.data[[i]]) <- t
                  }
              }
@@ -31,16 +33,16 @@ onezoo <- function(ydata) {
       dats <- merge(dats,dat[[i]])
     }
   }
-  
+
   if(!is.null(dim(dats))){
     if(class(ydata)=="yuima")
      colnames(dats) <- colnames(ydata@data@original.data)
     if(class(ydata)=="yuima.data")
       colnames(dats) <- colnames(ydata@original.data)
-     
-      
+
+
   }
-  
+
   return(dats)
 }
 
@@ -55,7 +57,7 @@ setGeneric("get.zoo.data",
            function(x)
            standardGeneric("get.zoo.data")
            )
-		   
+
 setMethod("get.zoo.data", signature(x="yuima.data"),
           function(x){
             return(x@zoo.data)
@@ -67,7 +69,7 @@ setGeneric("plot",
            function(x,y,...)
            standardGeneric("plot")
            )
-		   
+
 
 setMethod("plot",signature(x="yuima.data"),
           function(x,y,main="",xlab="index",ylab=names(x@zoo.data),...){
@@ -79,31 +81,31 @@ setMethod("plot",signature(x="yuima.data"),
 #           function(x,...)
 #           standardGeneric("time")
 #           )
-		   
+
 #setMethod("time", signature(x="yuima.data"),
 #          function(x,...){
 #            return(time(x@zoo.data))
-#          }) 
+#          })
 
 
 #setGeneric("end",
 #           def = function(x,...) standardGeneric("end")
 #           )
-		   
+
 #setMethod("end", signature(x="yuima.data"),
 #          function(x,...){
 #            return(end(x@zoo.data))
-#          }) 
+#          })
 
 #setGeneric("start",
 #           function(x,...)
 #           standardGeneric("start")
 #           )
-		   
+
 #setMethod("start", signature(x="yuima.data"),
 #          function(x,...){
 #            return(start(x@zoo.data))
-#          }) 
+#          })
 
 # length is primitive, so no standardGeneric should be defined
 
@@ -112,19 +114,19 @@ setMethod("length", signature(x= "yuima.data"),
           function(x){
 		  #  if(is.null(dim(x@zoo.data)))
 	      #    return(length(x@zoo.data))
-	      #  else 
+	      #  else
           #    return(dim(x@zoo.data)[1])
 		    result <- numeric()
 		    for(i in 1:(length(x@zoo.data))) result <- c(result,length(x@zoo.data[[i]]))
 		    return(result)
           }
-          ) 
-		  
+          )
+
 setMethod("dim", signature(x = "yuima.data"),
           function(x){
             return(length(x@zoo.data))
           }
-          ) 
+          )
 
 
 # same methods for 'yuima'. Depend on same methods for 'data'
@@ -135,11 +137,11 @@ setMethod("get.zoo.data", "yuima",
 setMethod("length", "yuima",
           function(x){
             return(length(x@data))
-          }) 
+          })
 setMethod("dim", "yuima",
           function(x){
            return(dim(x@data))
-          }) 
+          })
 
 
 setMethod("plot","yuima",
@@ -188,7 +190,7 @@ setMethod("cbind.yuima", signature(x="yuima.data"),
             ##:: init
             yd.list <- list(x, ...)
             yd.num <- length(yd.list)
-            
+
             ##:: bind yuima.data (original.data)
             od.tmp <- yd.list[[1]]@original.data
             for(idx in 2:yd.num){
