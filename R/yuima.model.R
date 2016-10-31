@@ -130,7 +130,19 @@ setModel <- function(drift=NULL,
                      solve.variable,
                      xinit=NULL){
   ## we need a temp env for simplifications
-
+  mylengdumMeas<-length(measure)
+  if(mylengdumMeas>0){
+    for(i in c(1:mylengdumMeas)){
+      if(is(measure[[i]],"yuima.law")){
+        res<- aux.setModelLaw(drift,diffusion,
+          hurst, jump.coeff, measure, measure.type,
+          state.variable, jump.variable, time.variable,
+          solve.variable, xinit, posyuimalaw=i)
+        res@measure[[i]]<-measure[[i]]
+        return(res)
+      }
+    }
+  }
 
   yuimaENV <- new.env()
   ##::measure and jump term #####################################
@@ -609,6 +621,26 @@ if(length(jump.coeff)==0){
              J.flag <- J.flag)
   return(tmp)
 }
+
+aux.setModelLaw <- function(drift,diffusion,
+                      hurst, jump.coeff, measure, measure.type,
+                      state.variable, jump.variable, time.variable,
+                      solve.variable, xinit, posyuimalaw){
+
+  dummyMeasure <- paste0(c("yuima.law(",
+                    paste0(measure[[posyuimalaw]]@param.measure,collapse=", ")
+                    ,")"), collapse="")
+  auxmeasure <- measure
+  auxmeasure[[posyuimalaw]]<-dummyMeasure
+  names(auxmeasure[posyuimalaw]) <- "df"
+  setModel(drift = drift,diffusion = diffusion,
+           hurst = hurst, jump.coeff = jump.coeff, measure = auxmeasure,
+           measure.type = measure.type,
+           state.variable = state.variable,
+           jump.variable = jump.variable, time.variable,
+           solve.variable, xinit)
+}
+
 # yuima.model rbind
 
 # setGeneric("rbind.yuima",

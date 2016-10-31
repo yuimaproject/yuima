@@ -31,7 +31,7 @@ setMethod("simulate", "yuima.multimodel",
 
  aux.simulate.multimodel<-function(object, nsim, seed, xinit, true.parameter,
                                space.discretized, increment.W, increment.L,method,
-                               hurst,methodfGn,
+                               hurst=0.5,methodfGn,
                                sampling, subsampling,
                                Initial, Terminal, n, delta,
                                grid, random, sdelta,
@@ -39,7 +39,66 @@ setMethod("simulate", "yuima.multimodel",
 
 
    ##:: errors checks
+    if(is(object@model@measure$df,"yuima.law")&& is.null(increment.L)){
+      randomGenerator<-object@model@measure$df
+      if(samp@regular){
+        tForMeas<-samp@delta
+        NumbIncr<-samp@n
+        if(missing(true.parameter)){
+          eval(parse(text= paste0("measureparam$",
+                                  object@model@time.variable," <- tForMeas",collapse="")))
+        }else{
+          measureparam<-true.parameter[object@model@parameter@measure]
+          eval(parse(text= paste0("measureparam$",
+                                  object@model@time.variable," <- tForMeas",collapse="")))
 
+        }
+        Noise<- rand(object = randomGenerator, n=NumbIncr, param=measureparam)
+      }else{
+        # Just For Irregular Grid
+        tForMeas<-diff(samp@grid[[1]]-samp@Initial)
+        my.InternalFunforLevy<-function(tForMeas,
+                                        randomGenerator,
+                                        true.parameter,object){
+         if(missing(true.parameter)){
+            eval(parse(text= paste0("measureparam$",
+                                    object@model@time.variable," <- tForMeas",collapse="")))
+          }else{
+            measureparam<-true.parameter[object@model@parameter@measure]
+            eval(parse(text= paste0("measureparam$",
+             object@model@time.variable," <- tForMeas",collapse="")))
+
+          }
+          Noise<- rand(object = randomGenerator, n=1, param=measureparam)
+        }
+        Noise<-sapply(X=tForMeas, FUN=my.InternalFunforLevy,
+              randomGenerator=randomGenerator,
+              true.parameter=true.parameter,
+              object=object)
+      }
+      increment.L=Noise
+
+      if(is(object@model@measure$df,"yuima.law")&&!is.null(increment.L)){
+        dummy<-object
+        dummy@model@measure$df <- expression()
+        if(missing(xinit)){
+          res<- aux.simulate.multimodel(object=dummy, nsim, xinit=object@model@xinit ,seed, true.parameter,
+                      space.discretized, increment.W,
+                      increment.L = t(increment.L), method, hurst, methodfGn,
+                      sampling=object@sampling)
+        }else{
+         res<- aux.simulate.multimodel(object=dummy, nsim, xinit, seed, true.parameter,
+                            space.discretized, increment.W,
+                            increment.L = increment.L, method, hurst, methodfGn,
+                            sampling=object@sampling)
+        }
+        res@model <- object@model
+        if(missing(subsampling))
+          return(res)
+        return(subsampling(res, subsampling))
+
+     }
+    }
    ##:1: error on yuima model
    yuima <- object
 
@@ -176,7 +235,7 @@ setMethod("simulate", "yuima.multimodel",
 
 
    ##:: using Euler-Maruyama method
-   delta <- Terminal/n
+   delta <- samp@delta
 
    if(missing(increment.W) | is.null(increment.W)){
 
@@ -194,7 +253,7 @@ setMethod("simulate", "yuima.multimodel",
 
      } else {
 
-       delta<-Terminal/n
+       delta<-samp@delta
        if(!is.Poisson(sdeModel)){ # if pure CP no need to setup dW
          dW <- rnorm(n * r.size, 0, sqrt(delta))
          dW <- matrix(dW, ncol=n, nrow=r.size,byrow=TRUE)
@@ -331,16 +390,17 @@ setMethod("simulate", "yuima.multimodel",
 
         # yuima.stop("Levy with CP and/or code")
      }
-     if(!is.null(increment.L))
-       Incr.levy<-t(increment.L)
-
-      assign("dL",t(Incr.levy),envir=yuimaEnv)
-      sim <- Multi.Euler(xinit,yuima,dW,env=yuimaEnv)
 
    }
-#   yuima@data@zoo.data <- NULL
-   yuima@data@zoo.data<-as.list(numeric(length=length(sim@zoo.data)))
+   if(!is.null(increment.L))
+     Incr.levy<-t(increment.L)
 
+   assign("dL",t(Incr.levy),envir=yuimaEnv)
+   sim <- Multi.Euler(xinit,yuima,dW,env=yuimaEnv)
+
+
+   yuima@data@zoo.data<-as.list(numeric(length=length(sim@zoo.data))) #LM nov2016
+#   yuima@data@zoo.data<-sim@zoo.data
    for(i in 1:length(yuima@data@zoo.data)){
      yuima@data@zoo.data[[i]]<-sim@zoo.data[[i]]
      index(yuima@data@zoo.data[[i]]) <- yuima@sampling@grid[[1]]

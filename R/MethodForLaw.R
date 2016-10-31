@@ -1,9 +1,9 @@
 aux.funForLaw <- function(object, param, my.env, dummy){
-  param <- unlist(param)
+  # param <- unlist(param)
   name.par <- names(param)
   if(length(object@time.var)>=1){
     if(object@time.var%in%name.par){
-      assign(object@time.var,param[object@time.var], envir = my.env)
+      assign(object@time.var,param[[object@time.var]], envir = my.env)
     }else{
       yuima.stop("time.var is not assigned")
     }
@@ -15,8 +15,8 @@ aux.funForLaw <- function(object, param, my.env, dummy){
       yuima.stop("mismatch arguments")
     }
     for(i in c(1: length(param))){
-      cond<-object@param.measure %in% name.par[i]
-      assign(object@param.measure[cond], param[i], envir = my.env)
+      cond<-object@param.measure %in% name.par[[i]]
+      assign(object@param.measure[cond], param[[i]], envir = my.env)
     }
   }
   res <- eval(parse(text=dummy),envir=my.env)

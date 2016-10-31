@@ -79,7 +79,9 @@ setMethod("simulate", "yuima",
                            grid, random, sdelta,
                            sgrid, interpolation)
             }else{
-              if(is(object@model,"yuima.multimodel")){
+              if(is(object@model,"yuima.multimodel")||
+                 is(object@model@measure$df,"yuima.law")
+                 ){
                 res <- aux.simulate.multimodel(object, nsim, seed, xinit, true.parameter,
                                                space.discretized, increment.W, increment.L,method,
                                                hurst,methodfGn,
