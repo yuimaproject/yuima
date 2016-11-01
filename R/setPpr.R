@@ -62,11 +62,17 @@ aux.setPpr <-function(yuima, counting.var="N", gFun, Kernel,
   yuima1 <- setYuima(model =yuima)
   type <- yuima@measure.type
   if(type == "code"){
-    measure <- list(df = as.character(yuima@measure$df$expr))
-  }
+    if(!(is(yuima@measure$df,"yuima.law")))
+      measure <- list(df = as.character(yuima@measure$df$expr))
+  }else{
+    measure <- yuima@measure
+    }
   if(type == "CP"){
-    measure <- list(intensity = as.character(yuima@measure$intensity),
+    if(!(is(yuima@measure$df,"yuima.law")))
+      measure <- list(intensity = as.character(yuima@measure$intensity),
                     df= as.character(yuima@measure$df$expr))
+  }else{
+    measure <- yuima@measure
   }
   if(general){
     covariates<-character()

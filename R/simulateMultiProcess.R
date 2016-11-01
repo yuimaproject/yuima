@@ -40,6 +40,7 @@ setMethod("simulate", "yuima.multimodel",
 
    ##:: errors checks
     if(is(object@model@measure$df,"yuima.law")&& is.null(increment.L)){
+      samp<- object@sampling
       randomGenerator<-object@model@measure$df
       if(samp@regular){
         tForMeas<-samp@delta
@@ -101,7 +102,7 @@ setMethod("simulate", "yuima.multimodel",
     }
    ##:1: error on yuima model
    yuima <- object
-
+   samp <- object@sampling
    if(missing(yuima)){
      yuima.warn("yuima object is missing.")
      return(NULL)
