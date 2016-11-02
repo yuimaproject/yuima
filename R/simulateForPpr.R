@@ -51,7 +51,7 @@ aux.simulatPpr<- function(object, nsim = nsim, seed = seed,
                increment.L = increment.L, method = method, hurst = hurst,
                methodfGn = methodfGn, sampling = sampling,
                subsampling = subsampling){
-  ROLDVER<-TRUE
+  ROLDVER<-!(is(object@model@measure$df,"yuima.law"))
   if(ROLDVER){
     object <- aux.simulatPprROldVersion(object, nsim = nsim, seed = seed,
                                           xinit = xinit, true.parameter = true.parameter,
@@ -73,28 +73,122 @@ aux.simulatPpr<- function(object, nsim = nsim, seed = seed,
 aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
                           xinit = xinit, true.parameter = true.parameter,
                           space.discretized = space.discretized, increment.W = increment.W,
-                          increment.L = increment.L, method = method, hurst = hurst,
+                          increment.L = increment.L, method = method, hurst = 0.5,
                           methodfGn = methodfGn, sampling = sampling,
                           subsampling = subsampling){
 
   # We need an expression for the evaluation of the hazard
-  is(object)
-  yuimaPpr<-object
-
-  envPpr <- list()
-
-  dY <- paste0("d",yuimaPpr@Ppr@var.dx)
-  Time <- sampling@grid[[1]]
-
-  IntKernExpr<- function(Kern,dy){
-    dum<-paste(Kern,dy,sep="*")
-    dum<-paste0(dum, collapse = " + ")
-    dum <- paste0("sum( ", dum, " )")
-    return(parse(text = dum))
+  if(missing(hurst)){
+    hurst<-0.5
   }
-  IntegKern <- lapply(yuimaPpr@Kernel@Integrand@IntegrandList,IntKernExpr,dY)
+  samp <- sampling
+  Model <- object@model
+  gFun <- object@gFun
+  Kern <- object@Kernel
+
+  if(missing(xinit)){
+    if(object@Ppr@RegressWithCount){
+
+      yuima.warn("Counting Variables are also covariates.
+                 In this case, the algorthim will be implemented
+                 as soon as possible.")
+      return(NULL)
+    }
+  }else{
+    if(object@Ppr@RegressWithCount){
+      yuima.warn("Counting Variables are also covariates.
+                 In this case, the algorthim will be implemented
+                 as soon as possible.")
+      return(NULL)
+    }
+  }
+  if(!object@Ppr@RegressWithCount && !object@Ppr@IntensWithCount){
+    auxg <- setMap(func = gFun@formula, yuima =Model)
+    dummyKernIntgrand <- Kern@Integrand@IntegrandList
+    dummyUpperTime<- paste0(Kern@variable.Integral@upper.var,
+                       Kern@variable.Integral@upper.var,
+                       collapse = "")
+    dummyTime <-Model@time.variable
+    for(i in c(1:length(dummyKernIntgrand))){
+      if(Kern@variable.Integral@upper.var %in% all.vars(dummyKernIntgrand[[i]])){
+        dumExpr <- paste0("substitute(expression(",
+               dummyKernIntgrand[[i]],"), list(",
+               Kern@variable.Integral@upper.var,
+               " =  as.symbol(dummyUpperTime), ",
+               Kern@variable.Integral@var.time,
+               " =  as.symbol(Model@time.variable)))")
+        dummyKernIntgrand[[i]] <- eval(parse(text=dumExpr))
+      }
+    }
+
+    auxIntMy <- unlist(lapply(dummyKernIntgrand, FUN = function(X){as.character(X)[2]}))
+    auxIntMy <- matrix(auxIntMy, Kern@Integrand@dimIntegrand[1],
+      Kern@Integrand@dimIntegrand[2], byrow=T)
 
 
+    auxInt <- setIntegral(yuima = Model,
+        integrand = auxIntMy,
+        var.dx = Model@time.variable,
+        upper.var = dummyUpperTime,
+        lower.var = Kern@variable.Integral@lower.var)
+    randomGenerator<-object@model@measure$df
+    if(samp@regular){
+      tForMeas<-samp@delta
+      NumbIncr<-samp@n
+      if(missing(true.parameter)){
+        eval(parse(text= paste0("measureparam$",
+                                object@model@time.variable," <- tForMeas",collapse="")))
+      }else{
+        measureparam<-true.parameter[object@model@parameter@measure]
+        eval(parse(text= paste0("measureparam$",
+                                object@model@time.variable," <- tForMeas",collapse="")))
+
+      }
+      Noise.L <- t(rand(object = randomGenerator, n=NumbIncr, param=measureparam))
+      Noise.W <- t(rnorm(NumbIncr, 0,tForMeas))
+    if(missing(xinit)){
+      simg <- simulate(object = auxg, true.parameter = true.parameter[auxg@Output@param@allparam],
+                     sampling = samp, hurst = hurst,
+                     increment.W = Noise.W, increment.L = Noise.L)
+      simK <- simulate(object = auxInt, true.parameter = true.parameter[auxInt@Integral@param.Integral@allparam],
+                       sampling = samp, hurst = hurst,
+                       increment.W = Noise.W,
+                       increment.L = Noise.L)
+      Lambda.data <- simg@data@original.data+simK@data@original.data
+      Pos<-0
+      globPos<-Pos
+      condWhile <- TRUE
+      while(condWhile){
+        Hazard<--cumsum(as.numeric(Lambda.data)[c(Pos:(samp@n+1))])*samp@delta
+        U<-runif(1)
+        CondPos <- log(U)<=Hazard
+        Pos <- Pos+sum(CondPos)
+        if(Pos > (samp@n+1)){
+          condWhile <- FALSE
+        }else{
+          globPos <- c(globPos,Pos)
+        }
+      }
+      NewNoise.L <- Noise.L
+      cod <- object@Ppr@counting.var%in%Model@solve.variable
+      NeWNoise.W<-Noise.W
+      NeWNoise.W[cod,] <- 0
+      NewNoise.L[cod,] <- 0
+      NewNoise.L[cod,globPos[-1]] <- Noise.L[cod,globPos[-1]]
+      simM <- simulate(object = Model, true.parameter = true.parameter[Model@parameter@all],
+                       sampling = samp, hurst = hurst,
+                       increment.W = NeWNoise.W,
+                       increment.L = NewNoise.L)
+      object@data <- simM@data
+      object@sampling <- samp
+      return(object)
+      #Lambda.data <- simg@data@original.data+simK@data@original.data
+     }else{
+       simg <- simulate(object = auxg, xinit=xinit,
+                       sampling = samp)
+      }
+    }
+  }
   return(NULL)
 }
 

@@ -5,7 +5,7 @@
 \description{Constructor of a Point Process }
 \usage{
 setPpr(yuima, counting.var = "N", gFun, Kernel,
-  var.dx, var.dt = "s", lambda.var = "lambda",
+  var.dx = "s", var.dt = "s", lambda.var = "lambda",
   lower.var = "0", upper.var = "t", nrow = 1, ncol = 1)
 }
 %- maybe also 'usage' for other objects documented here.

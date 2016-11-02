@@ -9,7 +9,9 @@ setClass("info.Ppr",
                         covariates = "character",
                         var.dt = "character",
                         additional.info = "character",
-                        Info.measure = "list")
+                        Info.measure = "list",
+                        RegressWithCount = "logical",
+                        IntensWithCount = "logical")
          )
 
 setClass("yuima.Ppr",
@@ -32,7 +34,9 @@ setMethod("initialize",
                    covariates = character(),
                    var.dt = character(),
                    additional.info = character(),
-                   Info.measure = list()){
+                   Info.measure = list(),
+                   RegressWithCount = FALSE,
+                   IntensWithCount = TRUE){
             .Object@allparam <- allparam
             .Object@allparamPpr <- allparamPpr
             .Object@common <- common
@@ -44,6 +48,8 @@ setMethod("initialize",
             .Object@var.dt <- var.dt
             .Object@additional.info <- additional.info
             .Object@Info.measure <- Info.measure
+            .Object@RegressWithCount <- RegressWithCount
+            .Object@IntensWithCount <- IntensWithCount
             return(.Object)
           }
 )
