@@ -39,7 +39,7 @@ param.VG <- list(a1 = 0.038,  b1 =  0.053,
                   x01 = 50.33)
 
 cog.VG <- setCogarch(p = 1, q = 1, work = FALSE,
-                      measure=list("rngamma(z, lambda, alpha, beta, mu)"),
+                      measure=list(df="rvgamma(z, lambda, alpha, beta, mu)"),
                       measure.type = "code", 
                       Cogarch.var = "y",
                       V.var = "v", Latent.var="x",
