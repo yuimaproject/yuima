@@ -1182,9 +1182,9 @@ setMethod("show", "summary.cogarch.est",
             nameMod <- paste0("Cogarch(",info@p,
               ",", info@q, ") model:", collapse = "")
             if(dummy$stationary){
-              cat("\n", nameMod, "Stationary conditions are satisfied.\n")
+              cat("\n", nameMod, "Stationarity conditions are satisfied.\n")
             }else{
-              cat("\n", nameMod, "Stationary conditions are not satisfied.\n")
+              cat("\n", nameMod, "Stationarity conditions are not satisfied.\n")
             }
             if(dummy$positivity){
               cat("\n", nameMod, "Variance process is positive.\n")
@@ -1252,9 +1252,9 @@ setMethod("show", "summary.cogarch.est.incr",
             nameMod <- paste0("Cogarch(",info@p,
                               ",", info@q, ") model:", collapse = "")
             if(dummy$stationary){
-              cat("\n", nameMod, "Stationary conditions are satisfied.\n")
+              cat("\n", nameMod, "Stationarity conditions are satisfied.\n")
             }else{
-              cat("\n", nameMod, "Stationary conditions are not satisfied.\n")
+              cat("\n", nameMod, "Stationarity conditions are not satisfied.\n")
             }
             if(dummy$positivity){
               cat("\n", nameMod, "Variance process is positive.\n")

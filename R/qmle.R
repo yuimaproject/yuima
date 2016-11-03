@@ -2415,9 +2415,9 @@ setMethod("show", "summary.yuima.qmle",
                 Dummy<-paste0("\nCarma(",object@model@info@p,",",object@model@info@q,")",
                               collapse = "")
                 if(object@Additional.Info$Stationarity){
-                  cat(Dummy,"model: Stationary conditions are satisfied.\n")
+                  cat(Dummy,"model: Stationarity conditions are satisfied.\n")
                 }else{
-                  cat(Dummy,"model: Stationary conditions are not satisfied.\n")
+                  cat(Dummy,"model: Stationarity conditions are not satisfied.\n")
                 }
               }
             }
@@ -2535,9 +2535,9 @@ setMethod("show", "summary.yuima.carma.qmle",
                 Dummy<-paste0("\nCarma(",object@model@info@p,",",object@model@info@q,")",
                               collapse = "")
                 if(object@Additional.Info$Stationarity){
-                  cat(Dummy,"model: Stationary conditions are satisfied.\n")
+                  cat(Dummy,"model: Stationarity conditions are satisfied.\n")
                 }else{
-                  cat(Dummy,"model: Stationary conditions are not satisfied.\n")
+                  cat(Dummy,"model: Stationarity conditions are not satisfied.\n")
                 }
               }
             }
