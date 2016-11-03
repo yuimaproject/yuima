@@ -10,7 +10,7 @@ setClass("model.parameter",representation(all="character",
                                           drift="character",
                                           jump="character",
                                           measure="character",
-# Insert parameters for starting conditions                                           
+# Insert parameters for starting conditions
                                           xinit="character"
                                           )
          )
@@ -104,7 +104,7 @@ setClass("yuima.functional", representation(F = "ANY",
                                           e = "numeric"
                                           )
          )
-         
+
 
 # Class 'yuima'
 
@@ -151,7 +151,9 @@ setClass("summary.yuima.carma.qmle",representation(MeanI = "ANY",
                                                    logLI = "ANY",
                                                    TypeI = "ANY",
                                                    NumbI = "ANY",
-                                                   StatI ="ANY"),
+                                                   StatI ="ANY",
+                                                   model = "yuima.carma",
+                                                   Additional.Info = "ANY"),
 contains="summary.mle"
 )
 
@@ -172,7 +174,8 @@ contains="summary.mle"
 setClass("summary.yuima.qmle",
 representation(
 model = "yuima.model",
-threshold = "ANY"),
+threshold = "ANY",
+Additional.Info = "ANY"),
 contains="summary.mle"
 )
 

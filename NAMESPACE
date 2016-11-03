@@ -202,6 +202,7 @@ export(CarmaNoise) # Estimates the Levy in carma model
 export(gmm) # Estimation COGARCH(P,Q) using Method Of Moments
 export(cogarchNoise)
 export(Diagnostic.Cogarch)
+export(Diagnostic.Carma)
 
 # Methods
 export(rand)# random number generator of a Levy process specified by user

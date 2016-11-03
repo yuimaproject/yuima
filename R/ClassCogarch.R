@@ -39,7 +39,8 @@ setClass("cogarch.est",representation(
 
 setClass("summary.cogarch.est",
   representation(objFun = "ANY",
-  objFunVal = "ANY"),
+  objFunVal = "ANY",
+  object = "ANY"),
   contains="summary.mle"
 )
 

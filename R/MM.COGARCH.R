@@ -1143,7 +1143,8 @@ setMethod("summary", "cogarch.est",
                        m2logL = 0,
                        #model = object@model,
                        objFun = labFun,
-                       objFunVal = obj
+                       objFunVal = obj,
+                       object = object
             )
             tmp
           }
@@ -1176,6 +1177,20 @@ setMethod("show", "summary.cogarch.est",
               cat("\n",paste0(paste("Log.objFun", object@objFun),":"), object@objFunVal, "\n")
             }
               #cat("objFun", object@min, "\n")
+            dummy <- Diagnostic.Cogarch(object@object, display = FALSE)
+            info <- object@object@yuima@model@info
+            nameMod <- paste0("Cogarch(",info@p,
+              ",", info@q, ") model:", collapse = "")
+            if(dummy$stationary){
+              cat("\n", nameMod, "Stationary conditions are satisfied.\n")
+            }else{
+              cat("\n", nameMod, "Stationary conditions are not satisfied.\n")
+            }
+            if(dummy$positivity){
+              cat("\n", nameMod, "Variance process is positive.\n")
+            }else{
+              cat("\n", nameMod, "Variance process is not positive.\n")
+            }
           }
 )
 
@@ -1199,7 +1214,8 @@ setMethod("summary", "cogarch.est.incr",
                        logLI = object@logL.Incr,
                        TypeI = object@yuima@model@measure.type,
                        NumbI = length(data),
-                       StatI =summary(data)
+                       StatI =summary(data),
+                       object = object
             )
             tmp
           }
@@ -1231,6 +1247,20 @@ setMethod("show", "summary.cogarch.est.incr",
             cat("\nSummary statistics for increments:\n")
             print(object@StatI)
             cat("\n")
+            dummy <- Diagnostic.Cogarch(object@object, display = FALSE)
+            info <- object@object@yuima@model@info
+            nameMod <- paste0("Cogarch(",info@p,
+                              ",", info@q, ") model:", collapse = "")
+            if(dummy$stationary){
+              cat("\n", nameMod, "Stationary conditions are satisfied.\n")
+            }else{
+              cat("\n", nameMod, "Stationary conditions are not satisfied.\n")
+            }
+            if(dummy$positivity){
+              cat("\n", nameMod, "Variance process is positive.\n")
+            }else{
+              cat("\n", nameMod, "Variance process is not positive.\n")
+            }
           }
 )
 

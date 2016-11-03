@@ -1059,9 +1059,9 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
                      method = method, nobs=yuima.nobs, logL.Incr = NULL)
     }else{
       if(Est.Incr=="NoIncr"){
-        final_res<-new("mle", call = call, coef = coef, fullcoef = unlist(mycoef),
+        final_res<-new("yuima.qmle", call = call, coef = coef, fullcoef = unlist(mycoef),
                        vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl,
-                       method = method, nobs=yuima.nobs)
+                       method = method, nobs=yuima.nobs , model=yuima@model)
         return(final_res)
       }else{
         yuima.warn("The variable Est.Incr is not correct. See qmle documentation for the allowed values ")
@@ -2252,32 +2252,7 @@ V0inf<-function(a,p,sigma){
 #   return(Res)
 # }
 
-yuima.PhamBreton.Alg<-function(a){
-  p<-length(a)
-  gamma<-a[p:1]
-  if(p>2){
-    gamma[p]<-a[1]
-    alpha<-matrix(NA,p,p)
-    for(j in 1:p){
-      if(is.integer(as.integer(j)/2)){
-        alpha[p,j]<-0
-        alpha[p-1,j]<-0
-      }else{
-        alpha[p,j]<-a[j]
-        alpha[p-1,j]<-a[j+1]/gamma[p]
-      }
-    }
-    for(n in (p-1):1){
-      gamma[n]<-alpha[n+1,2]-alpha[n,2]
-      for(j in 1:n-1){
-        alpha[n-1,j]<-(alpha[n+1,j+2]-alpha[n,j+2])/gamma[n]
-      }
-      alpha[n-1,n-1]<-alpha[n+1,n+1]/gamma[n]
-    }
-    gamma[1]<-alpha[2,2]
-  }
-  return(gamma)
-}
+
 
 #yuima.PhamBreton.Inv<-function(gamma){
 #   p<-length(gamma)
@@ -2412,10 +2387,14 @@ setMethod("summary", "yuima.qmle",
           {
             cmat <- cbind(Estimate = object@coef, `Std. Error` = sqrt(diag(object@vcov)))
             m2logL <- 2 * object@min
-
+            Additional.Info <- list()
+            if(is(object@model,"yuima.carma")){
+              Additional.Info <-list(Stationarity = Diagnostic.Carma(object))
+            }
             tmp <- new("summary.yuima.qmle", call = object@call, coef = cmat,
                        m2logL = m2logL,
-                       model = object@model
+                       model = object@model,
+                       Additional.Info = Additional.Info
             )
             tmp
           }
@@ -2431,6 +2410,17 @@ setMethod("show", "summary.yuima.qmle",
             cat("\nCoefficients:\n")
             print(coef(object))
             cat("\n-2 log L:", object@m2logL, "\n")
+            if(length(object@Additional.Info)>0){
+              if(is(object@model,"yuima.carma")){
+                Dummy<-paste0("\nCarma(",object@model@info@p,",",object@model@info@q,")",
+                              collapse = "")
+                if(object@Additional.Info$Stationarity){
+                  cat(Dummy,"model: Stationary conditions are satisfied.\n")
+                }else{
+                  cat(Dummy,"model: Stationary conditions are not satisfied.\n")
+                }
+              }
+            }
           }
 )
 
@@ -2501,6 +2491,11 @@ setMethod("summary", "yuima.carma.qmle",
             data<-Re(coredata(object@Incr.Lev))
             data<- data[!is.na(data)]
 
+            Additional.Info <- list()
+            if(is(object@model,"yuima.carma")){
+              Additional.Info <-list(Stationarity = Diagnostic.Carma(object))
+            }
+
             tmp <- new("summary.yuima.carma.qmle", call = object@call, coef = cmat,
                        m2logL = m2logL,
                        MeanI = mean(data),
@@ -2508,7 +2503,9 @@ setMethod("summary", "yuima.carma.qmle",
                        logLI = object@logL.Incr,
                        TypeI = object@model@measure.type,
                        NumbI = length(data),
-                       StatI =summary(data)
+                       StatI = summary(data),
+                       Additional.Info = Additional.Info,
+                       model = object@model
             )
             tmp
           }
@@ -2533,6 +2530,17 @@ setMethod("show", "summary.yuima.carma.qmle",
             cat("\nSummary statistics for increments:\n")
             print(object@StatI)
             cat("\n")
+            if(length(object@Additional.Info)>0){
+              if(is(object@model,"yuima.carma")){
+                Dummy<-paste0("\nCarma(",object@model@info@p,",",object@model@info@q,")",
+                              collapse = "")
+                if(object@Additional.Info$Stationarity){
+                  cat(Dummy,"model: Stationary conditions are satisfied.\n")
+                }else{
+                  cat(Dummy,"model: Stationary conditions are not satisfied.\n")
+                }
+              }
+            }
           }
 )
 
