@@ -21,14 +21,16 @@ quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = l
       }
     }
     for(j in c(1:length(yuimaPpr@Ppr@counting.var))){
-      cond<-colnames(yuimaPpr@data@original.data)%in%yuimaPpr@Ppr@counting.var[[j]]
+      #cond<-colnames(yuimaPpr@data@original.data)%in%yuimaPpr@Ppr@counting.var[[j]]
+      cond<-yuimaPpr@model@solve.variable%in%yuimaPpr@Ppr@counting.var[[j]]
       assign(yuimaPpr@Ppr@counting.var[[j]],
              as.numeric(yuimaPpr@data@original.data[1:(i+1),cond]),
              envir=envPpr[[i]])
     }
 
     for(j in c(1:length(yuimaPpr@Ppr@var.dx))){
-      cond<-c(colnames(yuimaPpr@data@original.data),yuimaPpr@Ppr@var.dt)%in%c(yuimaPpr@Ppr@var.dx,yuimaPpr@Ppr@var.dt)[[j]]
+      #cond<-c(colnames(yuimaPpr@data@original.data),yuimaPpr@Ppr@var.dt)%in%c(yuimaPpr@Ppr@var.dx,yuimaPpr@Ppr@var.dt)[[j]]
+      cond<-c(yuimaPpr@model@solve.variable,yuimaPpr@Ppr@var.dt)%in%c(yuimaPpr@Ppr@var.dx,yuimaPpr@Ppr@var.dt)[[j]]
       if(any(cond[-length(cond)])){
         assign(paste0("d",yuimaPpr@Ppr@var.dx[[j]]),
                diff(as.numeric(yuimaPpr@data@original.data[1:(i+1),cond[-length(cond)]])),
@@ -36,7 +38,7 @@ quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = l
       }
       if(tail(cond,n=1L)){
         assign(paste0("d",yuimaPpr@Ppr@var.dx[[j]]),
-               as.numeric(diff(Time[1:(i+1),cond[-length(cond)]])),
+               as.numeric(diff(Time[1:(i+1)])),
                envir=envPpr[[i]])
       }
     }
@@ -58,6 +60,11 @@ quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = l
   }
   assign("Integrator",Integrator,envir=envPpr[[length(envPpr)]])
   assign("Nlamb",length(yuimaPpr@Ppr@counting.var),envir=envPpr[[length(envPpr)]])
+  cond <- yuimaPpr@model@solve.variable %in% yuimaPpr@Ppr@counting.var
+  #assign("CountVar",yuimaPpr@data@original.data[,cond],envir=envPpr[[length(envPpr)]])
+  DummyCountVar <- yuimaPpr@data@original.data[,cond]
+  condDummyCountVar <- t(apply(as.matrix(DummyCountVar),FUN = "diff",MARGIN = 2))!=0
+  assign("CountVar", condDummyCountVar, envir=envPpr[[length(envPpr)]])
 
   out<-NULL
   param1<-unlist(parLambda)
@@ -233,7 +240,8 @@ aux.lambdaFromData <-function(param, gFun, Kern, intensityParm, envPpr,logLikeli
   #        nrow=1,byrow=TRUE)
   IntKer<- matrix(unlist(lapply(envPpr,myfun3,Kern=Kern)),
               nrow=lastEnv$Nlamb)
-  lambda <- gFunVect+cbind(0,IntKer)
+  # lambda <- gFunVect+cbind(0,IntKer)
+  lambda <- gFunVect+IntKer
   time <- (c(lastEnv$s,lastEnv$t[1]))
   if(!logLikelihood){
     Intensity <- zoo(t(lambda), order.by = time)
@@ -241,14 +249,29 @@ aux.lambdaFromData <-function(param, gFun, Kern, intensityParm, envPpr,logLikeli
   }
   dn <- dim(lambda)
   if(dn[1]==1){
-    logLiklihood2 <- -sum(lambda[,-1]*diff(time)[1])
-    logLiklihood1 <- sum(log(lambda[,-1])*lastEnv$Integrator)
+    # logLiklihood2 <- -sum(lambda[,-1]*diff(time)[1])
+    # logLiklihood1 <- sum(log(lambda[,-1])*lastEnv$Integrator)
+    logLiklihood2 <- -sum(lambda*diff(time)[1])
+    # CountProc <- diff(as.numeric(lastEnv$CountVar))!=0
+    logLiklihood1 <- sum(log(lambda)*lastEnv$CountVar)
+
+
   }else{
-    logLiklihood2 <- -rowSums(lambda[,-1]*diff(time)[1])
-    logLiklihood1 <- rowSums(log(lambda[,-1])*lastEnv$Integrator)
+    # logLiklihood2 <- -rowSums(lambda[,-1]*diff(time)[1])
+    # logLiklihood1 <- rowSums(log(lambda[,-1])*lastEnv$Integrator)
+    logLiklihood2 <- -rowSums(lambda*diff(time)[1])
+    #cond <- t(apply(as.matrix(lastEnv$CountVar),FUN = "diff",MARGIN = 2))!=0
+    logLiklihood1 <- rowSums(log(lambda)*lastEnv$CountVar)
+  }
+  if(is.nan(logLiklihood1)){
+    logLiklihood1 <- -10^10
+  }
+  if(is.nan(logLiklihood2)){
+    logLiklihood2 <- -10^10
   }
   minusLoglik <- -sum(logLiklihood2+logLiklihood1)
-  #cat(sprintf("\n%.5f",minusLoglik))
+  # cat(sprintf("\n%.5f",minusLoglik))
+  # cat(sprintf("\n%.5f",param))
   return(minusLoglik)
 }
 

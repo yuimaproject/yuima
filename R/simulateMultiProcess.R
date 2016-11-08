@@ -273,7 +273,7 @@ setMethod("simulate", "yuima.multimodel",
 #      yuima@data <- euler(xinit, yuima, dW, yuimaEnv)
 #    }
 
-   if(is(sdeModel,"yuima.multimodel")){
+   if(is(sdeModel,"yuima.multimodel")&&!is(sdeModel@measure$df,"yuima.law")){
      if(length(sdeModel@measure.type)==1){
         if(sdeModel@measure.type=="CP"){
           intens <- as.character(sdeModel@measure$intensity)
@@ -305,12 +305,21 @@ setMethod("simulate", "yuima.multimodel",
           dimJumpCoeff <- length(yuima@model@jump.coeff[[1]])
           dumjumpCoeff <- matrix(as.character(diag(rep(1,dimJumpCoeff))),dimJumpCoeff,dimJumpCoeff)
           Dumsolve.variable<-paste0("MyLevyDum",c(1:dimJumpCoeff))
-          LevyMod <- setMultiModel(drift=rep("0",dimJumpCoeff),
+          if(!is(sdeModel@measure$df,"yuima.law")){
+            LevyMod <- setMultiModel(drift=rep("0",dimJumpCoeff),
                               diffusion = NULL,
                               jump.coeff = dumjumpCoeff,
                               df = as.character(sdeModel@measure$df$expr),
                               measure.type = sdeModel@measure.type,
                               solve.variable = Dumsolve.variable)
+          }else{
+            LevyMod <- setModel(drift=rep("0",dimJumpCoeff),
+                                     diffusion = NULL,
+                                     jump.coeff = dumjumpCoeff,
+                                     measure = sdeModel@measure,
+                                     measure.type = sdeModel@measure.type,
+                                     solve.variable = Dumsolve.variable)
+          }
           yuimaLevy <- setYuima(model=LevyMod, sampling = samp)
           yuimaLevy@model@dimension <- dimJumpCoeff
 
@@ -481,38 +490,42 @@ setMethod("simulate", "yuima.multimodel",
    #} else{
    #stop("Sorry. CP only supports dconst, dexp, dnorm and dgamma yet.")
    #}
-   dumStringMeas <- toString(sdeModel@measure$df$expr)
-   dumStringMeas1 <- substr(x=dumStringMeas, start=2,stop=nchar(x = dumStringMeas))
-   dumStringMeas2 <- paste0("r",dumStringMeas1)
-   tmpMeas2 <- strsplit(x=dumStringMeas2,split="")
-   posMeas2 <- match("(" , tmpMeas2[[1]])[1]
-   dumStringMeas3 <- substr(x=dumStringMeas2, start=1,stop=(posMeas2-1))
-   a<-deparse(args(eval(parse(text=dumStringMeas3))))[1]
-   b<-gsub("^function (.+?)","(",a)
-   b1 <- substr(x=b,start =1, stop=(nchar(b)-1))
-   FinalMeasRandn<-paste0(dumStringMeas3,b1)
-   dummyvarMaes <- all.vars(parse(text=FinalMeasRandn))
-   posDum<- match(c(sdeModel@jump.variable,sdeModel@parameter@measure),dummyvarMaes)
-   if(length(posDum)+1!=length(dummyvarMaes)){
-     yuima.stop("too input variables in the random number function")
-   }
-   deltaVar <- dummyvarMaes[-posDum]
-#    ell <- optimize(f=.CPintensity, interval=c(Initial, Terminal), maximum = TRUE)$objective
-#    ellMax <- ell * 1.01
-   F <- suppressWarnings(parse(text=gsub("^r(.+?)\\(.+?,", "r\\1(mu.size*N_sharp,", parse(text=FinalMeasRandn), perl=TRUE)))
+   if(!is(sdeModel@measure$df,"yuima.law")){
+     dumStringMeas <- toString(sdeModel@measure$df$expr)
+     dumStringMeas1 <- substr(x=dumStringMeas, start=2,stop=nchar(x = dumStringMeas))
+     dumStringMeas2 <- paste0("r",dumStringMeas1)
+     tmpMeas2 <- strsplit(x=dumStringMeas2,split="")
+     posMeas2 <- match("(" , tmpMeas2[[1]])[1]
+     dumStringMeas3 <- substr(x=dumStringMeas2, start=1,stop=(posMeas2-1))
+     a<-deparse(args(eval(parse(text=dumStringMeas3))))[1]
+     b<-gsub("^function (.+?)","(",a)
+     b1 <- substr(x=b,start =1, stop=(nchar(b)-1))
+     FinalMeasRandn<-paste0(dumStringMeas3,b1)
+     dummyvarMaes <- all.vars(parse(text=FinalMeasRandn))
+     posDum<- match(c(sdeModel@jump.variable,sdeModel@parameter@measure),dummyvarMaes)
+     if(length(posDum)+1!=length(dummyvarMaes)){
+       yuima.stop("too input variables in the random number function")
+     }
+     deltaVar <- dummyvarMaes[-posDum]
+  #    ell <- optimize(f=.CPintensity, interval=c(Initial, Terminal), maximum = TRUE)$objective
+  #    ellMax <- ell * 1.01
+     F <- suppressWarnings(parse(text=gsub("^r(.+?)\\(.+?,", "r\\1(mu.size*N_sharp,", parse(text=FinalMeasRandn), perl=TRUE)))
 
-   F.env <- new.env(parent=env)
-   N_sharp <- unique(yuima@sampling@n)
+     F.env <- new.env(parent=env)
+     N_sharp <- unique(yuima@sampling@n)
+     TrueDelta <- unique(yuima@sampling@delta)
+     assign(deltaVar, TrueDelta, envir=F.env)
+     assign("mu.size", mu.size, envir=F.env)
+     assign("N_sharp", N_sharp, envir=F.env)
+     randJ <- eval(F, envir=F.env)  ## this expression is evaluated in the F.env
+     randJ <- rbind(dummy.val, randJ)
+ }else{
    TrueDelta <- unique(yuima@sampling@delta)
-   assign(deltaVar, TrueDelta, envir=F.env)
-   assign("mu.size", mu.size, envir=F.env)
-   assign("N_sharp", N_sharp, envir=F.env)
-   randJ <- eval(F, envir=F.env)  ## this expression is evaluated in the F.env
-
-
-   randJ <- rbind(dummy.val, randJ)
+   randJ<- env$dL
+ }
    RANDLevy <- apply(randJ,2,cumsum)
    tsX <- zoo(x=RANDLevy)
+
    yuimaData <- setYuima(data=setData(tsX, delta=TrueDelta))
    #yuimaData <- subsampling(yuimaData, sampling=yuima@sampling)
    return(yuimaData)

@@ -125,12 +125,19 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
     auxIntMy <- matrix(auxIntMy, Kern@Integrand@dimIntegrand[1],
       Kern@Integrand@dimIntegrand[2], byrow=T)
 
-
-    auxInt <- setIntegral(yuima = Model,
+    if(object@Kernel@variable.Integral@var.dx==object@Kernel@variable.Integral@var.time){
+      auxInt <- setIntegral(yuima = Model,
         integrand = auxIntMy,
         var.dx = Model@time.variable,
         upper.var = dummyUpperTime,
         lower.var = Kern@variable.Integral@lower.var)
+    }else{
+      auxInt <- setIntegral(yuima = Model,
+                            integrand = auxIntMy,
+                            var.dx =object@Kernel@variable.Integral@var.dx ,
+                            upper.var = dummyUpperTime,
+                            lower.var = Kern@variable.Integral@lower.var)
+    }
     randomGenerator<-object@model@measure$df
     if(samp@regular){
       tForMeas<-samp@delta
@@ -146,6 +153,11 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
       }
       Noise.L <- t(rand(object = randomGenerator, n=NumbIncr, param=measureparam))
       Noise.W <- t(rnorm(NumbIncr, 0,tForMeas))
+      if(length(object@model@diffusion[[1]])>1){
+        for(i in c(2:length(object@model@diffusion[[1]]))){
+          Noise.W <- rbind(Noise.W, rnorm(NumbIncr, 0,tForMeas))
+        }
+      }
     if(missing(xinit)){
       simg <- simulate(object = auxg, true.parameter = true.parameter[auxg@Output@param@allparam],
                      sampling = samp, hurst = hurst,
@@ -169,8 +181,10 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
           globPos <- c(globPos,Pos)
         }
       }
+      globPos <- unique(globPos)
+      globPos <- globPos[(globPos<=samp@n)]
       NewNoise.L <- Noise.L
-      cod <- object@Ppr@counting.var%in%Model@solve.variable
+      cod <-Model@solve.variable%in%object@Ppr@counting.var
       NeWNoise.W<-Noise.W
       NeWNoise.W[cod,] <- 0
       NewNoise.L[cod,] <- 0

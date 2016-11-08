@@ -136,7 +136,8 @@ setMultiModel <- function(drift=NULL,
     if(existsFunction(measurefunc)){
       tmp.measure$df$func[[1]] <- eval(parse(text=measurefunc))
     }else{
-      yuima.stop("density function for jump must be specified")
+      if(measurefunc!="yuima.law")
+        yuima.stop("density function for jump must be specified")
     }
 
 
@@ -327,10 +328,10 @@ setMultiModel <- function(drift=NULL,
 #     n.eqn3 <- n.eqn1
 #   }
 
-  if(n.eqn1 != n.eqn2 || n.eqn1 != n.eqn3){
-    yuima.warn("Malformed model, number of equations in the drift and diffusion do not match.")
-    return(NULL)
-  }
+    if(n.eqn1 != n.eqn2 || n.eqn1 != n.eqn3){
+      yuima.warn("Malformed model, number of equations in the drift and diffusion do not match.")
+      return(NULL)
+    }
   n.eqn <- n.eqn1
 
   if(is.null(xinit)){

@@ -143,48 +143,50 @@ aux.simulatIntegral <- function(object, nsim = nsim, seed = seed,
     nrow = info.int@dimIntegrand[1], ncol = info.int@dimIntegrand[2])
   my.fun <- function(my.list, my.env, i){
     dum <- eval(my.list,envir = my.env)
-    if(length(dum)==1){
-      return(rep(dum,i))
-    }else{
+    #if(length(dum)==1){
+     # return(rep(dum,i))
+    #}else{
       return(dum[1:i])
-    }
+    #}
   }
- res<-matrix(0,info.int@dimIntegrand[1],(length(time)-1))
+ # res<-matrix(0,info.int@dimIntegrand[1],(length(time)-1))
+ #  element <- matrix(0, nrow =info.int@dimIntegrand[1], ncol = 1)
+ #
+ #  for(i in c(1:(length(time)-1))){
+ #    assign(info.var@upper.var,time[i+1],envir=my.env)
+ #    Inter2 <- lapply(info.int@IntegrandList,
+ #      FUN = my.fun, my.env = my.env, i = i)
+ #    for(j in c(1:info.int@dimIntegrand[1])){
+ #      element[j,] <- M.dX[,c(1:i)]%*%matrix(unlist(Inter2[PosInMatr[j,]]),
+ #                                            ncol = info.int@dimIntegrand[2])
+ #    }
+ #    res[,i] <-  element
+ #  }
+  LengTime<-(length(time)-1)
+  my.listenv<-as.list(c(1:LengTime))
+  names(my.listenv)<- rep("i",LengTime)
+  globalMyEnv <-new.env()
+  globalMyEnv$time <- time
+  globalMyEnv$my.env <- my.env
   element <- matrix(0, nrow =info.int@dimIntegrand[1], ncol = 1)
-
-  for(i in c(1:(length(time)-1))){
-    assign(info.var@upper.var,time[i+1],envir=my.env)
-    Inter2 <- lapply(info.int@IntegrandList,
-      FUN = my.fun, my.env = my.env, i = i)
-    for(j in c(1:info.int@dimIntegrand[1])){
-      element[j,] <- sum(diag(matrix(unlist(Inter2[PosInMatr[j,]]),
-        ncol = info.int@dimIntegrand[2])%*%M.dX[,c(1:i)]))
-    }
-    res[,i] <-  element
-  }
-  # LengTime<-(length(time)-1)
-  # my.listenv<-as.list(c(1:LengTime))
-  # names(my.listenv)<- rep("i",LengTime)
-  # globalMyEnv <-new.env()
-  # globalMyEnv$time <- time
-  # globalMyEnv$my.env <- my.env
-  # my.listenv2<-lapply(X=my.listenv,
-  #                     globalMyEnv=globalMyEnv,
-  #                     FUN = function(X,globalMyEnv){
-  #                       assign(info.var@upper.var,globalMyEnv$time[X+1],
-  #                              envir= globalMyEnv$my.env)
-  #                       Inter2 <- lapply(info.int@IntegrandList,
-  #                                        FUN = my.fun, my.env = globalMyEnv$my.env,
-  #                                        i = X)
-  #                       for(j in c(1:info.int@dimIntegrand[1])){
-  #                         element[j,] <- sum(diag(matrix(unlist(Inter2[PosInMatr[j,]]),
-  #                                                        ncol = info.int@dimIntegrand[2])%*%M.dX[,c(1:X)]))
-  #                       }
-  #
-  #                       list(element)
-  #                     })
-  # res<-as.numeric(unlist(my.listenv2))
-  # res<-matrix(res,info.int@dimIntegrand[1],(length(time)-1))
+  my.listenv2<-lapply(X=my.listenv,
+                      globalMyEnv=globalMyEnv,
+                      FUN = function(X,globalMyEnv){
+                        assign(info.var@upper.var,globalMyEnv$time[X+1],
+                               envir= globalMyEnv$my.env)
+                        assign(object@model@time.variable,globalMyEnv$time[c(1:X)],
+                               envir= globalMyEnv$my.env)
+                        Inter2 <- lapply(info.int@IntegrandList,
+                                         FUN = my.fun, my.env = globalMyEnv$my.env,
+                                         i = X)
+                        for(j in c(1:info.int@dimIntegrand[1])){
+                          element[j,] <- M.dX[,c(1:X)]%*%matrix(unlist(Inter2[PosInMatr[j,]]),
+                                                                ncol = info.int@dimIntegrand[2])
+                        }
+                        list(element)
+                      })
+  res<-as.numeric(unlist(my.listenv2))
+  res<-matrix(res,info.int@dimIntegrand[1],(length(time)-1))
   res <- cbind(0,res)
   rownames(res) <- object@Integral@variable.Integral@out.var
   my.data <- zoo(x = t(res), order.by = time)
