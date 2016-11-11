@@ -275,7 +275,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     measure.par <- yuima@model@parameter@measure
   } else {
     if(length(yuima@model@parameter@jump)!=0){
-      measure.par <- yuima@model@parameter@jump
+      measure.par <- unique(c(yuima@model@parameter@measure,yuima@model@parameter@jump))
     } else {
       measure.par <- yuima@model@parameter@measure
     }
@@ -1436,13 +1436,17 @@ minusquasipsi <- function(yuima, param, print=FALSE, env){
   idx.intensity <- env$idx.intensity
 
   fullcoef <- yuima@model@parameter@all
-  measurecoef <- param[yuima@model@parameter@measure]
-
+  measurecoef <- param[unique(c(yuima@model@parameter@measure,yuima@model@parameter@jump))]
+  #print(measurecoef)
+  #cat("\n***\n")
   npar <- length(fullcoef)
   nm <- names(param)
   oo <- match(nm, fullcoef)
-
-  if(any(is.na(oo)))
+  #print(param)
+  #cat("\n***\n")
+  #print(fullcoef)
+  #cat("\n***\n")
+if(any(is.na(oo)))
     yuima.stop("some named arguments in 'param' are not arguments to the supplied yuima model")
   param <- param[order(oo)]
 
