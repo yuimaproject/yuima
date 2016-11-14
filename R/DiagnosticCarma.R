@@ -42,5 +42,6 @@ Diagnostic.Carma<-function(carma){
   statCond<-FALSE
   if(min(yuima.PhamBreton.Alg(ar.par[numb.ar:1]))>=0)
     statCond<-TRUE
+  return(statCond)
 }
 
