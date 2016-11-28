@@ -270,8 +270,8 @@ aux.lambdaFromData <-function(param, gFun, Kern, intensityParm, envPpr,logLikeli
     logLiklihood2 <- -10^10
   }
   minusLoglik <- -sum(logLiklihood2+logLiklihood1)
-  # cat(sprintf("\n%.5f",minusLoglik))
-  # cat(sprintf("\n%.5f",param))
+   cat(sprintf("\n%.5f",minusLoglik))
+   cat(sprintf("\n%.5f",param))
   return(minusLoglik)
 }
 
