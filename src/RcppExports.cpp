@@ -5,6 +5,31 @@
 
 using namespace Rcpp;
 
+// sqnorm
+double sqnorm(NumericVector x);
+RcppExport SEXP yuima_sqnorm(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(sqnorm(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// makeprop
+NumericVector makeprop(NumericVector mu, NumericVector sample, NumericVector low, NumericVector up);
+RcppExport SEXP yuima_makeprop(SEXP muSEXP, SEXP sampleSEXP, SEXP lowSEXP, SEXP upSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sample(sampleSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type low(lowSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type up(upSEXP);
+    rcpp_result_gen = Rcpp::wrap(makeprop(mu, sample, low, up));
+    return rcpp_result_gen;
+END_RCPP
+}
 // W1
 double W1(NumericMatrix crossdx, NumericMatrix b, NumericMatrix A, double h);
 RcppExport SEXP yuima_W1(SEXP crossdxSEXP, SEXP bSEXP, SEXP ASEXP, SEXP hSEXP) {
@@ -29,31 +54,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type b(bSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
     rcpp_result_gen = Rcpp::wrap(W2(dx, b, h));
-    return rcpp_result_gen;
-END_RCPP
-}
-// sqnorm
-double sqnorm(NumericVector x);
-RcppExport SEXP yuima_sqnorm(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(sqnorm(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// makeprop
-NumericVector makeprop(NumericVector mu, NumericVector sample, NumericVector low, NumericVector up);
-RcppExport SEXP yuima_makeprop(SEXP muSEXP, SEXP sampleSEXP, SEXP lowSEXP, SEXP upSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type sample(sampleSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type low(lowSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type up(upSEXP);
-    rcpp_result_gen = Rcpp::wrap(makeprop(mu, sample, low, up));
     return rcpp_result_gen;
 END_RCPP
 }
