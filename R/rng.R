@@ -44,6 +44,225 @@ dbgamma<-function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
   
 }
 
+## Generalized inverse Gaussian
+
+rGIG<-function(x,lambda,delta,gamma){
+    if((delta < 0)||(gamma<0)){
+        stop("delta and gamma must be nonnegative.")
+    }
+    if((delta == 0) && (lambda <= 0)){
+        stop("delta must be positive when lambda is nonpositive.")
+    }
+    if((gamma == 0) && (lambda >= 0)){
+        stop("gamma must be positive when lambda is nonnegative.")
+    }
+    if(lambda >= 0){
+        if(delta == 0){ ## gamma case
+            X<-rgamma(x, lambda, 1/(2*gamma^2))
+        }
+        if(gamma == 0){ ## inverse gamma case
+            X<-delta^2/(2*rgamma(x,-lambda,1))
+        }
+        if(delta != 0){
+            X<-.C("rGIG", as.integer(x), as.double(lambda), as.double(delta^2), as.double(gamma^2),
+            rn = double(length = x))$rn}
+    }
+    else{
+        Y<-.C("rGIG", as.integer(x), as.double(-lambda), as.double(gamma^2), as.double(delta^2),
+        rn = double(length = x))$rn
+        X<-1/Y
+    } 
+    return(X)
+}
+
+dGIG<-function(x,lambda,delta,gamma){
+    if((delta < 0)||(gamma<0)){
+        stop("delta and gamma must be nonnegative.")
+    }
+    if((delta == 0) && (lambda <= 0)){
+        stop("delta must be positive when lambda is nonpositive.")
+    }
+    if((gamma == 0) && (lambda >= 0)){
+        stop("gamma must be positive when lambda is nonnegative.")
+    }
+    if(delta == 0){ ## gamma case
+        dens <- dgamma(x,lambda,1/(2*gamma^2))
+    }
+    if(gamma == 0){ ## inverse gamma case
+        dens <- x^(lambda-1)*exp(-1/2*delta/x)/(gamma(-lambda)*2^(-lambda)*delta^(2*lambda))
+    }else{
+        dens <- 1/2*(gamma/delta)^lambda*1/besselK(gamma*delta,lambda)*x^(lambda-1)*exp(-1/2*(delta^2/x+gamma^2*x))
+    }
+    return(dens)
+}
+
+## Generalized hyperbolic
+
+rGH<-function(x,lambda,alpha,beta,delta,mu,Lambda){
+    if(length(mu)!=length(beta)){
+        stop("Error: wrong input dimension.")
+    }
+    
+    if(missing(Lambda))
+    Lambda <- NA
+    
+    if( alpha < 0 ){
+        stop("alpha must be nonnegative.")
+    }
+    
+    ## variance gamma case
+    if(delta == 0){
+        X<-rvgamma(x,lambda,alpha,beta,mu,lambda)
+    }
+    
+    ## univariate case
+    if(is.na(Lambda)){
+        if(length(mu)!=1 || length(beta)!=1){
+            stop("Error: wrong input dimension.")
+        }
+        
+        tmp <- as.numeric(alpha^2 - beta^2)
+        if( tmp < 0 ){
+            stop("alpha^2 - beta^2 must be nonnegative value.")
+        }
+        
+        if(((alpha == 0)||(tmp == 0)) && (lambda >= 0)){
+            stop("alpha and alpha^2 - beta^2 must be positive when lambda is nonnegative.")
+        }
+        
+        Z<-rGIG(x,lambda,delta,sqrt(tmp))
+        N<-rnorm(x,0,1)
+        X<-mu + beta*Z + sqrt(Z)*N
+    }
+    else{## multivariate case
+        if( nrow(Lambda)!=ncol(Lambda)){
+            stop("Lambda must be a square matrix.")
+        }
+        
+        if(sum((Lambda-t(Lambda))*(Lambda-t(Lambda)))!=0){
+            stop("Lambda must be a symmetric matrix")
+        }
+        
+        if( nrow(Lambda)!=length(beta)){
+            stop("Dimension of Lambda and beta must be equal.")
+        }
+        
+        if( min(eigen(Lambda)$value) <= 10^(-15) ){
+            stop("Lambda must be positive definite.")
+        }
+        
+        if( det(Lambda) > 1+10^(-15) || det(Lambda) < 1-10^(-15) ){
+            stop("The determinant of Lambda must be 1.")
+        }
+        
+        tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
+        
+        if(tmp < 0){
+            stop("alpha^2 - t(beta) %*% Lambda %*% beta must be nonnegative")
+        }
+        
+        if(((alpha == 0)||(tmp == 0))&&(lambda >=0)){
+            stop("alpha and alpha^2 - t(beta) %*% Lambda %*% beta must be positive when lambda is nonnegative.")
+        }
+        
+        Z<-rGIG(x,lambda,delta,sqrt(tmp))
+        N<-rnorm(x*length(beta),0,1)
+        sqrt.L <- svd(Lambda)
+        sqrt.L <- sqrt.L$u %*% diag(sqrt(sqrt.L$d)) %*% t(sqrt.L$v)
+        X <- mu + t(matrix(rep(Z,length(beta)),x,length(beta))) * matrix(rep(Lambda %*% beta,x),length(beta),x)+t(matrix(rep(sqrt(Z),length(beta)),x,length(beta))) * (sqrt.L %*% t(matrix(N,x,length(beta))))
+    }
+    return(X)
+}
+
+
+dGH<-function(x,lambda,alpha,beta,delta,mu,Lambda){
+    if(length(mu)!=length(beta)){
+        stop("Error: wrong input dimension.")
+    }
+    
+    if(missing(Lambda))
+    Lambda <- NA
+    
+    if( alpha < 0 ){
+        stop("alpha must be nonnegative.")
+    }
+    
+    ## variance gamma case
+    if(delta == 0){
+        X<-dvgamma(x,lambda,alpha,beta,mu,Lambda)
+    }
+    
+    ## univariate case
+    if(is.na(Lambda)){
+        if(length(mu)!=1 || length(beta)!=1){
+            stop("Error: wrong input dimension.")
+        }
+        
+        tmp <- as.numeric(alpha^2 - beta^2)
+        if( tmp < 0 ){
+            stop("alpha^2 - beta^2 must be nonnegative value.")
+        }
+        
+        if(((alpha == 0)||(tmp == 0)) && (lambda >= 0)){
+            stop("alpha and alpha^2 - beta^2 must be positive when lambda is nonnegative.")
+        }
+        
+        nu<--2*lambda
+        
+        if(alpha == 0){## gamma = 0 (in gig), scaled t-distribution
+            dens<-gamma((nu+1)/2)*(1+((x-mu)/delta)^2)^(-(nu+1)/2)/(delta*sqrt(pi)*gamma(nu/2))
+        }else if(tmp == 0){## skewed t-distribution
+            dens<-delta^nu*exp(beta*(x-mu))*gamma((nu+1)/2)*besselK(abs(beta)*sqrt(delta^2+(x-mu)^2),(nu+1)/2)/(2^((nu-1)/2)*sqrt(pi)*gamma(nu/2)*(sqrt(delta^2+(x-mu)^2)/abs(beta))^((nu+1)/2))
+        }else{
+            dens<-tmp^(lambda/2)*sqrt(delta^2+(x-mu)^2)^(lambda-1/2)*besselK(alpha*sqrt(delta^2+(x-mu)^2),lambda-1/2)*exp(beta*(x-mu))/(sqrt(2*pi)*alpha^(lambda-1/2)*delta^lambda*besselK(delta*sqrt(tmp),lambda))
+        }
+    }
+    else{## multivariate case
+        if( nrow(Lambda)!=ncol(Lambda)){
+            stop("Lambda must be a square matrix.")
+        }
+        
+        if(sum((Lambda-t(Lambda))*(Lambda-t(Lambda)))!=0){
+            stop("Lambda must be a symmetric matrix")
+        }
+        
+        if( nrow(Lambda)!=length(beta)){
+            stop("Dimension of Lambda and beta must be equal.")
+        }
+        
+        if( min(eigen(Lambda)$value) <= 10^(-15) ){
+            stop("Lambda must be positive definite.")
+        }
+        
+        if( det(Lambda) > 1+10^(-15) || det(Lambda) < 1-10^(-15) ){
+            stop("The determinant of Lambda must be 1.")
+        }
+        
+        tmp <- as.numeric(alpha^2 - t(beta) %*% Lambda %*% beta)
+        
+        if(tmp < 0){
+            stop("alpha^2 - t(beta) %*% Lambda %*% beta must be nonnegative")
+        }
+        
+        if(((alpha == 0)||(tmp == 0))&&(lambda >=0)){
+            stop("alpha and alpha^2 - t(beta) %*% Lambda %*% beta must be positive when lambda is nonnegative.")
+        }
+        
+        Lambdainv<-solve(Lambda)
+        nu<--2*lambda
+        d<-nrow(Lambda)
+        
+        if(alpha == 0){ ## gamma = 0 (in gig) multivariate scaled t-distribution
+            dens<-gamma((nu+d)/2)*(1+t(x-mu)%*%Lambdainv%*%(x-mu)/delta^2)^(-(nu+d)/2)/(pi^(d/2)*gamma(nu/2)*delta^d)
+        }else if(tmp == 0){ ## multivariate skewed t-distribution
+            dens<-delta^nu*exp(t(beta)%*%(x-mu))*besselK(alpha*sqrt(delta^2+t(x-mu)%*%Lambdainv%*%(x-mu)),-(nu+d)/2)/((pi)^(d/2)*2^((nu+d)/2-1)*(sqrt(delta^2+t(x-mu)%*%Lambdainv%*%(x-mu))/alpha)^((nu+d)/2)*gamma(nu/2))
+        }else{
+            dens<-exp(t(beta)%*%(x-mu))*(sqrt(tmp)/delta)^lambda*besselK(alpha*sqrt(delta^2+t(x-mu)%*%Lambdainv%*%(x-mu)),-(nu+d)/2)/((2*pi)^(d/2)*besselK(delta*sqrt(tmp),lambda)*(sqrt(delta^2+t(x-mu)%*%Lambdainv%*%(x-mu))/alpha)^(d/2-lambda))
+        }
+    }
+    return(dens)
+}
+
 
 ## (Multivariate) Variance gamma
 
