@@ -3,12 +3,12 @@
 #new minusquasilogl "W1","W2" like lse function.
 
 setGeneric("lseBayes",
-function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
-standardGeneric("lseBayes")
+           function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
+             standardGeneric("lseBayes")
 )
 setMethod("lseBayes", "yuima",
-function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
-{
+          function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
+          {
   if(!missing(lower) & !missing(upper)){
     if(sum(unlist(start)<unlist(lower))+sum(unlist(start)>unlist(upper))>0)
       yuima.stop("param.init is out of parameter space.")
@@ -175,7 +175,6 @@ function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algo
   
   #######data is reduced to n_0 before qmle(16/11/2016)
   env <- new.env()
-  #assign("X",  yuima@data@original.data[1:n_0,], envir=env)
   assign("X",  as.matrix(onezoo(yuima))[1:n_0,], envir=env)
   assign("deltaX",  matrix(0, n_0 - 1, d.size), envir=env)
   assign("crossdx",matrix(0,n_0 - 1,d.size*d.size),envir=env) ####(deltaX)%*%t(deltaX).this is used in W1.
@@ -248,18 +247,16 @@ function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algo
       return(unlist(val/mcmc))
     }
     else if(algorithm=="MpCN"){
-      x_n <- mean
       val <- mean
-      logLik_old <- p(mean)+0.5*length(mean)*log(sqnorm(x_n-mean))
+      lp_norm_old <- p(mean)+0.5*length(mean)*log(sqnorm(x_n-mean))
       
       for(i in 1:(mcmc-1)){
-        #browser()
-        prop <- makeprop(mean,x_n,unlist(lowerLimit),unlist(upperLimit))
-        logLik_new <- p(mean)+0.5*length(mean)*log(sqnorm(prop-mean))
+        prop <- makeprop(mean,x_n,lowerLimit,upperLimit)
+        lp_norm_new <- p(mean)+0.5*length(mean)*log(sqnorm(prop-mean))
         u <- log(runif(1))
-        if( logLik_new-logLik_old > u){
+        if( lp_norm_new-lp_norm_old > u){
           x_n <- prop
-          logLik_old <- logLik_new
+          lp_norm_old <- lp_norm_new
         }
         val <- val+f(x_n)
       }
@@ -268,7 +265,7 @@ function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algo
   }
   
   
-  #print(mle@coef)
+  print(mle@coef)
   tmpW1 <- minusquasilogl_W1(yuima=yuima, param=mle@coef, print=print, env,rcpp=rcpp)
   tmpW2 <- minusquasilogl_W2(yuima=yuima, param=mle@coef, print=print, env,rcpp=rcpp)
   
