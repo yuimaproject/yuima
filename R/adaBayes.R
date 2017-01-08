@@ -2,12 +2,12 @@
 
 
 setGeneric("adaBayes",
-function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
-standardGeneric("adaBayes")
+           function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
+             standardGeneric("adaBayes")
 )
 setMethod("adaBayes", "yuima",
-function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
-{
+          function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
+          {
   
   
   
@@ -163,23 +163,14 @@ function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=T
   d.size <- yuima@model@equation.number
   n <- length(yuima)[1]
   
-  G <- rate
-  if(G<=0 || G>1){
-    yuima.stop("rate G should be 0 < G <= 1")
-  }
-  n_0 <- floor(n^G)
-  if(n_0 < 2) n_0 <- 2
-  
-  #######data is reduced to n_0 before qmle(16/11/2016)
   env <- new.env()
-  #assign("X",  yuima@data@original.data[1:n_0,], envir=env)
-  assign("X",  as.matrix(onezoo(yuima))[1:n_0,], envir=env)
-  assign("deltaX",  matrix(0, n_0 - 1, d.size), envir=env)
+  assign("X",  yuima@data@original.data, envir=env)
+  assign("deltaX",  matrix(0, n-1, d.size), envir=env)
   assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env)
   
-  assign("Cn.r", rep(1,n_0-1), envir=env)
+  assign("Cn.r", rep(1,n-1), envir=env)
   
-  for(t in 1:(n_0-1))
+  for(t in 1:(n-1))
     env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
   
   assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
@@ -239,18 +230,16 @@ function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=T
       return(unlist(val/mcmc))
     }
     else if(algorithm=="MpCN"){
-      x_n <- mean
       val <- mean
-      logLik_old <- p(mean)+0.5*length(mean)*log(sqnorm(x_n-mean))
+      lp_norm_old <- p(mean)+0.5*length(mean)*log(sqnorm(x_n-mean))
       
       for(i in 1:(mcmc-1)){
-        #browser()
-        prop <- makeprop(mean,x_n,unlist(lowerLimit),unlist(upperLimit))
-        logLik_new <- p(mean)+0.5*length(mean)*log(sqnorm(prop-mean))
+        prop <- makeprop(mean,x_n,lowerLimit,upperLimit)
+        lp_norm_new <- p(mean)+0.5*length(mean)*log(sqnorm(prop-mean))
         u <- log(runif(1))
-        if( logLik_new-logLik_old > u){
+        if( lp_norm_new-lp_norm_old > u){
           x_n <- prop
-          logLik_old <- logLik_new
+          lp_norm_old <- lp_norm_new
         }
         val <- val+f(x_n)
       }
@@ -258,7 +247,7 @@ function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=T
     }
   }
   
-  #print(mle@coef)
+  print(mle@coef)
   
   
   flagNotPosDif <- 0
