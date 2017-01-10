@@ -2,12 +2,12 @@
 
 
 setGeneric("adaBayes",
-           function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
-             standardGeneric("adaBayes")
+function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
+standardGeneric("adaBayes")
 )
 setMethod("adaBayes", "yuima",
-          function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
-          {
+function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
+{
   
   
   
@@ -89,13 +89,6 @@ setMethod("adaBayes", "yuima",
     pd <- function(param) return(1)
   }
   ## END Prior construction
-
-  if(!is.list(start) || (sum(unlist(start)<unlist(lower))+sum(unlist(start)>unlist(upper))>0)){
-    #cannot use "missing(start)"
-    start <- lower
-    start[1:length(start)] <- runif(length(start),unlist(lower),unlist(upper))
-    #yuima.warn("param.init is out of parameter space.redefigned init by runif.")
-  }
   
   JointOptim <- joint
   if(length(common.par)>0){
@@ -163,19 +156,40 @@ setMethod("adaBayes", "yuima",
   d.size <- yuima@model@equation.number
   n <- length(yuima)[1]
   
+  G <- rate
+  if(G<=0 || G>1){
+    yuima.stop("rate G should be 0 < G <= 1")
+  }
+  n_0 <- floor(n^G)
+  if(n_0 < 2) n_0 <- 2
+  
+  #######data is reduced to n_0 before qmle(16/11/2016)
   env <- new.env()
-  assign("X",  yuima@data@original.data, envir=env)
-  assign("deltaX",  matrix(0, n-1, d.size), envir=env)
+  #assign("X",  yuima@data@original.data[1:n_0,], envir=env)
+  assign("X",  as.matrix(onezoo(yuima)[1:n_0,]), envir=env)
+  assign("deltaX",  matrix(0, n_0 - 1, d.size), envir=env)
   assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env)
+
+  assign("Cn.r", rep(1,n_0-1), envir=env)
   
-  assign("Cn.r", rep(1,n-1), envir=env)
-  
-  for(t in 1:(n-1))
+  for(t in 1:(n_0-1))
     env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
   
   assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
   
+  pp<-0 
+  while(1){
+    if(n*env$h^pp < 0.1) break
+    pp <- pp + 1
+  }
+  qq <- max(pp,2/G) 
+  
+  C.temper.diff <- n_0^(2/(qq*G)-1) #this is used in pg.
+  C.temper.drift <- (n_0*env$h)^(2/(qq*G)-1) #this is used in pg.
+  
   mle <- qmle(yuima, "start"=start, "lower"=lower,"upper"=upper, "method"="L-BFGS-B",rcpp=rcpp)
+  start <- as.list(mle@coef)
+  
   integ <- function(idx.fixed=NULL,f=f,start=start,par=NULL,hessian=FALSE,upper,lower){
     if(length(idx.fixed)==0){
       intf <- adaptIntegrate(f,lowerLimit=lower,upperLimit=upper,fDim=(length(upper)+1))$integral
@@ -229,17 +243,19 @@ setMethod("adaBayes", "yuima",
       }
       return(unlist(val/mcmc))
     }
-    else if(algorithm=="MpCN"){
+    else if(tolower(algorithm)=="mpcn"){ #MpCN
+      x_n <- mean
       val <- mean
-      lp_norm_old <- p(mean)+0.5*length(mean)*log(sqnorm(x_n-mean))
+      logLik_old <- p(x_n)+0.5*length(mean)*log(sqnorm(x_n-mean))
       
       for(i in 1:(mcmc-1)){
-        prop <- makeprop(mean,x_n,lowerLimit,upperLimit)
-        lp_norm_new <- p(mean)+0.5*length(mean)*log(sqnorm(prop-mean))
+        #browser()
+        prop <- makeprop(mean,x_n,unlist(lowerLimit),unlist(upperLimit))
+        logLik_new <- p(prop)+0.5*length(mean)*log(sqnorm(prop-mean))
         u <- log(runif(1))
-        if( lp_norm_new-lp_norm_old > u){
+        if( logLik_new-logLik_old > u){
           x_n <- prop
-          lp_norm_old <- lp_norm_new
+          logLik_old <- logLik_new
         }
         val <- val+f(x_n)
       }
@@ -247,7 +263,7 @@ setMethod("adaBayes", "yuima",
     }
   }
   
-  print(mle@coef)
+  #print(mle@coef)
   
   
   flagNotPosDif <- 0
@@ -255,7 +271,7 @@ setMethod("adaBayes", "yuima",
     if(mle@vcov[i,i] <= 0) flagNotPosDif <- 1 #Check mle@vcov is positive difinite matrix
   }
   if(flagNotPosDif == 1){
-    mle@vcov <- diag(c(rep(1 / n,length(diff.par)),rep(1 / (n * env$h),length(drift.par)))) # Redifine mle@vcov
+    mle@vcov <- diag(c(rep(1 / n_0,length(diff.par)),rep(1 / (n_0 * env$h),length(drift.par)))) # Redifine mle@vcov
   }
   
   
@@ -281,7 +297,12 @@ setMethod("adaBayes", "yuima",
       names(mycoef) <- nm
     }
     #return(exp(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env)+tmp)*pd(param=mycoef))
-    return(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef)))#log
+    #return(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef)))#log
+    if(sum(idx.diff==idx.fixed)>0){
+      return(C.temper.diff*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
+    }else{
+      return(C.temper.drift*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
+    }
   }
   
   idf <- function(p){return(p)}
