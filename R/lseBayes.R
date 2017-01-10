@@ -3,17 +3,13 @@
 #new minusquasilogl "W1","W2" like lse function.
 
 setGeneric("lseBayes",
-           function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
-             standardGeneric("lseBayes")
+function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
+standardGeneric("lseBayes")
 )
 setMethod("lseBayes", "yuima",
-          function(yuima, start,prior,lower,upper, method="nomcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
-          {
-  if(!missing(lower) & !missing(upper)){
-    if(sum(unlist(start)<unlist(lower))+sum(unlist(start)>unlist(upper))>0)
-      yuima.stop("param.init is out of parameter space.")
-  }
-  
+function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,algorithm="randomwalk")
+{
+ 
   rcpp <- TRUE
   
   joint <- FALSE
@@ -93,12 +89,6 @@ setMethod("lseBayes", "yuima",
   }
   ## END Prior construction
   
-  if(!is.list(start) || (sum(unlist(start)<unlist(lower))+sum(unlist(start)>unlist(upper))>0)){
-    #cannot use "missing(start)"
-    start <- lower
-    start[1:length(start)] <- runif(length(start),unlist(lower),unlist(upper))
-    #yuima.warn("param.init is out of parameter space.redefigned init by runif.")
-  }
   
   JointOptim <- joint
   if(length(common.par)>0){
@@ -172,10 +162,10 @@ setMethod("lseBayes", "yuima",
   }
   n_0 <- floor(n^G)
   if(n_0 < 2) n_0 <- 2
-  
   #######data is reduced to n_0 before qmle(16/11/2016)
   env <- new.env()
-  assign("X",  as.matrix(onezoo(yuima))[1:n_0,], envir=env)
+  #assign("X",  yuima@data@original.data[1:n_0,], envir=env)
+  assign("X",  as.matrix(onezoo(yuima)[1:n_0,]), envir=env)
   assign("deltaX",  matrix(0, n_0 - 1, d.size), envir=env)
   assign("crossdx",matrix(0,n_0 - 1,d.size*d.size),envir=env) ####(deltaX)%*%t(deltaX).this is used in W1.
   assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env)
@@ -188,9 +178,20 @@ setMethod("lseBayes", "yuima",
   }
   
   assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
+
+  pp<-0 
+  while(1){
+    if(n*env$h^pp < 0.1) break
+    pp <- pp + 1
+  }
+  qq <- max(pp,2/G) 
+  
+  C.temper.diff <- n_0^(2/(qq*G)-1) #this is used in pg.
+  C.temper.drift <- (n_0*env$h)^(2/(qq*G)-1) #this is used in pg.
+
   
   mle <- qmle(yuima, "start"=start, "lower"=lower,"upper"=upper, "method"="L-BFGS-B",rcpp=rcpp)
-  
+  start <- as.list(mle@coef)
   
  
   integ <- function(idx.fixed=NULL,f=f,start=start,par=NULL,hessian=FALSE,upper,lower){
@@ -212,11 +213,12 @@ setMethod("lseBayes", "yuima",
   
   mcIntegrate <- function(f,p, lowerLimit, upperLimit,mean,vcov,mcmc){
     
+    
     if(algorithm=="randomwalk"){
       x_c <- mean
       p_c <- p(mean)
       val <- f(x_c)
-      
+
       if(length(mean)>1){
         x <- rmvnorm(mcmc-1,mean,vcov)
         q <- dmvnorm(x,mean,vcov)
@@ -246,17 +248,18 @@ setMethod("lseBayes", "yuima",
       }
       return(unlist(val/mcmc))
     }
-    else if(algorithm=="MpCN"){
+    else if(tolower(algorithm)=="mpcn"){ #MpCN
+      x_n <- mean
       val <- mean
-      lp_norm_old <- p(mean)+0.5*length(mean)*log(sqnorm(x_n-mean))
+      logLik_old <- p(x_n)+0.5*length(mean)*log(sqnorm(x_n-mean))
       
       for(i in 1:(mcmc-1)){
-        prop <- makeprop(mean,x_n,lowerLimit,upperLimit)
-        lp_norm_new <- p(mean)+0.5*length(mean)*log(sqnorm(prop-mean))
+        prop <- makeprop(mean,x_n,unlist(lowerLimit),unlist(upperLimit))
+        logLik_new <- p(prop)+0.5*length(mean)*log(sqnorm(prop-mean))
         u <- log(runif(1))
-        if( lp_norm_new-lp_norm_old > u){
-          x_n <- prop
-          lp_norm_old <- lp_norm_new
+        if( logLik_new-logLik_old > u){
+          nx_ <- prop
+          logLik_old <- logLik_new
         }
         val <- val+f(x_n)
       }
@@ -265,7 +268,15 @@ setMethod("lseBayes", "yuima",
   }
   
   
-  print(mle@coef)
+  #print(mle@coef)
+  flagNotPosDif <- 0
+  for(i in 1:npar){
+    if(mle@vcov[i,i] <= 0) flagNotPosDif <- 1 #Check mle@vcov is positive difinite matrix
+  }
+  if(flagNotPosDif == 1){
+    mle@vcov <- diag(c(rep(1 / n_0,length(diff.par)),rep(1 / (n_0 * env$h),length(drift.par)))) # Redifine mle@vcov
+  }
+  
   tmpW1 <- minusquasilogl_W1(yuima=yuima, param=mle@coef, print=print, env,rcpp=rcpp)
   tmpW2 <- minusquasilogl_W2(yuima=yuima, param=mle@coef, print=print, env,rcpp=rcpp)
   
@@ -296,9 +307,9 @@ setMethod("lseBayes", "yuima",
     }
     
     if(sum(idx.diff==idx.fixed)>0){
-      return(-minusquasilogl_W1(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmpW1+log(pd(param=mycoef)))#log
+      return(C.temper.diff*(-minusquasilogl_W1(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmpW1+log(pd(param=mycoef))))#log
     }else{
-      return(-minusquasilogl_W2(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmpW2+log(pd(param=mycoef)))#log
+      return(C.temper.drift*(-minusquasilogl_W2(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmpW2+log(pd(param=mycoef))))#log
     }
   }
   
