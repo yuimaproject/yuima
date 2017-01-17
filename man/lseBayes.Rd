@@ -4,7 +4,8 @@
 \title{Adaptive Bayes estimator for the parameters in sde model by using LSE functions}
 \description{Adaptive Bayes estimator for the parameters in a specific type of sde by using LSE functions.}
 \usage{
-lseBayes(yuima, start, prior, lower, upper, method = "mcmc", mcmc = 1000, rate =1, algorithm = "randomwalk")
+lseBayes(yuima, start, prior, lower, upper, method = "mcmc", mcmc = 1000,
+rate =1, algorithm = "randomwalk")
 }
 \arguments{
   \item{yuima}{a 'yuima' object.}

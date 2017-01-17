@@ -4,7 +4,8 @@
 \title{Adaptive Bayes estimator for the parameters in sde model}
 \description{Adaptive Bayes estimator for the parameters in a specific type of sde.}
 \usage{
-adaBayes(yuima, start, prior, lower, upper, method = "mcmc", mcmc = 1000, rate =1, rcpp = TRUE, algorithm = "randomwalk")
+adaBayes(yuima, start, prior, lower, upper, method = "mcmc", mcmc = 1000,
+rate =1, rcpp = TRUE, algorithm = "randomwalk")
 }
 \arguments{
   \item{yuima}{a 'yuima' object.}
