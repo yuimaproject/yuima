@@ -35,6 +35,7 @@ Uchida, M., & Yoshida, N. (2014). Adaptive Bayes type estimators of ergodic diff
 Kamatani, K. (2017). Ergodicity of Markov chain Monte Carlo with reversible proposal. Journal of Applied Probability, 54(2). 
 }
 \examples{
+\dontrun{
 ####2-dim model
 set.seed(123)
 
@@ -84,5 +85,6 @@ bayes2 <- lseBayes(yuima, start=start, prior=prior,
                                     mcmc=1000,lower = lower, upper = upper,algorithm = "MpCN")
 bayes2@coef
 
+}
 }
 \keyword{ts}
