@@ -45,8 +45,7 @@ setMethod("simulate", "yuima.Ppr",
           }
 )
 
-constHazIntPr <- function(g.Fun = object@gFun@formula,
-                          Kern.Fun = object@Kernel){
+constHazIntPr <- function(g.Fun , Kern.Fun){
   numb.Int <- length(g.Fun)
   Int.Intens <- list()
   for(i in c(1:numb.Int)){
@@ -295,8 +294,8 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
             }
             oldprova <- prova
             prova <- SolvePpr(posMid, posLeft, posRight, solveLeft, solveRight,
-                              cost, Kern, simMod, samp, Model, ExprHaz, dN,
-                              LastTime, my.env, Time, IntensityProc)
+                              cost, Kern, simMod, samp, Model, ExprHaz,
+                               my.env, Time, IntensityProc)
             if(length(prova$left)==0){
               globEx <- TRUE
             }else{
@@ -367,8 +366,8 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
 }
 
 SolvePpr <- function(posMid, posLeft, posRight, solveLeft = NULL, solveRight = NULL,
-                     cost, Kern, simMod, samp, Model, ExprHaz, dN,
-                     LastTime, my.env, Time, IntensityProc){
+                     cost, Kern, simMod, samp, Model, ExprHaz,
+                      my.env, Time, IntensityProc){
 
   if((posMid+1)>=(samp@n+1)){
     mylist <- list(VeryExit = TRUE)
@@ -707,16 +706,23 @@ compErrHazR <- function(TopposInGrid, simMod, Kern,
     dN[con[c(1:length(dN))]] <- as.numeric(simMod@data@original.data[c(FALSE, con[-length(con)]),Kern@variable.Integral@var.dx]
                                                      -simMod@data@original.data[con,Kern@variable.Integral@var.dx])
   }else{}
-  for(i in c(1:TopposInGrid)){
+  #for(i in c(1:TopposInGrid)){
+  #MyPos
+  MyPos <- sum(samp@grid[[1]]<=tail(Time,n=1L))
+  #dummyLambda <- numeric(length=TopposInGrid)
+  assign(Kern@variable.Integral@var.time, Time, envir = my.env)
+  for(i in c(MyPos:TopposInGrid)){
     posInGrid <- i
     LastTime <- samp@grid[[1]][-1][(posInGrid)]
-    LastStime <- samp@grid[[1]][c(1:posInGrid)]
+    #LastStime <- samp@grid[[1]][c(1:posInGrid)]
     assign(Model@time.variable, LastTime, envir = my.env)
-    assign(Kern@variable.Integral@var.time, LastStime, envir = my.env)
-    assign(paste0("d",Kern@variable.Integral@var.dx), dN[c(1:posInGrid)], envir =my.env)
+    #assign(Kern@variable.Integral@var.time, LastStime, envir = my.env)
+    #assign(paste0("d",Kern@variable.Integral@var.dx), dN[c(1:posInGrid)], envir =my.env)
+    assign(paste0("d",Kern@variable.Integral@var.dx), 1, envir =my.env)
     dummyLambda[i] <- eval(ExprHaz[[1]], envir=my.env)
   }
-  solveLambda <- -log(cost)-sum(dummyLambda[c(sum(samp@grid[[1]]<=tail(Time,n=1L)):(TopposInGrid))])*samp@delta
+ # solveLambda <- -log(cost)-sum(dummyLambda[c(sum(samp@grid[[1]]<=tail(Time,n=1L)):(TopposInGrid))])*samp@delta
+  solveLambda <- -log(cost)-sum(dummyLambda[c(MyPos:(TopposInGrid))])*samp@delta
   res <- list(solveLambda = solveLambda, dummyLambda = tail(dummyLambda,n=1L))
   return(res)
 }

@@ -249,14 +249,32 @@ aux.lambdaFromData <-function(param, gFun, Kern, intensityParm, envPpr,logLikeli
   }
   dn <- dim(lambda)
   if(dn[1]==1){
-    # logLiklihood2 <- -sum(lambda[,-1]*diff(time)[1])
-    # logLiklihood1 <- sum(log(lambda[,-1])*lastEnv$Integrator)
     logLiklihood2 <- -sum(lambda*diff(time)[1])
-    # CountProc <- diff(as.numeric(lastEnv$CountVar))!=0
     logLiklihood1 <- sum(log(lambda)*lastEnv$CountVar)
+
+    # logLiklihood2 <- -sum(lambda*diff(time))
+    # dummyLamb <- lambda[lastEnv$CountVar]
+    # #logLiklihood1 <- sum(log(dummyLamb[-length(dummyLamb)]))
+    # logLiklihood1 <- sum(log(dummyLamb))
+
+
+    # newlamb <- unique(as.numeric(lambda))
+    #
+    # cond <- as.numeric(lastEnv$CountVar)!=0
+    # timeJ <- time[-1][cond]
+    # timeJ1 <- unique(c(0,timeJ,lastEnv$t[1]))
+    # logLiklihood2 <- -sum(newlamb*diff(timeJ1))
+    # InternCount<-c(0:length(timeJ))
+    # if((length(timeJ)+2)==length(timeJ1)){
+    #   InternCount <- c(InternCount,tail(InternCount, n=1L))
+    # }
+    #
+    # logLiklihood1 <- sum(log(newlamb)*diff(InternCount))
 
 
   }else{
+    #### NO Rewrite
+
     # logLiklihood2 <- -rowSums(lambda[,-1]*diff(time)[1])
     # logLiklihood1 <- rowSums(log(lambda[,-1])*lastEnv$Integrator)
     logLiklihood2 <- -rowSums(lambda*diff(time)[1])
