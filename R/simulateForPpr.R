@@ -267,79 +267,211 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
             envir = my.env)
         }
 
+        compErrHazR2 <- function(simMod, Kern,
+                                 capitalTime, Model, my.env, ExprHaz,
+                                 Time, dN){
+          #  dummyLambda <- numeric(length=(samp@n+1))
+          if(length(Kern@variable.Integral@var.dx)==1){
+            #   MyPos <- sum(samp@grid[[1]]<=tail(Time,n=1L))
+            assign(Kern@variable.Integral@var.time, Time, envir = my.env)
+            #  cond <- -log(cost)-sum(dummyLambda)*samp@delta
 
+            assign(Model@time.variable, capitalTime, envir = my.env)
+            assign(paste0("d",Kern@variable.Integral@var.dx), dN, envir =my.env)
+            Lambda <- eval(ExprHaz[[1]], envir=my.env)
+            return(Lambda)
+          }else{
+            return(NULL)
+          }
+        }
 
         IntensityProc <- 0
 
-        cost <- runif(1)
-        while(-log(cost)<samp@delta)
-          {cost <- runif(1)}
+        dN<-0
 
-        posLeft <- 1
-        posRight <- samp@n+1
-
-        posMid <- floor((posLeft+posRight)/2)
-        solveLeft <- -log(cost)
-        solveRight <- NULL
-
-        exit <- FALSE
-        prova <- NULL
-
-        globEx <- FALSE
-
-        while(tail(Time,n=1L)<(samp@Terminal-samp@delta) && !globEx){
-          while(!exit){
-            if((posMid-posLeft)==1){
-              posMid
-            }
-            oldprova <- prova
-            prova <- SolvePpr(posMid, posLeft, posRight, solveLeft, solveRight,
-                              cost, Kern, simMod, samp, Model, ExprHaz,
-                               my.env, Time, IntensityProc)
-            if(length(prova$left)==0){
-              globEx <- TRUE
-            }else{
-            if(prova$left){
-              posMid <- floor((prova$posLeft+prova$posRight)/2)
-              posLeft <- prova$posLeft
-              posRight <- prova$posRight
-              solveRight <- prova$solveRight
-              solveLeft <- prova$solveLeft
-            }else{
-              posMid <- floor((prova$posLeft+prova$posRight)/2)
-              posLeft <- prova$posLeft
-              posRight <- prova$posRight
-              solveRight <- prova$solveRight
-              solveLeft <- prova$solveLeft
-            }
-             exit<-prova$exit
+        myhawkesP <- function(simMod, Kern,
+                              samp, Model, my.env, ExprHaz,
+                              Time){
+          noExit<-TRUE
+          const <- -log(runif(1))
+          delta <- samp@delta
+          grid <- samp@grid[[1]]
+          while(const<delta){
+            const <- -log(runif(1))
           }
-              if(globEx){
-                exit <- TRUE
-                oldprova -> prova
+          jumpT<-0
+          i <- 1
+          dimGrid <-length(grid)
+          cond <- const
+          allconst <- NULL
+          allcond <- NULL
+          allhaz <- NULL
+          while(noExit){
+            HazardRate<-0
+            while(cond>0 && noExit){
+              #lastJump <- tail(jumpT,n=1L)
+              lambda<-compErrHazR2(simMod, Kern, capitalTime=samp@grid[[1]][i], Model, my.env, ExprHaz,
+                                   Time=jumpT, dN)
+              # lambda<-hawkesInt(mu=mu, alpha=alpha, beta=beta,
+              #                   timet=grid[i], JumpT=jumpT)
+              incrlambda <- lambda*delta
+              HazardRate <- HazardRate+incrlambda
+              cond <- const-HazardRate
+              i<-i+1
+              if(i>=dimGrid){
+                noExit <- FALSE
               }
 
-
+              cat("\n ", cond>0, i, grid[i])
+            }
+            jumpT<-c(jumpT,grid[i])
+            dN<-c(dN,1)
+            allhaz <- c(allhaz,HazardRate)
+            allcond <- c(allcond,cond)
+            cond <- const
+            allconst <- c(allconst, const)
+            const <- -log(runif(1))
+            while(const<delta){
+              const <- -log(runif(1))
+            }
           }
+          return(list(jumpT=jumpT,allcond=allcond,allconst=allconst, allhaz=allhaz))
+        }
 
-          cost <- runif(1)
-          while(-log(cost)<samp@delta)
-          {cost <- runif(1)}
-          exit<- FALSE
-          posRight <- samp@n+1
-          solveLeft <- -log(cost)
-           posMid <- floor((posLeft+posRight)/2)
-          # if(length(prova$VeryExit)!=0){
-          #   if(prova$VeryExit)
-          #     globEx <- TRUE
-          # }
-          if(!globEx)
-            Time <- prova$Time
-          IntensityProc <- prova$IntensityProc
-          #cat(tail(prova$Time,n=1L))
-          #cat(sprintf("\n%.5f ", posMid))
-          cat(sprintf("\n%.5f ", tail(Time,n=1L)))
-      }
+        prova1<-myhawkesP(simMod, Kern,
+                          samp, Model, my.env, ExprHaz,
+                          Time)
+
+        Time<-prova1$jumpT
+      #  return(Time)
+      #   cost <- runif(1)
+      #   while(-log(cost)<samp@delta)
+      #   {cost <- runif(1)}
+      #
+      #   compErrHazR <- function(simMod, Kern,
+      #                           samp, Model, my.env, ExprHaz,
+      #                           cost, Time, dN, intensityProc){
+      #     dummyLambda <- numeric(length=(samp@n+1))
+      #     if(length(Kern@variable.Integral@var.dx)==1){
+      #       MyPos <- sum(samp@grid[[1]]<=tail(Time,n=1L))
+      #       assign(Kern@variable.Integral@var.time, Time, envir = my.env)
+      #       i<- MyPos-1
+      #       cond <- -log(cost)-sum(dummyLambda)*samp@delta
+      #       while(cond>0 && i<=(samp@n) ){
+      #         i<-i+1
+      #         LastTime <- samp@grid[[1]][-1][i]
+      #         assign(Model@time.variable, LastTime, envir = my.env)
+      #         assign(paste0("d",Kern@variable.Integral@var.dx), dN, envir =my.env)
+      #         dummyLambda[i] <- eval(ExprHaz[[1]], envir=my.env)
+      #         cond <- -log(cost)-sum(dummyLambda)*samp@delta
+      #
+      #       }
+      #
+      #       if(i<=samp@n){
+      #         NoExit<-TRUE
+      #         Time <- c(Time,LastTime)
+      #         dummydN <-  simMod@data@original.data[i+1,Kern@variable.Integral@var.dx]-simMod@data@original.data[i,Kern@variable.Integral@var.dx]
+      #         dN <- c(dN,as.numeric(dummydN))
+      #         intensityProc<-c(intensityProc,dummyLambda[MyPos:i])
+      #       }else{
+      #         NoExit<-FALSE
+      #       }
+      #       cat(sprintf("\n%.5f ", tail(Time,n=1L)))
+      #       res <- list(Time = Time, dN = dN,
+      #                   intensityProc = intensityProc, NoExit=NoExit)
+      #       return(res)
+      #     }else{
+      #       return(NULL)
+      #     }
+      #   }
+      #
+      #   NoExit<-TRUE
+      #   dN<-0
+      #   intensityProc <- NULL
+      #
+      #   while(NoExit){
+      #     ParRes <- compErrHazR(simMod, Kern,
+      #                           samp, Model, my.env, ExprHaz,
+      #                           cost, Time, dN, intensityProc)
+      #     Time <- ParRes$Time
+      #     dN <- ParRes$dN
+      #     intensityProc <- ParRes$intensityProc
+      #     NoExit <- ParRes$NoExit
+      #     cost <- runif(1)
+      #     while(-log(cost)<samp@delta)
+      #     {cost <- runif(1)}
+      #     # plot(y=intensityProc,x=samp@grid[[1]][-1][samp@grid[[1]][-1]<=tail(Time,n=1L)],type="l")
+      #     # Time
+      #     # NoExit
+      #
+      #   }
+      # {
+      # #   posLeft <- 1
+      # #   posRight <- samp@n+1
+      # #
+      # #   posMid <- floor((posLeft+posRight)/2)
+      # #   solveLeft <- -log(cost)
+      # #   solveRight <- NULL
+      # #
+      # #   exit <- FALSE
+      # #   prova <- NULL
+      # #
+      # #   globEx <- FALSE
+      # #
+      # #   while(tail(Time,n=1L)<(samp@Terminal-samp@delta) && !globEx){
+      # #     while(!exit){
+      # #       if((posMid-posLeft)==1){
+      # #         posMid
+      # #       }
+      # #       oldprova <- prova
+      # #       prova <- SolvePpr(posMid, posLeft, posRight, solveLeft, solveRight,
+      # #                         cost, Kern, simMod, samp, Model, ExprHaz,
+      # #                          my.env, Time, IntensityProc)
+      # #       if(length(prova$left)==0){
+      # #         globEx <- TRUE
+      # #       }else{
+      # #       if(prova$left){
+      # #         posMid <- floor((prova$posLeft+prova$posRight)/2)
+      # #         posLeft <- prova$posLeft
+      # #         posRight <- prova$posRight
+      # #         solveRight <- prova$solveRight
+      # #         solveLeft <- prova$solveLeft
+      # #       }else{
+      # #         posMid <- floor((prova$posLeft+prova$posRight)/2)
+      # #         posLeft <- prova$posLeft
+      # #         posRight <- prova$posRight
+      # #         solveRight <- prova$solveRight
+      # #         solveLeft <- prova$solveLeft
+      # #       }
+      # #        exit<-prova$exit
+      # #     }
+      # #         if(globEx){
+      # #           exit <- TRUE
+      # #           oldprova -> prova
+      # #         }
+      # #
+      # #
+      # #     }
+      # #
+      # #     cost <- runif(1)
+      # #     while(-log(cost)<samp@delta)
+      # #     {cost <- runif(1)}
+      # #     exit<- FALSE
+      # #     posRight <- samp@n+1
+      # #     solveLeft <- -log(cost)
+      # #      posMid <- floor((posLeft+posRight)/2)
+      # #     # if(length(prova$VeryExit)!=0){
+      # #     #   if(prova$VeryExit)
+      # #     #     globEx <- TRUE
+      # #     # }
+      # #     if(!globEx)
+      # #       Time <- prova$Time
+      # #     IntensityProc <- prova$IntensityProc
+      # #     #cat(tail(prova$Time,n=1L))
+      # #     #cat(sprintf("\n%.5f ", posMid))
+      # #     cat(sprintf("\n%.5f ", tail(Time,n=1L)))
+      # # }
+      # }
         cond <- samp@grid[[1]][-1] %in% Time[-1]
         countVar <- Model@solve.variable %in%  object@Ppr@counting.var
         increment.L[!cond, countVar]<-0
@@ -355,6 +487,8 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
                              increment.L = t(increment.L))
         }
         object@data<-simModNew@data
+        object@sampling<-simModNew@sampling
+
         return(object)
 
       }else{
@@ -365,104 +499,104 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
   return(NULL)
 }
 
-SolvePpr <- function(posMid, posLeft, posRight, solveLeft = NULL, solveRight = NULL,
-                     cost, Kern, simMod, samp, Model, ExprHaz,
-                      my.env, Time, IntensityProc){
-
-  if((posMid+1)>=(samp@n+1)){
-    mylist <- list(VeryExit = TRUE)
-    return(mylist)
-  }
-  if((posMid+1)>=(samp@n+1)){
-    mylist <- list(VeryExit = TRUE)
-    return(mylist)
-  }
-
-
-   solveMid<- compErrHazR(posMid, simMod, Kern, samp, Model, my.env, ExprHaz, cost, Time)
-   if(solveMid$solveLambda <= 0){
-     # first check
-     if(solveMid$solveLambda<0 ){
-       if(posLeft == (posMid-1)){
-         if(solveLeft*solveMid$solveLambda<0){
-            mylist <- list()
-            mylist$exit <- TRUE
-            mylist$left <- TRUE
-            mylist$posLeft <- posMid
-            mylist$posRight <- samp@n+1
-            mylist$solveLeft <- solveMid$solveLambda
-            mylist$solveRight <- NULL
-            mylist$Time <- c(Time,samp@grid[[1]][-1][posMid])
-            mylist$IntensityProc <- c(IntensityProc, solveMid$dummyLambda)
-
-           return(mylist)
-         }
-       }
-     solveMidLeft <- compErrHazR(posMid-1, simMod, Kern, samp, Model, my.env, ExprHaz, cost, Time)
-      if(solveMidLeft$solveLambda >=0){
-        mylist <- list()
-        mylist$exit <- TRUE
-        mylist$left <- TRUE
-        mylist$posLeft <- posMid-1
-        mylist$posRight <- samp@n+1
-        mylist$solveLeft <- solveMidLeft$solveLambda
-        mylist$solveRight <- NULL
-        mylist$Time <- c(Time,samp@grid[[1]][-1][posMid-1])
-        mylist$IntensityProc <- c(IntensityProc, solveMidLeft$dummyLambda)
-        return(mylist)
-      }else{
-        mylist <- list()
-        mylist$exit <- FALSE
-        mylist$left <- TRUE
-        mylist$posLeft <- posLeft
-        mylist$posRight <- posMid
-        mylist$solveLeft <- solveLeft
-        mylist$solveRight <-solveMidLeft$solveLambda
-        mylist$Time <- Time
-        mylist$IntensityProc <- c(IntensityProc)
-        return(mylist)
-      }
-     }
-   }
-     if(solveMid$solveLambda==0){
-       mylist <- list()
-       mylist$exit <- TRUE
-       mylist$left <- FALSE
-       mylist$posLeft <-posMid
-       mylist$posRight <- samp@n+1
-       mylist$solveLeft <- solveMid$solveLambda
-       mylist$solveRight <- solveRight
-       mylist$Time <- c(Time,samp@grid[[1]][-1][posMid-1])
-       mylist$IntensityProc <- c(IntensityProc, solveMid$dummyLambda)
-       return(mylist)
-     }
-     if(solveMid$solveLambda > 0 && (posMid+1) <(samp@n+1)){
-       solveMidRight <- compErrHazR(posMid+1, simMod, Kern, samp, Model, my.env, ExprHaz, cost, Time)
-       if(solveMidRight$solveLambda <=0){
-         mylist <- list()
-         mylist$exit <- TRUE
-         mylist$left <- FALSE
-         mylist$posLeft <- posMid+1
-         mylist$posRight <- samp@n+1
-         mylist$solveLeft <-  solveMidRight$solveLambda
-         mylist$solveRight <- solveRight
-         mylist$Time <- c(Time,samp@grid[[1]][-1][posMid+1])
-         mylist$IntensityProc <- c(IntensityProc, solveMidRight$dummyLambda)
-         return(mylist)
-       }else{
-         mylist <- list()
-         mylist$exit <- FALSE
-         mylist$left <- FALSE
-         mylist$posLeft <- posMid+1
-         mylist$posRight <- posRight
-         mylist$solveLeft <- solveMidRight$solveLambda
-         mylist$solveRight <-solveRight
-         mylist$Time <- Time
-         mylist$IntensityProc <- c(IntensityProc)
-         return(mylist)
-       }
-      }
-}
+# SolvePpr <- function(posMid, posLeft, posRight, solveLeft = NULL, solveRight = NULL,
+#                      cost, Kern, simMod, samp, Model, ExprHaz,
+#                       my.env, Time, IntensityProc){
+#
+#   if((posMid+1)>=(samp@n+1)){
+#     mylist <- list(VeryExit = TRUE)
+#     return(mylist)
+#   }
+#   if((posMid+1)>=(samp@n+1)){
+#     mylist <- list(VeryExit = TRUE)
+#     return(mylist)
+#   }
+#
+#
+#    solveMid<- compErrHazR(posMid, simMod, Kern, samp, Model, my.env, ExprHaz, cost, Time)
+#    if(solveMid$solveLambda <= 0){
+#      # first check
+#      if(solveMid$solveLambda<0 ){
+#        if(posLeft == (posMid-1)){
+#          if(solveLeft*solveMid$solveLambda<0){
+#             mylist <- list()
+#             mylist$exit <- TRUE
+#             mylist$left <- TRUE
+#             mylist$posLeft <- posMid
+#             mylist$posRight <- samp@n+1
+#             mylist$solveLeft <- solveMid$solveLambda
+#             mylist$solveRight <- NULL
+#             mylist$Time <- c(Time,samp@grid[[1]][-1][posMid])
+#             mylist$IntensityProc <- c(IntensityProc, solveMid$dummyLambda)
+#
+#            return(mylist)
+#          }
+#        }
+#      solveMidLeft <- compErrHazR(posMid-1, simMod, Kern, samp, Model, my.env, ExprHaz, cost, Time)
+#       if(solveMidLeft$solveLambda >=0){
+#         mylist <- list()
+#         mylist$exit <- TRUE
+#         mylist$left <- TRUE
+#         mylist$posLeft <- posMid-1
+#         mylist$posRight <- samp@n+1
+#         mylist$solveLeft <- solveMidLeft$solveLambda
+#         mylist$solveRight <- NULL
+#         mylist$Time <- c(Time,samp@grid[[1]][-1][posMid-1])
+#         mylist$IntensityProc <- c(IntensityProc, solveMidLeft$dummyLambda)
+#         return(mylist)
+#       }else{
+#         mylist <- list()
+#         mylist$exit <- FALSE
+#         mylist$left <- TRUE
+#         mylist$posLeft <- posLeft
+#         mylist$posRight <- posMid
+#         mylist$solveLeft <- solveLeft
+#         mylist$solveRight <-solveMidLeft$solveLambda
+#         mylist$Time <- Time
+#         mylist$IntensityProc <- c(IntensityProc)
+#         return(mylist)
+#       }
+#      }
+#    }
+#      if(solveMid$solveLambda==0){
+#        mylist <- list()
+#        mylist$exit <- TRUE
+#        mylist$left <- FALSE
+#        mylist$posLeft <-posMid
+#        mylist$posRight <- samp@n+1
+#        mylist$solveLeft <- solveMid$solveLambda
+#        mylist$solveRight <- solveRight
+#        mylist$Time <- c(Time,samp@grid[[1]][-1][posMid-1])
+#        mylist$IntensityProc <- c(IntensityProc, solveMid$dummyLambda)
+#        return(mylist)
+#      }
+#      if(solveMid$solveLambda > 0 && (posMid+1) <(samp@n+1)){
+#        solveMidRight <- compErrHazR(posMid+1, simMod, Kern, samp, Model, my.env, ExprHaz, cost, Time)
+#        if(solveMidRight$solveLambda <=0){
+#          mylist <- list()
+#          mylist$exit <- TRUE
+#          mylist$left <- FALSE
+#          mylist$posLeft <- posMid+1
+#          mylist$posRight <- samp@n+1
+#          mylist$solveLeft <-  solveMidRight$solveLambda
+#          mylist$solveRight <- solveRight
+#          mylist$Time <- c(Time,samp@grid[[1]][-1][posMid+1])
+#          mylist$IntensityProc <- c(IntensityProc, solveMidRight$dummyLambda)
+#          return(mylist)
+#        }else{
+#          mylist <- list()
+#          mylist$exit <- FALSE
+#          mylist$left <- FALSE
+#          mylist$posLeft <- posMid+1
+#          mylist$posRight <- posRight
+#          mylist$solveLeft <- solveMidRight$solveLambda
+#          mylist$solveRight <-solveRight
+#          mylist$Time <- Time
+#          mylist$IntensityProc <- c(IntensityProc)
+#          return(mylist)
+#        }
+#       }
+# }
 
 
 # SolvePpr <- function(TopposInGridIn, OldTimePoint, solveLambdaInOld,
@@ -695,37 +829,37 @@ SolvePpr <- function(posMid, posLeft, posRight, solveLeft = NULL, solveRight = N
 #   }
 # }
 
-compErrHazR <- function(TopposInGrid, simMod, Kern,
-                        samp, Model, my.env, ExprHaz,
-                        cost, Time){
-  dummyLambda <- numeric(length=(TopposInGrid))
-  if(length(Kern@variable.Integral@var.dx)==1){
-    dN <- rep(0, TopposInGrid)
-
-    con <- (samp@grid[[1]] %in% c(Time[-1],samp@grid[[1]][TopposInGrid]))
-    dN[con[c(1:length(dN))]] <- as.numeric(simMod@data@original.data[c(FALSE, con[-length(con)]),Kern@variable.Integral@var.dx]
-                                                     -simMod@data@original.data[con,Kern@variable.Integral@var.dx])
-  }else{}
-  #for(i in c(1:TopposInGrid)){
-  #MyPos
-  MyPos <- sum(samp@grid[[1]]<=tail(Time,n=1L))
-  #dummyLambda <- numeric(length=TopposInGrid)
-  assign(Kern@variable.Integral@var.time, Time, envir = my.env)
-  for(i in c(MyPos:TopposInGrid)){
-    posInGrid <- i
-    LastTime <- samp@grid[[1]][-1][(posInGrid)]
-    #LastStime <- samp@grid[[1]][c(1:posInGrid)]
-    assign(Model@time.variable, LastTime, envir = my.env)
-    #assign(Kern@variable.Integral@var.time, LastStime, envir = my.env)
-    #assign(paste0("d",Kern@variable.Integral@var.dx), dN[c(1:posInGrid)], envir =my.env)
-    assign(paste0("d",Kern@variable.Integral@var.dx), 1, envir =my.env)
-    dummyLambda[i] <- eval(ExprHaz[[1]], envir=my.env)
-  }
- # solveLambda <- -log(cost)-sum(dummyLambda[c(sum(samp@grid[[1]]<=tail(Time,n=1L)):(TopposInGrid))])*samp@delta
-  solveLambda <- -log(cost)-sum(dummyLambda[c(MyPos:(TopposInGrid))])*samp@delta
-  res <- list(solveLambda = solveLambda, dummyLambda = tail(dummyLambda,n=1L))
-  return(res)
-}
+# compErrHazR <- function(TopposInGrid, simMod, Kern,
+#                         samp, Model, my.env, ExprHaz,
+#                         cost, Time){
+#   dummyLambda <- numeric(length=(TopposInGrid))
+#   if(length(Kern@variable.Integral@var.dx)==1){
+#     dN <- rep(0, TopposInGrid)
+#
+#     con <- (samp@grid[[1]] %in% c(Time[-1],samp@grid[[1]][TopposInGrid]))
+#     dN[con[c(1:length(dN))]] <- as.numeric(simMod@data@original.data[c(FALSE, con[-length(con)]),Kern@variable.Integral@var.dx]
+#                                                      -simMod@data@original.data[con,Kern@variable.Integral@var.dx])
+#   }else{}
+#   #for(i in c(1:TopposInGrid)){
+#   #MyPos
+#   MyPos <- sum(samp@grid[[1]]<=tail(Time,n=1L))
+#   #dummyLambda <- numeric(length=TopposInGrid)
+#   assign(Kern@variable.Integral@var.time, Time, envir = my.env)
+#   for(i in c(MyPos:TopposInGrid)){
+#     posInGrid <- i
+#     LastTime <- samp@grid[[1]][-1][(posInGrid)]
+#     #LastStime <- samp@grid[[1]][c(1:posInGrid)]
+#     assign(Model@time.variable, LastTime, envir = my.env)
+#     #assign(Kern@variable.Integral@var.time, LastStime, envir = my.env)
+#     #assign(paste0("d",Kern@variable.Integral@var.dx), dN[c(1:posInGrid)], envir =my.env)
+#     assign(paste0("d",Kern@variable.Integral@var.dx), 1, envir =my.env)
+#     dummyLambda[i] <- eval(ExprHaz[[1]], envir=my.env)
+#   }
+#  # solveLambda <- -log(cost)-sum(dummyLambda[c(sum(samp@grid[[1]]<=tail(Time,n=1L)):(TopposInGrid))])*samp@delta
+#   solveLambda <- -log(cost)-sum(dummyLambda[c(MyPos:(TopposInGrid))])*samp@delta
+#   res <- list(solveLambda = solveLambda, dummyLambda = tail(dummyLambda,n=1L))
+#   return(res)
+# }
 
 
 

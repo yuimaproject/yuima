@@ -249,7 +249,9 @@ aux.lambdaFromData <-function(param, gFun, Kern, intensityParm, envPpr,logLikeli
   }
   dn <- dim(lambda)
   if(dn[1]==1){
-    logLiklihood2 <- -sum(lambda*diff(time)[1])
+    #logLiklihood2 <- -sum(lambda*diff(time)[1])
+    logLiklihood2 <- -1/2*sum((lambda[1:(length(lambda)-1)]+lambda[2:(length(lambda))])*diff(time)[1])
+
     logLiklihood1 <- sum(log(lambda)*lastEnv$CountVar)
 
     # logLiklihood2 <- -sum(lambda*diff(time))
