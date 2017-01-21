@@ -436,7 +436,7 @@ rNIG <- function(x,alpha,beta,delta,mu,Lambda){
   if(missing(Lambda))
    Lambda <- NA
 
-  if(is.na(Lambda)){
+  if(any(is.na(Lambda)==TRUE) & length(Lambda)==1){
     ## univariate case
     gamma <- sqrt(alpha^2 - beta^2)
     if(gamma <0){
