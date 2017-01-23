@@ -312,19 +312,22 @@ function(object){
     is.cogarch <- FALSE
     is.poisson <- is.Poisson(mod)
 
-    if(length(mod@drift)>0) has.drift <- TRUE
-    if(length(mod@diffusion)>0) has.diff <- TRUE
+    if(length(mod@drift)>0 & !all(as.character(mod@drift) %in% c("(0)","expression((0))"))) has.drift <- TRUE
+    if(length(mod@diffusion)>0 & !all(as.character(mod@diffusion) %in% c("(0)", "expression((0))"))) has.diff <- TRUE
     if(length(mod@jump.coeff)>0) has.levy <- TRUE
-    if(!is.null(mod@hurst)) has.fbm <- TRUE
-    
-    if( has.drift | has.diff ) is.wienerdiff <- TRUE
+    if(!is.null(mod@hurst)){
+     if(mod@hurst != 0.5)
+      has.fbm <- TRUE
+    }
+    if( has.diff ) is.wienerdiff <- TRUE
+    #if( has.drift | has.diff ) is.wienerdiff <- TRUE
     if( has.fbm  ) is.fracdiff <- TRUE
     if( has.levy ) is.jumpdiff <- TRUE
     ldif <- 0
     if(length(mod@diffusion)>0)
      ldif <- length(mod@diffusion[[1]])
     if(ldif==1 & (length(mod@diffusion)==0)){
-     if( as.character(mod@diffusion[[1]]) == "(0)" ){
+     if( as.character(mod@diffusion[[1]]) %in% c("(0)","expression(0)") ){
       has.diff <- FALSE
       is.wienerdiff <- FALSE
       is.fracdiff <- FALSE
@@ -337,10 +340,11 @@ function(object){
       is.wienerdiff <- FALSE
       is.fracdiff <- FALSE
     }
-      
+    
     if( is.wienerdiff | is.fracdiff | is.jumpdiff  ){
         if( is.wienerdiff & ! is.carma & !is.poisson & !is.cogarch){
          cat("\nDiffusion process")
+         if(!has.drift) cat(", driftless")
          if( is.fracdiff ){
              if(!is.na(mod@hurst)){
                  if(mod@hurst!=0.5){
@@ -358,15 +362,16 @@ function(object){
         if(is.poisson)
           cat("\nCompound Poisson process")
           
-        if( (is.jumpdiff & ! is.cogarch) ){
+        if( (is.jumpdiff & !is.cogarch) ){
             if( (is.wienerdiff | is.carma) & !is.poisson ){
                 cat(" with Levy jumps")
             } else {
                 if(!is.poisson)
-                cat("Levy jump process")
+                cat("Levy process")
             }
         }else{
-          cat(" with Levy jumps")
+          if(is.jumpdiff)
+           cat(" with Levy jumps")
         }
         
         cat(sprintf("\nNumber of equations: %d", mod@equation.number))
