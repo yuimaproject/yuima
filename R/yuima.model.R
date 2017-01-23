@@ -166,6 +166,10 @@ setModel <- function(drift=NULL,
 
       if(dim(jump.coeff)[2]!=1){
         intensity <- NULL
+        if(is.null(names(measure)) || names(measure)=="df"){
+          names(measure) <- "df"
+        }
+
         df <- as.list(measure[["df"]])
         if(any(measure.type=="CP")){
           intensity <- measure[["intensity"]]

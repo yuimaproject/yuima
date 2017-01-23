@@ -6,22 +6,34 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
                                my.envd2=NULL,my.envd3=NULL){
   param<-unlist(param)
 
-  IntLambda<-InternalConstractionIntensity(param,my.envd1,
+  IntLambda<-InternalConstractionIntensity2(param,my.envd1,
                                            my.envd2,my.envd3)
+
+  # IntLambda<-InternalConstractionIntensity(param,my.envd1,
+  #                                          my.envd2,my.envd3)
   Index<-my.envd3$gridTime
-  Integr1 <- -sum(IntLambda[-length(IntLambda)]*diff(Index))
+  Integr1 <- -sum(IntLambda[-length(IntLambda)]*diff(Index),na.rm=TRUE)
+  # if(is.nan(Integr1)){
+  #   Integr1 <- -10^6
+  # }
   cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data))
-  Integr2<- sum(log(IntLambda[-1][cond2>0]))
+  Integr2<- sum(log(IntLambda[-1][cond2>0]),na.rm=TRUE)
+  # if(is.nan(Integr2)){
+  #   Integr2 <- -10^6
+  # }
   logLik <- Integr1+Integr2
-  cat("\n ",logLik)
+  cat("\n ",logLik, param)
   return(-logLik)
 }
+
 
 quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = list(),
                             lower, upper, call, ...){
 
   yuimaPpr->yuimaPPr
   parLambda->param
+  gfun<-yuimaPPr@gFun@formula
+
   gfun<-yuimaPPr@gFun@formula
 
   dimIntegr <- length(yuimaPPr@Kernel@Integrand@IntegrandList)
@@ -82,18 +94,24 @@ quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = l
     assign("NamesIntgra", NamesIntegrandExpr, envir=my.envd1)
     #dN
     namedX <-NULL
+    namedJumpTimeX <- NULL
     for(i in c(1:length(yuimaPPr@Kernel@variable.Integral@var.dx))){
       if(yuimaPPr@Kernel@variable.Integral@var.dx[i] %in% yuimaPPr@Ppr@counting.var){
         cond <- yuimaPPr@model@solve.variable %in% yuimaPPr@Kernel@variable.Integral@var.dx[i]
         namedX<-c(namedX,paste0("d",yuimaPPr@Kernel@variable.Integral@var.dx[i]))
+        namedJumpTimeX <-c(namedJumpTimeX,paste0("JumpTime.d",yuimaPPr@Kernel@variable.Integral@var.dx[i]))
         dummyData <- diff(as.numeric(yuimaPPr@data@original.data[,cond]))# We consider only Jump
         dummyJumpTime <- gridTime[-1][dummyData>0]
         dummyData2 <- diff(unique(cumsum(dummyData)))
-        dummyData3 <- zoo(dummyData2,order.by = dummyJumpTime)
+        #dummyData3 <- zoo(dummyData2,order.by = dummyJumpTime)
+        dummyData3 <- dummyData2
+        JumpTime <- dummyJumpTime
         assign(paste0("d",yuimaPPr@Kernel@variable.Integral@var.dx[i]), dummyData3 ,envir=my.envd1)
+        assign(paste0("JumpTime.d",yuimaPPr@Kernel@variable.Integral@var.dx[i]), dummyJumpTime ,envir=my.envd1)
       }
     }
     assign("namedX",namedX, envir = my.envd1)
+    assign("namedJumpTimeX",namedJumpTimeX, envir = my.envd1)
     assign("var.time",yuimaPPr@Kernel@variable.Integral@var.time,envir=my.envd1)
     assign("t.time",yuimaPPr@Kernel@variable.Integral@upper.var,envir=my.envd1)
 
@@ -144,10 +162,13 @@ quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = l
   assign("Integrand2",Integrand2,envir=my.envd3)
   assign("Integrand2expr",Integrand2expr,envir=my.envd3)
 
-  assign("gridTime",gridTime,envir=my.envd3)
+  assign("gridTime",as.numeric(gridTime),envir=my.envd3)
   assign("Univariate",Univariate,envir=my.envd3)
   assign("ExistdN",ExistdN,envir=my.envd3)
   assign("ExistdX",ExistdX,envir=my.envd3)
+
+
+
   out<-NULL
 
   if(length(lower)==0 && length(upper)>0 && length(fixed)==0){
@@ -211,6 +232,202 @@ quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = l
   return(out)
 
 }
+
+
+# quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = list(),
+#                             lower, upper, call, ...){
+#
+#   yuimaPpr->yuimaPPr
+#   parLambda->param
+#   gfun<-yuimaPPr@gFun@formula
+#
+#   dimIntegr <- length(yuimaPPr@Kernel@Integrand@IntegrandList)
+#   Integrand2 <- character(length=dimIntegr)
+#   for(i in c(1:dimIntegr)){
+#     Integrand1 <- as.character(yuimaPPr@Kernel@Integrand@IntegrandList[[i]])
+#     timeCond <- paste0(" * (",yuimaPPr@Kernel@variable.Integral@var.time," < ",yuimaPPr@Kernel@variable.Integral@upper.var,")")
+#     Integrand2[i] <-paste0(Integrand1,timeCond)
+#   }
+#
+#   Integrand2<- matrix(Integrand2,yuimaPPr@Kernel@Integrand@dimIntegrand[1],yuimaPPr@Kernel@Integrand@dimIntegrand[2])
+#
+#
+#   for(j in c(1:yuimaPPr@Kernel@Integrand@dimIntegrand[2])){
+#     Integrand2[,j]<-paste0(Integrand2[,j]," * d",yuimaPPr@Kernel@variable.Integral@var.dx[j])
+#   }
+#   colnames(Integrand2) <- paste0("d",yuimaPPr@Kernel@variable.Integral@var.dx)
+#   NamesIntegrandExpr <- as.character(matrix(colnames(Integrand2), dim(Integrand2)[1],dim(Integrand2)[2], byrow = TRUE))
+#   Integrand2expr<- parse(text=Integrand2)
+#
+#   gridTime <- time(yuimaPPr@data@original.data)
+#
+#   yuimaPPr@Kernel@variable.Integral@var.dx
+#   if(any(yuimaPPr@Kernel@variable.Integral@var.dx %in% yuimaPPr@model@solve.variable)){
+#     my.envd1<-new.env()
+#     ExistdN<-TRUE
+#   }else{
+#     ExistdN<-FALSE
+#   }
+#   Univariate<-FALSE
+#   if(length(yuimaPPr@Ppr@counting.var)==1){
+#     Univariate<-TRUE
+#   }
+#   if(any(!(yuimaPPr@Kernel@variable.Integral@var.dx %in% yuimaPPr@model@solve.variable))){
+#     my.envd2<-new.env()
+#     ExistdX<-TRUE
+#   }else{
+#     my.envd2<-new.env()
+#     ExistdX<-FALSE
+#   }
+#
+#   my.envd3 <- new.env()
+#   namesparam<-names(param)
+#   if(!(all(namesparam %in% yuimaPPr@Ppr@allparamPpr) && length(namesparam)==length(yuimaPPr@Ppr@allparamPpr))){
+#     return(NULL)
+#   }
+#
+#   # construction my.envd1
+#   if(ExistdN){
+#
+#     #CountingVariable
+#     for(i in c(1:length(yuimaPPr@Ppr@counting.var))){
+#       cond <- yuimaPPr@Ppr@counting.var[i] %in% yuimaPPr@model@solve.variable
+#       dummyData <-unique(yuimaPPr@data@original.data[,cond])[-1]
+#       assign(yuimaPPr@Ppr@counting.var[i], dummyData,envir=my.envd1)
+#     }
+#     # Names expression
+#     assign("NamesIntgra", NamesIntegrandExpr, envir=my.envd1)
+#     #dN
+#     namedX <-NULL
+#     for(i in c(1:length(yuimaPPr@Kernel@variable.Integral@var.dx))){
+#       if(yuimaPPr@Kernel@variable.Integral@var.dx[i] %in% yuimaPPr@Ppr@counting.var){
+#         cond <- yuimaPPr@model@solve.variable %in% yuimaPPr@Kernel@variable.Integral@var.dx[i]
+#         namedX<-c(namedX,paste0("d",yuimaPPr@Kernel@variable.Integral@var.dx[i]))
+#         dummyData <- diff(as.numeric(yuimaPPr@data@original.data[,cond]))# We consider only Jump
+#         dummyJumpTime <- gridTime[-1][dummyData>0]
+#         dummyData2 <- diff(unique(cumsum(dummyData)))
+#         dummyData3 <- zoo(dummyData2,order.by = dummyJumpTime)
+#         assign(paste0("d",yuimaPPr@Kernel@variable.Integral@var.dx[i]), dummyData3 ,envir=my.envd1)
+#       }
+#     }
+#     assign("namedX",namedX, envir = my.envd1)
+#     assign("var.time",yuimaPPr@Kernel@variable.Integral@var.time,envir=my.envd1)
+#     assign("t.time",yuimaPPr@Kernel@variable.Integral@upper.var,envir=my.envd1)
+#
+#     # Covariates
+#     if(length(yuimaPPr@Ppr@covariates)>1){
+#       # Covariates should be identified at jump time
+#       return(NULL)
+#     }
+#
+#   }
+#   # end coonstruction my.envd1
+#
+#   # construction my.envd2
+#   if(ExistdX){
+#     #Covariate
+#
+#     #CountingVariable
+#     for(i in c(1:length(yuimaPPr@Ppr@counting.var))){
+#       cond <- yuimaPPr@Ppr@counting.var[i] %in% yuimaPPr@model@solve.variable
+#       dummyData <-yuimaPPr@data@original.data[,cond]
+#       assign(yuimaPPr@Ppr@counting.var[i], dummyData,envir=my.envd1)
+#     }
+#
+#
+#   }else{
+#     assign("KerneldX",NULL,envir=my.envd2)
+#   }
+#
+#   # end construction my.envd2
+#
+#   # construction my.envd3
+#
+#   #Covariate
+#
+#   #CountingVariable
+#   for(i in c(1:length(yuimaPPr@Ppr@counting.var))){
+#     cond <- yuimaPPr@Ppr@counting.var[i] %in% yuimaPPr@model@solve.variable
+#     dummyData <-yuimaPPr@data@original.data[,cond]
+#     assign(yuimaPPr@Ppr@counting.var[i], dummyData,envir=my.envd3)
+#   }
+#   #time
+#   assign(yuimaPPr@model@time.variable, gridTime, my.envd3)
+#
+#   #Model
+#   assign("YUIMA.PPR",yuimaPPr,envir=my.envd3)
+#   assign("namesparam",namesparam,envir=my.envd3)
+#   assign("gfun",gfun,envir=my.envd3)
+#   assign("Integrand2",Integrand2,envir=my.envd3)
+#   assign("Integrand2expr",Integrand2expr,envir=my.envd3)
+#
+#   assign("gridTime",gridTime,envir=my.envd3)
+#   assign("Univariate",Univariate,envir=my.envd3)
+#   assign("ExistdN",ExistdN,envir=my.envd3)
+#   assign("ExistdX",ExistdX,envir=my.envd3)
+#   out<-NULL
+#
+#   if(length(lower)==0 && length(upper)>0 && length(fixed)==0){
+#     out <- optim(par=param, fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, upper=upper, ...)
+#
+#   }
+#
+#   if(length(lower)==0 && length(upper)==0 && length(fixed)>0){
+#     out <- optim(par=param, fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, fixed = fixed, ...)
+#
+#   }
+#
+#
+#   if(length(lower)>0 && length(upper)==0 && length(fixed)==0){
+#     out <- optim(par = param,  fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, lower=lower, ...)
+#   }
+#
+#   if(length(lower)>0 && length(upper)>0 && length(fixed)==0){
+#     out <- optim(par=param, fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, upper = upper,
+#                  lower=lower, ...)
+#   }
+#
+#
+#   if(length(lower)==0 && length(upper)>0 && length(fixed)>0){
+#     out <- optim(par=param, fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, upper = upper,
+#                  fixed = fixed,  ...)
+#   }
+#
+#   if(length(lower)>0 && length(upper)==0 && length(fixed)>0){
+#     out <- optim(par=param, fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, lower = lower,
+#                  fixed = fixed, ...)
+#   }
+#
+#
+#   if(length(lower)>0 && length(upper)>0 && length(fixed)>0){
+#     out <- optim(par=param, fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, lower = lower, fixed = fixed, upper = upper, ...)
+#   }
+#
+#
+#   if(is.null(out)){
+#     out <- optim(par=param, fn=Internal.LogLikPPR,
+#                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+#                  method = method, ...)
+#   }
+#
+#
+#   return(out)
+#
+# }
 
 
 lambdaFromData <- function(yuimaPpr, PprData=NULL, parLambda=list()){
