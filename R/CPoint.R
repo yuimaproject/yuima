@@ -11,7 +11,9 @@ qmleL <- function(yuima, t, ...){
     tmp <- subsampling(yuima, grid=grid)
     mydots <- as.list(call)[-1]
     mydots$t <- NULL
-    do.call(qmle, args=mydots)
+    mydots$yuima <- tmp
+    tmp <- do.call("qmle", args=mydots)
+    tmp
 }
 
 qmleR <- function (yuima, t, ...)
@@ -28,7 +30,9 @@ qmleR <- function (yuima, t, ...)
     tmp <- subsampling(yuima, grid = grid)
     mydots <- as.list(call)[-1]
     mydots$t <- NULL
-    do.call(qmle, args=mydots)
+    mydots$yuima <- tmp
+    tmp <- do.call("qmle", args=mydots)
+    tmp
 }
 
 
