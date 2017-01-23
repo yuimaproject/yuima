@@ -312,12 +312,16 @@ function(object){
     is.cogarch <- FALSE
     is.poisson <- is.Poisson(mod)
 
-    if(length(mod@drift)>0 & !all(as.character(mod@drift) %in% c("(0)","expression((0))"))) has.drift <- TRUE
-    if(length(mod@diffusion)>0 & !all(as.character(mod@diffusion) %in% c("(0)", "expression((0))"))) has.diff <- TRUE
-    if(length(mod@jump.coeff)>0) has.levy <- TRUE
-    if(!is.null(mod@hurst) & !is.na(mod@hurst)){
-     if(mod@hurst != 0.5)
-      has.fbm <- TRUE
+    if(length(mod@drift)>0 & !all(as.character(mod@drift) %in% c("(0)","expression((0))"))) { has.drift <- TRUE }
+    if(length(mod@diffusion)>0 & !all(as.character(mod@diffusion) %in% c("(0)", "expression((0))"))) { has.diff <- TRUE}
+    if(length(mod@jump.coeff)>0){ has.levy <- TRUE}
+    
+    if(!is.null(mod@hurst)){
+      if(!is.na(mod@hurst)){
+          if(mod@hurst != 0.5){
+            has.fbm <- TRUE
+          }
+      }
     }
     if( has.diff ) is.wienerdiff <- TRUE
     #if( has.drift | has.diff ) is.wienerdiff <- TRUE
