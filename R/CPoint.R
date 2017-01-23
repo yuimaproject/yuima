@@ -1,37 +1,35 @@
 qmleL <- function(yuima, t, ...){
-	
-
+    call <- match.call()
 	times <- time(yuima@data@zoo.data[[1]])
 	minT <- as.numeric(times[1])
 	maxT <- as.numeric(times[length(times)])
-	
 	if(missing(t) )
 	 t <- mean(c(minT,maxT))
-
 	if(t<minT || t>maxT)
 	  yuima.stop("time 't' out of bounds")
 	grid <- times[which(times<=t)]
-	qmle(subsampling(yuima, grid=grid), ...)
+    tmp <- subsampling(yuima, grid=grid)
+    mydots <- as.list(call)[-1]
+    mydots$t <- NULL
+    do.call(qmle, args=mydots)
 }
 
-qmleR <- function(yuima, t, ...){
-	
-	
-	times <- time(yuima@data@zoo.data[[1]])
-	minT <- as.numeric(times[1])
-	maxT <- as.numeric(times[length(times)])
-	
-	if(missing(t) )
-	t <- mean(c(minT,maxT))
-	
-	if(t<minT || t>maxT)
-	 yuima.stop("time 't' out of bounds")
-	grid <- times[which(times>=t)]
-	qmle(subsampling(yuima, grid=grid), ...)
+qmleR <- function (yuima, t, ...)
+{
+    call <- match.call()
+    times <- time(yuima@data@zoo.data[[1]])
+    minT <- as.numeric(times[1])
+    maxT <- as.numeric(times[length(times)])
+    if (missing(t))
+    t <- mean(c(minT, maxT))
+    if (t < minT || t > maxT)
+    yuima.stop("time 't' out of bounds")
+    grid <- times[which(times >= t)]
+    tmp <- subsampling(yuima, grid = grid)
+    mydots <- as.list(call)[-1]
+    mydots$t <- NULL
+    do.call(qmle, args=mydots)
 }
-
-
-
 
 
 CPointOld <- function(yuima, param1, param2, print=FALSE, plot=FALSE){
