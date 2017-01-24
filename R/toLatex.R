@@ -339,39 +339,79 @@ toLatex.yuima <- function (object, ...)
         
     } else{ 
     n.eq <- mod@equation.number
-    dr <- paste("\\left(\\begin{array}{c}\n")
+    dr <- NULL
+    if(n.eq>1)
+     dr <- paste("\\left(\\begin{array}{c}\n")
     for (i in 1:n.eq) {
-            dr <- paste(dr, substr(mod@drift[i], 2, nchar(mod@drift[i]) -1), "\\\\ \n")
-        #      dr <- paste(dr, substr(mod@drift[i], 3, nchar(mod@drift[i]) - 2), "\\\\ \n")
+            dr <- paste(dr, substr(mod@drift[i], 2, nchar(mod@drift[i]) -1))
+            if(n.eq>1)
+             dr <- paste(dr, "\\\\ \n")
+            #      dr <- paste(dr, substr(mod@drift[i], 3, nchar(mod@drift[i]) - 2), "\\\\ \n")
     }
     #
-    dr <- paste(dr, "\\end{array}\\right)", sprintf("d%s", mod@time.variable))
+    if(n.eq>1)
+     dr <- paste(dr, "\\end{array}\\right)")
+    
+    dr <- paste(dr,  sprintf("d%s", mod@time.variable))
     n.n <- mod@noise.number
-    df <- paste(sprintf("\\left[\\begin{array}{%s}\n",paste(rep("c",n.n),sep="",collapse="")))
+    
+    df <- NULL
+    if(n.eq>1 & n.n>1)
+     df <- paste(sprintf("\\left[\\begin{array}{%s}\n",paste(rep("c",n.n),sep="",collapse="")))
     for (i in 1:n.eq) {
         #df <- paste(df, paste(mod@diffusion[[i]], collapse = "&"))
-                df <- paste(df, paste(substr(mod@diffusion[[i]], 2, nchar(mod@diffusion[[i]]) - 1)  , collapse = "&"))
-        df <- paste(df, "\\\\ \n")
+        if( n.eq>1 & n.n>1){
+            df <- paste(df, paste(substr(mod@diffusion[[i]], 2, nchar(mod@diffusion[[i]]) - 1)  , collapse = "&"))
+            df <- paste(df, "\\\\ \n")
+        } else {
+            df <- paste(df, paste(substr(mod@diffusion[[i]], 2, nchar(mod@diffusion[[i]]) - 1)  , collapse = ""))
+        }
     }
-    df <- paste(df, "\\end{array}\\right]")
+    
+    if(n.eq>1 & n.n>1)
+     df <- paste(df, "\\end{array}\\right]")
+     
+     
 # We consider the Jump 6/11
+    dj <- NULL
     if (length(mod@jump.coeff)>=1){
-      dj<-paste("\\left(\\begin{array}{c}\n")
+      if(n.eq>1)
+       dj<-paste("\\left(\\begin{array}{c}\n")
       for (i in 1:n.eq) {
-        dj <- paste(dj, substr(mod@jump.coeff[i], 2, nchar(mod@jump.coeff[i]) - 1), "\\\\ \n")
+          if(n.eq>1){
+         dj <- paste(dj, substr(mod@jump.coeff[[i]], 2, nchar(mod@jump.coeff[[i]]) - 1), "\\\\ \n")
+          } else {
+              dj <- paste(dj, substr(mod@jump.coeff[[i]], 2, nchar(mod@jump.coeff[[i]]) - 1))
+          }
         #dj <- paste(dj, mod@jump.coeff[i], "\\\\ \n")
         
       }
+      if(n.eq>1)
       dj <- paste(dj, "\\end{array}\\right)", sprintf("d %s", mod@jump.variable))
     }
+    wn <- NULL
+    if( n.n>1){
+     wn <- paste("\\left(\\begin{array}{c}\n")
+    }
+    if(n.n>1){
+     wn <- paste(wn, paste(sprintf("dW%s", 1:n.n), sep = "", collapse = "\\\\ "))
+    } else {
+     wn <- paste(wn, "dW1")
+    }
+    if( n.n>1){
+        wn <- paste(wn, "\n \\end{array}\\right)")
+    }
     
-    wn <- paste("\\left(\\begin{array}{c}\n")
-    wn <- paste(wn, paste(sprintf("dW%s", 1:n.n), sep = "", collapse = "\\\\ "))
-    wn <- paste(wn, "\n \\end{array}\\right)")
-    st <- paste("\\left(\\begin{array}{c}\n")
-    st <- paste(st, paste(sprintf("d%s", mod@solve.variable), 
-						  sep = "", collapse = "\\\\ "))
-    st <- paste(st, "\n \\end{array}\\right)")
+    st <- NULL
+    if(n.eq>1)
+     st <- paste("\\left(\\begin{array}{c}\n")
+     for(i in 1:n.eq){
+      st <- paste(st, sprintf("d%s", mod@solve.variable[i]))
+      if(n.eq>1)
+       st <- paste(st,  " \\\\ ")
+     }
+     if(n.eq>1)
+      st <- paste(st, "\n \\end{array}\\right)")
     mysymb <- c("*", "alpha", "beta", "gamma", "delta", "rho", 
 				"theta","sigma","mu", "sqrt")
 #     myrepl <- c(" \\cdot ", "\\alpha ", "\\beta ", "\\gamma ", 
@@ -394,27 +434,41 @@ toLatex.yuima <- function (object, ...)
     body <- c(body, paste(dr))
     body <- c(body, paste(" +"))
     body <- c(body, paste(df))
-    body <- c(body, paste("'"))
+    #    body <- c(body, paste(""))
     body <- c(body, paste(wn))
     # For Jump 6/11
     if (length(mod@jump.coeff)>=1){
       body <- c(body, paste(" +"))
       body <- c(body, paste(dj))
+      body <- c(body, "dZ")
+      
     }
     
+    
+ 
     body <- c(body, paste("$$"))
 
     body <- c(body, paste("$$"))
 # For Initial Conditions     
     numb.solve.var <- length(mod@solve.variable)
-    bodyaus <-c( paste("\\left(\\begin{array}{c}\n"))
+    
+    bodyaus <- NULL
+    if(numb.solve.var >1){
+     bodyaus <- "\\left(\\begin{array}{c}\n"
+    }
+    
     for (i in 1:numb.solve.var) {
-      bodyaus <-paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 1),sep="="), "\\\\ \n")
+        bodyaus <-  paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 1),sep="="))
+        if(numb.solve.var>1)
+          bodyaus <-paste(bodyaus, "\\\\ \n")
       # paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 3, nchar(mod@xinit[i]) - 2),sep="="), "\\\\ \n")
       #     paste(bodyaus, paste(paste(mod@solve.variable[i],"(0)",sep=""),substr(mod@xinit[i], 2, nchar(mod@xinit[i]) - 1),sep="="), "\\\\ \n")
     }
     
-    bodyaus <- paste(bodyaus, "\\end{array}\\right)")
+    if(numb.solve.var >1){
+     bodyaus <- paste(bodyaus, "\\end{array}\\right)")
+    }
+    
     for (i in 1:ns) {
       bodyaus <- gsub(mysymb[i], myrepl[i], bodyaus, fixed = "TRUE")
     }
