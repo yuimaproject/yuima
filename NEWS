@@ -43,3 +43,4 @@
 2016/07/08: fixed some bugs in llag.R and cce_functions.c
 2016/10/04: modified setMultiModel.R, sim.euler.R and yuima.model.R to generate nts and pts process
 2016/12/16: added rGIG, rGH, dGIG and dGH in rng.R and the corresponding c language file YU
+2017/01/25: modified sim.euler.R and added euler.c to implement the Euler-Maruyama scheme by the C code (only the diffusion case)

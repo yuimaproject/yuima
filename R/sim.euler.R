@@ -101,58 +101,69 @@ euler<-function(xinit,yuima,dW,env){
 
   if(!length(sdeModel@measure.type)){ ##:: Wiener Proc
     ##:: using Euler-Maruyama method
-
-    if(var.in.diff & (!is.Poisson(sdeModel))){  ##:: diffusions have state variables and it is not Poisson
-      ##:: calcurate difference eq.
-      for( i in 1:n){
-        # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i]
-        dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] # LM
-        X_mat[,i+1] <- dX
-      }
-    }else{  ##:: diffusions have no state variables (not use p.b(). faster)
-      sde.tics <- seq(0, Terminal, length=(n+1))
-      sde.tics <- sde.tics[2:length(sde.tics)]
-
-      X_mat[, 1] <- dX
-
-      ##:: assign names of variables
-      for(i in 1:length(modelstate)){
-        assign(modelstate[i], dX[i])
-      }
-      assign(modeltime, sde.tics)
-      t.size <- length(sde.tics)
-
-      ##:: solve diffusion term
-      if(has.drift){
-        pbdata <- matrix(0, d.size*(r.size+1), t.size)
-        for(i in 1:d.size){
-          pbdata[(i-1)*(r.size+1)+1, ] <- eval(V0[i], env)
-          for(j in 1:r.size){
-            pbdata[(i-1)*(r.size+1)+j+1, ] <- eval(V[[i]][j], env)
-          }
+    
+    if(0){ # old version (Jan 25, 2017)
+      if(var.in.diff & (!is.Poisson(sdeModel))){  ##:: diffusions have state variables and it is not Poisson
+        ##:: calcurate difference eq.
+        for( i in 1:n){
+          # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i]
+          dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] # LM
+          X_mat[,i+1] <- dX
         }
-        dim(pbdata)<-(c(r.size+1, d.size*t.size))
-      }else{
-        pbdata <- matrix(0, d.size*r.size, t.size)
-        if(!is.Poisson(sdeModel)){
-         for(i in 1:d.size){
-          for(j in 1:r.size){
-           pbdata[(i-1)*r.size+j, ] <- eval(V[[i]][j], env)
-          } # for j
-         } # for i
-        } # !is.Poisson
-        dim(pbdata)<-(c(r.size, d.size*t.size))
-      } # else
-
-      pbdata <- t(pbdata)
-
-      ##:: calcurate difference eq.
-      for( i in 1:n){
-        if(!is.Poisson(sdeModel))
-         dX <- dX + pbdata[((i-1)*d.size+1):(i*d.size), ] %*% dW[, i]
-        X_mat[, i+1] <- dX
+      }else{  ##:: diffusions have no state variables (not use p.b(). faster)
+        sde.tics <- seq(0, Terminal, length=(n+1))
+        sde.tics <- sde.tics[2:length(sde.tics)]
+        
+        X_mat[, 1] <- dX
+        
+        ##:: assign names of variables
+        for(i in 1:length(modelstate)){
+          assign(modelstate[i], dX[i])
+        }
+        assign(modeltime, sde.tics)
+        t.size <- length(sde.tics)
+        
+        ##:: solve diffusion term
+        if(has.drift){
+          pbdata <- matrix(0, d.size*(r.size+1), t.size)
+          for(i in 1:d.size){
+            pbdata[(i-1)*(r.size+1)+1, ] <- eval(V0[i], env)
+            for(j in 1:r.size){
+              pbdata[(i-1)*(r.size+1)+j+1, ] <- eval(V[[i]][j], env)
+            }
+          }
+          dim(pbdata)<-(c(r.size+1, d.size*t.size))
+        }else{
+          pbdata <- matrix(0, d.size*r.size, t.size)
+          if(!is.Poisson(sdeModel)){
+            for(i in 1:d.size){
+              for(j in 1:r.size){
+                pbdata[(i-1)*r.size+j, ] <- eval(V[[i]][j], env)
+              } # for j
+            } # for i
+          } # !is.Poisson
+          dim(pbdata)<-(c(r.size, d.size*t.size))
+        } # else
+        
+        pbdata <- t(pbdata)
+        
+        ##:: calcurate difference eq.
+        for( i in 1:n){
+          if(!is.Poisson(sdeModel))
+            dX <- dX + pbdata[((i-1)*d.size+1):(i*d.size), ] %*% dW[, i]
+          X_mat[, i+1] <- dX
+        }
       }
     }
+    
+    # new version (Jan 25, 2017)
+    b <- parse(text=paste("c(",paste(as.character(V0),collapse=","),")"))
+    vecV <- parse(text=paste("c(",paste(as.character(unlist(V)),collapse=","),")"))
+    
+    X_mat <- .Call("euler", dX, Initial, as.integer(r.size), 
+                   rep(1, n) * delta, dW, modeltime, modelstate, quote(eval(b, env)), 
+                   quote(eval(vecV, env)), env, new.env())
+    
     #tsX <- ts(data=t(X_mat), deltat=delta , start=0)
     tsX <- ts(data=t(X_mat), deltat=delta , start = yuima@sampling@Initial) #LM
   }else{ ##:: Levy
