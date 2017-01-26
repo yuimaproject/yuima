@@ -1,0 +1,1485 @@
+### R code from vignette source '/Users/jago/Dropbox (VOICES)/yuima-book/chapter2.Rnw'
+
+###################################################
+### code chunk number 1: chapter2.Rnw:3-6
+###################################################
+options(width=60)
+options(continue="  ")
+require(yuima)
+
+
+###################################################
+### code chunk number 2: chapter2.Rnw:25-28
+###################################################
+mod1 <- setModel(drift = "-3*x", diffusion = "1/(1+x^2)", 
+ xinit="rnorm(1)")
+str(mod1)
+
+
+###################################################
+### code chunk number 3: plot-mod1diff
+###################################################
+set.seed(123)
+x1 <- simulate(mod1)
+x2 <- simulate(mod1)
+par(mfrow=c(1,2))
+plot(x1)
+plot(x2)
+
+
+###################################################
+### code chunk number 4: chapter2.Rnw:42-51
+###################################################
+pdf("figures/plot-mod1diff.pdf",width=9,height=4)
+par(mar=c(4,4,0,0))
+set.seed(123)
+x1 <- simulate(mod1)
+x2 <- simulate(mod1)
+par(mfrow=c(1,2))
+plot(x1)
+plot(x2)
+dev.off()
+
+
+###################################################
+### code chunk number 5: chapter2.Rnw:58-62
+###################################################
+mod2 <- setModel(drift = "-3*x", diffusion = "1/(1+x^2)", 
+ xinit="rnorm(1, mean=mu)")
+mod2
+str(mod2)
+
+
+###################################################
+### code chunk number 6: chapter2.Rnw:66-67 (eval = FALSE)
+###################################################
+## x <- simulate(mod2, true.par=list(mu=1))
+
+
+###################################################
+### code chunk number 7: plot-mod1diff2
+###################################################
+mod1 <- setModel(drift = "-3*x", diffusion = "1/(1+x^2)")
+set.seed(123)
+x1 <- simulate(mod1, xinit=1)
+x2 <- simulate(mod1, xinit=expression(rnorm(1)))
+x3 <- simulate(mod2, xinit=3)
+par(mfrow=c(1,3))
+plot(x1, main="mod1, xinit=1")
+plot(x2, main="mod1, xinit=expression(rnorm(1))")
+plot(x3, main="mod2, xinit=3")
+
+
+###################################################
+### code chunk number 8: chapter2.Rnw:82-94
+###################################################
+pdf("figures/plot-mod1diff2.pdf",width=9,height=4)
+par(mar=c(4,4,2,0))
+mod1 <- setModel(drift = "-3*x", diffusion = "1/(1+x^2)")
+set.seed(123)
+x1 <- simulate(mod1, xinit=1)
+x2 <- simulate(mod1, xinit=expression(rnorm(1)))
+x3 <- simulate(mod2, xinit=3)
+par(mfrow=c(1,3))
+plot(x1, main="mod1, xinit=1")
+plot(x2, main="mod1, xinit=expression(rnorm(1))")
+plot(x3, main="mod2, xinit=3")
+dev.off()
+
+
+###################################################
+### code chunk number 9: chapter2.Rnw:109-110
+###################################################
+ou <- setModel(drift="-theta*x", diffusion=1)
+
+
+###################################################
+### code chunk number 10: chapter2.Rnw:119-120
+###################################################
+gBm <- setModel(drift="mu*x", diffusion="sigma*x")
+
+
+###################################################
+### code chunk number 11: chapter2.Rnw:131-132
+###################################################
+vasicek <- setModel(drift="theta1-theta2*x", diffusion="theta3")
+
+
+###################################################
+### code chunk number 12: chapter2.Rnw:145-146
+###################################################
+cev <- setModel(drift="mu*x", diffusion="sigma*x^gamma")
+
+
+###################################################
+### code chunk number 13: chapter2.Rnw:157-158
+###################################################
+cir <- setModel(drift="theta1-theta2*x", diffusion="theta3*sqrt(x)")
+
+
+###################################################
+### code chunk number 14: chapter2.Rnw:168-169
+###################################################
+ckls <- setModel(drift="theta1-theta2*x", diffusion="theta3*x^theta4")
+
+
+###################################################
+### code chunk number 15: chapter2.Rnw:241-243
+###################################################
+hyper1 <- setModel( diff="sigma", 
+ drift="(sigma/2)^2*(beta-alpha*((x-mu)/(sqrt(delta^2+(x-mu)^2))))")
+
+
+###################################################
+### code chunk number 16: chapter2.Rnw:246-248
+###################################################
+hyper1
+str(hyper1@parameter)
+
+
+###################################################
+### code chunk number 17: chapter2.Rnw:277-280
+###################################################
+hyper2 <- setModel(drift="0", 
+ diffusion = "sigma*alpha*exp(0.5*sqrt(delta^2+(x-mu)^2)-
+  beta*(x-mu))")
+
+
+###################################################
+### code chunk number 18: chapter2.Rnw:283-285
+###################################################
+hyper2
+str(hyper2@parameter)
+
+
+###################################################
+### code chunk number 19: chapter2.Rnw:304-322
+###################################################
+set.seed(123)
+modA <- setModel(drift="-0.3*x", diffusion=1)
+modB <- setModel(drift="0.3*x", diffusion=1)
+
+## Set the model in an `yuima' object with a sampling scheme. 
+Terminal <- 1
+n <- 500
+mod.sampling <- setSampling(Terminal=Terminal, n=n)
+yuima1 <- setYuima(model=modA, sampling=mod.sampling)
+yuima2 <- setYuima(model=modB, sampling=mod.sampling)
+
+##use original increment
+delta <- Terminal/n
+my.dW <- matrix( rnorm(n , 0, sqrt(delta)), nrow=1, ncol=n)
+
+## Solve SDEs using Euler-Maruyama method.
+y1 <- simulate(yuima1, xinit=1, increment.W=my.dW)
+y2 <- simulate(yuima2, xinit=1, increment.W=my.dW)
+
+
+###################################################
+### code chunk number 20: plot-modAB
+###################################################
+plot(y1)
+lines(get.zoo.data(y2)[[1]], col="red",lty=3)
+
+
+###################################################
+### code chunk number 21: chapter2.Rnw:330-335
+###################################################
+pdf("figures/plot-modAB.pdf",width=9,height=4)
+par(mar=c(4,4,2,0))
+plot(y1)
+lines(get.zoo.data(y2)[[1]], col="red",lty=3)
+dev.off()
+
+
+###################################################
+### code chunk number 22: chapter2.Rnw:390-394
+###################################################
+sol <- c("x1","x2") # variable for numerical solution
+a <- c("-3*x1","-x1-2*x2")   # drift vector 
+b <- matrix(c("1","x1","0","3","x2","0"),2,3)  #  diffusion matrix
+mod3 <- setModel(drift = a, diffusion = b, solve.variable = sol)
+
+
+###################################################
+### code chunk number 23: sim-mod3
+###################################################
+set.seed(123)
+X <- simulate(mod3)
+plot(X, plot.type="single",lty=1:2)
+
+
+###################################################
+### code chunk number 24: plot-mod3
+###################################################
+pdf("figures/plot-mod3.pdf",width=9,height=4)
+par(mar=c(4,4,0,0))
+plot(X, plot.type="single",lty=1:2)
+dev.off()
+
+
+###################################################
+### code chunk number 25: chapter2.Rnw:451-484
+###################################################
+mu <- 0.1
+sig <- 0.2
+rho <- -0.7
+
+g <- function(t) {0.4 + (0.1 + 0.2*t)* exp(-2*t)}
+
+
+f1 <- function(t, x1, x2, x3) {
+    ret <- 0
+    if(x1 > 0 && x2 > 0) ret <- x2*exp(log(x1)*2/3)
+    return(ret)
+}
+
+f2 <- function(t, x1, x2, x3) {
+     ret <- 0
+     if(x3 > 0) ret <- rho*sig*x3
+     return(ret)
+}
+
+f3 <- function(t, x1, x2, x3) {
+     ret <- 0
+     if(x3 > 0) ret <- sqrt(1-rho^2)*sig*x3
+     return(ret)
+}
+
+diff.coef.matrix <- matrix(c("f1(t,x1,x2,x3)",
+ "f2(t,x1,x2,x3) * g(t)", "f2(t,x1,x2,x3)", "0", 
+     "f3(t,x1,x2,x3)*g(t)", "f3(t,x1,x2,x3)"),  3, 2)
+
+sabr.mod <- setModel(drift = c("0", "mu*g(t)*x3", "mu*x3"), 
+diffusion = diff.coef.matrix, state.variable = c("x1", "x2", "x3"),
+    solve.variable = c("x1", "x2", "x3"))
+str(sabr.mod@parameter)
+
+
+###################################################
+### code chunk number 26: chapter2.Rnw:487-507
+###################################################
+ f2 <- function(t, x1, x2, x3, rho, sig) {
+     ret <- 0
+     if(x3 > 0) ret <- rho*sig*x3
+     return(ret)
+ }
+
+ f3 <- function(t, x1, x2, x3, rho, sig) {
+     ret <- 0
+     if(x3 > 0) ret <- sqrt(1-rho^2)*sig*x3
+     return(ret)
+ }
+
+ diff.coef.matrix <- matrix(c("f1(t,x1,x2,x3)", 
+ "f2(t,x1,x2,x3,rho, sig) * g(t)", "f2(t,x1,x2,x3,rho,sig)", 
+ "0", "f3(t,x1,x2,x3,rho,sig)*g(t)", "f3(t,x1,x2,x3,rho,sig)"),  3, 2)
+
+ sabr.mod <- setModel(drift = c("0", "mu*g(t)*x3", "mu*x3"), 
+ diffusion = diff.coef.matrix, state.variable = c("x1", "x2", "x3"), 
+ solve.variable = c("x1", "x2", "x3"))
+str(sabr.mod@parameter)
+
+
+###################################################
+### code chunk number 27: chapter2.Rnw:535-540
+###################################################
+Sigma <- matrix(c(0.5, 0.7, 0.7, 2), 2, 2)
+C <- chol(Sigma)
+C
+crossprod(C)
+Sigma
+
+
+###################################################
+### code chunk number 28: chapter2.Rnw:558-567
+###################################################
+set.seed(123)
+drift <- c("mu*x1", "kappa*(theta-x2)")
+diffusion <- matrix(c("c11*sqrt(x2)*x1", "0", 
+  "c12*sqrt(x2)*x1", "c22*epsilon*sqrt(x2)"),2,2)
+heston <- setModel(drift=drift, diffusion=diffusion,  
+ state.var=c("x1","x2"))
+X <- simulate(heston, true.par=list(theta=0.5, mu=1.2, kappa=2, 
+ epsilon=0.2, c11=C[1,1], c12=C[1,2], c22=C[2,2]), 
+ xinit=c(100,0.5))
+
+
+###################################################
+### code chunk number 29: plot-heston
+###################################################
+pdf("figures/plot-heston.pdf",width=9,height=6)
+set.seed(123)
+par(mar=c(4,4,0,0))
+plot(X)
+dev.off()
+
+
+###################################################
+### code chunk number 30: chapter2.Rnw:626-633
+###################################################
+ymodel <- setModel(drift="(2-theta2*x)", diffusion="(1+x^2)^theta1")
+n <- 750
+ysamp <- setSampling(Terminal = n^(1/3), n = n)
+yuima <- setYuima(model = ymodel, sampling = ysamp)
+set.seed(123)
+yuima <- simulate(yuima, xinit = 1, 
+true.parameter = list(theta1 = 0.2, theta2 = 0.3))
+
+
+###################################################
+### code chunk number 31: chapter2.Rnw:636-641
+###################################################
+param.init <- list(theta2=0.5,theta1=0.5)
+low.par <-  list(theta1=0, theta2=0)
+upp.par <-  list(theta1=1, theta2=1)
+mle1 <- qmle(yuima, start = param.init,  
+  lower = low.par, upper = upp.par)
+
+
+###################################################
+### code chunk number 32: chapter2.Rnw:645-646
+###################################################
+summary(mle1)
+
+
+###################################################
+### code chunk number 33: chapter2.Rnw:718-720
+###################################################
+prior <- list(theta2=list(measure.type="code",df="dunif(theta2,0,1)"),
+ theta1=list(measure.type="code",df="dunif(theta1,0,1)"))
+
+
+###################################################
+### code chunk number 34: chapter2.Rnw:723-727
+###################################################
+lower <- list(theta1=0,theta2=0)
+upper <- list(theta1=1,theta2=1)
+bayes1 <- adaBayes(yuima, start=param.init, prior=prior,
+ lower=lower,upper=upper)
+
+
+###################################################
+### code chunk number 35: chapter2.Rnw:730-732
+###################################################
+coef(summary(bayes1))
+coef(summary(mle1))
+
+
+###################################################
+### code chunk number 36: chapter2.Rnw:750-763
+###################################################
+n <- 500
+ysamp <- setSampling(Terminal = n^(1/3), n = n)
+yuima <- setYuima(model = ymodel, sampling = ysamp)
+set.seed(123)
+yuima <- simulate(yuima, xinit = 1, 
+true.parameter = list(theta1 = 0.2, theta2 = 0.3))
+param.init <- list(theta2=0.5,theta1=0.5)
+lower <- list(theta1=0, theta2=0) 
+upper <- list(theta1=1, theta2=1)
+mle2 <- qmle(yuima, start =param.init , 
+lower = lower, upper = upper)
+bayes2 <- adaBayes(yuima, start=param.init, prior=prior,
+ lower=lower,upper=upper)
+
+
+###################################################
+### code chunk number 37: chapter2.Rnw:766-768
+###################################################
+coef(summary(bayes2))
+coef(summary(mle2))
+
+
+###################################################
+### code chunk number 38: chapter2.Rnw:775-789
+###################################################
+ymodel <- setModel(drift="(2-theta2*x)", diffusion="(1+x^2)^theta1")
+n <- 100000
+ysamp <- setSampling(delta=0.001, n = n)
+mod <- setYuima(model = ymodel, sampling=ysamp)
+set.seed(123)
+yuima <- simulate(mod, xinit = 1, 
+true.parameter = list(theta1 = 0.2, theta2 = 0.3))
+param.init <- list(theta2=0.5,theta1=0.5)
+yuima0.01 <- subsampling(yuima, 
+ sampling=setSampling(delta=0.01,n=NULL,Terminal=100))
+yuima0.1 <- subsampling(yuima, 
+ sampling=setSampling(delta=0.1,n=NULL,Terminal=100))
+yuima1.0 <- subsampling(yuima, 
+ sampling=setSampling(delta=1,n=NULL,Terminal=100))
+
+
+###################################################
+### code chunk number 39: chapter2.Rnw:791-796
+###################################################
+par(mfrow=c(2,2))
+plot(yuima,main="delta=0.001, n=100000")
+plot(yuima0.01,main="delta=0.01, n=10000")
+plot(yuima0.1,main="delta=0.1, n=1000")
+plot(yuima1.0,main="delta=1.0, n=100")
+
+
+###################################################
+### code chunk number 40: plot-delta
+###################################################
+pdf("figures/plot-delta.pdf",width=9,height=6)
+par(mar=c(4,4,3,0))
+par(mfrow=c(2,2))
+plot(yuima,main="delta=0.001, n=100000")
+plot(yuima0.01,main="delta=0.01, n=10000")
+plot(yuima0.1,main="delta=0.1, n=1000")
+plot(yuima1.0,main="delta=1.0, n=100")
+dev.off()
+
+
+###################################################
+### code chunk number 41: chapter2.Rnw:816-829
+###################################################
+low <- list(theta1=0, theta2=0)
+up <-  list(theta1=1, theta2=1)
+mle0.001 <- qmle(yuima, start = param.init, lower = low, upper = up)
+summary(mle0.001)@coef
+
+mle0.01 <- qmle(yuima0.01, start = param.init, lower = low, upper = up)
+summary(mle0.01)@coef
+
+mle0.1 <- qmle(yuima0.1, start = param.init, lower = low, upper = up)
+summary(mle0.1)@coef
+
+mle1.0 <- qmle(yuima1.0, start = param.init, lower = low, upper = up)
+summary(mle1.0)@coef
+
+
+###################################################
+### code chunk number 42: chapter2.Rnw:832-834
+###################################################
+est <- rbind( t(summary(mle0.001)@coef),  t(summary(mle0.01)@coef),  
+ t(summary(mle0.1)@coef),   t(summary(mle1.0)@coef))
+
+
+###################################################
+### code chunk number 43: chapter2.Rnw:858-862
+###################################################
+library(quantmod)
+getSymbols("AAPL",to="2016-12-31")
+head(AAPL)
+S <- AAPL$AAPL.Adjusted
+
+
+###################################################
+### code chunk number 44: chapter2.Rnw:865-868
+###################################################
+Delta <- 1/252
+gBm <- setModel(drift="mu*x", diffusion="sigma*x")
+mod <- setYuima(model=gBm, data=setData(S, delta=Delta))
+
+
+###################################################
+### code chunk number 45: appl
+###################################################
+set.seed(123)
+plot(S)
+
+
+###################################################
+### code chunk number 46: plot-aapl
+###################################################
+pdf("figures/plot-aapl.pdf",width=9,height=4)
+par(mar=c(4,4,2,0))
+plot(S)
+dev.off()
+
+
+###################################################
+### code chunk number 47: chapter2.Rnw:887-891
+###################################################
+fit <- qmle(mod, start=list(mu=1, sigma=1), 
+  lower=list(mu=0.1, sigma=0.1), 
+  upper=list(mu=100, sigma=10))
+summary(fit)
+
+
+###################################################
+### code chunk number 48: chapter2.Rnw:896-904
+###################################################
+X <- diff(log(S))
+X <- as.numeric(na.omit(diff(log(S))))
+alpha <- mean(X)/Delta
+sigma <- sqrt(var(X)/Delta)
+mu <- alpha +0.5*sigma^2
+mu
+sigma
+coef(fit)
+
+
+###################################################
+### code chunk number 49: chapter2.Rnw:910-914
+###################################################
+getSymbols("DEXUSEU", src="FRED")
+head(DEXUSEU)
+meanCIR <- mean(DEXUSEU, na.rm=TRUE)
+meanCIR
+
+
+###################################################
+### code chunk number 50: dexuseu
+###################################################
+set.seed(123)
+plot(DEXUSEU)
+
+
+###################################################
+### code chunk number 51: plot-dexuseu
+###################################################
+pdf("figures/plot-dexuseu.pdf",width=9,height=4)
+par(mar=c(4,4,2,0))
+plot(DEXUSEU)
+dev.off()
+
+
+###################################################
+### code chunk number 52: chapter2.Rnw:942-948
+###################################################
+cir1 <- setModel(drift="theta1-theta2*x", diffusion="sigma*sqrt(x)")
+cir2 <- setModel(drift="kappa*(mu-x)", diffusion="sigma*sqrt(x)")
+mod1 <- setYuima(model=cir1, data=setData(na.omit(DEXUSEU), 
+ delta=Delta))
+mod2 <- setYuima(model=cir2, data=setData(na.omit(DEXUSEU), 
+ delta=Delta))
+
+
+###################################################
+### code chunk number 53: chapter2.Rnw:950-960
+###################################################
+fit1 <- qmle(mod1, start=list(theta1=1, theta2=1, sigma=0.5),  
+  lower=list(theta1=0.1, theta2=0.1, sigma=0.1),
+  upper=list(theta1=10, theta2=10, sigma=100),
+   method="L-BFGS-B")
+summary(fit1)
+fit2 <- qmle(mod2, start=list(kappa=1, mu=meanCIR, sigma=0.5),  
+  lower=list(kappa=0.1, mu=0.1, sigma=0.1),
+  upper=list(kappa=10, mu=10, sigma=100),
+   method="L-BFGS-B")
+summary(fit2)
+
+
+###################################################
+### code chunk number 54: chapter2.Rnw:963-966
+###################################################
+theta1 <- as.numeric( coef(fit2)["kappa"] * coef(fit2)["mu"] )
+theta1
+coef(fit1)["theta1"]
+
+
+###################################################
+### code chunk number 55: chapter2.Rnw:969-972
+###################################################
+mu <- as.numeric( coef(fit1)["theta1"] / coef(fit1)["theta2"] )
+mu
+coef(fit2)["mu"]
+
+
+###################################################
+### code chunk number 56: chapter2.Rnw:1093-1094
+###################################################
+model<- setModel(drift="t1*(t2-x)",diffusion="t3")
+
+
+###################################################
+### code chunk number 57: chapter2.Rnw:1097-1105
+###################################################
+T<-10
+n<-1000
+sampling <- setSampling(Terminal=T,n=n)
+yuima<-setYuima(model=model, sampling=sampling)
+h0 <- list(t1=0.3, t2=1, t3=0.25)
+h1 <- list(t1=0.3, t2=0.2, t3=0.1)
+set.seed(123)
+X <- simulate(yuima, xinit=1, true=h0)
+
+
+###################################################
+### code chunk number 58: chapter2.Rnw:1108-1109
+###################################################
+phi1 <- function(x) 1-x+x*log(x)
+
+
+###################################################
+### code chunk number 59: chapter2.Rnw:1112-1113
+###################################################
+phi.test(X, H0=h0, H1=h1,phi=phi1)
+
+
+###################################################
+### code chunk number 60: chapter2.Rnw:1119-1122
+###################################################
+phi.test(X, H0=h0, phi=phi1, start=h0,
+   lower=list(t1=0.1, t2=0.1, t3=0.1), 
+   upper=list(t1=2,t2=2,t3=2),method="L-BFGS-B")
+
+
+###################################################
+### code chunk number 61: chapter2.Rnw:1124-1127
+###################################################
+pval <- phi.test(X, H0=h0, phi=phi1, start=h0,
+   lower=list(t1=0.1, t2=0.1, t3=0.1), 
+   upper=list(t1=2,t2=2,t3=2),method="L-BFGS-B")$pvalue
+
+
+###################################################
+### code chunk number 62: chapter2.Rnw:1131-1134
+###################################################
+phi.test(X, H0=h1, phi=phi1, start=h0, 
+  lower=list(t1=0.1, t2=0.1, t3=0.1), 
+  upper=list(t1=2,t2=2,t3=2),method="L-BFGS-B")
+
+
+###################################################
+### code chunk number 63: chapter2.Rnw:1137-1138
+###################################################
+phi.test(X, H0=h0, H1=h1)
+
+
+###################################################
+### code chunk number 64: chapter2.Rnw:1179-1209
+###################################################
+library(quantmod)
+Delta <- 1/252
+getSymbols("DEXUSEU", src="FRED")
+meanCIR <- mean(DEXUSEU, na.rm=TRUE)
+gBm <- setModel(drift="mu*x", diffusion="sigma*x")
+mod <- setYuima(model=gBm, data=setData(na.omit(DEXUSEU), delta=Delta))
+cir1 <- setModel(drift="theta1-theta2*x", diffusion="sigma*sqrt(x)")
+cir2 <- setModel(drift="kappa*(mu-x)", diffusion="sigma*sqrt(x)")
+ckls <- setModel(drift="theta1-theta2*x", diffusion="sigma*x^gamma")
+mod1 <- setYuima(model=cir1, data=setData(na.omit(DEXUSEU), 
+ delta=Delta))
+mod2 <- setYuima(model=cir2, data=setData(na.omit(DEXUSEU), 
+ delta=Delta))
+mod3 <- setYuima(model=ckls, data=setData(na.omit(DEXUSEU), 
+ delta=Delta))
+ gBm.fit <- qmle(mod, start=list(mu=1, sigma=1), 
+  lower=list(mu=0.1, sigma=0.1), 
+  upper=list(mu=100, sigma=10))
+cir1.fit <- qmle(mod1, start=list(theta1=1, theta2=1, sigma=0.5),  
+  lower=list(theta1=0.1, theta2=0.1, sigma=0.1),
+  upper=list(theta1=10, theta2=10, sigma=100),
+   method="L-BFGS-B")
+cir2.fit <- qmle(mod2, start=list(kappa=1, mu=meanCIR, sigma=0.5),  
+  lower=list(kappa=0.1, mu=0.1, sigma=0.1),
+  upper=list(kappa=10, mu=10, sigma=100),
+   method="L-BFGS-B")
+ckls.fit <- qmle(mod3, start=list(theta1=1, theta2=1, sigma=0.5, gamma=0.5),  
+  lower=list(theta1=0.1, theta2=0.1, sigma=0.1, gamma=0.1),
+  upper=list(theta1=10, theta2=10, sigma=10, gamma=2),
+   method="L-BFGS-B")
+
+
+###################################################
+### code chunk number 65: chapter2.Rnw:1212-1213
+###################################################
+AIC(gBm.fit,cir1.fit,cir2.fit,ckls.fit)
+
+
+###################################################
+### code chunk number 66: chapter2.Rnw:1215-1216
+###################################################
+tmp <- AIC(gBm.fit,cir1.fit,cir2.fit,ckls.fit)
+
+
+###################################################
+### code chunk number 67: chapter2.Rnw:1220-1243
+###################################################
+set.seed(123)
+S <- simulate(gBm, true.par=list(mu=1, sigma=0.25), 
+  sampling=setSampling(T=1, n=1000), xinit=100)
+mod <- setYuima(model=gBm, data=S@data)
+mod1 <- setYuima(model=cir1, data=S@data)
+mod2 <- setYuima(model=cir2, data=S@data)
+mod3 <- setYuima(model=ckls, data=S@data)
+ gBm.fit <- qmle(mod, start=list(mu=1, sigma=1), 
+  lower=list(mu=0.1, sigma=0.1), 
+  upper=list(mu=100, sigma=10))
+cir1.fit <- qmle(mod1, start=list(theta1=1, theta2=1, sigma=0.5),  
+  lower=list(theta1=0.1, theta2=0.1, sigma=0.1),
+  upper=list(theta1=10, theta2=10, sigma=100),
+   method="L-BFGS-B")
+cir2.fit <- qmle(mod2, start=list(kappa=1, mu=meanCIR, sigma=0.5),  
+  lower=list(kappa=0.1, mu=0.1, sigma=0.1),
+  upper=list(kappa=10, mu=10, sigma=100),
+   method="L-BFGS-B")
+ckls.fit <- qmle(mod3, 
+  start=list(theta1=1, theta2=1, sigma=0.5, gamma=0.5),  
+  lower=list(theta1=0.1, theta2=0.1, sigma=0.1, gamma=0.1),
+  upper=list(theta1=10, theta2=10, sigma=10, gamma=2),
+   method="L-BFGS-B")
+
+
+###################################################
+### code chunk number 68: chapter2.Rnw:1245-1246
+###################################################
+AIC(gBm.fit,cir1.fit,cir2.fit,ckls.fit)
+
+
+###################################################
+### code chunk number 69: chapter2.Rnw:1248-1249
+###################################################
+tmp <- AIC(gBm.fit,cir1.fit,cir2.fit,ckls.fit)
+
+
+###################################################
+### code chunk number 70: chapter2.Rnw:1310-1324
+###################################################
+alpha <- c("1-mu11*S1+mu12*S2","2+mu21*S1-mu22*S2")
+beta <- matrix(c("s1*S1","s2*S1", "-s3*S2","s4*S2"),2,2)
+mod.est <- setModel(drift=alpha, diffusion=beta,
+ solve.var=c("S1","S2"),state.variable=c("S1","S2"))
+truep <- list(mu11=.9, mu12=0, mu21=0, mu22=0.7, 
+ s1=.3, s2=0,s3=0,s4=.2)
+low <- list(mu11=1e-5, mu12=1e-5, mu21=1e-5, mu22=1e-5, 
+ s1=1e-5, s2=1e-5, s3=1e-5,s4=1e-5)
+upp <- list(mu11=2, mu12=2, mu21=1, mu22=1, 
+ s1=1, s2=1, s3=1,s4=1)
+set.seed(123)
+n <- 1000
+X <- simulate(mod.est, T=n^(1/3), n=n, xinit=c(1,1), 
+ true.parameter=truep)
+
+
+###################################################
+### code chunk number 71: chapter2.Rnw:1327-1330
+###################################################
+myest <- lasso(X,  delta=2, start=truep, lower=low, upper=upp, 
+ method="L-BFGS-B")
+myest
+
+
+###################################################
+### code chunk number 72: chapter2.Rnw:1334-1335
+###################################################
+fit1 <- qmle(X,   start=truep, lower=low, upper=upp, method="L-BFGS-B")
+
+
+###################################################
+### code chunk number 73: chapter2.Rnw:1338-1350
+###################################################
+alpha <- c("1-mu11*S1","2-mu22*S2")
+beta <- matrix(c("s1*S1","0", "0","s4*S2"),2,2)
+mod.est2 <- setModel(drift=alpha, diffusion=beta,
+ solve.var=c("S1","S2"),state.variable=c("S1","S2"))
+truep <- list(mu11=.9, mu22=0.7, s1=.3,s4=.2)
+low <- list(mu11=1e-5,   mu22=1e-5, s1=1e-5,  s4=1e-5)
+upp <- list(mu11=2,   mu22=2, s1=1,  s4=1)
+Y <- setYuima(model=mod.est2, data=X@data)
+fit2 <- qmle(Y,   start=truep, lower=low, upper=upp, method="L-BFGS-B")
+summary(fit1)
+summary(fit2)
+AIC(fit1, fit2)
+
+
+###################################################
+### code chunk number 74: chapter2.Rnw:1360-1370
+###################################################
+library("Ecdat")
+data("Irates")
+rates <- Irates[,"r1"]
+plot(rates)
+X <- window(rates, start=1964.471, end=1989.333)
+mod <- setModel(drift="alpha+beta*x", diffusion="sigma*x^gamma")
+yuima <- setYuima(data=setData(X,delta=1/12), model=mod)
+start <- list(alpha=1, beta =-.1, sigma =.1, gamma =1)
+low <- list(alpha=-5, beta =-5, sigma =-5, gamma =-5)
+upp <- list(alpha=8, beta =8, sigma =8, gamma =8)
+
+
+###################################################
+### code chunk number 75: plot-irates
+###################################################
+pdf("figures/plot-irates.pdf",width=9,height=4)
+par(mar=c(4,4,0,0))
+plot(rates)
+dev.off()
+
+
+###################################################
+### code chunk number 76: chapter2.Rnw:1385-1388
+###################################################
+lasso.est <- lasso(yuima, start=start, lower=low, upper=upp,
+   method="L-BFGS-B", delta=2)
+lasso.est
+
+
+###################################################
+### code chunk number 77: chapter2.Rnw:1395-1407
+###################################################
+mod1 <- setModel(drift="alpha", diffusion="sigma*x^gamma")
+yuima1 <- setYuima(data=setData(X,delta=1/12), model=mod1)
+start1 <- list(alpha=1, sigma =.1, gamma =1)
+low1 <- list(alpha=-5, sigma =-5, gamma =-5)
+upp1 <- list(alpha=8, sigma =8, gamma =8)
+fit <- qmle(yuima, start=start, lower=low, upper=upp,
+   method="L-BFGS-B")
+fit1 <- qmle(yuima1, start=start1, lower=low1, upper=upp1,
+   method="L-BFGS-B")
+summary(fit)
+summary(fit1)
+AIC(fit, fit1)
+
+
+###################################################
+### code chunk number 78: cpoint1
+###################################################
+diff.matrix <- matrix(c("theta1.k*x1","0*x2","0*x1","theta2.k*x2"), 
+ 2, 2)
+drift.c <- c("sin(x1)", "3-x2")
+drift.matrix <- matrix(drift.c, 2, 1)
+ymodel <- setModel(drift=drift.matrix, diffusion=diff.matrix, 
+time.variable="t", state.variable=c("x1", "x2"), 
+solve.variable=c("x1", "x2"))
+ymodel
+
+
+###################################################
+### code chunk number 79: cpoint3
+###################################################
+n <- 1000
+
+set.seed(123)
+
+t0 <- list(theta1.k=0.5, theta2.k=0.3)
+T <- 10
+tau <- 4
+pobs <- tau/T
+ysamp1 <- setSampling(n=n*pobs, Initial=0, delta=0.01)
+yuima1 <- setYuima(model=ymodel, sampling=ysamp1)
+yuima1 <- simulate(yuima1, xinit=c(3, 3), true.parameter=t0)
+
+v11 <- get.zoo.data(yuima1)[[1]] 
+x1 <- as.numeric(v11[length(v11)]) # terminal value
+v21 <- get.zoo.data(yuima1)[[2]]
+x2 <- as.numeric(v21[length(v21)]) # terminal value
+
+
+###################################################
+### code chunk number 80: cpoint3b
+###################################################
+t1 <- list(theta1.k=0.2, theta2.k=0.4)
+ysamp2 <- setSampling(Initial=n*pobs*0.01, n=n*(1-pobs), delta=0.01)
+yuima2 <- setYuima(model=ymodel, sampling=ysamp2)
+yuima2 <- simulate(yuima2, xinit=c(x1, x2), true.parameter=t1)
+
+
+###################################################
+### code chunk number 81: cpoint3c
+###################################################
+v12 <- get.zoo.data(yuima2)[[1]] 
+v22 <- get.zoo.data(yuima2)[[2]]
+v1 <- c(v11,v12[-1])
+v2 <- c(v21,v22[-1])
+new.data <- setData(zoo(cbind(v1,v2)),delta=0.01)
+yuima <- setYuima(model=ymodel, data=new.data)
+
+
+###################################################
+### code chunk number 82: cpoint4
+###################################################
+plot(yuima)
+
+
+###################################################
+### code chunk number 83: plot-cpoint4
+###################################################
+pdf("figures/plot-cpoint4.pdf",width=9,height=5)
+par(mar=c(4,4,0,0))
+plot(yuima)
+dev.off()
+
+
+###################################################
+### code chunk number 84: cpoint4b
+###################################################
+noDriftModel <- setModel(drift=c(0,0), diffusion=diff.matrix,
+ time.variable="t", state.variable=c("x1", "x2"), 
+ solve.variable=c("x1", "x2"))
+noDriftModel <- setYuima(noDriftModel, data=new.data)
+noDriftModel@model@drift
+noDriftModel
+
+
+###################################################
+### code chunk number 85: cpoint5
+###################################################
+t.est <- CPoint(yuima,param1=t0,param2=t1)
+t.est$tau
+t.est2 <- CPoint(noDriftModel,param1=t0,param2=t1)
+t.est2$tau
+
+
+###################################################
+### code chunk number 86: chapter2.Rnw:1612-1620
+###################################################
+qmleL(noDriftModel, t=1.5, start=list(theta1.k=0.1, theta2.k=0.1),
+lower=list(theta1.k=0, theta2.k=0), upper=list(theta1.k=1, theta2.k=1), 
+method="L-BFGS-B") -> estL
+qmleR(noDriftModel, t=8.5, start=list(theta1.k=0.1, theta2.k=0.1),
+lower=list(theta1.k=0, theta2.k=0), upper=list(theta1.k=1, theta2.k=1), 
+method="L-BFGS-B") -> estR
+t0.est <- coef(estL)
+t1.est <- coef(estR)
+
+
+###################################################
+### code chunk number 87: chapter2.Rnw:1623-1625
+###################################################
+t.est3 <- CPoint(noDriftModel,param1=t0.est,param2=t1.est)
+t.est3
+
+
+###################################################
+### code chunk number 88: chapter2.Rnw:1629-1630 (eval = FALSE)
+###################################################
+## CPoint(noDriftModel,param1=t0.est,param2=t1.est, plot=TRUE)
+
+
+###################################################
+### code chunk number 89: plot-cpoint-stat
+###################################################
+pdf("figures/plot-cpoint-stat.pdf",width=9,height=4)
+par(mar=c(4,4,2,0))
+CPoint(noDriftModel,param1=t0.est,param2=t1.est, plot=TRUE)
+dev.off()
+
+
+###################################################
+### code chunk number 90: chapter2.Rnw:1644-1654
+###################################################
+qmleL(noDriftModel, t=t.est3$tau, start=list(theta1.k=0.1, theta2.k=0.1),
+lower=list(theta1.k=0, theta2.k=0), upper=list(theta1.k=1, theta2.k=1), 
+method="L-BFGS-B") -> estL
+qmleR(noDriftModel, t=t.est3$tau, start=list(theta1.k=0.1, theta2.k=0.1),
+lower=list(theta1.k=0, theta2.k=0), upper=list(theta1.k=1, theta2.k=1), 
+method="L-BFGS-B") -> estR
+t02s.est <- coef(estL)
+t12s.est <- coef(estR)
+t2s.est3 <- CPoint(noDriftModel,param1=t02s.est,param2=t12s.est)
+t2s.est3
+
+
+###################################################
+### code chunk number 91: chapter2.Rnw:1658-1669
+###################################################
+library(quantmod)
+getSymbols("AAPL", to="2016-12-31")
+S <- AAPL$AAPL.Adjusted
+Delta <- 1/252
+gBm <- setModel(drift="mu*x", diffusion="sigma*x")
+mod <- setYuima(model=gBm, data=setData(S, delta=Delta))
+lower <- list(mu=0.1, sigma=0.1)
+upper <- list(mu=100, sigma=10)
+start <- list(mu=1, sigma=1)
+fit <- qmle(mod, start= start, upper=upper, lower=lower)
+summary(fit)
+
+
+###################################################
+### code chunk number 92: chapter2.Rnw:1672-1676
+###################################################
+fit1 <- qmleL(mod, t=1, start= list(mu=1,sigma=1))
+fit2 <- qmleR(mod, t=6, start= list(mu=1,sigma=1))
+fit1
+fit2
+
+
+###################################################
+### code chunk number 93: chapter2.Rnw:1679-1681
+###################################################
+cp <- CPoint(mod,param1=coef(fit1),param2=coef(fit2))
+cp
+
+
+###################################################
+### code chunk number 94: chapter2.Rnw:1684-1687
+###################################################
+X <- diff(log(get.zoo.data(mod)[[1]]))
+plot(X)
+abline(v=cp$tau, lty=3)
+
+
+###################################################
+### code chunk number 95: plot-returns
+###################################################
+pdf("figures/plot-returns.pdf",width=9,height=4)
+par(mar=c(4,4,2,0))
+plot(X,main="log returns of AAPL")
+abline(v=cp$tau, lty=3)
+dev.off()
+
+
+###################################################
+### code chunk number 96: plot-cpoint-aapl
+###################################################
+pdf("figures/plot-cpoint-aapl.pdf",width=9,height=4)
+par(mar=c(4,4,2,0))
+CPoint(mod,param1=coef(fit1),param2=coef(fit2),plot=TRUE)
+dev.off()
+
+
+###################################################
+### code chunk number 97: chapter2.Rnw:1828-1841
+###################################################
+# diffusion coefficient for process 1
+diff.coef.1 <- function(t,x1=0, x2=0) sqrt(1+t)
+# diffusion coefficient for process 2
+diff.coef.2 <- function(t,x1=0, x2=0) sqrt(1+t^2)
+# correlation
+cor.rho <- function(t,x1=0, x2=0) sqrt(1/2)
+# coefficient matrix for diffusion term
+diff.coef.matrix <- matrix( c( "diff.coef.1(t,x1,x2)", 
+"diff.coef.2(t,x1,x2) * cor.rho(t,x1,x2)", "", 
+"diff.coef.2(t,x1,x2) * sqrt(1-cor.rho(t,x1,x2)^2)"),2,2)
+# Model SDE using yuima.model
+cor.mod <- setModel(drift = c("",""), diffusion = diff.coef.matrix,
+ solve.variable=c("x1","x2"))
+
+
+###################################################
+### code chunk number 98: chapter2.Rnw:1851-1856
+###################################################
+CC.theta <- function( T, sigma1, sigma2, rho)
+{
+ 	tmp <- function(t) return( sigma1(t) * sigma2(t) * rho(t) )
+ 	integrate(tmp,0,T)
+}
+
+
+###################################################
+### code chunk number 99: chapter2.Rnw:1880-1888
+###################################################
+set.seed(123)
+ 
+Terminal <- 1
+n <- 1000
+# Cumulative Covariance
+theta <- CC.theta(T=Terminal, sigma1=diff.coef.1, 
+sigma2=diff.coef.2, rho=cor.rho)$value
+cat(sprintf("theta=%5.3f\n",theta))
+
+
+###################################################
+### code chunk number 100: chapter2.Rnw:1891-1894
+###################################################
+yuima.samp <- setSampling(Terminal=Terminal,n=n)
+yuima <- setYuima(model=cor.mod, sampling=yuima.samp)
+X <- simulate(yuima)
+
+
+###################################################
+### code chunk number 101: chapter2.Rnw:1899-1900
+###################################################
+cce(X)
+
+
+###################################################
+### code chunk number 102: cceplot1
+###################################################
+plot(X,main="complete data")
+
+
+###################################################
+### code chunk number 103: plot-cceplot1
+###################################################
+pdf("figures/plot-cceplot1.pdf",width=9,height=5)
+par(mar=c(4,4,0,0))
+plot(X,main="complete data")
+dev.off()
+
+
+###################################################
+### code chunk number 104: chapter2.Rnw:1918-1923
+###################################################
+p1 <- 0.2
+p2 <- 0.3
+newsamp <- setSampling(
+ random=list(rdist=c( function(x) rexp(x, rate=p1*n/Terminal), 
+  function(x) rexp(x, rate=p1*n/Terminal))) )
+
+
+###################################################
+### code chunk number 105: chapter2.Rnw:1926-1927
+###################################################
+Y <- subsampling(X, sampling=newsamp)
+
+
+###################################################
+### code chunk number 106: cceplot2
+###################################################
+plot(Y,main="asynchronous data")
+
+
+###################################################
+### code chunk number 107: plot-cceplot2
+###################################################
+pdf("figures/plot-cceplot2.pdf",width=9,height=5)
+par(mar=c(4,4,0,0))
+plot(Y,main="asynchronous data")
+dev.off()
+
+
+###################################################
+### code chunk number 108: chapter2.Rnw:1944-1946
+###################################################
+cce(Y)$covmat   # asynch data
+cce(X)$covmat   # full data
+
+
+###################################################
+### code chunk number 109: chapter2.Rnw:1963-1980
+###################################################
+b1 <- function(x,y) y
+b2 <- function(x,y) -x
+s1 <- function(t,x,y) sqrt(abs(x)*(1+t))
+s2 <- function(t,x,y) sqrt(abs(y))
+cor.rho <- function(t,x,y) 1/(1+x^2)
+diff.mat <- matrix(c("s1(t,x,y)", "s2(t,x,y) * cor.rho(t,x,y)","",
+ "s2(t,x,y) * sqrt(1-cor.rho(t,x,y)^2)"), 2, 2) 
+cor.mod <- setModel(drift = c("b1","b2"), diffusion = diff.mat,
+solve.variable = c("x", "y"),state.var=c("x","y"))
+
+## Generate a path of the process
+set.seed(111) 
+Terminal <- 1
+n <- 10000
+yuima.samp <- setSampling(Terminal = Terminal, n = n) 
+yuima <- setYuima(model = cor.mod, sampling = yuima.samp) 
+yuima <- simulate(yuima, xinit=c(2,3)) 
+
+
+###################################################
+### code chunk number 110: chapter2.Rnw:1983-1989
+###################################################
+p1 <- 0.2
+p2 <- 0.3
+newsamp <- setSampling(
+random=list(rdist=c( function(x) rexp(x, rate=p1*n/Terminal), 
+function(x) rexp(x, rate=p1*n/Terminal))) )
+Y <- subsampling(yuima, sampling = newsamp)
+
+
+###################################################
+### code chunk number 111: cceplot3
+###################################################
+plot(Y,main="asynchronous data (non linear case)")
+
+
+###################################################
+### code chunk number 112: plot-cceplot3
+###################################################
+pdf("figures/plot-cceplot3.pdf",width=9,height=5)
+par(mar=c(4,4,0,0))
+plot(Y,main="asynchronous data (non linear case)")
+dev.off()
+
+
+###################################################
+### code chunk number 113: chapter2.Rnw:2008-2010
+###################################################
+cce(yuima)$covmat # full data
+cce(Y)$covmat        # asynch data
+
+
+###################################################
+### code chunk number 114: chapter2.Rnw:2096-2126
+###################################################
+diff.coef.matrix <- matrix(c("sqrt(x1)", "3/5*sqrt(x2)","1/3*sqrt(x3)", 
+"", "4/5*sqrt(x2)","2/3*sqrt(x3)","","","2/3*sqrt(x3)"), 3, 3) 
+drift <- c("1-x1","2*(10-x2)","3*(4-x3)")
+cor.mod <- setModel(drift = drift, diffusion = diff.coef.matrix,
+  solve.variable = c("x1", "x2","x3")) 
+
+set.seed(111) 
+Terminal <- 1
+yuima.samp <- setSampling(Terminal = Terminal, n = 1200) 
+yuima <- setYuima(model = cor.mod, sampling = yuima.samp) 
+yuima <- simulate(yuima, xinit=c(1,7,5)) 
+
+# intentionally displace the second time series
+
+data1 <- get.zoo.data(yuima)[[1]]
+
+data2 <- get.zoo.data(yuima)[[2]]
+time2 <- time( data2 )
+theta2 <- 0.05   # the lag of x2 behind x1
+stime2 <- time2 + theta2  
+time(data2) <- stime2
+
+data3 <- get.zoo.data(yuima)[[3]]
+time3 <- time( data3 )
+theta3 <- 0.12   # the lag of x3 behind x1
+stime3 <- time3 + theta3 
+time(data3) <- stime3
+syuima <- setYuima(data=setData(merge(data1, data2, data3)))
+yuima
+syuima
+
+
+###################################################
+### code chunk number 115: shifted
+###################################################
+plot(syuima,main="time shifted data")
+
+
+###################################################
+### code chunk number 116: plot-shifted
+###################################################
+pdf("figures/plot-shifted.pdf",width=9,height=5)
+par(mar=c(4,4,2,0))
+plot(syuima,main="time shifted data")
+dev.off()
+
+
+###################################################
+### code chunk number 117: chapter2.Rnw:2144-2146
+###################################################
+llag(yuima)
+llag(syuima)
+
+
+###################################################
+### code chunk number 118: chapter2.Rnw:2150-2166
+###################################################
+data2 <- get.zoo.data(yuima)[[2]]
+time2 <- time( data2 )
+theta2 <- 0.05   # the lag of x2 behind x1
+stime2 <- time2 + theta2  
+time(data2) <- stime2
+data3 <- get.zoo.data(yuima)[[3]]
+time3 <- time( data3 )
+theta3 <- 0.12   # the lag of x3 behind x1
+stime3 <- time3 + theta3 
+time(data3) <- stime3
+data1 <- data1[which(time(data1)>0.5 & time(data1)<1)]
+data2 <- data2[which(time(data2)>0.5 & time(data2)<1)]
+data3 <- data3[which(time(data3)>0.5 & time(data3)<1)]
+syuima2 <- setYuima(data=setData(merge(data1, data2, data3)))
+syuima2
+llag(syuima2)
+
+
+###################################################
+### code chunk number 119: chapter2.Rnw:2170-2181
+###################################################
+p1 <- 0.2
+p2 <- 0.3
+p3 <- 0.4
+n <- 1000
+newsamp <- setSampling(
+random=list(rdist=c( function(x) rexp(x, rate=p1*n/Terminal), 
+function(x) rexp(x, rate=p2*n/Terminal),
+function(x) rexp(x, rate=p3*n/Terminal))) )
+psample <- subsampling(syuima, sampling = newsamp)
+psample
+llag(psample)
+
+
+###################################################
+### code chunk number 120: chapter2.Rnw:2186-2202
+###################################################
+library(quantmod)
+getSymbols("AAPL", from="2013-01-01", to="2013-12-31")
+getSymbols("IBM", from="2013-01-01", to="2013-12-31")
+getSymbols("AMZN", from="2013-01-01", to="2013-12-31")
+getSymbols("EBAY", from="2013-01-01", to="2013-12-31")
+getSymbols("FB", from="2013-01-01", to="2013-12-31")
+getSymbols("MSFT", from="2013-01-01", to="2013-12-31")
+data1 <- AAPL$AAPL.Close
+data2 <- IBM$IBM.Close
+data3 <- AMZN$AMZN.Close
+data4 <- EBAY$EBAY.Close
+data5 <- FB$FB.Close
+data6 <- MSFT$MSFT.Close
+market.data <- merge(data1, data2, data3, data4,data5,data6)
+colnames(market.data) <- c("AAPL", "IBM", "AMZN", "EBAY", "FB", "MSFT")
+mkt <- setYuima(data=setData(market.data, delta=1/252))
+
+
+###################################################
+### code chunk number 121: chapter2.Rnw:2204-2206
+###################################################
+mkt
+round(cce(mkt)$cormat,2) # correlation matrix
+
+
+###################################################
+### code chunk number 122: market
+###################################################
+plot(mkt)
+
+
+###################################################
+### code chunk number 123: plot-market
+###################################################
+pdf("figures/plot-market.pdf",width=9,height=5)
+par(mar=c(4,4,0,0))
+plot(mkt,main="")
+dev.off()
+
+
+###################################################
+### code chunk number 124: chapter2.Rnw:2224-2225
+###################################################
+round(llag(mkt),4)
+
+
+###################################################
+### code chunk number 125: corrplot
+###################################################
+require(corrplot)
+cols <- colorRampPalette(c("#7F0000", "red", "#FF7F00",
+  "yellow", "white", "cyan", 
+  "#007FFF", "blue", "#00007F"))
+corrplot(cce(mkt)$cormat,method="ellipse", 
+ cl.pos = "b", tl.pos = "d", tl.srt = 60, 
+ col=cols(100), outline=TRUE)
+corrplot(llag(mkt),method="ellipse",is.corr=FALSE,
+ cl.pos = "b", tl.pos = "d", tl.srt = 60, 
+ col=cols(100), outline=TRUE)
+
+
+###################################################
+### code chunk number 126: plot-corrplot
+###################################################
+pdf("figures/plot-corrplot1.pdf",width=6,height=6)
+require(corrplot)
+corrplot(cce(mkt)$cormat,method="ellipse", 
+ cl.pos = "b", tl.pos = "d", tl.srt = 60, col=cols(100), outline=TRUE)
+dev.off()
+pdf("figures/plot-corrplot2.pdf",width=6,height=6)
+corrplot(llag(mkt),method="ellipse",is.corr=FALSE,
+ cl.pos = "b", tl.pos = "d", tl.srt = 60, col=cols(100), outline=TRUE)
+dev.off()
+
+
+###################################################
+### code chunk number 127: chapter2.Rnw:2405-2415
+###################################################
+model <- setModel(drift = "x", diffusion = matrix( "x*e", 1,1))
+T <- 1
+xinit <- 150
+K <- 100
+f <- list( expression(x/T), expression(0))
+F <- 0
+e <- 0.5
+yuima <- setYuima(model = model, 
+  sampling = setSampling(Terminal=T, n=1000))
+yuima <- setFunctional( yuima, f=f,F=F, xinit=xinit,e=e)
+
+
+###################################################
+### code chunk number 128: chapter2.Rnw:2418-2419
+###################################################
+str(yuima@functional)
+
+
+###################################################
+### code chunk number 129: chapter2.Rnw:2422-2424
+###################################################
+F0 <- F0(yuima)
+F0
+
+
+###################################################
+### code chunk number 130: chapter2.Rnw:2431-2438
+###################################################
+rho <- expression(0)
+epsilon <- e  # noise level
+g <- function(x) {
+  tmp <- (F0 - K) + (epsilon * x) 
+ tmp[(epsilon * x) < (K-F0)] <- 0
+ tmp
+}
+
+
+###################################################
+### code chunk number 131: chapter2.Rnw:2443-2445
+###################################################
+asymp <- asymptotic_term(yuima, block=10, rho, g)
+asymp
+
+
+###################################################
+### code chunk number 132: chapter2.Rnw:2448-2454
+###################################################
+asy1 <- asymp$d0 + e * asymp$d1 
+# 1st order asymp. exp. of asian call price
+asy1
+asy2 <- asymp$d0 + e * asymp$d1 +  e^2* asymp$d2 
+# 2nd order asymp. exp. of asian call price
+asy2
+
+
+###################################################
+### code chunk number 133: chapter2.Rnw:2465-2469
+###################################################
+library("fExoticOptions")
+levy <- LevyAsianApproxOption(TypeFlag = "c", S = xinit, SA = xinit, 
+    X = K, Time = 1, time = 1, r = 0.0, b = 1, sigma = e)@price
+levy
+
+
+###################################################
+### code chunk number 134: chapter2.Rnw:2480-2518
+###################################################
+a <- 0.9
+e <- 0.4
+Terminal <- 3
+
+xinit <- 1
+K <- 10
+
+drift <- "a * x"
+diffusion <- "e * sqrt(x)"
+
+model <- setModel(drift=drift,diffusion=diffusion)
+
+n <- 1000*Terminal
+yuima <- setYuima(model = model,
+  sampling = setSampling(Terminal=Terminal,n=n))
+
+f <- list(c(expression(0)),c(expression(0)))
+F <- expression(x)
+
+yuima.ae <- setFunctional(yuima,f=f,F=F,xinit=xinit,e=e)
+rho <- expression(0)
+F1 <- F0(yuima.ae)
+
+
+get_ge <- function(x,epsilon,K,F0){
+	tmp <- (F0 - K) + (epsilon * x[1])
+	tmp[(epsilon * x[1]) > (K - F0)] <- 0
+	return( - tmp )
+}
+
+
+g <- function(x){
+	return(get_ge(x,e,K,F1))
+}
+
+time1 <- proc.time()
+asymp <- asymptotic_term(yuima.ae,block=100,rho,g)
+time2 <- proc.time()
+
+
+###################################################
+### code chunk number 135: chapter2.Rnw:2521-2529
+###################################################
+ae.value0 <- asymp$d0
+ae.value0
+ae.value1 <- asymp$d0 + e * asymp$d1
+ae.value1
+ae.value2 <- as.numeric(asymp$d0 + e * asymp$d1 + e^2 * asymp$d2)
+ae.value2
+ae.time <- time2 - time1
+ae.time
+
+

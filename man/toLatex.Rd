@@ -21,7 +21,7 @@
   \item{\dots}{currently not used.}
 }
 \details{
-  This methos tries to convert a formal description of the model slot
+  This method tries to convert a formal description of the model slot
   of the yuima object into a LaTeX formula.
   This is just a simple proof of concept and probably further LaTex 
   manipulations for use in papers.

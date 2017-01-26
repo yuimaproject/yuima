@@ -1,4 +1,13 @@
-yuima.stop <- function(x) 
+ybook <- function(chapter){
+    chapter <- as.integer(chapter[1])
+    if(chapter %in% 1:7){
+     file.show(file.path(.libPaths()[1],"yuima","ybook",sprintf("chapter%d.R",chapter)))
+    } else {
+      cat("\nPlease choose an integer number within 1 and 7")
+    }
+}
+
+yuima.stop <- function(x)
 stop(sprintf("\nYUIMA: %s\n", x))
 
 yuima.warn <- function(x) 

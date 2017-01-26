@@ -129,6 +129,7 @@ exportMethods(
 ## function which we want to expose to the user
 ## all other functions are used internally by the
 ## package
+export(ybook)
 export(setYuima)
 export(setModel) ## builds sde model
 export(setData)
