@@ -1,169 +1,117 @@
-### R code from vignette source '/Users/jago/Dropbox (VOICES)/yuima-book/chapter6.Rnw'
+## ----include=FALSE-------------------------------------------------------
+library(knitr)
+opts_chunk$set(
+tidy=FALSE,
+width.cutoff = 60,
+strip.white=TRUE,
+warning=FALSE
+)
 
-###################################################
-### code chunk number 1: chapter6.Rnw:3-6
-###################################################
-options(width=60)
+## ----include=FALSE-------------------------------------------------------
+options(width=55)
 options(continue="  ")
 require(yuima)
 
-
-###################################################
-### code chunk number 2: carma.brown
-###################################################
+## ----carma.brown,echo=TRUE,eval=TRUE-------------------------------------
 carma.mod<-setCarma(p=3,q=1,loc.par="c0",Carma.var="y",Latent.var="X")
 carma.mod
 
-
-###################################################
-### code chunk number 3: carma.brown.str
-###################################################
+## ----carma.brown.str,results='hide'--------------------------------------
 str(carma.mod)
 
+## ----echo=FALSE----------------------------------------------------------
+writeLines(strwrap(capture.output(str(carma.mod)),width=60))
 
-###################################################
-### code chunk number 4: carma.brown.par
-###################################################
+## ----carma.brown.par,echo=TRUE,eval=TRUE---------------------------------
 par.carma<-list(a1=4,a2=4.75,a3=1.5,b0=1,b1=0.23,c0=0)
 samp<-setSampling(Terminal=100, n=3000)  
 set.seed(123)
 carma <-simulate(carma.mod,
     true.parameter=par.carma, sampling=samp)
 
-
-###################################################
-### code chunk number 5: plot-carma
-###################################################
+## ----plot-carma,echo=TRUE,fig.keep='none',results='hide'-----------------
 plot(carma)
 
-
-###################################################
-### code chunk number 6: chapter6.Rnw:193-197
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-carma.pdf",width=9,height=4)
-par(mar=c(4,4,0,0))
+par(mar=c(4,4,1,1))
 plot(carma)
 dev.off()
 
-
-###################################################
-### code chunk number 7: chapter6.Rnw:224-225 (eval = FALSE)
-###################################################
+## ----eval=FALSE----------------------------------------------------------
 ## CarmaNoise(yuima, param, data=NULL)
 
-
-###################################################
-### code chunk number 8: carma.brown.qmle
-###################################################
+## ----carma.brown.qmle,echo=TRUE,eval=TRUE--------------------------------
  fit <- qmle(carma, start=par.carma)
  fit
 
-
-###################################################
-### code chunk number 9: Carm21Comp0
-###################################################
+## ----Carm21Comp0, echo=TRUE----------------------------------------------
 modCP<-setCarma(p=2,q=1,Carma.var="y",
  measure=list(intensity="Lamb",df=list("dnorm(z, mu, sig)")),
  measure.type="CP") 
 true.parmCP <-list(a1=1.39631,a2=0.05029,b0=1,b1=2,
                   Lamb=1,mu=0,sig=1)
 
-
-###################################################
-### code chunk number 10: sim_Carm21Comp0
-###################################################
+## ----sim_Carm21Comp0, echo=TRUE------------------------------------------
 samp.L<-setSampling(Terminal=200,n=4000)
 set.seed(123)
 simCP<-simulate(modCP,true.parameter=true.parmCP,sampling=samp.L)
 
-
-###################################################
-### code chunk number 11: plot-simCP
-###################################################
+## ----plot-simCP,echo=TRUE,fig.keep='none',results='hide'-----------------
 plot(simCP,main="CP CARMA(2,1) model")
 
-
-###################################################
-### code chunk number 12: chapter6.Rnw:270-274
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-simCP.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(simCP,main="CP CARMA(2,1) model")
 dev.off()
 
-
-###################################################
-### code chunk number 13: plot_Carm21Comp0
-###################################################
+## ----plot_Carm21Comp0,echo=TRUE,fig.width=14,fig.height=7----------------
 carmaoptCP <- qmle(simCP, start=true.parmCP, Est.Incr="Incr")
 summary(carmaoptCP)
 
-
-###################################################
-### code chunk number 14: plot-carmaoptCP
-###################################################
+## ----plot-carmaoptCP,echo=TRUE,fig.keep='none',results='hide'------------
 plot(carmaoptCP,ylab="Incr.",type="l",
  main="Compound Poisson with normal jump size")
 
-
-###################################################
-### code chunk number 15: chapter6.Rnw:291-295
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-carmaoptCP.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(carmaoptCP,main="Compound Poisson with normal jump size",ylab="Incr.",type="l")
 dev.off()
 
-
-###################################################
-### code chunk number 16: Carm21vg
-###################################################
+## ----Carm21vg, echo=TRUE-------------------------------------------------
 modVG<-setCarma(p=2,q=1,Carma.var="y",
      measure=list("rvgamma(z,lambda,alpha,beta,mu)"),
      measure.type="code") 
 true.parmVG <-list(a1=1.39631, a2=0.05029, b0=1, b1=2,
                    lambda=1, alpha=1, beta=0, mu=0)
 
-
-###################################################
-### code chunk number 17: PlotCarm21vg
-###################################################
+## ----PlotCarm21vg, echo=TRUE,fig.width=14,fig.height=7,fig.keep='none',results='hide'----
 set.seed(100)
 simVG<-simulate(modVG, true.parameter=true.parmVG, 
  sampling=samp.L)
 plot(simVG,main="VG CARMA(2,1) model")
 
-
-###################################################
-### code chunk number 18: chapter6.Rnw:321-325
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-simVG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(simVG,main="VG CARMA(2,1) model")
 dev.off()
 
-
-###################################################
-### code chunk number 19: EstPlotCarm21vg
-###################################################
+## ----EstPlotCarm21vg,echo=TRUE, fig.keep='none',results='hide'-----------
 carmaoptVG <- qmle(simVG, start=true.parmVG, Est.Incr="Incr")
 summary(carmaoptVG)
 plot(carmaoptVG,xlab="Time",
  main="Variance Gamma increments",ylab="Incr.",type="l")
 
-
-###################################################
-### code chunk number 20: chapter6.Rnw:339-343
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-carmaoptVG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(carmaoptVG,main="Variance Gamma increments",ylab="Incr.",xlab="Time",type="l")
 dev.off()
 
-
-###################################################
-### code chunk number 21: Carm21Comp3
-###################################################
+## ----Carm21Comp3, echo=TRUE----------------------------------------------
 modNIG<-setCarma(p=2,q=1,Carma.var="y",
    measure=list("rNIG(z,alpha,beta,delta1,mu)"),
    measure.type="code") 
@@ -173,104 +121,65 @@ set.seed(100)
 simLev<-simulate(IncMod,sampling=samp.L)
 incrLevy<-diff(as.numeric(get.zoo.data(simLev)[[1]]))
 
-
-###################################################
-### code chunk number 22: plot-incrLevy
-###################################################
+## ----plot-incrLevy,echo=TRUE,fig.keep='none',results='hide'--------------
 plot(incrLevy,main="simulated noise increments",type="l")
 
-
-###################################################
-### code chunk number 23: chapter6.Rnw:366-370
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-incrLevy.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(incrLevy,main="simulated noise increments",type="l")
 dev.off()
 
-
-###################################################
-### code chunk number 24: Carm21sim3
-###################################################
+## ----Carm21sim3, echo=TRUE-----------------------------------------------
 true.parmNIG <-list(a1=1.39631,a2=0.05029,b0=1,b1=2,
                   alpha=1,beta=0,delta1=1,mu=0)
 simNIG<-simulate(modNIG,true.parameter=true.parmNIG,sampling=samp.L)
 
-
-###################################################
-### code chunk number 25: plot-simNIG
-###################################################
+## ----plot-simNIG,echo=TRUE,fig.keep='none',results='hide'----------------
 plot(simNIG,main="NIG CARMA(2,1) model")
 
-
-###################################################
-### code chunk number 26: chapter6.Rnw:387-391
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-simNIG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(simNIG,main="NIG CARMA(2,1) model")
 dev.off()
 
-
-###################################################
-### code chunk number 27: plot_Carm21Comp3
-###################################################
+## ----plot_Carm21Comp3 ,echo=TRUE,fig.width=14,fig.height=7---------------
 carmaoptNIG <- qmle(simNIG, start=true.parmNIG, Est.Incr="Incr")
 summary(carmaoptNIG)
 
-
-###################################################
-### code chunk number 28: plot-carmaoptNIG
-###################################################
+## ----plot-carmaoptNIG,echo=TRUE,fig.keep='none',results='hide'-----------
 plot(carmaoptNIG,main="Normal Inverse Gaussian",ylab="Incr.",type="l")
 
-
-###################################################
-### code chunk number 29: chapter6.Rnw:407-411
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-carmaoptNIG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(carmaoptNIG,main="Normal Inverse Gaussian",ylab="Incr.",type="l")
 dev.off()
 
-
-###################################################
-### code chunk number 30: Incrtime1Levy3a
-###################################################
+## ----Incrtime1Levy3a, echo=TRUE------------------------------------------
 NIG.Inc<-as.numeric(coredata(carmaoptNIG@Incr.Lev))
 NIG.freq<-frequency(carmaoptNIG@Incr.Lev)
 
-
-###################################################
-### code chunk number 31: Incrtime1Levy3b
-###################################################
+## ----Incrtime1Levy3b, echo=TRUE------------------------------------------
 t.idx <- seq(from=1, to=length(NIG.Inc), by=NIG.freq)
 Unitary.NIG.Inc<-diff(cumsum(NIG.Inc)[t.idx])
 
-
-###################################################
-### code chunk number 32: Incrtime1Levy3est
-###################################################
+## ----Incrtime1Levy3est, echo=TRUE----------------------------------------
 library(GeneralizedHyperbolic)
 FitInc.NIG.Lev<-nigFit(Unitary.NIG.Inc)
 summary(FitInc.NIG.Lev, hessian = TRUE, hessianMethod = "tsHessian")
 
-
-###################################################
-### code chunk number 33: plot-fitNIG
-###################################################
+## ----plot-fitNIG,echo=TRUE,fig.keep='none',results='hide'----------------
 par(mfrow = c(1, 2))
 plot(FitInc.NIG.Lev, which = 2:3,
        plotTitles = paste(c("Histogram of NIG ",
         "Log-Histogram of NIG ",
         "Q-Q Plot of NIG "), "Incr.", sep = ""))
 
-
-###################################################
-### code chunk number 34: chapter6.Rnw:447-456
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-fitNIG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 par(mfrow = c(1, 2))
 plot(FitInc.NIG.Lev, which = 2:3,
        plotTitles = paste(c("Histogram of NIG ",
@@ -279,44 +188,29 @@ plot(FitInc.NIG.Lev, which = 2:3,
                           sep = ""))
 dev.off()
 
-
-###################################################
-### code chunk number 35: chapter6.Rnw:468-473
-###################################################
+## ----message=FALSE,fig.keep='none'---------------------------------------
 library(quantmod)
 getSymbols("^VIX",  to="2016-12-31")
 X <- VIX$VIX.Close
 VIX.returns <- log(X)
 plot(VIX.returns, main="VIX daily log-Returns")
 
-
-###################################################
-### code chunk number 36: chapter6.Rnw:476-480
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-VIXret.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(VIX.returns, main="VIX daily log-Returns")
 dev.off()
 
-
-###################################################
-### code chunk number 37: chapter6.Rnw:487-488
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 acf(VIX.returns)
 
-
-###################################################
-### code chunk number 38: chapter6.Rnw:491-495
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-acfVIX.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(acf(VIX.returns))
 dev.off()
 
-
-###################################################
-### code chunk number 39: chapter6.Rnw:502-513
-###################################################
+## ----message=FALSE,fig.keep='none'---------------------------------------
 library(TSA)
 eacf(VIX.returns,ar.max = 3, ma.max = 4)
 
@@ -329,39 +223,24 @@ Normal.est <- qmle(yuima=Normal.CARMA, start=Normal.start,
  Est.Incr="Incr")
 summary(Normal.est )
 
-
-###################################################
-### code chunk number 40: chapter6.Rnw:516-518
-###################################################
+## ------------------------------------------------------------------------
 inc <-Normal.est@Incr.Lev
 shapiro.test(as.numeric(inc))
 
-
-###################################################
-### code chunk number 41: chapter6.Rnw:522-523
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 plot(acf(as.numeric(inc)))
 
-
-###################################################
-### code chunk number 42: chapter6.Rnw:526-530
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-acf2VIX.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(acf(as.numeric(inc)))
 dev.off()
 
-
-###################################################
-### code chunk number 43: chapter6.Rnw:537-539
-###################################################
+## ------------------------------------------------------------------------
 Box.test(x=as.numeric(inc), lag = 10, type ="Ljung-Box")
 Box.test(x=as.numeric(inc), lag = 10, type ="Box-Pierce")
 
-
-###################################################
-### code chunk number 44: chapter6.Rnw:543-567
-###################################################
+## ------------------------------------------------------------------------
 VG.model <- setCarma(p=2, q=1,loc.par="mu", 
  measure=list("rvgamma(z,lambda,alpha,beta,mu0)"), 
  measure.type="code")
@@ -387,10 +266,7 @@ cf.NIG <- coef(fit.NIG )
 summary(fit.VG)
 summary(fit.NIG)
 
-
-###################################################
-### code chunk number 45: chapter6.Rnw:571-586
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 d.N <- function(u) log( 1+dnorm(u, mean=mean(inc), sd=sd(inc)) ) 
 d.VG <- function(u) { 
  log(1+dvgamma(u, lambda=cf.VG["lambda"]*Delta, 
@@ -407,16 +283,12 @@ curve(d.N, min(d.Emp$x), max(d.Emp$x), col="blue",add=TRUE, lty=3)
 curve(d.VG, min(d.Emp$x), max(d.Emp$x), col="red",add=TRUE,lty=4)
 curve(d.NIG, min(d.Emp$x), max(d.Emp$x), col="green",add=TRUE,lty=2)
 
-
-###################################################
-### code chunk number 46: chapter6.Rnw:589-596
-###################################################
+## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-densVIX.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(d.Emp$x, log(1+d.Emp$y),type="l", main="Rescaled log-densities")
 curve(d.N, min(d.Emp$x), max(d.Emp$x), col="blue",add=TRUE,lty=3, n=500)
 curve(d.VG, min(d.Emp$x), max(d.Emp$x), col="red",add=TRUE,lty=4, n=500)
 curve(d.NIG, min(d.Emp$x), max(d.Emp$x), col="green",add=TRUE,lty=2, n=500)
 dev.off()
-
 

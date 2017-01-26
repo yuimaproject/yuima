@@ -1,16 +1,18 @@
-### R code from vignette source '/Users/jago/Dropbox (VOICES)/yuima-book/chapter4.Rnw'
+## ----include=FALSE-------------------------------------------------------
+library(knitr)
+opts_chunk$set(
+tidy=FALSE,
+width.cutoff = 60,
+strip.white=TRUE,
+warning=FALSE
+)
 
-###################################################
-### code chunk number 1: chapter4.Rnw:3-6
-###################################################
-options(width=60)
+## ----include=FALSE-------------------------------------------------------
+options(width=55)
 options(continue="  ")
 require(yuima)
 
-
-###################################################
-### code chunk number 2: chapter4.Rnw:267-276
-###################################################
+## ------------------------------------------------------------------------
 set.seed(123)
 mu <- 0
 sigma <- 1
@@ -21,10 +23,7 @@ y10 <- simulate(mod10,sampling=samp,
   true.par=list(lambda=lambda,mu=0.1, sigma=2))
 y10
 
-
-###################################################
-### code chunk number 3: chapter4.Rnw:432-444
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 BGmodel <- setModel(drift="0", xinit="0", jump.coeff="1",
  measure.type="code", measure=list(df="rbgamma(z, delta.minus=2,
  gamma.minus=0.6, delta.plus=1.4, gamma.plus=0.3)"))
@@ -38,12 +37,9 @@ for (i in 1:5) {
   main="Paths of bilateral gamma process",col=i,par(new=T))
 }
 
-
-###################################################
-### code chunk number 4: plot-BGprocess
-###################################################
+## ----plot-BGprocess,echo=FALSE,results='hide'----------------------------
 pdf("figures/plot-BGprocess.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(127)
 for (i in 1:5) {
  result <- simulate(BGyuima)
@@ -52,10 +48,7 @@ for (i in 1:5) {
 }
 dev.off()
 
-
-###################################################
-### code chunk number 5: chapter4.Rnw:464-474
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 VGmodel <- setModel(drift="0", xinit="0", jump.coeff="1",
  measure.type="code", measure=list(df="rbgamma(z, delta.minus=2,
  gamma.minus=0.6, delta.plus=2, gamma.plus=0.3)"))
@@ -67,12 +60,9 @@ for (i in 1:5) {
   main="Paths of variance gamma process",col=i,par(new=T))
 }
 
-
-###################################################
-### code chunk number 6: plot-VGprocess
-###################################################
+## ----plot-VGprocess,echo=FALSE,results='hide'----------------------------
 pdf("figures/plot-VGprocess.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(127)
 for (i in 1:5) {
 result <- simulate(VGyuima)
@@ -81,10 +71,7 @@ result <- simulate(VGyuima)
 }
 dev.off()
 
-
-###################################################
-### code chunk number 7: chapter4.Rnw:496-508 (eval = FALSE)
-###################################################
+## ----eval=FALSE----------------------------------------------------------
 ## Gmodel <- setModel(drift="0", xinit="0", jump.coeff="1",
 ##  measure.type="code", measure=list(df="rgamma(z,
 ##  shape=0.7, scale=1)"))
@@ -98,12 +85,9 @@ dev.off()
 ##   main="Paths of gamma process",col=i,par(new=T))
 ## }
 
-
-###################################################
-### code chunk number 8: plot-Gprocess
-###################################################
+## ----plot-Gprocess,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-Gprocess.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 Gmodel <- setModel(drift="0", xinit="0", jump.coeff="1",
 measure.type="code", measure=list(df="rgamma(z,
 shape=0.7, scale=1)"))
@@ -118,10 +102,7 @@ for (i in 1:5){
 }
 dev.off()
 
-
-###################################################
-### code chunk number 9: chapter4.Rnw:534-551 (eval = FALSE)
-###################################################
+## ----eval=FALSE----------------------------------------------------------
 ## n <- 5
 ## sampling <- setSampling(Terminal=1, n=n)
 ## Gmodel <- setModel(drift="0", xinit="0", jump.coeff="1",
@@ -140,12 +121,9 @@ dev.off()
 ##  " and Density of Gamma(0.7,1)")))
 ## curve(dgamma(x,0.7,1),add=TRUE,col="red")
 
-
-###################################################
-### code chunk number 10: plot-dgamma
-###################################################
+## ----plot-dgamma,echo=FALSE,results='hide'-------------------------------
 pdf("figures/plot-dgamma.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 n <- 5
 samp <- setSampling(Terminal=1, n=n)
 Gmodel <- setModel(drift="0", xinit="0", jump.coeff="1",
@@ -165,10 +143,7 @@ hist(simdata, xlim=c(0,2), ylim=c(0,3), breaks=100, freq=FALSE,
 curve(dgamma(x,0.7,1),add=TRUE,col="red")
 dev.off()
 
-
-###################################################
-### code chunk number 11: chapter4.Rnw:692-700
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 delta <- 1
 gamma <- 2
 set.seed(127)
@@ -178,22 +153,16 @@ curve(dIG(x,delta,gamma),add=TRUE,col="red")
 mean(x)
 var(x)
 
-
-###################################################
-### code chunk number 12: plot-dIG
-###################################################
+## ----plot-dIG,echo=FALSE,results='hide'----------------------------------
 pdf("figures/plot-dIG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 hist(x,xlim=c(0,2),ylim=c(0,2),breaks=100,freq=FALSE)
 curve(dIG(x,delta,gamma),add=TRUE,col="red")
 dev.off()
 
-
-###################################################
-### code chunk number 13: chapter4.Rnw:721-732
-###################################################
-IGmodel <- setModel(drift=0, xinit=0, jump.coeff=1, measure.type="code",
- measure=list(df="rIG(z, delta=1, gamma=2)"))
+## ----fig.keep='none'-----------------------------------------------------
+IGmodel <- setModel(drift=0, xinit=0, jump.coeff=1, 
+ measure.type="code", measure=list(df="rIG(z, delta=1, gamma=2)"))
 n <- 1000
 samp <- setSampling(Terminal=1, n=n)
 IGyuima <- setYuima(model=IGmodel, sampling=samp)
@@ -204,12 +173,9 @@ for (i in 1:5){
   main="Paths of IG process (delta=1, gamma=2)",par(new=T),col=i)
 }
 
-
-###################################################
-### code chunk number 14: plot-dIGproc
-###################################################
+## ----plot-dIGproc,echo=FALSE,results='hide'------------------------------
 pdf("figures/plot-dIGproc.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(127)
 for (i in 1:5){
  result <- simulate(IGyuima,xinit=0)
@@ -218,10 +184,7 @@ for (i in 1:5){
 }
 dev.off()
 
-
-###################################################
-### code chunk number 15: chapter4.Rnw:756-768 (eval = FALSE)
-###################################################
+## ----eval=FALSE----------------------------------------------------------
 ## n <- 5
 ## samp <- setSampling(Terminal=1, n=n)
 ## IGyuima <- setYuima(model=IGmodel, sampling=samp)
@@ -232,15 +195,13 @@ dev.off()
 ##  IGsimdata <- c(IGsimdata,as.numeric(x1))
 ## }
 ## hist(IGsimdata,xlim=c(0,2), ylim=c(0,2), breaks=100, freq=FALSE,
-##  main=expression(paste("Distribution of ",X[1]," and Density of IG(1,2)")))
+##  main=expression(paste("Distribution of ",X[1],
+##  " and Density of IG(1,2)")))
 ## curve(dIG(x,delta,gamma),add=TRUE,col="red")
 
-
-###################################################
-### code chunk number 16: plot-IGprocd
-###################################################
+## ----plot-IGprocd,echo=FALSE,results='hide'------------------------------
 pdf("figures/plot-IGprocd.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 n <- 5
 samp <- setSampling(Terminal=1, n=n)
 IGyuima <- setYuima(model=IGmodel, sampling=samp)
@@ -255,10 +216,7 @@ main=expression(paste("Distribution of ",X[1]," and Density of IG(1,2)")))
 curve(dIG(x,delta,gamma),add=TRUE,col="red")
 dev.off()
 
-
-###################################################
-### code chunk number 17: chapter4.Rnw:898-909
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 rep <- 3000000
 set.seed(129)
 X1 <- rpts(rep,0.5,0.2,1)
@@ -271,12 +229,9 @@ summary(X1)
 summary(Xsum)
 ks.test(X1,Xsum)
 
-
-###################################################
-### code chunk number 18: plot-X1pts
-###################################################
+## ----plot-X1pts,echo=FALSE,results='hide'--------------------------------
 pdf("figures/plot-X1pts.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 hist(X1,xlim=c(0,3),ylim=c(0,3),breaks=100,main=expression(paste(X[1]," positive tempered stable distribution")),probability=TRUE)
 dev.off()
 rm(X1)
@@ -284,10 +239,7 @@ rm(Xsum)
 rm(X05)
 rm(X05.prime)
 
-
-###################################################
-### code chunk number 19: chapter4.Rnw:1185-1205
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 lambda <- 2
 alpha <- 1.5
 beta <- -0.7
@@ -309,12 +261,9 @@ plot(result,xlim=c(0,T),ylim=c(-5,6),col=i,
 main="Paths of variance gamma process",par(new=T))
 }
 
-
-###################################################
-### code chunk number 20: plot-VGprocess2
-###################################################
+## ----plot-VGprocess2,echo=FALSE,results='hide'---------------------------
 pdf("figures/plot-VGprocess2.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(127)
 for (i in 1:7) {
  result <- simulate(VGPyuima, xinit=xinit,
@@ -323,10 +272,7 @@ for (i in 1:7) {
 }
 dev.off()
 
-
-###################################################
-### code chunk number 21: chapter4.Rnw:1225-1239 (eval = FALSE)
-###################################################
+## ----eval=FALSE----------------------------------------------------------
 ## n <- 5
 ## samp <- setSampling(Terminal=T, n=n)
 ## VGPyuima <- setYuima(model=VGPmodel, sampling=samp)
@@ -342,12 +288,9 @@ dev.off()
 ##  " and Density of NG")))
 ## curve(dvgamma(x,lambda*T,alpha,beta,mu*T),add=TRUE,col="red")
 
-
-###################################################
-### code chunk number 22: plot-VGPproc2
-###################################################
+## ----plot-VGPproc2,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-VGPproc2.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 n <- 5
 samp <- setSampling(Terminal=T, n=n)
 VGPyuima <- setYuima(model=VGPmodel, sampling=samp)
@@ -363,10 +306,7 @@ hist(VGPsimdata,xlim=c(-7,10),ylim=c(0,0.22),breaks=100,freq=FALSE,
 curve(dvgamma(x,lambda*T,alpha,beta,mu*T),add=TRUE,col="red")
 dev.off()
 
-
-###################################################
-### code chunk number 23: chapter4.Rnw:1406-1426
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 delta <- 0.5
 alpha <- 1.5
 beta <- -0.7
@@ -388,12 +328,9 @@ par(new=T)
 hist(nig.rn,xlim=c(-1,10),ylim=c(0,0.61),breaks=100,
  freq=FALSE, main="", xlab="")
 
-
-###################################################
-### code chunk number 24: plot-NIGproc2
-###################################################
+## ----plot-NIGproc2,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-NIGproc2.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 hist(z,xlim=c(-1,10),ylim=c(0,0.61),breaks=100, freq=FALSE,
 col="green", main=title, xlab=expression(X[1.8]) )
 curve(dNIG(x,alpha,beta,delta*T,mu*T),add=TRUE,col="red")
@@ -402,10 +339,7 @@ hist(nig.rn,xlim=c(-1,10),ylim=c(0,0.61),breaks=100, freq=FALSE,
 main="", xlab="")
 dev.off()
 
-
-###################################################
-### code chunk number 25: chapter4.Rnw:1445-1465 (eval = FALSE)
-###################################################
+## ----eval=FALSE----------------------------------------------------------
 ## delta1 <- 0.5
 ## alpha <- 1.5
 ## beta <- -0.7
@@ -427,12 +361,9 @@ dev.off()
 ##  main="Paths of NIG process",par(new=T))
 ## }
 
-
-###################################################
-### code chunk number 26: plot-NIGproc3
-###################################################
+## ----plot-NIGproc3,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-NIGproc3.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 delta1 <- 0.5
 alpha <- 1.5
 beta <- -0.7
@@ -455,10 +386,7 @@ main="Paths of NIG process",par(new=T))
 }
 dev.off()
 
-
-###################################################
-### code chunk number 27: chapter4.Rnw:1498-1513
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 n <- 5
 samp <- setSampling(Terminal=T, n=n)
 NIG2yuima <- setYuima(model=NIG2model, sampling=samp)
@@ -475,21 +403,15 @@ hist(NIG2data,xlim=c(2,8),ylim=c(0,0.8),breaks=100, freq=FALSE,
  " and Density of NIG")))
 curve(dNIG(x,alpha,beta,delta*T,mu*T),add=TRUE,col="red")
 
-
-###################################################
-### code chunk number 28: plot-NIGproc4
-###################################################
+## ----plot-NIGproc4,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-NIGproc4.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 hist(NIG2data,xlim=c(2,8),ylim=c(0,0.8),breaks=100, freq=FALSE,
 main=expression(paste("Distribution of ",X[1.8], " and Density of NIG")))
 curve(dNIG(x,alpha,beta,delta*T,mu*T),add=TRUE,col="red")
 dev.off()
 
-
-###################################################
-### code chunk number 29: chapter4.Rnw:1545-1575
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 nrep <- 100000
 alpha <- 0.5
 delta <- 0.2
@@ -521,12 +443,9 @@ hist(Xsum,xlim=c(-3,3),ylim=c(0,1.2),breaks=300,
  probability=TRUE,col="red")
 ks.test(X1,Xsum)
 
-
-###################################################
-### code chunk number 30: plot-NTSPproc
-###################################################
+## ----plot-NTSPproc,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-NTSPproc.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 par(mfrow=c(2,2))
 hist(x,xlim=c(-3,3),ylim=c(0,1.2),breaks=200,
 main=expression(X[t]),probability=TRUE)
@@ -543,10 +462,7 @@ rm(X05)
 rm(X05.prime)
 rm(Xsum)
 
-
-###################################################
-### code chunk number 31: chapter4.Rnw:1657-1723 (eval = FALSE)
-###################################################
+## ----eval=FALSE----------------------------------------------------------
 ## alpha <- 0.5
 ## beta <- -0.4
 ## sigma <- 0.7
@@ -614,12 +530,9 @@ rm(Xsum)
 ##   alpha==1.5,",",beta==0.4,")")),par(new=T))
 ## }
 
-
-###################################################
-### code chunk number 32: plot-ASproc
-###################################################
+## ----plot-ASproc,echo=FALSE,results='hide'-------------------------------
 pdf("figures/plot-ASproc1.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 alpha <- 0.5
 beta <- -0.4
 sigma <- 0.7
@@ -640,7 +553,7 @@ alpha==0.5,",",beta==-0.4,")")),par(new=T))
 }
 dev.off()
 pdf("figures/plot-ASproc2.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 #param2
 alpha <- 1
 beta <- -0.4
@@ -658,7 +571,7 @@ alpha==1,",",beta==-0.4,")")),par(new=T))
 }
 dev.off()
 pdf("figures/plot-ASproc3.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 #param3
 alpha <- 1
 beta <- 0.4
@@ -676,7 +589,7 @@ alpha==1,",",beta==0.4,")")),par(new=T))
 }
 dev.off()
 pdf("figures/plot-ASproc4.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 #param4
 alpha <- 1.5
 beta <- 0.4
@@ -694,14 +607,11 @@ alpha==1.5,",",beta==0.4,")")),par(new=T))
 }
 dev.off()
 
-
-###################################################
-### code chunk number 33: chapter4.Rnw:2302-2312
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 modJump <- setModel(drift = c("-theta*x"), diffusion = "sigma",
-jump.coeff=c("gamma+x/sqrt(1+x^2)"),
-measure = list(intensity="lambda",df=list("dnorm(z, -3, 1)")),
-measure.type="CP", solve.variable="x")
+ jump.coeff=c("gamma+x/sqrt(1+x^2)"),
+ measure = list(intensity="lambda",df=list("dnorm(z, -3, 1)")),
+ measure.type="CP", solve.variable="x")
 modJump
 samp <- setSampling(n=10000,Terminal=10)
 set.seed(125)
@@ -709,19 +619,13 @@ X <- simulate(modJump, xinit=2, sampling=samp,
  true.par= list(theta=2, sigma=0.5,gamma=0.3,lambda=0.5))
 plot(X)
 
-
-###################################################
-### code chunk number 34: plot-modelJump
-###################################################
+## ----plot-modelJump,echo=FALSE,results='hide'----------------------------
 pdf("figures/plot-modelJump.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(X)
 dev.off()
 
-
-###################################################
-### code chunk number 35: chapter4.Rnw:2340-2351
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 x0 <- 2
 a <- 0.1
 c <- -1
@@ -734,21 +638,15 @@ set.seed(128)
 result.ig <- simulate(yuima.ig,true.par=list(delta0=0.55,gamma=2))
 plot(result.ig)
 
-
-###################################################
-### code chunk number 36: plot-modelIG
-###################################################
+## ----plot-modelIG,echo=FALSE,results='hide'------------------------------
 pdf("figures/plot-modelIG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(128)
 result.ig <- simulate(yuima.ig,true.par=list(delta0=0.55,gamma=2))
 plot(result.ig)
 dev.off()
 
-
-###################################################
-### code chunk number 37: chapter4.Rnw:2375-2387
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 x0 <- 2
 a <- 0.1
 c <- -1
@@ -762,22 +660,16 @@ result.nig <- simulate(yuima.nig,true.par=list(alpha=2, beta=0,
  delta0=0.55, mu=0))
 plot(result.nig)
 
-
-###################################################
-### code chunk number 38: plot-modelNIG
-###################################################
+## ----plot-modelNIG,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-modelNIG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(128)
 result.nig <- simulate(yuima.nig,true.par=list(alpha=2, beta=0,
 delta0=0.55, mu=0))
 plot(result.nig)
 dev.off()
 
-
-###################################################
-### code chunk number 39: chapter4.Rnw:2408-2421
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 x0 <- 2
 a <- 0.1
 c <- -1
@@ -792,22 +684,16 @@ result.nig <- simulate(yuima.nig,true.par=list(alpha=2,
  beta=0, delta0=0.55, mu=0, Lambda=Lambda))
 plot(result.nig)
 
-
-###################################################
-### code chunk number 40: plot-modelNIG2
-###################################################
+## ----plot-modelNIG2,echo=FALSE,results='hide'----------------------------
 pdf("figures/plot-modelNIG2.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(128)
 result.nig <- simulate(yuima.nig,true.par=list(alpha=2,
 beta=0, delta0=0.55, mu=0, Lambda=Lambda))
 plot(result.nig)
 dev.off()
 
-
-###################################################
-### code chunk number 41: chapter4.Rnw:2498-2520
-###################################################
+## ----fig.keep='none'-----------------------------------------------------
 x0 <- c(2,3)
 a1 <- function(t,x1,x2){ x1*cos(2*pi*t)-x2*sin(2*pi*t) }
 a2 <- function(t,x1,x2){ x1*sin(2*pi*t)+x2*cos(2*pi*t) }
@@ -831,22 +717,16 @@ result.mnig <- simulate(yuima.mnig,true.par=list(alpha=alpha,
  beta=beta, delta0=delta0, mu=mu, Lambda=Lambda))
 plot(result.mnig)
 
-
-###################################################
-### code chunk number 42: plot-modelMNIG
-###################################################
+## ----plot-modelMNIG,echo=FALSE,results='hide'----------------------------
 pdf("figures/plot-modelMNIG.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 set.seed(128)
 result.mnig <- simulate(yuima.mnig,true.par=list(alpha=alpha,
 beta=beta, delta0=delta0, mu=mu, Lambda=Lambda))
 plot(result.mnig)
 dev.off()
 
-
-###################################################
-### code chunk number 43: chapter4.Rnw:2571-2595
-###################################################
+## ----fig.keep='none', results='hide'-------------------------------------
 mod5 <- setModel(drift = c("-theta*x"), diffusion = "sigma",
 jump.coeff=c("gamma+x/sqrt(1+x^2)"),
 measure = list(intensity="lambda",df=list("dnorm(z, 2, 0.1)")),
@@ -866,40 +746,35 @@ sampling=setSampling(n=N,Terminal=T))
 plot(X)
 r <- h^0.4
 est.qmle <- qmle(yuima=X, start=true,
-lower=list(theta=1,sigma=0,gamma=0.1,lambda=0.1),
-upper=list(theta=3,sigma=2,gamma=0.8,lambda=20), method="L-BFGS-B",
-threshold=r)
+ lower=list(theta=1,sigma=0,gamma=0.1,lambda=0.1), 
+ upper=list(theta=3,sigma=2,gamma=0.8,lambda=20), method="L-BFGS-B",
+ threshold=r)
 unlist(true)
 summary(est.qmle)
 
+## ----echo=FALSE----------------------------------------------------------
+unlist(true)
+writeLines(strwrap(capture.output(summary(est.qmle)),width=60))
 
-###################################################
-### code chunk number 44: plot-modelSDEJ
-###################################################
+## ----plot-modelSDEJ,echo=FALSE,results='hide'----------------------------
 pdf("figures/plot-modelSDEJ.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(X)
 dev.off()
 
-
-###################################################
-### code chunk number 45: chapter4.Rnw:2609-2619
-###################################################
+## ------------------------------------------------------------------------
 est.qmle1 <- qmle(yuima=X, start=true,
-lower=list(theta=1,sigma=0,gamma=0.1,lambda=0.1),
-upper=list(theta=3,sigma=2,gamma=0.8,lambda=20), method="L-BFGS-B",
-threshold=2) # too large
+ lower=list(theta=1,sigma=0,gamma=0.1,lambda=0.1),
+ upper=list(theta=3,sigma=2,gamma=0.8,lambda=20), method="L-BFGS-B",
+ threshold=2) # too large
 coef(est.qmle1)
 est.qmle2 <- qmle(yuima=X, start=true,
-lower=list(theta=1,sigma=0,gamma=0.1,lambda=0.1),
-upper=list(theta=3,sigma=2,gamma=10,lambda=1000), method="L-BFGS-B",
-threshold=0.03) ## too low
+ lower=list(theta=1,sigma=0,gamma=0.1,lambda=0.1),
+ upper=list(theta=3,sigma=2,gamma=10,lambda=1000), method="L-BFGS-B",
+ threshold=0.03) ## too low
 coef(est.qmle2)
 
-
-###################################################
-### code chunk number 46: chapter4.Rnw:2655-2691
-###################################################
+## ----fig.keep='none',message=FALSE---------------------------------------
 require(quantmod)
 getSymbols("ENI.MI",to="2016-12-31")
 S <- ENI.MI$ENI.MI.Adjusted
@@ -937,24 +812,17 @@ curve(myfgBm, zMin, zMax, add=TRUE, lty=2)
 curve(myfNorm, zMin, zMax, col="red", add=TRUE, lty=4)
 curve(myfNIG, zMin, zMax, col="blue", add=TRUE,lty=3)
 
-
-###################################################
-### code chunk number 47: plot-modelExpLevy
-###################################################
+## ----plot-modelExpLevy,echo=FALSE,results='hide'-------------------------
 pdf("figures/plot-modelExpLevy.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(density(Z,na.rm=TRUE),main="Gaussian versus NIG")
 curve(myfgBm, zMin, zMax, add=TRUE, lty=2)
 curve(myfNorm, zMin, zMax, col="red", add=TRUE, lty=4)
 curve(myfNIG, zMin, zMax, col="blue", add=TRUE,lty=3)
 dev.off()
 
-
-###################################################
-### code chunk number 48: chapter4.Rnw:2710-2713
-###################################################
+## ------------------------------------------------------------------------
 AIC(gBm.fit)
 AIC(Norm.fit)
 AIC(NIG.fit)
-
 

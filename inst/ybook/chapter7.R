@@ -1,16 +1,18 @@
-### R code from vignette source '/Users/jago/Dropbox (VOICES)/yuima-book/chapter7.Rnw'
+## ----include=FALSE-------------------------------------------------------
+library(knitr)
+opts_chunk$set(
+tidy=FALSE,
+width.cutoff = 60,
+strip.white=TRUE,
+warning=FALSE
+)
 
-###################################################
-### code chunk number 1: chapter7.Rnw:3-6
-###################################################
-options(width=60)
+## ----include=FALSE-------------------------------------------------------
+options(width=55)
 options(continue="  ")
 require(yuima)
 
-
-###################################################
-### code chunk number 2: setCogarch
-###################################################
+## ----setCogarch,echo=TRUE,eval=TRUE--------------------------------------
 # COGARCH(1,1) driven by CP
 Cog11 <- setCogarch(p = 1, q=1,  measure = list(intensity="1", 
   df="dnorm(z, 0, 1)"), measure.type = "CP", XinExpr = TRUE)
@@ -21,18 +23,12 @@ Cog22 <- setCogarch(p=2, q=2, measure = list(intensity="1",
   df="dnorm(z, 0, 1)"), measure.type = "CP", XinExpr = TRUE)
 Cog22
 
-
-###################################################
-### code chunk number 3: str-cog
-###################################################
+## ----str-cog,echo=TRUE,eval=TRUE-----------------------------------------
 class(Cog11)
 slotNames(Cog11)
 str(Cog11@info,2)
 
-
-###################################################
-### code chunk number 4: chapter7.Rnw:215-226
-###################################################
+## ------------------------------------------------------------------------
 # Param of the COGARCH(1,1)
 paramCP11 <- list(a1 = 0.038, b1=  0.053, a0 = 0.04/0.053, 
  y01 = 50.31)
@@ -45,19 +41,13 @@ paramCP22 <- list(a1 = 0.04, a2 = 0.001, b1 = 0.705, b2 = 0.1,
 check22 <- Diagnostic.Cogarch(Cog22, param=paramCP22)
 str(check22)
 
-
-###################################################
-### code chunk number 5: cogarch-euler
-###################################################
+## ----cogarch-euler,echo=TRUE---------------------------------------------
 model1 <- setCogarch(p = 1, q = 1, 
   measure=list("rvgamma(z, 1, sqrt(2), 0, 0)"), 
   measure.type = "code", Cogarch.var = "G", 
   V.var = "v", Latent.var="x", XinExpr=TRUE)
 
-
-###################################################
-### code chunk number 6: cogarch-euler-bad
-###################################################
+## ----cogarch-euler-bad---------------------------------------------------
 param1 <- list(a1 = 0.038, b1 = 301, a0 =0.01, x01 = 0)
 Diagnostic.Cogarch(model1, param=param1)
 Terminal1 <- 5
@@ -67,78 +57,51 @@ set.seed(123)
 sim1 <- simulate(model1, sampling = samp1, true.parameter = param1,  
  method="euler")
 
-
-###################################################
-### code chunk number 7: plot-cogarch
-###################################################
+## ----plot-cogarch,echo=TRUE,fig.keep='none',results='hide'---------------
 plot(sim1, main="VG-COGARCH(1,1) model with Euler scheme")
 
-
-###################################################
-### code chunk number 8: plot-cogarch1
-###################################################
+## ----plot-cogarch1,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-cogarch1.pdf",width=9,height=4)
-par(mar=c(4,4,0,0))
+par(mar=c(4,4,1,1))
 plot(sim1, 
  main="VG-COGARCH(1,1) model with Euler scheme")
 dev.off()
 
-
-###################################################
-### code chunk number 9: sim-cogarch2
-###################################################
+## ----sim-cogarch2,eval=TRUE,echo=TRUE------------------------------------
 set.seed(123)
 sim2 <- simulate(model1, sampling = samp1, true.parameter = param1,
         method="mixed")
 
-
-###################################################
-### code chunk number 10: plot-cogach2
-###################################################
+## ----plot-cogach2,echo=TRUE,fig.keep='none',results='hide'---------------
 plot(sim2, main="VG-COGARCH(1,1) model with mixed scheme")
 
-
-###################################################
-### code chunk number 11: plot-cogarch2
-###################################################
+## ----plot-cogarch2,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-cogarch2.pdf",width=9,height=4)
-par(mar=c(4,4,0,0))
+par(mar=c(4,4,1,1))
 plot(sim2, 
  main="VG-COGARCH(1,1) model with mixed scheme")
 dev.off()
 
-
-###################################################
-### code chunk number 12: chapter7.Rnw:342-345
-###################################################
+## ------------------------------------------------------------------------
 sampCP <- setSampling(0, 1000, 5000)
 simCog11 <- simulate(Cog11, true.par=paramCP11, sampling=sampCP)
 simCog22 <- simulate(Cog22, true.par=paramCP22, sampling=sampCP)
 
-
-###################################################
-### code chunk number 13: plot-cogachs
-###################################################
+## ----plot-cogachs,echo=TRUE,fig.keep='none',results='hide'---------------
 plot(simCog11, main="CP-COGARCH(1,1) with Gaussian noise")
 plot(simCog22, main="CP-COGARCH(2,2) with Gaussian noise")
 
-
-###################################################
-### code chunk number 14: plot-cogarchs2
-###################################################
+## ----plot-cogarchs2,echo=FALSE,results='hide'----------------------------
 pdf("figures/plot-cogarchs1.pdf",width=9,height=4)
-par(mar=c(4,4,0,0))
+par(mar=c(4,4,1,1))
 plot(simCog11, main="CP-COGARCH(1,1) with Gaussian noise")
 dev.off()
 pdf("figures/plot-cogarchs2.pdf",width=9,height=4)
-par(mar=c(4,4,0,0))
+par(mar=c(4,4,1,1))
 plot(simCog22, main="CP-COGARCH(2,2) with Gaussian noise")
 dev.off()
 
-
-###################################################
-### code chunk number 15: gmm-cogarch
-###################################################
+## ----gmm-cogarch,eval=TRUE,echo=TRUE-------------------------------------
 set.seed(123)
 sampCP <- setSampling(0, 5000, 15000)
 simCog11 <- simulate(Cog11, true.par=paramCP11, sampling=sampCP)
@@ -148,10 +111,7 @@ mat <- rbind(coef(fit11), unlist(paramCP11[names(coef(fit11))]))
 rownames(mat) <- c("gmm", "true")
 mat
 
-
-###################################################
-### code chunk number 16: est-cogarch3
-###################################################
+## ----est-cogarch3,eval=TRUE,echo=TRUE------------------------------------
 param.VG <- list(a1 = 0.038,  b1 =  0.053, a0 = 0.04 / 0.053,
   y01 = 50.33)
 cog.VG <- setCogarch(p = 1, q = 1, work = FALSE,
@@ -169,10 +129,7 @@ mat <- rbind(coef(fit.gmm), coef(fit.qmle)[nm],
 rownames(mat) <- c("gmm", "qmle", "true")
 round(mat,5)
 
-
-###################################################
-### code chunk number 17: chapter7.Rnw:579-593
-###################################################
+## ----message=FALSE,fig.keep='none'---------------------------------------
 require(quantmod)
 getSymbols("NXT.L",  to="2016-12-31")
 S <- NXT.L$NXT.L.Close
@@ -188,19 +145,13 @@ fitGARCH <- ugarchfit(data = X, spec = spec)
 GARCH11param <- coef(fitGARCH)
 GARCH11param
 
-
-###################################################
-### code chunk number 18: plot-nextplc
-###################################################
+## ----plot-nextplc,echo=FALSE,results='hide'------------------------------
 pdf("figures/plot-nextplc.pdf",width=9,height=4)
-par(mar=c(4,4,2,0))
+par(mar=c(4,4,2,1))
 plot(X,  main="Log-returns of NEXT Plc")
 dev.off()
 
-
-###################################################
-### code chunk number 19: chapter7.Rnw:608-622
-###################################################
+## ------------------------------------------------------------------------
 Delta <- 1/252
 ParGarToCog<- function(GARCH11param, dt, names=NULL){
     if(is.null(names))
@@ -216,10 +167,7 @@ ParGarToCog<- function(GARCH11param, dt, names=NULL){
     return(qmleparInGARCH)
 }
 
-
-###################################################
-### code chunk number 20: chapter7.Rnw:625-637
-###################################################
+## ------------------------------------------------------------------------
 ParGarToCog(GARCH11param, Delta)
 start <- as.list(ParGarToCog(GARCH11param, Delta))
 
@@ -233,10 +181,7 @@ Cog11.fit <- qmle(yuima = Cog11, grideq=TRUE,
 COGARCH11par <- coef(Cog11.fit)
 COGARCH11par
 
-
-###################################################
-### code chunk number 21: chapter7.Rnw:640-653
-###################################################
+## ------------------------------------------------------------------------
 ParCogToGar<- function(COGARCH11param, dt, names=NULL){
     a0 <- COGARCH11param["a0"]
     a1 <- COGARCH11param["a1"]
@@ -250,5 +195,4 @@ ParCogToGar<- function(COGARCH11param, dt, names=NULL){
 }
 ParCogToGar(COGARCH11par, Delta)
 GARCH11param
-
 
