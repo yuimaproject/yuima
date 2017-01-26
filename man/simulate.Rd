@@ -51,8 +51,8 @@ For a COGARCH(p,q) process setting \code{method=mixed} implies that the simulati
   \item{yuima}{a \code{yuima-class} object.}
 }
 \author{The YUIMA Project Team}
-\note{There may be missing information in the simulate description.
-Please contribute with suggestions and fixings.
+\note{
+In the simulation of multi-variate Levy processes, the values of parameters have to be defined outside of \code{simulate} function in advance (see examples below).
 }
 \examples{
 set.seed(123)
