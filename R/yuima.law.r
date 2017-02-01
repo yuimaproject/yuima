@@ -150,7 +150,9 @@ setLaw <- function(rng = function(n,...){NULL},
       }
     }
   }
-
+  if(is.null(param)){
+    param<-character()
+  }
 
   res <- new("yuima.law",
              rng = rng,
