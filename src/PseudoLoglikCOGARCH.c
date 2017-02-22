@@ -215,8 +215,11 @@ SEXP pseudoLoglik_COGARCH1(SEXP a0, SEXP bq, SEXP a1, SEXP stateMean, SEXP Q,
                             rV[0] = rV[0]+ra0[0];
 
                             /* PseudologLik<- -1/2*(DeltaG2[i]/VarDeltaG+log(VarDeltaG)+log(2*pi)) */
-
-                            *res += 0.5*(-rDeltaG2[t]/rVarDeltaG-log(rVarDeltaG)-log(2.*3.14159265));
+                            if(rVarDeltaG>0){
+                              *res += 0.5*(-rDeltaG2[t]/rVarDeltaG-log(rVarDeltaG)-log(2.*3.14159265));
+                            }else{
+                              *res += -1000000000;
+                            }
                           /*fscanf(fd, "%lf", &res);
                           printf("\n c: %.10f -  %.5f %.5f  -  %.5f", rVarDeltaG, rstate[0], rstate[1], rV[0]);*/
 

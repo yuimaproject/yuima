@@ -15,7 +15,7 @@ PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
   Obs <- as.numeric(as.matrix(Data)[,1])
   my.env <- new.env()
   param <- unlist(start)
-
+  assign("mycog",model,envir=my.env)
   meas.par <- model@parameter@measure
 
   if(length(meas.par)==0 && Est.Incr=="IncrPar"){
@@ -141,7 +141,7 @@ PseudoLogLik.COGARCH <- function(yuima, start, method="BFGS", fixed = list(),
   rownames(vcov)[1:length(names_coef)] <- names_coef
 
   if(!is.null(resHessian)){
-    vcov[c(1:length(names_coef)),c(1:length(names_coef))]<- solve(resHessian)
+    vcov[c(1:length(names_coef)),c(1:length(names_coef))]<- tryCatch(solve(resHessian),error=function(resHessian){NA})
   }
 
   mycoef <- start
@@ -182,14 +182,22 @@ minusloglik.COGARCH1<-function(param,env){
   a1<-param[env$ma.names[1]]
 
   stateMean <- a0/(bq-a1)*as.matrix(c(1,numeric(length=(env$q-1))))
-
+  penalty <- 0
+  CondStat <- Diagnostic.Cogarch(env$mycog,param = as.list(param),display = FALSE)
+  if(CondStat$stationary=="Try a different S matrix"){
+    penalty <-penalty + 10^6
+  }
+  if(CondStat$positivity==" "){
+    penalty <- penalty + 10^6
+  }
  #param[env$start.state]<-stateMean
  state <- stateMean
 #  state <- param[env$start.state]
   DeltaG2 <- env$Obs
   B <- env$B
   if(env$q>1){
-    B[1:(env$q-1),] <- c(matrix(0,(env$p-1),1), diag(env$q-1))
+    #B[1:(env$q-1),] <- c(matrix(0,(env$p-1),1), diag(env$q-1))
+    B[1:(env$q-1),] <- cbind(matrix(0,(env$q-1),1), diag(env$q-1))
   }
   B[env$q,] <- -param[env$ar.names[env$q:1]]
   a<-matrix(0,env$q,1)
@@ -232,7 +240,7 @@ minusloglik.COGARCH1<-function(param,env){
   PseudologLik <-.Call("pseudoLoglik_COGARCH1", a0, bq, a1, stateMean, Q=as.integer(env$q),
                          DeltaG2, Deltat, DeltatB1,  a, e,
                        V, nObs=as.integer(env$nObs-1),
-                      dummyMatr, dummyeB1)
+                      dummyMatr, dummyeB1) - penalty
   #cat(sprintf("\n%.5f ", PseudologLik))
 #
 #
