@@ -102,12 +102,13 @@ euler<-function(xinit,yuima,dW,env){
   if(!length(sdeModel@measure.type)){ ##:: Wiener Proc
     ##:: using Euler-Maruyama method
     
-    if(0){ # old version (Jan 25, 2017)
+    #if(0){ # old version (Jan 25, 2017)
       if(var.in.diff & (!is.Poisson(sdeModel))){  ##:: diffusions have state variables and it is not Poisson
         ##:: calcurate difference eq.
         for( i in 1:n){
           # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i]
-          dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] # LM
+          #dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] # LM
+          dX <- dX + p.b(t=yuima@sampling@Initial+(i-1)*delta, X=dX) %*% dW[, i] # YK
           X_mat[,i+1] <- dX
         }
       }else{  ##:: diffusions have no state variables (not use p.b(). faster)
@@ -154,8 +155,9 @@ euler<-function(xinit,yuima,dW,env){
           X_mat[, i+1] <- dX
         }
       }
-    }
+    #}
     
+    if(0){ # currently ignored due to a bug (YK, Feb 23, 2017)
     # new version (Jan 25, 2017)
     b <- parse(text=paste("c(",paste(as.character(V0),collapse=","),")"))
     vecV <- parse(text=paste("c(",paste(as.character(unlist(V)),collapse=","),")"))
@@ -163,7 +165,7 @@ euler<-function(xinit,yuima,dW,env){
     X_mat <- .Call("euler", dX, Initial, as.integer(r.size), 
                    rep(1, n) * delta, dW, modeltime, modelstate, quote(eval(b, env)), 
                    quote(eval(vecV, env)), env, new.env())
-    
+    }
     #tsX <- ts(data=t(X_mat), deltat=delta , start=0)
     tsX <- ts(data=t(X_mat), deltat=delta , start = yuima@sampling@Initial) #LM
   }else{ ##:: Levy
@@ -286,15 +288,18 @@ euler<-function(xinit,yuima,dW,env){
             }
 
             # Pi <- p.b.j(t=i*delta,X=dX) * J #LM
-            Pi <- p.b.j(t=yuima@sampling@Initial+i*delta,X=dX) * J
+            #Pi <- p.b.j(t=yuima@sampling@Initial+i*delta,X=dX) * J
+            Pi <- p.b.j(t=yuima@sampling@Initial+(i-1)*delta,X=dX) * J # YK
           }else{# we add this part since we allow the user to specify the increment of CP LM 05/02/2015
           #  Pi <- p.b.j(t=i*delta,X=dX) %*% dL[, i] #LM
-            Pi <- p.b.j(t=yuima@sampling@Initial+i*delta,X=dX) %*% dL[, i]
+            #Pi <- p.b.j(t=yuima@sampling@Initial+i*delta,X=dX) %*% dL[, i]
+            Pi <- p.b.j(t=yuima@sampling@Initial+(i - 1)*delta,X=dX) %*% dL[, i] # YK
           }
           ##Pi <- p.b.j(t=i*delta, X=dX)
         }
         # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] + Pi # LM
-        dX <- dX + p.b(t=yuima@sampling@Initial + i*delta, X=dX) %*% dW[, i] + Pi
+        #dX <- dX + p.b(t=yuima@sampling@Initial + i*delta, X=dX) %*% dW[, i] + Pi
+        dX <- dX + p.b(t=yuima@sampling@Initial + (i - 1)*delta, X=dX) %*% dW[, i] + Pi # YK
         X_mat[, i+1] <- dX
       }
       # tsX <- ts(data=t(X_mat), deltat=delta, start=0) #LM
@@ -357,7 +362,8 @@ euler<-function(xinit,yuima,dW,env){
         }
         #           cat("\np.b.j call\n")
             # tmp.j <- p.b.j(t=i*delta, X=dX) #LM
-            tmp.j <- p.b.j(t=yuima@sampling@Initial+i*delta, X=dX)
+            #tmp.j <- p.b.j(t=yuima@sampling@Initial+i*delta, X=dX)
+            tmp.j <- p.b.j(t=yuima@sampling@Initial+(i - 1)*delta, X=dX) # YK
             #print(str(tmp.j))
             #cat("\np.b.j cback and dZ\n")
             # print(str(dZ[,i]))
@@ -367,7 +373,8 @@ euler<-function(xinit,yuima,dW,env){
          #print(str(tmp.j))
          #print(str(p.b(t = i * delta, X = dX) %*% dW[, i]))
         # dX <- dX + p.b(t=i*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i] #LM
-          dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i]
+          #dX <- dX + p.b(t=yuima@sampling@Initial+i*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i]
+          dX <- dX + p.b(t=yuima@sampling@Initial+(i - 1)*delta, X=dX) %*% dW[, i] +tmp.j %*% dZ[,i] # YK
         X_mat[, i+1] <- dX
       }
       # tsX <- ts(data=t(X_mat), deltat=delta, start=0) #LM
