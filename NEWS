@@ -46,3 +46,4 @@
 2017/01/25: modified sim.euler.R and added euler.c to implement the Euler-Maruyama scheme by the C code (only the diffusion case)
 2017/02/23: modified sim.euler.R and removed euler.c due to a memory corruption
                   fix a bug in sim.euler.R
+2017/03/27: added IC.R and qmleLevy.R
