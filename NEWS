@@ -47,3 +47,5 @@
 2017/02/23: modified sim.euler.R and removed euler.c due to a memory corruption
                   fix a bug in sim.euler.R
 2017/03/27: added IC.R and qmleLevy.R
+2017/04/12: fix a bug in sim.euler.R
+                  (re-)added euler.c 
