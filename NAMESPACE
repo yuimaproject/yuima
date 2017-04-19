@@ -17,8 +17,9 @@ importFrom("utils", "relist")
 
 #08/07/2016
 #exportPattern("^[[:alpha:]]+") # NEVER DO THIS AGAIN PLEASE!
+#cimport(RcppArmadillo)
 importFrom(Rcpp, evalCpp)
-
+#import(RcppArmadillo)
 # 03/07/2015
 importFrom(stats, time)
 importFrom(stats, ts)

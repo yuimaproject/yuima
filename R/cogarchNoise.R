@@ -59,7 +59,8 @@ cogarchNoise<-function(yuima, data=NULL, param, mu=1){
   b <- param[ar.name]
   cost<- param[loc.par]
   Data<-as.matrix(onezoo(observ)[,1])
-  freq<-round(frequency(onezoo(observ)[,1]))
+  #freq<-round(frequency(onezoo(observ)[,1]))
+  freq<- diff(time(onezoo(observ)))
   res<-auxcogarch.noise(cost,b,acoeff,mu,Data,freq,model@solve.variable)
   return(res)
 }
@@ -81,9 +82,11 @@ auxcogarch.noise<-function(cost,b,acoeff,mu,Data,freq,lab){
 #  Process_Y1 <- ExpY0
 #   Process_Y <- as.matrix(50.33)
   var_V<-cost + sum(acoeff*Process_Y)
-  delta <- 1/freq
+  # delta <- 1/freq
+  deltatot <- c(0,freq)
   for(t in c(2:(length(Data)))){
     # Y_t=e^{A\Delta t}Y_{t-\Delta t}+e^{A\left(\Delta t\right)}e\left(\Delta G_{t}\right)^{2}
+    delta <- deltatot[t]
     Process_Y <- cbind(Process_Y, (expm(B*delta)%*%(Process_Y[,t-1]+e*squaredG[t])))
 #    Process_Y1 <- merge(Process_Y1, (expm(B*delta)%*%(Process_Y1[,t-1]+e*squaredG[t])))
     #Process_Y <- cbind(Process_Y, (Process_Y[,t-1]+delta*B%*%Process_Y[,t-1]+e*squaredG[t]))
@@ -99,7 +102,10 @@ auxcogarch.noise<-function(cost,b,acoeff,mu,Data,freq,lab){
   DumRet <- as.numeric(Data[1]+cumsum(DeltaG))
   Cog <- cbind(DumRet,CogDum)
   colnames(Cog) <- lab
-  Cogarch <- setData(Cog, delta = delta)
+  Cog <- zoo(Cog, 
+    order.by = cumsum(deltatot)) # Dataset on true irregular grid
+  
+  Cogarch <- setData(Cog)
   res<-list(incr.L=incr.L, Cogarch=Cogarch)
   return(res)
 }

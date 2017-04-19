@@ -9,6 +9,7 @@ Maintainer: Stefano M. Iacus <stefano.iacus@unimi.it>
 Description: Simulation and Inference for SDEs and Other Stochastic Processes.
 License: GPL-2
 URL: http://www.yuima-project.com
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
+
 
 
