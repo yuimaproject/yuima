@@ -24,39 +24,39 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE)
   if(length(sdeModel@xinit) == 1){
     args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
   if(code == "rNIG"){
-      if(!((round(eval(parse(text = paste("(",args[5] ,")+(", args[3], ")*(", args[4],
-                                          ")/sqrt((", args[2], ")^2-(", args[3], ")^2)" ))), digit = 10) == 0)
-           && (round(eval(parse(text = paste("(",args[2], ")^2*(", args[4], ")/(sqrt((",  args[2],
-                                             ")^2-(", args[3], ")^2))^3"))), digit = 10) == 1)))
+      if(!((abs(eval(parse(text = paste("(",args[5] ,")+(", args[3], ")*(", args[4],
+                                          ")/sqrt((", args[2], ")^2-(", args[3], ")^2)" )))) < 10^(-10))
+           && (abs(eval(parse(text = paste("(",args[2], ")^2*(", args[4], ")/(sqrt((",  args[2],
+                                             ")^2-(", args[3], ")^2))^3"))) -1) < 10^(-10))))
       {
         yuima.stop("This function is only for standardized Levy noises.")
       }
     }
     else if(code == "rvgamma"){
-      if(!((round(eval(parse(text = paste("(", args[5], ")+2*(", args[2], ")*(", args[4], ")/((", args[3], ")^2-("
-                                          , args[4], ")^2)" ))), digit = 10) == 0)
-           && (round(eval(parse(text = paste("2*((", args[2], ")*(", args[3], ")^2+(", args[4], ")^2)", "/(("
-                                             , args[3], ")^2-(", args[4], ")^2)^2"))), digit = 10) == 1)))
+      if(!((abs(eval(parse(text = paste("(", args[5], ")+2*(", args[2], ")*(", args[4], ")/((", args[3], ")^2-("
+                                          , args[4], ")^2)" )))) < 10^(-10))
+           && (abs(eval(parse(text = paste("2*((", args[2], ")*(", args[3], ")^2+(", args[4], ")^2)", "/(("
+                                             , args[3], ")^2-(", args[4], ")^2)^2"))) - 1) < 10^(-10))))
       {
         yuima.stop("This function is only for standardized Levy noises")
       }
     }
   else if((code == "rnts")){
-      if(!((round(eval(parse(text = paste("(", args[6], ")-(", args[2], ")*(",
+      if(!((abs(eval(parse(text = paste("(", args[6], ")-(", args[2], ")*(",
                                           args[3], ")*(", args[4], ")^((", args[2],
                                           ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))*(", args[5],
                                           ")"
-      ))), digit = 10) == 0)
-      &&(round(eval(parse(text = paste("(", args[3], ")*(", args[2],")*((", args[2], ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))*(", args[4], ")^((",args[2], ")-2)*(", args[5], ")^2-(",
+      )))) < 10^(-10))
+      &&(abs(eval(parse(text = paste("(", args[3], ")*(", args[2],")*((", args[2], ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))*(", args[4], ")^((",args[2], ")-2)*(", args[5], ")^2-(",
                                        args[2], ")*(", args[3], ")*(", args[4], ")^((", args[2], ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))"
-      ))), digit = 10) == 1)))
+      ))) - 1) < 10^(-10))))
       {
         yuima.stop("This function is only for standardized Levy processes.")
     }
   }else if(code == "rbgamma"){
-    if(!((round(eval(parse(text = paste("(", args[2], ")/(", args[3],")-(", args[4],")/(", args[5], ")"))),digit = 10) == 0)
-         && (round(eval(parse(text = paste("(", args[2], ")/(", args[3], ")^2","+(", args[4],")/(", args[5],")^2"
-         ))), digit = 10) == 1)))
+    if(!((abs(eval(parse(text = paste("(", args[2], ")/(", args[3],")-(", args[4],")/(", args[5], ")")))) < 10^(-10))
+         && (abs(eval(parse(text = paste("(", args[2], ")/(", args[3], ")^2","+(", args[4],")/(", args[5],")^2"
+         ))) - 1) < 10^(-10) )))
     {
       yuima.stop("This function is only for standardized Levy processes.")
     }
