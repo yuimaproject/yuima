@@ -244,6 +244,7 @@ S3method(rbind, yuima.model)
 S3method(plot, yuima.llag) # Oct. 10, 2015
 S3method(plot, yuima.mllag) # Oct. 10, 2015
 
-useDynLib(yuima)
+useDynLib(yuima) #,.registration = TRUE)
+
 
 
