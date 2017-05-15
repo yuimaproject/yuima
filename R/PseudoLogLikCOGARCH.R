@@ -281,19 +281,24 @@ minusloglik.COGARCH1<-function(param,env){
 # #
 
   }else{
-    DeltatB1 <- lapply(as.list(Deltat), function(dt,B){expm(B*dt)} , B)
-    DeltatB2 <- lapply(as.list(Deltat), function(dt,B){expm(B*dt)} , Btilde)
-    DeltatB3 <- lapply(as.list(-Deltat), function(dt,B){expm(B*dt)} , Btilde)
-
-    for(i in c(1:(env$nObs-1))){
-        VarDeltaG <- as.numeric(a0*Deltat[i]*bq/(bq-a1)+ta%*%DeltatB2[[i]]%*%InvBtilde%*%(I-DeltatB3[[i]])%*%(state-stateMean))
-        state <- (I+DeltaG2[i]/V*e%*%ta)%*%DeltatB1[[i]]%*%state+a0*DeltaG2[i]/V*e
-        V <- as.numeric(a0+ta%*% state)
-        PseudologLik<--1/2*(DeltaG2[i]/VarDeltaG+log(VarDeltaG)+log(2*pi))+PseudologLik
-      }
-  }
+  #   DeltatB1 <- lapply(as.list(Deltat), function(dt,B){expm(B*dt)} , B)
+  #   DeltatB2 <- lapply(as.list(Deltat), function(dt,B){expm(B*dt)} , Btilde)
+  #   DeltatB3 <- lapply(as.list(-Deltat), function(dt,B){expm(B*dt)} , Btilde)
+  #
+  #   for(i in c(1:(env$nObs-1))){
+  #       VarDeltaG <- as.numeric(a0*Deltat[i]*bq/(bq-a1)+ta%*%DeltatB2[[i]]%*%InvBtilde%*%(I-DeltatB3[[i]])%*%(state-stateMean))
+  #       state <- (I+DeltaG2[i]/V*e%*%ta)%*%DeltatB1[[i]]%*%state+a0*DeltaG2[i]/V*e
+  #       V <- as.numeric(a0+ta%*% state)
+  #       PseudologLik<--1/2*(DeltaG2[i]/VarDeltaG+log(VarDeltaG)+log(2*pi))+PseudologLik
+  #     }
+  #
 #
-#   PseudologLik <- 0
+    PseudologLik <- 0
+    PseudologLik <- Irregular_PseudoLoglik_COG(lengthObs=(env$nObs-1), B, Btilde, InvBtilde, a0,
+                                               bq, a1, V, PseudologLik, ta, state, stateMean, e, DeltaG2, Deltat)
+
+    PseudologLik<-PseudologLik-penalty
+
 #
 #   for(i in c(1:(env$nObs-1))){
 #       VarDeltaG <- a0*Deltat*bq/(bq-a1)+ dummyMatr%*%(state-stateMean)
@@ -326,6 +331,7 @@ minusloglik.COGARCH1<-function(param,env){
 #       }
 #     }
 
+  }
     minusPseudoLogLik <- -PseudologLik
    return(minusPseudoLogLik)
 }

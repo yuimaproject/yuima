@@ -49,6 +49,10 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
 
   fullcoeff <- c(ar.name, ma.name, loc.par,xinit.name)
   nm<-names(param)
+  if(!all(xinit.name %in% nm)){
+    fullcoeff <- c(ar.name, ma.name, loc.par)
+  }
+
   oo <- match(nm, fullcoeff)
   if(!is(yuima.cogarch,"cogarch.est")){
     if(length(na.omit(oo))!=length(fullcoeff))
