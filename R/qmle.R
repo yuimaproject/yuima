@@ -596,6 +596,9 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
           if(mean.noise %in% names(lower)){lower[mean.noise]<-10^-7}
         oout <- optim(new.start, fj, method = method, hessian = TRUE, lower=lower, upper=upper)
 
+        if(length(fixed)>0)
+          oout$par[fixed.par]<- unlist(fixed)[fixed.par]
+
         if(is.CARMA(yuima)){
           HESS <- oout$hessian
         } else {
@@ -609,6 +612,26 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
           HESS<-HESS[-idx.b0,]
           HESS<-HESS[,-idx.b0]
         }
+        # if(is.CARMA(yuima) && length(yuima@model@parameter@measure)!=0){
+        #   for(i in c(1:length(fixed.par))){
+        #     indx.fixed<-match(fixed.par[i],rownames(HESS))
+        #     HESS<-HESS[-indx.fixed,]
+        #     HESS<-HESS[,-indx.fixed]
+        #   }
+        #   if(is.CARMA(yuima) && (NoNeg.Noise==TRUE)){
+        #     idx.noise<-(match(mean.noise,rownames(HESS)))
+        #     HESS<-HESS[-idx.noise,]
+        #     HESS<-HESS[,-idx.noise]
+        #   }
+        # }
+        if(is.CARMA(yuima)&& length(fixed)>0){
+          for(i in c(1:length(fixed.par))){
+            indx.fixed<-match(fixed.par[i],rownames(HESS))
+            HESS<-HESS[-indx.fixed,]
+            HESS<-HESS[,-indx.fixed]
+          }
+        }
+
         if(is.CARMA(yuima) && length(yuima@model@parameter@measure)!=0){
           for(i in c(1:length(fixed.par))){
             indx.fixed<-match(fixed.par[i],rownames(HESS))
@@ -621,6 +644,8 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
             HESS<-HESS[,-idx.noise]
           }
         }
+
+
         HaveDriftHess <- TRUE
         HaveDiffHess <- TRUE
       } else { ### one dimensional optim
