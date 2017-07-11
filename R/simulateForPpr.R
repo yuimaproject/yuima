@@ -20,10 +20,17 @@ setMethod("simulate", "yuima.Hawkes",
 aux.simulatHawkes<- function(object, nsim, seed,
   xinit, true.parameter, space.discretized, increment.W,
   increment.L, method, hurst, methodfGn, sampling, subsampling){
+  # Here we can construct specific algorithm for the standard Hawkes process
+  res <- aux.simulatPpr(object, nsim = nsim, seed = seed,
+                        xinit = xinit, true.parameter = true.parameter,
+                        space.discretized = space.discretized, increment.W = increment.W,
+                        increment.L = increment.L, method = method, hurst = hurst,
+                        methodfGn = methodfGn, sampling = sampling, subsampling = subsampling)
+
+  return(res)
 
 #   object@Kernel@param.Integral@allparam
 #   simOzaki.aux(gFun=object@gFun@formula,a,cCoeff, Time, numJump)
-  ret <-NULL
 }
 
 setMethod("simulate", "yuima.Ppr",

@@ -2,6 +2,30 @@ setHawkes <- function(lower.var="0", upper.var = "t", var.dt = "s",
   process = "N", dimension = 1, intensity = "lambda",
   ExpKernParm1="c", ExpKernParm2 ="a",
   const = "nu", measure = NULL, measure.type = NULL){
+  if(dimension==1){
+    if(is.null(measure)){
+      my.rPpr1 <- function(n){
+        res <- t(t(rep(1,n)))
+        return(res)
+      }
+
+
+      my.dPpr1 <-function(x){
+        res<-1
+        return(res)
+      }
+
+      # yuima.law for the underlying source of randomness
+
+      Law.Ppr1 <- setLaw(rng = my.rPpr1, density = my.dPpr1)
+      measure <- list(df = Law.Ppr1)
+      measure.type <- "code"
+    }
+  }else{
+    if(is.null(measure)){
+      yuima.stop("Missing argument measure: see setHawkes documentation")
+    }
+  }
 
   PROCESS <-  paste0(process,c(1:dimension))
   leng <- length(PROCESS)
