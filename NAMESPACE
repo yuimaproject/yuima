@@ -118,7 +118,7 @@ exportMethods(
 "F0",
 "Fnorm",
 "asymptotic_term",
-"cbind.yuima",
+#"cbind.yuima",
 "rand",
 "dens",
 "cdf",
@@ -224,7 +224,7 @@ export(char)
 export(qgv)
 export(mmfrac)
 
-export(cbind.yuima)
+#export(cbind.yuima)
 #export(rbind.yuima)
 S3method(print, phitest)
 S3method(print, qgv)
@@ -240,6 +240,7 @@ S3method(toLatex, yuima.model)
 S3method(toLatex, yuima.carma)
 S3method(toLatex, yuima.cogarch)
 S3method(rbind, yuima.model)
+S3method(cbind, yuima)
 
 S3method(plot, yuima.llag) # Oct. 10, 2015
 S3method(plot, yuima.mllag) # Oct. 10, 2015
