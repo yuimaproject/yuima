@@ -77,11 +77,13 @@ and the same slots in an object of \code{\link{yuima.model-class}} .
 Please contribute with suggestions and fixings.
 }
 
- \references{
+\references{
                Brockwell, P., Chadraa, E. and Lindner, A. (2006)
 Continuous-time GARCH processes, \emph{The Annals of Applied Probability}, \bold{16}, 790-826.
 
-Kluppelberg, C., Lindner, A., & Maller, R. (2004) A continuous-time GARCH process driven by a Levy process: Stationarity and second-order behaviour, \emph{Journal of Applied Probability}, \bold{41}, 601-622.
+Kluppelberg, C., Lindner, A., and Maller, R. (2004) A continuous-time GARCH process driven by a Levy process: Stationarity and second-order behaviour, \emph{Journal of Applied Probability}, \bold{41}, 601-622.
+
+Stefano M. Iacus, Lorenzo Mercuri, Edit Rroji (2017) COGARCH(p,q): Simulation and Inference with the yuima Package, \emph{Journal of Statistical Software}, \bold{80}(4), 1-49.
 }
 
 \examples{
