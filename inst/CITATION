@@ -19,11 +19,39 @@ citEntry(entry = "Article",
   volume       = "57",
   number       = "4",
   pages        = "1--51",
+  doi          = "10.18637/jss.v057.i04",
   url          = "http://www.jstatsoft.org/v57/i04/",
-
+  header       = "To cite yuima in publications use:",
   textVersion  =
   paste("Alexandre Brouste, Masaaki Fukasawa, Hideitsu Hino, Stefano M. Iacus, Kengo Kamatani, Yuta Koike, Hiroki Masuda, Ryosuke Nomura, Teppei Ogihara, Yasutaka Shimuzu, Masayuki Uchida, Nakahiro Yoshida (2014).",
         "The YUIMA Project: A Computational Framework for Simulation and Inference of Stochastic Differential Equations.",
         "Journal of Statistical Software, 57(4), 1-51.",
         "URL http://www.jstatsoft.org/v57/i04/.")
 )
+
+bibentry(bibtype = "Article",
+title        = "COGARCH$(p, q)$: Simulation and Inference with the {yuima} Package",
+author       = c(person(given = c("Stefano", "M."),
+family = "Iacus",
+email = "stefano.iacus@unimi.it"),
+person(given = "Lorenzo",
+family = "Mercuri",
+email = "lorenzo.mercuri@unimi.it"),
+person(given = "Edit",
+family = "Rroji",
+email = "erroji@units.it")),
+journal      = "Journal of Statistical Software",
+year         = "2017",
+volume       = "80",
+number       = "4",
+pages        = "1--49",
+doi          = "10.18637/jss.v080.i04",
+
+header       = "To cite COGARCH simulation and estimation with yuima in publications use:",
+textVersion  =
+paste("Stefano M. Iacus, Lorenzo Mercuri, Edit Rroji (2017).",
+"COGARCH(p,q): Simulation and Inference with the yuima Package.",
+"Journal of Statistical Software, 80(4), 1-49.",
+"doi:10.18637/jss.v080.i04")
+)
+
