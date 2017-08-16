@@ -7,11 +7,13 @@
     # require(methods)
  
     # require(zoo)
- packageStartupMessage(rep("#",44))
- packageStartupMessage("This is YUIMA Project package.")  
- packageStartupMessage("Check for the latest development version at:")
- packageStartupMessage("http://R-Forge.R-Project.org/projects/yuima")
- packageStartupMessage(rep("#",44))   
+  Pver <- read.dcf(file=system.file("DESCRIPTION", package=pkgname),
+    fields="Version")
+ packageStartupMessage(rep("#",40))
+ packageStartupMessage(sprintf("This is YUIMA Project package v.%s", Pver))
+ packageStartupMessage("Why don't you try yuimaGUI package?")
+ packageStartupMessage("Visit: http://www.yuima-project.com")
+ packageStartupMessage(rep("#",40))
     
 # require(KernSmooth, quietly=TRUE)
 # library.dynam("yuima", pkgname, libname) 
