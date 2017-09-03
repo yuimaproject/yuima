@@ -64,20 +64,20 @@ poisson4 <- simulate(mod4,  sampling=samp,
 poisson4
 
 ## ----mod5,fig.keep='none'------------------------------------------------
-mod5 <- setPoisson(intensity="alpha+lambda*t", 
+mod5 <- setPoisson(intensity="alpha+beta*t", 
  df=list("dnorm(z,mu,sigma)"))
 set.seed(123)
 poisson5 <- simulate(mod5,  sampling=samp,
- true.par=list(alpha=1,lambda=.5,mu=0, sigma=2))
+ true.par=list(alpha=2,beta=.5,mu=0, sigma=2))
 plot(poisson5)
 f <- function(t,alpha,beta) alpha + beta*t
-curve(f(x,alpha=2,beta=0.3)-20,0,30,add=TRUE,col="red",lty=3)
+curve(f(x,alpha=2,beta=0.5)-20,0,30,add=TRUE,col="red",lty=3,lwd=2)
 
 ## ----plot-poi5,echo=FALSE,results='hide'---------------------------------
 pdf("figures/plot-poi5.pdf",width=9,height=4)
 par(mar=c(4,4,1,1))
 plot(poisson5,type="S")
-curve(f(x,alpha=2,beta=0.3)-20,0,30,add=TRUE,col="red",lty=3)
+curve(f(x,alpha=2,beta=0.5)-20,0,30,add=TRUE,col="red",lty=3,lwd=2)
 dev.off()
 
 ## ----mod6,fig.keep='none'------------------------------------------------
@@ -88,13 +88,13 @@ poisson6 <- simulate(mod6,  sampling=samp,
  true.par=list(theta=1.5,mu=0, sigma=2))
 plot(poisson6)
 f <- function(t,theta) theta*t^(theta-1)
-curve(f(x,theta=1.5),0,30,add=TRUE,col="red",lty=3)
+curve(f(x,theta=1.5),0,30,add=TRUE,col="red",lty=3,lwd=2)
 
 ## ----plot-poi6,echo=FALSE,results='hide'---------------------------------
 pdf("figures/plot-poi6.pdf",width=9,height=4)
 par(mar=c(4,4,1,1))
 plot(poisson6,type="S")
-curve(f(x,theta=1.5),0,30,add=TRUE,col="red",lty=3)
+curve(f(x,theta=1.5),0,30,add=TRUE,col="red",lty=3,lwd=2)
 dev.off()
 
 ## ----mod7,fig.keep='none'------------------------------------------------
@@ -105,13 +105,13 @@ poisson7 <- simulate(mod7, sampling=samp,
  true.par=list(lambda=.2,beta=10,gamma=1))
 plot(poisson7)
 f <- function(t,beta,lambda) beta*exp(-lambda*t)
-curve(f(x,beta=10,lambda=0.5),0,30,add=TRUE,col="red",lty=3)
+curve(f(x,beta=10,lambda=0.2),0,30,add=TRUE,col="red",lty=3,lwd=2)
 
 ## ----plot-poi7,echo=FALSE,results='hide'---------------------------------
 pdf("figures/plot-poi7.pdf",width=9,height=4)
 par(mar=c(4,4,1,1))
 plot(poisson7,type="S")
-curve(f(x,beta=10,lambda=0.5),0,30,add=TRUE,col="red",lty=3)
+curve(f(x,beta=10,lambda=0.2),0,30,add=TRUE,col="red",lty=3,lwd=2)
 dev.off()
 
 ## ----mod8,fig.keep='none'------------------------------------------------
@@ -123,13 +123,13 @@ poisson8 <- simulate(mod8, sampling=samp,
 plot(poisson8)
 f <- function(t,a,omega,phi,lambda) 0.5*a*(1+cos(omega*t+phi))+lambda
 curve(f(x,a=2,omega=0.5,phi=3.14,lambda=5),0,30,add=TRUE,
- col="red",lty=3)
+ col="red",lty=3,lwd=2)
 
 ## ----plot-poi8,echo=FALSE,results='hide'---------------------------------
 pdf("figures/plot-poi8.pdf",width=9,height=4)
 par(mar=c(4,4,1,1))
 plot(poisson8,type="S")
-curve(f(x,a=2,omega=0.5,phi=3.14,lambda=5),0,30,add=TRUE, col="red",lty=3)
+curve(f(x,a=2,omega=0.5,phi=3.14,lambda=5),0,30,add=TRUE, col="red",lty=3,lwd=2)
 dev.off()
 
 ## ----fig.keep='none'-----------------------------------------------------
@@ -140,13 +140,13 @@ poisson9 <- simulate(mod9, sampling=samp,
 true.par=list(a=1,theta=0.5,lambda=5,mu=0,sigma=1))
 plot(poisson9)
 f <- function(t,a,theta,lambda) a*cos(theta*t)+lambda
-curve(f(x,a=1,theta=0.5,lambda=5),0,30,add=TRUE,col="red",lty=3)
+curve(f(x,a=1,theta=0.5,lambda=5),0,30,add=TRUE,col="red",lty=3,lwd=2)
 
 ## ----plot-poi9,echo=FALSE,results='hide'---------------------------------
 pdf("figures/plot-poi9.pdf",width=9,height=4)
 par(mar=c(4,4,1,1))
 plot(poisson9,type="S")
-curve(f(x,a=1,theta=0.5,lambda=5),0,30,add=TRUE,col="red",lty=3)
+curve(f(x,a=1,theta=0.5,lambda=5),0,30,add=TRUE,col="red",lty=3,lwd=2)
 dev.off()
 
 ## ----mod10,fig.keep='none'-----------------------------------------------
@@ -189,7 +189,9 @@ r2DNIG <- function(n,alpha){
  Lambda <- matrix(c(1,0,0,1),2,2)
  t(rNIG(n,alpha=alpha,beta=beta,delta=delta0,mu=mu,Lambda=Lambda))
 }
-d2DNIG <- function(n,alpha){
+# the next fake density plays no role in simulation
+# but it is needed for model specification
+d2DNIG <- function(n,alpha){ 
  rep(0,2)
 }
 

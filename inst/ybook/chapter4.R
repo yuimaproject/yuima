@@ -18,15 +18,16 @@ mu <- 0
 sigma <- 1
 lambda <- 10
 samp <- setSampling(Terminal=10, n=1000)
-mod10 <- setPoisson(intensity="lambda", df=list("dnorm(z,mu,sigma)"))
-y10 <- simulate(mod10,sampling=samp,
+mod10b <- setPoisson(intensity="lambda", df=list("dnorm(z,mu,sigma)"))
+y10b <- simulate(mod10b,sampling=samp,
   true.par=list(lambda=lambda,mu=0.1, sigma=2))
-y10
+y10b
 
 ## ----fig.keep='none'-----------------------------------------------------
 BGmodel <- setModel(drift="0", xinit="0", jump.coeff="1",
- measure.type="code", measure=list(df="rbgamma(z, delta.minus=2,
- gamma.minus=0.6, delta.plus=1.4, gamma.plus=0.3)"))
+ measure.type="code", measure=list(df="rbgamma(z, delta.plus=1.4, 
+ gamma.plus=0.3, delta.minus=2,
+ gamma.minus=0.6)"))
 n <- 1000
 samp <- setSampling(Terminal=1, n=n)
 BGyuima <- setYuima(model=BGmodel, sampling=samp)
@@ -285,7 +286,7 @@ dev.off()
 ## }
 ## hist(VGPsimdata,xlim=c(-7,10),ylim=c(0,0.22),breaks=100,freq=FALSE,
 ##  main=expression(paste("Distribution of ",X[1.8],
-##  " and Density of NG")))
+##  " and Density of VG")))
 ## curve(dvgamma(x,lambda*T,alpha,beta,mu*T),add=TRUE,col="red")
 
 ## ----plot-VGPproc2,echo=FALSE,results='hide'-----------------------------
@@ -302,7 +303,7 @@ for (i in 1:5000){
   VGPsimdata <- c(VGPsimdata,as.numeric(x1[1]))
 }
 hist(VGPsimdata,xlim=c(-7,10),ylim=c(0,0.22),breaks=100,freq=FALSE,
- main=expression(paste("Distribution of ",X[1.8], " and Density of NG")))
+ main=expression(paste("Distribution of ",X[1.8], " and Density of VG")))
 curve(dvgamma(x,lambda*T,alpha,beta,mu*T),add=TRUE,col="red")
 dev.off()
 
@@ -318,7 +319,7 @@ set.seed(127)
 normal.rn <- rnorm(n,0,1)
 iv.rn <- rIG(n,delta*T,gamma)
 z <- mu*T+beta*iv.rn+sqrt(iv.rn)*normal.rn
-title <- expression(paste(NIG[1.8],
+title <- expression(paste(NIGP[1.8],
  " built by subordination (green) and rNIG (white)"))
 nig.rn <- rNIG(n,alpha,beta,delta*T,mu*T)
 hist(z,xlim=c(-1,10),ylim=c(0,0.61),breaks=100, freq=FALSE,
@@ -432,16 +433,16 @@ hist(y,xlim=c(-3,3),ylim=c(0,1.2),breaks=200,
  main=expression(Y[t]),probability=TRUE,col="red")
 ## experiment by convolution
 nrep <- 3000000
-X1 <- rnts(nrep,alpha,delta*t,gamma,beta,mu*t,Lambda)
+Xt <- rnts(nrep,alpha,delta*t,gamma,beta,mu*t,Lambda)
 X05 <- rnts(nrep,alpha,delta*t/2,gamma,beta,mu*t/2,Lambda)
 X05.prime <- rnts(nrep,alpha,delta*t/2,gamma,beta,mu*t/2,Lambda)
 Xsum <- X05+X05.prime
-hist(X1,xlim=c(-3,3),ylim=c(0,1.2),breaks=300,
- main=expression(X[1]),probability=TRUE)
+hist(Xt,xlim=c(-3,3),ylim=c(0,1.2),breaks=300,
+ main=expression(X[t]),probability=TRUE)
 hist(Xsum,xlim=c(-3,3),ylim=c(0,1.2),breaks=300,
  main=expression(paste(X[t/2]+X[t/2],"'")),
  probability=TRUE,col="red")
-ks.test(X1,Xsum)
+ks.test(Xt,Xsum)
 
 ## ----plot-NTSPproc,echo=FALSE,results='hide'-----------------------------
 pdf("figures/plot-NTSPproc.pdf",width=9,height=4)
@@ -451,161 +452,16 @@ hist(x,xlim=c(-3,3),ylim=c(0,1.2),breaks=200,
 main=expression(X[t]),probability=TRUE)
 hist(y,xlim=c(-3,3),ylim=c(0,1.2),breaks=200,
 main=expression(Y[t]),probability=TRUE,col="red")
-hist(X1,xlim=c(-3,3),ylim=c(0,1.2),breaks=300,
-main=expression(X[1]),probability=TRUE)
+hist(Xt,xlim=c(-3,3),ylim=c(0,1.2),breaks=300,
+main=expression(X[t]),probability=TRUE)
 hist(Xsum,xlim=c(-3,3),ylim=c(0,1.2),breaks=300,
 main=expression(paste(X[t/2]+X[t/2],"'")),
 probability=TRUE,col="red")
 dev.off()
-rm(X1)
+rm(Xt)
 rm(X05)
 rm(X05.prime)
 rm(Xsum)
-
-## ----eval=FALSE----------------------------------------------------------
-## alpha <- 0.5
-## beta <- -0.4
-## sigma <- 0.7
-## gamma <- 0.5
-## n <- 1000
-## T <- 1.8
-## ASmodel <- setModel(drift=0, jump.coeff=1, measure.type="code",
-##  measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-## samp <- setSampling(Terminal=T, n=n)
-## ASyuima <- setYuima(model=ASmodel, sampling=samp)
-## set.seed(129)
-## for (i in 1:10) {
-##  result <- simulate(ASyuima, true.par=list(alpha=alpha,
-##   beta=beta,sigma=sigma,gamma=gamma))
-##  plot(result,xlim=c(0,T),ylim=c(-40,10),col=i,
-##   main=expression(paste("Paths of stable process (",
-##   alpha==0.5,",",beta==-0.4,")")),par(new=T))
-## }
-## 
-## #param2
-## alpha <- 1
-## beta <- -0.4
-## sigma <- 0.7
-## gamma <- 0.5
-## AS2model <- setModel(drift=0, jump.coeff=1, measure.type="code",
-##  measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-## AS2yuima <- setYuima(model=AS2model, sampling=samp)
-## for (i in 1:10) {
-##  result <- simulate(AS2yuima, true.par=list(alpha=alpha,
-##   beta=beta,sigma=sigma,gamma=gamma))
-##  plot(result,xlim=c(0,T),ylim=c(-5,5),col=i,
-##  main=expression(paste("Paths of stable process (",
-##  alpha==1,",",beta==-0.4,")")),par(new=T))
-## }
-## 
-## #param3
-## alpha <- 1
-## beta <- 0.4
-## sigma <- 0.7
-## gamma <- 0.5
-## AS3model <- setModel(drift=0, jump.coeff=1, measure.type="code",
-##  measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-## AS3yuima <- setYuima(model=AS3model, sampling=samp)
-## for (i in 1:10) {
-##  result <- simulate(AS3yuima, true.par=list(alpha=alpha,
-##   beta=beta,sigma=sigma,gamma=gamma))
-## plot(result,xlim=c(0,T),ylim=c(-5,5),col=i,
-##  main=expression(paste("Paths of stable process (",
-##  alpha==1,",",beta==0.4,")")),par(new=T))
-## }
-## 
-## #param4
-## alpha <- 1.5
-## beta <- 0.4
-## sigma <- 0.7
-## gamma <- 0.5
-## AS4model <- setModel(drift=0, jump.coeff=1, measure.type="code",
-##  measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-## AS4yuima <- setYuima(model=AS4model, sampling=samp)
-## for (i in 1:10) {
-##  result <- simulate(AS4yuima, true.par=list(alpha=alpha,
-##   beta=beta, sigma=sigma,gamma=gamma))
-##  plot(result,xlim=c(0,T),ylim=c(-3,5),col=i,
-##   main=expression(paste("Paths of stable process (",
-##   alpha==1.5,",",beta==0.4,")")),par(new=T))
-## }
-
-## ----plot-ASproc,echo=FALSE,results='hide'-------------------------------
-pdf("figures/plot-ASproc1.pdf",width=9,height=4)
-par(mar=c(4,4,2,1))
-alpha <- 0.5
-beta <- -0.4
-sigma <- 0.7
-gamma <- 0.5
-n <- 1000
-T <- 1.8
-ASmodel <- setModel(drift=0, jump.coeff=1, measure.type="code",
-measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-samp <- setSampling(Terminal=T, n=n)
-ASyuima <- setYuima(model=ASmodel, sampling=samp)
-set.seed(129)
-for (i in 1:10) {
-result <- simulate(ASyuima, true.par=list(alpha=alpha,
-beta=beta,sigma=sigma,gamma=gamma))
-plot(result,xlim=c(0,T),ylim=c(-40,10),col=i,
-main=expression(paste("Paths of stable process (",
-alpha==0.5,",",beta==-0.4,")")),par(new=T))
-}
-dev.off()
-pdf("figures/plot-ASproc2.pdf",width=9,height=4)
-par(mar=c(4,4,2,1))
-#param2
-alpha <- 1
-beta <- -0.4
-sigma <- 0.7
-gamma <- 0.5
-AS2model <- setModel(drift=0, jump.coeff=1, measure.type="code",
-measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-AS2yuima <- setYuima(model=AS2model, sampling=samp)
-for (i in 1:10) {
-result <- simulate(AS2yuima, true.par=list(alpha=alpha,
-beta=beta,sigma=sigma,gamma=gamma))
-plot(result,xlim=c(0,T),ylim=c(-5,5),col=i,
-main=expression(paste("Paths of stable process (",
-alpha==1,",",beta==-0.4,")")),par(new=T))
-}
-dev.off()
-pdf("figures/plot-ASproc3.pdf",width=9,height=4)
-par(mar=c(4,4,2,1))
-#param3
-alpha <- 1
-beta <- 0.4
-sigma <- 0.7
-gamma <- 0.5
-AS3model <- setModel(drift=0, jump.coeff=1, measure.type="code",
-measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-AS3yuima <- setYuima(model=AS3model, sampling=samp)
-for (i in 1:10) {
-result <- simulate(AS3yuima, true.par=list(alpha=alpha,
-beta=beta,sigma=sigma,gamma=gamma))
-plot(result,xlim=c(0,T),ylim=c(-5,5),col=i,
-main=expression(paste("Paths of stable process (",
-alpha==1,",",beta==0.4,")")),par(new=T))
-}
-dev.off()
-pdf("figures/plot-ASproc4.pdf",width=9,height=4)
-par(mar=c(4,4,2,1))
-#param4
-alpha <- 1.5
-beta <- 0.4
-sigma <- 0.7
-gamma <- 0.5
-AS4model <- setModel(drift=0, jump.coeff=1, measure.type="code",
-measure=list(df="rstable(z,alpha,beta,sigma,gamma)"))
-AS4yuima <- setYuima(model=AS4model, sampling=samp)
-for (i in 1:10) {
-result <- simulate(AS4yuima, true.par=list(alpha=alpha,beta=beta,
-sigma=sigma,gamma=gamma))
-plot(result,xlim=c(0,T),ylim=c(-3,5),col=i,
-main=expression(paste("Paths of stable process (",
-alpha==1.5,",",beta==0.4,")")),par(new=T))
-}
-dev.off()
 
 ## ----fig.keep='none'-----------------------------------------------------
 modJump <- setModel(drift = c("-theta*x"), diffusion = "sigma",

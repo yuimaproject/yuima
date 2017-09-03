@@ -11,6 +11,9 @@ warning=FALSE
 options(width=55)
 options(continue="  ")
 require(yuima)
+Rver <- paste(version$major,version$minor, collapse="",sep=".")
+YUIMAver <- as.character(read.dcf(file=system.file("DESCRIPTION", package="yuima"),
+    fields="Version"))
 
 ## ----eval=FALSE----------------------------------------------------------
 ## ybook(1)
@@ -186,7 +189,7 @@ dev.off()
 ## ------------------------------------------------------------------------
 sol <- c("x1","x2") # variable for numerical solution
 b <- c("-theta*x1","-x1-gamma*x2") # drift vector 
-s <- matrix(c("1","x1","0","delta","x2","0"),2,3) # diff. mat.
+s <- matrix(c("1","x1","0","beta","x2","0"),2,3) # diff. mat.
 mymod <- setModel(drift = b, diffusion = s, solve.variable = sol)
 
 ## ------------------------------------------------------------------------
@@ -201,7 +204,7 @@ writeLines(strwrap(capture.output(str(samp)),width=60))
 ## ------------------------------------------------------------------------
 set.seed(123)
 X2 <- simulate(mymod, sampling=samp, 
- true.param=list(theta=1,gamma=1,delta=1))
+ true.param=list(theta=1,gamma=1,beta=1))
 X2
 
 ## ----results='hide'------------------------------------------------------
@@ -260,10 +263,10 @@ str(newdata@sampling)
 set.seed(123)
 Y.sub <- simulate(mymod,sampling=setSampling(delta=0.001,n=1000),
  subsampling=setSampling(delta=0.01,n=100), 
- true.par=list(theta=1,delta=1,gamma=1))
+ true.par=list(theta=1,beta=1,gamma=1))
 set.seed(123)
 Y <- simulate(mymod, sampling=setSampling(delta=0.001,n=1000),
-  true.par=list(theta=1,delta=1,gamma=1))
+  true.par=list(theta=1,beta=1,gamma=1))
 plot(Y, plot.type="single")
 points(get.zoo.data(Y.sub)[[1]],col="red")
 points(get.zoo.data(Y.sub)[[2]],col="green",pch=18)
@@ -293,26 +296,21 @@ Y.sub
 ## my.yuima <- setYuima(data=setData(X), model=mod)
 
 ## ----echo=TRUE,results='hide',tidy=TRUE----------------------------------
-data <- read.csv("http://chart.yahoo.com/table.csv?s=IBM&g=d&x=.csv", 
- stringsAsFactor=FALSE)
+require(quantmod)
+getSymbols("IBM", to = "2017-07-31")
 
 ## ----echo=TRUE-----------------------------------------------------------
-head(data)
+str(IBM)
 
-## ----results='hide',tidy=FALSE-------------------------------------------
-tmp <- zoo(data$Close, order.by=as.Date(data$Date, 
- format="%Y-%m-%d"))
-str(tmp)
-
-## ----echo=FALSE----------------------------------------------------------
-writeLines(strwrap(capture.output(str(tmp)),width=60))
+## ----echo=TRUE-----------------------------------------------------------
+head(IBM)
 
 ## ------------------------------------------------------------------------
-x <- setYuima(data=setData(tmp))
+x <- setYuima(data=setData(IBM$IBM.Close))
 str(x@data)
 
 ## ------------------------------------------------------------------------
-y <- setYuima(data=setData(tmp, delta=1/252))
+y <- setYuima(data=setData(IBM$IBM.Close, delta=1/252))
 str(y@data)
 
 ## ----setData,fig.keep='none'---------------------------------------------
@@ -332,11 +330,11 @@ y
 
 ## ----quantmod,message=FALSE----------------------------------------------
 library(quantmod)
-getSymbols("IBM")
+getSymbols("IBM", to = "2017-07-31")
 attr(IBM, "src")
 
 ## ------------------------------------------------------------------------
-getSymbols("IBM",src="google")
+getSymbols("IBM", to = "2017-07-31",  src="google")
 attr(IBM, "src")
 
 ## ------------------------------------------------------------------------
@@ -346,32 +344,9 @@ getSymbols("EUR/USD",src="oanda")
 attr(EURUSD, "src")
 str(EURUSD)
 
-## ----results="hide",message=FALSE----------------------------------------
-require(fImport)
-X <- yahooSeries("IBM")
-str(X)
-
-## ----echo=FALSE----------------------------------------------------------
-writeLines(strwrap(capture.output(str(X)),width=60))
-
-## ----results='hide'------------------------------------------------------
-X <- yahooImport("IBM")
-str(X)
-
-## ----echo=FALSE----------------------------------------------------------
-writeLines(strwrap(capture.output(str(X)),width=60))
-
 ## ----results='hide'------------------------------------------------------
 library(tseries)
 x <- get.hist.quote("IBM")
-str(x)
-
-## ----echo=FALSE----------------------------------------------------------
-writeLines(strwrap(capture.output(str(x)),width=60))
-
-## ----results='hide'------------------------------------------------------
-x <- get.hist.quote(instrument = "EUR/USD", provider = "oanda", 
- start = Sys.Date() - 300)
 str(x)
 
 ## ----echo=FALSE----------------------------------------------------------
@@ -434,7 +409,7 @@ str(X)
 
 ## ------------------------------------------------------------------------
 Xreg <- zooreg(some.data, start = c(1964, 2),  frequency = 12)
-time(Xreg)[1:12]
+time(Xreg)
 
 ## ------------------------------------------------------------------------
 Y <- as.ts(X)
@@ -657,6 +632,19 @@ quotes[mydate, 5:9]
 initial <- as.Date("2007-05-15")
 terminal <- as.Date("2007-05-21")
 quotes[ (time(quotes) >= initial) & (time(quotes)<= terminal), 4:9]
+
+## ------------------------------------------------------------------------
+getSymbols("IBM", from="2015-01-01", to = "2016-12-31")
+str(IBM)
+
+## ------------------------------------------------------------------------
+IBM["2015-01","IBM.Close"]
+
+## ------------------------------------------------------------------------
+IBM["2016-02-11/2016-03-05","IBM.Close"]
+
+## ------------------------------------------------------------------------
+IBM["/2015-02-11","IBM.Close"]
 
 ## ------------------------------------------------------------------------
 mod2 <- setModel(drift = "-mu*x", diffusion = "1/(1+x^gamma)")

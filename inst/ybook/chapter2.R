@@ -61,6 +61,7 @@ par(mfrow=c(1,3))
 plot(x1, main="mod1, xinit=1")
 plot(x2, main="mod1, xinit=expression(rnorm(1))")
 plot(x3, main="mod2, xinit=3")
+par(mfrow=c(1,1))
 
 ## ----echo=FALSE,results='hide'-------------------------------------------
 pdf("figures/plot-mod1diff2.pdf",width=9,height=4)
@@ -96,7 +97,7 @@ ckls <- setModel(drift="theta1-theta2*x", diffusion="theta3*x^theta4")
 
 ## ------------------------------------------------------------------------
 hyper1 <- setModel( diff="sigma", 
- drift="(sigma/2)^2*(beta-alpha*((x-mu)/(sqrt(delta^2+(x-mu)^2))))")
+ drift="(sigma^2/2)*(beta-alpha*((x-mu)/(sqrt(delta^2+(x-mu)^2))))")
 
 ## ------------------------------------------------------------------------
 hyper1
@@ -104,7 +105,7 @@ str(hyper1@parameter)
 
 ## ------------------------------------------------------------------------
 hyper2 <- setModel(drift="0", 
- diffusion = "sigma*alpha*exp(0.5*sqrt(delta^2+(x-mu)^2)-
+ diffusion = "sigma*exp(0.5*alpha*sqrt(delta^2+(x-mu)^2)-
   beta*(x-mu))")
 
 ## ------------------------------------------------------------------------
@@ -271,7 +272,7 @@ prior <- list(theta2=list(measure.type="code",df="dunif(theta2,0,1)"),
 lower <- list(theta1=0,theta2=0)
 upper <- list(theta1=1,theta2=1)
 bayes1 <- adaBayes(yuima, start=param.init, prior=prior,
- lower=lower,upper=upper)
+ lower=lower,upper=upper, method="nomcmc")
 
 ## ----echo=TRUE-----------------------------------------------------------
 coef(summary(bayes1))
@@ -390,7 +391,7 @@ sigma
 coef(fit)
 
 ## ------------------------------------------------------------------------
-getSymbols("DEXUSEU", src="FRED")
+getSymbols("DEXUSEU", src="FRED", to="2016-12-31")
 head(DEXUSEU)
 meanCIR <- mean(DEXUSEU, na.rm=TRUE)
 meanCIR
@@ -447,43 +448,37 @@ coef(fit2)["mu"]
 model<- setModel(drift="t1*(t2-x)",diffusion="t3")
 
 ## ------------------------------------------------------------------------
-T<-10
-n<-1000
-sampling <- setSampling(Terminal=T,n=n)
+T<-300
+n<-3000
+sampling <- setSampling(Terminal=T, n=n)
 yuima<-setYuima(model=model, sampling=sampling)
-h0 <- list(t1=0.3, t2=1, t3=0.25)
-h1 <- list(t1=0.3, t2=0.2, t3=0.1)
+h00 <- list(t1=0.3, t2=1, t3=0.25)
+h01 <- list(t1=0.3, t2=0.2, t3=0.1)
 set.seed(123)
-X <- simulate(yuima, xinit=1, true=h0)
+X <- simulate(yuima, xinit=1, true.par=h00)
 
 ## ------------------------------------------------------------------------
 phi1 <- function(x) 1-x+x*log(x)
 
 ## ------------------------------------------------------------------------
-phi.test(X, H0=h0, H1=h1,phi=phi1)
-
-## ------------------------------------------------------------------------
-phi.test(X, H0=h0, phi=phi1, start=h0,
+phi.test(X, H0=h00, phi=phi1, start=h00,
    lower=list(t1=0.1, t2=0.1, t3=0.1), 
    upper=list(t1=2,t2=2,t3=2),method="L-BFGS-B")
 
-## ----echo=FALSE----------------------------------------------------------
-pval <- phi.test(X, H0=h0, phi=phi1, start=h0,
+## ----echo=FALSE,results='hide'-------------------------------------------
+pval <- phi.test(X, H0=h00, phi=phi1, start=h00,
    lower=list(t1=0.1, t2=0.1, t3=0.1), 
    upper=list(t1=2,t2=2,t3=2),method="L-BFGS-B")$pvalue
 
 ## ------------------------------------------------------------------------
-phi.test(X, H0=h1, phi=phi1, start=h0, 
+phi.test(X, H0=h01, phi=phi1, start=h00, 
   lower=list(t1=0.1, t2=0.1, t3=0.1), 
   upper=list(t1=2,t2=2,t3=2),method="L-BFGS-B")
 
 ## ------------------------------------------------------------------------
-phi.test(X, H0=h0, H1=h1)
-
-## ------------------------------------------------------------------------
 library(quantmod)
 Delta <- 1/252
-getSymbols("DEXUSEU", src="FRED")
+getSymbols("DEXUSEU", src="FRED", to = "2016-12-31")
 meanCIR <- mean(DEXUSEU, na.rm=TRUE)
 gBm <- setModel(drift="mu*x", diffusion="sigma*x")
 mod <- setYuima(model=gBm, data=setData(na.omit(DEXUSEU), 
@@ -765,7 +760,7 @@ cp
 ## ----fig.keep='none'-----------------------------------------------------
 X <- diff(log(get.zoo.data(mod)[[1]]))
 plot(X)
-abline(v=cp$tau, lty=3)
+abline(v=cp$tau, lty=3,lwd=2,col="red")
 
 ## ----plot-returns,echo=FALSE, fig.keep='none',results='hide'-------------
 pdf("figures/plot-returns.pdf",width=9,height=4)
@@ -803,7 +798,6 @@ CC.theta <- function( T, sigma1, sigma2, rho){
 
 ## ------------------------------------------------------------------------
 set.seed(123)
- 
 Terminal <- 1
 n <- 1000
 # Cumulative Covariance
@@ -908,13 +902,11 @@ yuima <- simulate(yuima, xinit=c(1,7,5))
 # intentionally displace the second time series
 
 data1 <- get.zoo.data(yuima)[[1]]
-
 data2 <- get.zoo.data(yuima)[[2]]
 time2 <- time( data2 )
 theta2 <- 0.05   # the lag of x2 behind x1
 stime2 <- time2 + theta2  
 time(data2) <- stime2
-
 data3 <- get.zoo.data(yuima)[[3]]
 time3 <- time( data3 )
 theta3 <- 0.12   # the lag of x3 behind x1
@@ -936,6 +928,13 @@ dev.off()
 ## ------------------------------------------------------------------------
 llag(yuima)
 llag(syuima)
+
+## ----plot-shifted-ci,echo=FALSE, fig.keep='none',results='hide'----------
+pdf("figures/plot-shifted-ci.pdf",width=9,height=5)
+par(mar=c(4,5,2,1))
+par(mfrow=c(1,3))
+llag(syuima,plot=TRUE,ci=TRUE)
+dev.off()
 
 ## ------------------------------------------------------------------------
 data2 <- get.zoo.data(yuima)[[2]]
