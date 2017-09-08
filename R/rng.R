@@ -47,6 +47,8 @@ dbgamma<-function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
 ## Generalized inverse Gaussian
 
 rGIG<-function(x,lambda,delta,gamma){
+    if(x <= 0)
+        stop("x must be positive")
     if((delta < 0)||(gamma<0)){
         stop("delta and gamma must be nonnegative.")
     }
@@ -408,6 +410,8 @@ rIG <- function(x,delta,gamma){
 
 
 dIG <- function(x,delta,gamma){
+  if(x <= 0)
+    stop("x must be positive")
 	if( delta <= 0 )
     stop("delta must be positive.")
 	if( gamma <= 0 )
