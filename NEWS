@@ -50,3 +50,6 @@
 2017/04/12: fix a bug in sim.euler.R
                   (re-)added euler.c 
 2017/04/27: modified qmleLevy.R, qmleLevy.Rd, IC.Rd
+2017/09/09: boot package is imported
+            added llag.test.R, llag.test.Rd
+            modified llag.R, bns.test.Rd, llag.Rd, mllag.Rd, hyavar.Rd, cce.Rd, cce_functions.c

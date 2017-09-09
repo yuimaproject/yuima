@@ -1,5 +1,7 @@
+#include <R.h>
 #include <Rinternals.h>
 #include <math.h>
+#include <float.h>
 
 void ctsubsampling(double *znum, double *ztime, int *frequency, int *nsparse, int *n, double *grid, double *result)
 {
@@ -380,12 +382,132 @@ void HYcrosscorr(int *gridL, int *xL, int *yL, double *grid, double *xtime,
         }else{
             s = 0;
         }
-
+        
         
         value[i] = B/sqrt((A + s)*(C + s));
         
     }
 }
+
+
+void HYcrosscov2(int *gridL, int *xL, int *yL, double *grid, double *xtime,
+                 double *ytime, double *dX, double *dY, double *value)
+{
+    int i, j, I, J;
+    double *ytime2;
+    
+    for (j = 0; j < *xL; j++) {
+        xtime[j] = round(xtime[j]);
+    }
+    
+    for(i = 0; i < *gridL; i++){
+        
+        ytime2 = (double *)malloc(sizeof(double) * (*yL));
+        
+        for(j = 0; j < *yL; j++){
+            ytime2[j] = round(ytime[j] + grid[i]);
+        }
+        
+        I = 0;
+        J = 0;
+        
+        /* Checking Starting Point */
+        while((I < (*xL-1)) && (J < (*yL-1))){
+            if(xtime[I] >= ytime2[J + 1]){
+                J++;
+            }else if(xtime[I + 1] <= ytime2[J]){
+                I++;
+            }else{
+                break;
+            }
+        }
+        
+        /* Main Component */
+        while((I < (*xL-1)) && (J < (*yL-1))) {
+            value[i] += dX[I] * dY[J];
+            if(xtime[I + 1] > ytime2[J + 1]){
+                J++;
+            }else if(xtime[I + 1] < ytime2[J + 1]){
+                I++;
+            }else{
+                I++;
+                J++;
+            }
+        }
+        
+        free(ytime2);
+    }
+}
+
+
+void HYcrosscorr2(int *gridL, int *xL, int *yL, double *grid, double *xtime,
+                  double *ytime, double *dX, double *dY,
+                  double *xvol, double *yvol, double *value)
+{
+    int i, j, I, J;
+    double A, B, C, s;
+    double *ytime2;
+    
+    for (j = 0; j < *xL; j++) {
+        xtime[j] = round(xtime[j]);
+    }
+    
+    for(i = 0; i < *gridL; i++){
+        
+        ytime2 = (double *)malloc(sizeof(double) * (*yL));
+        
+        for(j = 0; j < *yL; j++){
+            ytime2[j] = round(ytime[j] + grid[i]);
+        }
+        
+        I = 0;
+        J = 0;
+        
+        /* Checking Starting Point */
+        while((I < (*xL-1)) && (J < (*yL-1))){
+            if(xtime[I] >= ytime2[J + 1]){
+                J++;
+            }else if(xtime[I + 1] <= ytime2[J]){
+                I++;
+            }else{
+                break;
+            }
+        }
+        
+        /* Main Component */
+        while((I < (*xL-1)) && (J < (*yL-1))) {
+            value[i] += dX[I] * dY[J];
+            if(xtime[I + 1] > ytime2[J + 1]){
+                J++;
+            }else if(xtime[I + 1] < ytime2[J + 1]){
+                I++;
+            }else{
+                I++;
+                J++;
+            }
+        }
+        
+        /* Positive semi-definite correction */
+        A = (*xvol)*(*xvol) + value[i]*value[i];
+        B = (*xvol + *yvol)*value[i];
+        C = (*yvol)*(*yvol) + value[i]*value[i];
+        
+        /* correct a bug (2016-06-30) */
+        /* s = sqrt(A*C-B*B); */
+        s = A*C-B*B;
+        if(s > 0){
+            s = sqrt(s);
+        }else{
+            s = 0;
+        }
+        
+        
+        value[i] = B/sqrt((A + s)*(C + s));
+        
+        free(ytime2);
+    }
+}
+
 
 
 void hyavar(double *xtime, double *ytime, int *xlength, int *ylength,

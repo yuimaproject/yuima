@@ -15,6 +15,7 @@ importFrom("graphics", "lines")
 importFrom("stats", "qchisq")
 importFrom("utils", "relist")
 
+importFrom(boot, boot) # added by YK on Sep. 9, 2017 
 #08/07/2016
 #exportPattern("^[[:alpha:]]+") # NEVER DO THIS AGAIN PLEASE!
 #cimport(RcppArmadillo)
@@ -166,6 +167,7 @@ export(bns.test)
 export(hyavar) # asymptotic variance estimator for the Hayashi-Yoshida estimator
 export(lmm) # Oct. 10, 2015: local methods of moment estimator
 export(mllag) # Oct. 10, 2015: multiple lead-lag detector
+export(llag.test) # Sep. 9, 2017: testing the absence of lead-lag effects 
 
 export(get.zoo.data)
 

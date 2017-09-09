@@ -64,7 +64,7 @@ Barndorff-Nilesen, O. E. and Shephard, N. (2004)
 
 Bibinger, M. (2011)
   Asymptotics of Asynchronicity, 
-  technical report, Available at arXiv:1106.4222.
+  technical report, Available at \href{https://arxiv.org/abs/1106.4222}{arXiv:1106.4222}.
 
 Hayashi, T., Jacod, J. and Yoshida, N. (2011)
   Irregular sampling and central limit theorems for power variations: The continuous case,
@@ -80,7 +80,7 @@ The YUIMA Project Team
 }
 \note{
 %%  ~~further notes~~
-Construction of kernel-type estimators for off-diagonal components is implemented after pseudo-aggregation descrived in Bibinger (2011).
+Construction of kernel-type estimators for off-diagonal components is implemented after pseudo-aggregation described in Bibinger (2011).
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

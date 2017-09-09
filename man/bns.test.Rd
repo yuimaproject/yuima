@@ -10,7 +10,7 @@ Barndorff-Nielsen and Shephard's Test for the Presence of Jumps Using Bipower Va
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
-Tests the presence of jumps using the statistic proposed in Barndorff-Nielsen and Shephard (2004,2006) for each components.
+Tests the presence of jumps using the statistic proposed in Barndorff-Nielsen and Shephard (2004,2006) for each component.
 }
 \usage{
 bns.test(yuima, r = rep(1, 4), type = "standard", adj = TRUE)

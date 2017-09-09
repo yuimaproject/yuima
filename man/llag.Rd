@@ -7,7 +7,7 @@
 \usage{
 llag(x, from = -Inf, to = Inf, division = FALSE, verbose = (ci || ccor), 
      grid, psd = TRUE, plot = ci, ccor = ci, ci = FALSE, alpha = 0.01, 
-     fisher = TRUE, bw)
+     fisher = TRUE, bw, tol = 1e-6)
 }
 \arguments{
 
@@ -36,6 +36,8 @@ llag(x, from = -Inf, to = Inf, division = FALSE, verbose = (ci || ccor),
 \item{fisher}{logical. If \code{TRUE}, the p-values and the confidence intervals for the cross-correlation functions is evaluated after applying the Fisher z transformation. This argument is only meaningful if \code{pval = "corr"}.}
 
 \item{bw}{bandwidth parameter to compute the asymptotic variances. See 'Details' and \code{\link{hyavar}} for details.}
+
+\item{tol}{tolelance parameter to avoid numerical errors in comparison of time stamps. All time stamps are divided by \code{tol} and rounded to integers. Note that the values of \code{grid} are also divided by \code{tol} and rounded to integers. A reasonable choice of \code{tol} is the minimum unit of time stamps. The default value \code{1e-6} supposes that the minimum unit of time stamps is greater or equal to 1 micro-second.}
 }
 
 \details{
@@ -178,5 +180,5 @@ plot(result, fisher = FALSE)
 par(mfcol=c(1,1))
 
 }
-\seealso{\code{\link{cce}}, \code{\link{hyavar}}, \code{\link{mllag}}}
+\seealso{\code{\link{cce}}, \code{\link{hyavar}}, \code{\link{mllag}}, \code{\link{llag.test}}}
 \keyword{ts}

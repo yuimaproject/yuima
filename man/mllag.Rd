@@ -102,7 +102,7 @@ The YUIMA Project Team
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{llag}}, \code{\link{hyavar}}
+\code{\link{llag}}, \code{\link{hyavar}}, \code{\link{llag.test}}
 }
 \examples{
 
@@ -150,7 +150,7 @@ G <- seq(-0.1,0.1,by=0.01)
 par(mfcol=c(3,1))
 result <- mllag(psample, grid = G)
 
-## Since the lead-lag parameter for the pair(x1, x2) is not contained in G,
+## Since the lead-lag parameter for the pair(x1, x3) is not contained in G,
 ## no lead-lag parameter is detected for this pair
 
 par(mfcol=c(1,1))

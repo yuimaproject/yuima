@@ -193,21 +193,21 @@ llag.avar <- function(x, grid, bw, alpha, fisher, ser.diffX, ser.times, vol, cor
 ## main body
 setGeneric( "llag", function(x, from = -Inf, to = Inf, division = FALSE, 
                              verbose = (ci || ccor), grid, psd = TRUE, plot = ci,
-                             ccor = ci, ci = FALSE, alpha = 0.01, fisher = TRUE, bw) standardGeneric("llag") )
+                             ccor = ci, ci = FALSE, alpha = 0.01, fisher = TRUE, bw, tol = 1e-6) standardGeneric("llag") )
 
 ## yuima-method
 setMethod("llag", "yuima", function(x, from, to, division, verbose, grid, psd, plot, 
-                                         ccor, ci, alpha, fisher, bw)
-  llag(x@data, from, to, division, verbose, grid, psd, plot, ccor, ci, alpha, fisher, bw))
+                                         ccor, ci, alpha, fisher, bw, tol)
+  llag(x@data, from, to, division, verbose, grid, psd, plot, ccor, ci, alpha, fisher, bw, tol))
 
 ## yuima.data-method
 setMethod("llag", "yuima.data", function(x, from, to, division, verbose, grid, psd, plot, 
-                                         ccor, ci, alpha, fisher, bw)
-  llag(x@zoo.data, from, to, division, verbose, grid, psd, plot, ccor, ci, alpha, fisher, bw))
+                                         ccor, ci, alpha, fisher, bw, tol)
+  llag(x@zoo.data, from, to, division, verbose, grid, psd, plot, ccor, ci, alpha, fisher, bw, tol))
 
 ## list-method
 setMethod("llag", "list", function(x, from, to, division, verbose, grid, psd, plot, 
-                                   ccor, ci, alpha, fisher, bw) {
+                                   ccor, ci, alpha, fisher, bw, tol) {
   
   d <- length(x)
   d.size <- d*(d-1)/2
@@ -222,7 +222,7 @@ setMethod("llag", "list", function(x, from, to, division, verbose, grid, psd, pl
     grid <- make.grid(d, d.size, x, from, to, division)
   
   # Set the tolerance to avoid numerical erros in comparison
-  tol <- 1e-6
+  #tol <- 1e-6
   
   for(i in 1:d){
     
@@ -280,19 +280,20 @@ setMethod("llag", "list", function(x, from, to, division, verbose, grid, psd, pl
         
         names(crosscor)[num] <- paste("(",i,",",j,")", sep = "")
         
-        tmp <- .C("HYcrosscorr",
+        tmp <- .C("HYcrosscorr2",
                   as.integer(length(G[[num]])),
                   as.integer(length(time1)),
                   as.integer(length(time2)),
                   as.double(G[[num]]),
                   as.double(time1),
                   as.double(time2),
-                  double(length(time2)),
+                  #double(length(time2)),
                   as.double(ser.diffX[[i]]),
                   as.double(ser.diffX[[j]]),
                   as.double(vol[i]),
                   as.double(vol[j]),
-                  value=double(length(G[[num]])))$value
+                  value=double(length(G[[num]])),
+                  PACKAGE = "yuima")$value
         
         idx[num] <- which.max(abs(tmp))
         mlag <- -grid[[num]][idx[num]] # make the first timing of max or min
@@ -327,17 +328,18 @@ setMethod("llag", "list", function(x, from, to, division, verbose, grid, psd, pl
         
         names(crosscor)[num] <- paste("(",i,",",j,")", sep = "")
         
-        tmp <- .C("HYcrosscov",
+        tmp <- .C("HYcrosscov2",
                   as.integer(length(G[[num]])),
                   as.integer(length(time1)),
                   as.integer(length(time2)),
                   as.double(G[[num]]),
                   as.double(time1),
                   as.double(time2),
-                  double(length(time2)),
+                  #double(length(time2)),
                   as.double(ser.diffX[[i]]),
                   as.double(ser.diffX[[j]]),
-                  value=double(length(G[[num]])))$value
+                  value=double(length(G[[num]])),
+                  PACKAGE = "yuima")$value
         
         idx[num] <- which.max(abs(tmp))
         mlag <- -grid[[num]][idx[num]] # make the first timing of max or min
@@ -485,13 +487,17 @@ print.yuima.llag <- function(x, ...){
 }
 
 # plot method for yuima.llag-class
-plot.yuima.llag <- function(x, alpha = 0.01, fisher = TRUE, ...){
+plot.yuima.llag <- function(x, alpha = 0.01, fisher = TRUE, 
+                            main = NULL, xlab = NULL, ylab = NULL, ...){
   
   if(is.null(x$ccor)){
     warning("cross-correlation functions were not returned by llag. Set verbose = TRUE and ccor = TRUE to return them.",
             call. = FALSE)
     return(NULL)
   }else{
+    
+    if(is.null(xlab)) xlab <- expression(theta)
+    if(is.null(ylab)) ylab <- expression(U(theta))
     
     d <- nrow(x$LLR)
     
@@ -501,9 +507,13 @@ plot.yuima.llag <- function(x, alpha = 0.01, fisher = TRUE, ...){
           
           num <- d*(i-1) - (i-1)*i/2 + (j-i)
           
-          plot(x$ccor[[num]],
-               main=paste(i,"vs",j,"(positive",expression(theta),"means",i,"leads",j,")"),
-               xlab=expression(theta),ylab=expression(U(theta)))
+          if(is.null(main)){
+            plot(x$ccor[[num]],
+                 main=paste(i,"vs",j,"(positive",expression(theta),"means",i,"leads",j,")"),
+                 xlab=xlab,ylab=ylab)
+          }else{
+            plot(x$ccor[[num]],main=main,xlab=xlab,ylab=ylab)
+          }
           
         }
       }
@@ -526,10 +536,15 @@ plot.yuima.llag <- function(x, alpha = 0.01, fisher = TRUE, ...){
           
           y.max <- max(abs(as.numeric(x$ccor[[num]])),as.numeric(CI))
           
-          plot(x$ccor[[num]],
-               main=paste(i,"vs",j,"(positive",expression(theta),"means",i,"leads",j,")"),
-               xlab=expression(theta),ylab=expression(U(theta)),
-               ylim=c(-y.max,y.max))
+          if(is.null(main)){
+            plot(x$ccor[[num]],
+                 main=paste(i,"vs",j,"(positive",expression(theta),"means",i,"leads",j,")"),
+                 xlab=xlab,ylab=ylab,ylim=c(-y.max,y.max))
+          }else{
+            plot(x$ccor[[num]],main = main,xlab=xlab,ylab=ylab,
+                 ylim=c(-y.max,y.max))
+          }
+          
           
           lines(CI,lty=2,col="blue")
           lines(-CI,lty=2,col="blue")
