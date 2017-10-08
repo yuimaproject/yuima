@@ -58,7 +58,7 @@ CPointOld <- function(yuima, param1, param2, print=FALSE, plot=FALSE){
 	D <- c(D[1], D, D[length(D)])
 	D <- ts(D, start=0, deltat=deltat(yuima@data@zoo.data[[1]]))
 	if(plot)
-	 plot(D,type="l", main="change point statistics")
+	 plot(D,type="l", main="change point statistic")
 	tau.hat <- index(yuima@data@zoo.data[[1]])[which.min(D)]	
 
 	return(list(tau=tau.hat, param1=param1, param2=param2))
@@ -338,7 +338,7 @@ CPoint <- function(yuima, param1, param2, print=FALSE, symmetrized=FALSE, plot=F
 	else
 	 D <- ts(D, start=0, deltat=deltat(yuima@data@zoo.data[[1]]))
 	if(plot)
-	plot(D,type="l", main="change point statistics")
+	plot(D,type="l", main="change point statistic")
 #	tau.hat <- index(yuima@data@zoo.data[[1]])[which.min(D)]	
 	tau.hat <- index(D)[which.min(D)]	
 	
