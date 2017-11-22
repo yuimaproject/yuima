@@ -293,7 +293,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
         }
 
         IntensityProc <- 0
-
+        #set.seed(1)
         dN<-0
 
         myhawkesP <- function(simMod, Kern,
