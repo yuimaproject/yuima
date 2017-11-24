@@ -57,6 +57,7 @@ constHazIntPr <- function(g.Fun , Kern.Fun){
   Int.Intens <- list()
   for(i in c(1:numb.Int)){
     dum.g <- as.character(g.Fun[i])
+    dum.g <- paste("tail(",dum.g,", n=1L)")
     dum.Ker <- as.character(Kern.Fun@Integrand@IntegrandList[[i]])
     dif.dx <- paste("d",Kern.Fun@variable.Integral@var.dx, sep="")
     dum.Ker <- paste(dum.Ker,dif.dx, sep = "*")
@@ -274,6 +275,15 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
             envir = my.env)
         }
 
+        dimCov <- length(object@Ppr@covariates)
+        if (dimCov>0){
+          for(j in c(1:dimCov)){
+          assign(object@Ppr@covariates[j],
+                   as.numeric(simMod@data@original.data[1,object@Ppr@covariates[j]]),
+                   envir = my.env)
+          }
+        }
+        
         compErrHazR2 <- function(simMod, Kern,
                                  capitalTime, Model, my.env, ExprHaz,
                                  Time, dN){
@@ -328,18 +338,36 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
               if(i>=dimGrid){
                 noExit <- FALSE
               }
+              if(i<=dim(simMod@data@original.data)[1]){  
+              dimCov <- length(object@Ppr@covariates)
+                
+              if (dimCov>0){
+                  for(j in c(1:dimCov)){
+                    assign(object@Ppr@covariates[j],
+                           as.numeric(simMod@data@original.data[1:i,object@Ppr@covariates[j]]),
+                           envir = my.env)
+                  }
+                }  
+            
 
-              cat("\n ", cond>0, i, grid[i])
+              
+              cat("\n ", i, grid[i])
+              }
             }
-            jumpT<-c(jumpT,grid[i])
-            dN<-c(dN,1)
-            allhaz <- c(allhaz,HazardRate)
-            allcond <- c(allcond,cond)
-            cond <- const
-            allconst <- c(allconst, const)
-            const <- -log(runif(1))
-            while(const<delta){
+            if(i<=dim(simMod@data@original.data)[1]){ 
+              jumpT<-c(jumpT,grid[i])
+              # if(i==7001){
+              #   cat("\n",noExit)
+              # }
+              dN<-c(dN,1)
+              allhaz <- c(allhaz,HazardRate)
+              allcond <- c(allcond,cond)
+              cond <- const
+              allconst <- c(allconst, const)
               const <- -log(runif(1))
+              while(const<delta){
+                const <- -log(runif(1))
+              }
             }
           }
           return(list(jumpT=jumpT,allcond=allcond,allconst=allconst, allhaz=allhaz))
