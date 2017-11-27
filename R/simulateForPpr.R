@@ -335,10 +335,10 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
               HazardRate <- HazardRate+incrlambda
               cond <- const-HazardRate
               i<-i+1
-              if(i>=dimGrid){
+              if(i>=(dimGrid-1)){
                 noExit <- FALSE
               }
-              if(i<=dim(simMod@data@original.data)[1]){  
+              if(i<dim(simMod@data@original.data)[1]){  
               dimCov <- length(object@Ppr@covariates)
                 
               if (dimCov>0){
@@ -354,7 +354,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
               cat("\n ", i, grid[i])
               }
             }
-            if(i<=dim(simMod@data@original.data)[1]){ 
+            if(i<dim(simMod@data@original.data)[1]){ 
               jumpT<-c(jumpT,grid[i])
               # if(i==7001){
               #   cat("\n",noExit)

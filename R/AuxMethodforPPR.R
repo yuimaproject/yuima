@@ -12,14 +12,18 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   # IntLambda<-InternalConstractionIntensity(param,my.envd1,
   #                                          my.envd2,my.envd3)
   Index<-my.envd3$gridTime
-  Integr1 <- -sum(IntLambda[-length(IntLambda)]*diff(Index),na.rm=TRUE)
+  Integr1a <- -sum(IntLambda[-length(IntLambda)]*diff(Index),na.rm=TRUE)
+  Integr1b <- -sum(IntLambda[-1]*diff(Index),na.rm=TRUE)
+  Integr1 <- (Integr1a+Integr1b)/2
   # if(is.nan(Integr1)){
   #   Integr1 <- -10^6
   # }
   if(length(my.envd3$YUIMA.PPR@Ppr@counting.var)>0){
     cond1 <- my.envd3$YUIMA.PPR@model@solve.variable %in% my.envd3$YUIMA.PPR@Ppr@counting.var
     cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data[,cond1]))
-    Integr2<- sum(log(IntLambda[-1][cond2!=0]),na.rm=TRUE)
+    #Integr2a<- sum(log(IntLambda[-1][cond2!=0]),na.rm=TRUE)
+    Integr2 <- sum(log(IntLambda[cond2!=0]),na.rm=TRUE)
+    #Integr2 <- (Integr2a+Integr2b)/2
   }else{
     yuima.stop("Spal")
   }
@@ -28,7 +32,7 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   # }
   logLik <- Integr1+Integr2
   cat("\n ",logLik, param)
-  return(-logLik)
+  return(-logLik/sum(cond2))
 }
 
 
@@ -123,9 +127,11 @@ quasiLogLik.Ppr <- function(yuimaPpr, parLambda=list(), method=method, fixed = l
     # Covariates
     if(length(yuimaPPr@Ppr@covariates)>0){
       # Covariates should be identified at jump time
-      cond <- yuimaPpr@model@solve.variable %in% yuimaPpr@Ppr@covariates[i]
-      condTime <- gridTime %in% my.envd1$JumpTime.dN
-      assign(yuimaPpr@Ppr@covariates[i],yuimaPpr@data@original.data[condTime,cond],envir = my.envd1)
+      for(i in c(1:length(yuimaPPr@Ppr@covariates))){
+        cond <- yuimaPPr@model@solve.variable %in% yuimaPPr@Ppr@covariates[i]
+        condTime <- gridTime %in% my.envd1$JumpTime.dN
+        assign(yuimaPPr@Ppr@covariates[i],yuimaPPr@data@original.data[condTime,cond],envir = my.envd1)
+      }
     }
 
   }
