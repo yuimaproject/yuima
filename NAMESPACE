@@ -196,6 +196,7 @@ export(asymptotic_term)
 export(lse)
 
 export(qmle)
+export(get.counting.data)
 export(quasilogl)
 export(phi.test)
 export(lasso)
@@ -204,6 +205,7 @@ export(qmleR)
 export(qmleL)
 export(qmleLevy)
 export(IC)
+export(DataPpr)
 
 
 export(Intensity.PPR)
@@ -246,10 +248,6 @@ S3method(cbind, yuima)
 
 S3method(plot, yuima.llag) # Oct. 10, 2015
 S3method(plot, yuima.mllag) # Oct. 10, 2015
-
 useDynLib(yuima)
-
-#,.registration = TRUE)
-
 
 

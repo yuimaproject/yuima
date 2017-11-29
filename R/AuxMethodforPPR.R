@@ -21,7 +21,7 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   if(length(my.envd3$YUIMA.PPR@Ppr@counting.var)>0){
     cond1 <- my.envd3$YUIMA.PPR@model@solve.variable %in% my.envd3$YUIMA.PPR@Ppr@counting.var
     cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data[,cond1]))
-    #Integr2a<- sum(log(IntLambda[-1][cond2!=0]),na.rm=TRUE)
+    #Integr2<- sum(log(IntLambda[-1][cond2!=0]),na.rm=TRUE)
     Integr2 <- sum(log(IntLambda[cond2!=0]),na.rm=TRUE)
     #Integr2 <- (Integr2a+Integr2b)/2
   }else{
@@ -31,8 +31,17 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   #   Integr2 <- -10^6
   # }
   logLik <- Integr1+Integr2
+  if(is.null(my.envd1$oldpar)){
+    oldpar <- param
+  }else{
+    oldpar <- my.envd1$oldpar
+  }
+  ret <- -logLik/sum(cond2,na.rm=TRUE)#+sum((param-oldpar)^2*param^2)/2
   cat("\n ",logLik, param)
-  return(-logLik/sum(cond2))
+  
+  #assign("oldpar",param,envir = my.envd1)
+  
+  return(ret)
 }
 
 
