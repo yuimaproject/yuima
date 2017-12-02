@@ -225,9 +225,10 @@ Intensity.PPR <- function(yuimaPPr,param){
 
     #CountingVariable
     for(i in c(1:length(yuimaPPr@Ppr@counting.var))){
-      cond <- yuimaPPr@Ppr@counting.var[i] %in% yuimaPPr@model@solve.variable
-      dummyData <-unique(yuimaPPr@data@original.data[,cond])[-1]
-      assign(yuimaPPr@Ppr@counting.var[i], dummyData,envir=my.envd1)
+      cond <- yuimaPPr@model@solve.variable %in% yuimaPPr@Ppr@counting.var[i] 
+      condTime <- gridTime %in% my.envd1$JumpTime.dN
+      dummyData <- yuimaPPr@data@original.data[condTime,cond]
+      assign(yuimaPPr@Ppr@counting.var[i], as.numeric(dummyData),envir=my.envd1)
     }
     # Names expression
     assign("NamesIntgra", NamesIntegrandExpr, envir=my.envd1)
@@ -256,9 +257,14 @@ Intensity.PPR <- function(yuimaPPr,param){
     assign("t.time",yuimaPPr@Kernel@variable.Integral@upper.var,envir=my.envd1)
 
     # Covariates
-    if(length(yuimaPPr@Ppr@covariates)>1){
+    if(length(yuimaPPr@Ppr@covariates)>0){
       # Covariates should be identified at jump time
-      return(NULL)
+      # return(NULL)
+      for(i in c(1:length(yuimaPPr@Ppr@covariates))){
+        cond <- yuimaPPr@model@solve.variable %in% yuimaPPr@Ppr@covariates[i]  
+        dummyData <-yuimaPPr@data@original.data[,cond]
+        assign(yuimaPPr@Ppr@covariates[i], dummyData,envir=my.envd1)
+      }
     }
 
   }
@@ -288,7 +294,7 @@ Intensity.PPR <- function(yuimaPPr,param){
   dimCov <- length(yuimaPPr@Ppr@covariates)
   if(dimCov>0){
     for(j in c(1:dimCov)){
-      cond <- yuimaPPr@Ppr@covariates[j] %in% yuimaPPr@model@solve.variable
+      cond <- yuimaPPr@model@solve.variable %in% yuimaPPr@Ppr@covariates[j]
       dummyData <-yuimaPPr@data@original.data[,cond]
       assign(yuimaPPr@Ppr@covariates[j], dummyData,envir=my.envd3)  
     }
@@ -296,7 +302,7 @@ Intensity.PPR <- function(yuimaPPr,param){
 
   #CountingVariable
   for(i in c(1:length(yuimaPPr@Ppr@counting.var))){
-    cond <- yuimaPPr@Ppr@counting.var[i] %in% yuimaPPr@model@solve.variable
+    cond <- yuimaPPr@model@solve.variable %in% yuimaPPr@Ppr@counting.var[i]
     dummyData <-yuimaPPr@data@original.data[,cond]
     assign(yuimaPPr@Ppr@counting.var[i], dummyData,envir=my.envd3)
   }
