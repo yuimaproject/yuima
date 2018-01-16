@@ -53,3 +53,6 @@
 2017/09/09: boot package is imported
             added llag.test.R, llag.test.Rd
             modified llag.R, bns.test.Rd, llag.Rd, mllag.Rd, hyavar.Rd, cce.Rd, cce_functions.c
+2018/01/16: a bug in computation of asymptotic variances in llag is fixed
+            the default value of tol of llag is changed to 1e-7
+            modified llag.R, llag.Rd, cce_functions.c 

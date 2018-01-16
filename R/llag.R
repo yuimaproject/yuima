@@ -98,7 +98,7 @@ make.grid <- function(d, d.size, x, from, to, division){
 
 
 ## function to compute asymptotic variances
-llag.avar <- function(x, grid, bw, alpha, fisher, ser.diffX, ser.times, vol, cormat, ccor, idx, G, d, d.size){
+llag.avar <- function(x, grid, bw, alpha, fisher, ser.diffX, ser.times, vol, cormat, ccor, idx, G, d, d.size, tol){
   
   # treatment of the bandwidth
   if(missing(bw)){
@@ -118,6 +118,8 @@ llag.avar <- function(x, grid, bw, alpha, fisher, ser.diffX, ser.times, vol, cor
       
     }
     
+  }else{
+    bw <- bw/tol
   }
   
   bw <- matrix(bw, d, d)
@@ -193,7 +195,7 @@ llag.avar <- function(x, grid, bw, alpha, fisher, ser.diffX, ser.times, vol, cor
 ## main body
 setGeneric( "llag", function(x, from = -Inf, to = Inf, division = FALSE, 
                              verbose = (ci || ccor), grid, psd = TRUE, plot = ci,
-                             ccor = ci, ci = FALSE, alpha = 0.01, fisher = TRUE, bw, tol = 1e-6) standardGeneric("llag") )
+                             ccor = ci, ci = FALSE, alpha = 0.01, fisher = TRUE, bw, tol = 1e-7) standardGeneric("llag") )
 
 ## yuima-method
 setMethod("llag", "yuima", function(x, from, to, division, verbose, grid, psd, plot, 
@@ -366,7 +368,7 @@ setMethod("llag", "list", function(x, from, to, division, verbose, grid, psd, pl
     out <- llag.avar(x = x, grid = grid, bw = bw, alpha = alpha, fisher = fisher,
                      ser.diffX = ser.diffX, ser.times = ser.times, 
                      vol = vol, cormat = cormat, ccor = crosscor, idx = idx, 
-                     G = G, d = d, d.size = d.size)
+                     G = G, d = d, d.size = d.size, tol = tol)
     
     p <- out$p
     CI <- out$CI

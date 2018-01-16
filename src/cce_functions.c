@@ -668,6 +668,10 @@ void hycrossavar(double *grid, double *xtime, double *ytime, int *gridL, int *xl
     int mu[*N], w[*N], q[*N], r[*N];
     double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N], dS2[*N], dxdy[*N], tmptime[*ylength];
     
+    for(i = 0; i < *xlength; i++){
+      xtime[i] = round(xtime[i]);
+    }
+    
     for (k = 0; k < *gridL; k++) {
         
         for(j = 0; j < *ylength; j++){
