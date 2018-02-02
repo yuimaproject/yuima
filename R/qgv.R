@@ -143,7 +143,7 @@ qgv<- function(yuima, filter.type="Daubechies", order=2, a=NULL){
             nconst<-as.character(yuima@model@diffusion[[1]])  
         }
     } else {
-      nconst<-as.character(yuima@model@diffusion[[1]]) 
+      nconst<- as.character(yuima@model@diffusion[[1]])
     }
     
     
@@ -205,6 +205,7 @@ qgv<- function(yuima, filter.type="Daubechies", order=2, a=NULL){
 
     }
 
+nconst <- gsub("[()]", "", nconst)
 x<-c(H,C)
 names(x)<-c("hurst",nconst)        
 sdx<-diag(c(sdH,sdC))
