@@ -79,9 +79,7 @@ Gaussian approximation of maxima of Wiener functionals and its application to hi
 %%  ~~who you are~~
 The YUIMA Project Team
 }
-\note{
-%%  ~~further notes~~
-}
+
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
