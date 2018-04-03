@@ -81,7 +81,7 @@ auxcogarch.noise<-function(cost,b,acoeff,mu,Data,freq,lab){
   Process_Y <- ExpY0
 #  Process_Y1 <- ExpY0
 #   Process_Y <- as.matrix(50.33)
-  var_V<-cost + sum(acoeff*Process_Y)
+  var_V<-cost + sum(a*Process_Y)
   # delta <- 1/freq
   deltatot <- c(0,freq)
   for(t in c(2:(length(Data)))){

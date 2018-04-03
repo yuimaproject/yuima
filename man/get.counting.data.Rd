@@ -1,5 +1,6 @@
 \name{get.counting.data}
 \alias{get.counting.data}
+\alias{NoisePPR}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Extract arrival times from an object of class \code{yuima.Ppr}
@@ -150,5 +151,3 @@ TimeArr <- index(CountVar)
 
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.

@@ -135,9 +135,12 @@ Diagnostic.Cogarch <- function(yuima.cogarch, param = list(),
     if(all(Im(gamma.eig)==0)){
       gamm.eig<-as.numeric(gamma.eig)
     }
-    if(is.numeric(lambda.eig) && all(is.numeric(gamma.eig)<0) && all(is.numeric(lambda.eig)<0)){
-      if(cumsum(sort(lambda.eig[c(1:(info@p-1))]))>=cumsum(sort(gamma.eig[c(1:(info@p-1))]))){
+    if( all(Re(gamma.eig)<0) && all(Re(lambda.eig)<0)){
+      NewLamb <- sort(Re(lambda.eig),decreasing = T)
+      NewGam <- sort(Re(gamma.eig),decreasing = T)
+      if(cumsum(NewLamb[c(1:(info@p-1))])>=cumsum(NewGam[c(1:(info@p-1))])){
         massage <- "\n The Variance process is strictly positive. \n"
+        res.pos<-TRUE
       }
     }
   }
