@@ -375,6 +375,14 @@ Bibsynchro <- function(x,y){
 #         functions for tuning parameter
 ##############################################################
 
+set_utime <- function(data){
+  
+  init.min <- min(as.numeric(sapply(data, FUN = function(x) time(x)[1])))
+  term.max <- max(as.numeric(sapply(data, FUN = function(x) tail(time(x), n=1))))
+  
+  return(23400 * (term.max - init.min))
+}
+
 # Barndorff-Nielsen et al. (2009)
 
 RV.sparse <- function(zdata,frequency=1200,utime){
@@ -465,7 +473,7 @@ NSratio_BNHLS <- function(zdata,frequency=1200,sec=120,utime){
 selectParam.pavg <- function(data,utime,frequency=1200,sec=120,
                              a.theta,b.theta,c.theta){
   
-  if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
+  if(missing(utime)) utime <- set_utime(data)
   
   NS <- sapply(data,FUN=NSratio_BNHLS,frequency=frequency,sec=sec,utime=utime)
   coef <- (b.theta+sqrt(b.theta^2+3*a.theta*c.theta))/a.theta
@@ -475,7 +483,7 @@ selectParam.pavg <- function(data,utime,frequency=1200,sec=120,
 
 selectParam.TSCV <- function(data,utime,frequency=1200,sec=120){
   
-  if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
+  if(missing(utime)) utime <- set_utime(data)
   
   NS <- sapply(data,FUN=NSratio_BNHLS,frequency=frequency,sec=sec,
                utime=utime)
@@ -485,7 +493,7 @@ selectParam.TSCV <- function(data,utime,frequency=1200,sec=120){
 
 selectParam.GME <- function(data,utime,frequency=1200,sec=120){
   
-  if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
+  if(missing(utime)) utime <- set_utime(data)
   
   NS <- sapply(data,FUN=NSratio_BNHLS,frequency=frequency,sec=sec,
                utime=utime)
@@ -500,7 +508,7 @@ selectParam.GME <- function(data,utime,frequency=1200,sec=120){
 
 selectParam.RK <- function(data,utime,frequency=1200,sec=120,cstar=3.5134){
   
-  if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
+  if(missing(utime)) utime <- set_utime(data)
   
   NS <- sapply(data,FUN=NSratio_BNHLS,frequency=frequency,sec=sec,
                utime=utime)
@@ -1394,7 +1402,7 @@ cce.qmle <- function(data,opt.method="BFGS",vol.init=NA,
   covol.init <- matrix(covol.init,2,dd)
   ncov.init <- matrix(ncov.init,2,dd)
   
-  if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
+  if(missing(utime)) utime <- set_utime(data)
   
   cmat <- matrix(0,d.size,d.size)
   
@@ -2402,7 +2410,7 @@ SRC <- function(data,frequency=300,avg=TRUE,utime){
   
   d.size <- length(data)
   
-  if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
+  if(missing(utime)) utime <- set_utime(data)
   
   # allocate memory
   ser.X <- vector(d.size, mode="list")     # data in 'x'
@@ -2523,7 +2531,7 @@ SBPC <- function(data,frequency=300,avg=TRUE,utime){
   
   d.size <- length(data)
   
-  if(missing(utime)) utime <- ifelse(is.numeric(time(data[[1]])),23400,1)
+  if(missing(utime)) utime <- set_utime(data)
   
   # allocate memory
   ser.X <- vector(d.size, mode="list")     # data in 'x'
@@ -2696,23 +2704,28 @@ if(is.null(cmat))
   stop("method is not available")
 
 if(psd){
-  tmp <- svd(cmat%*%cmat)
-  cmat <- tmp$u%*%diag(sqrt(tmp$d))%*%t(tmp$v)
+  #tmp <- svd(cmat%*%cmat)
+  #cmat <- tmp$u%*%diag(sqrt(tmp$d))%*%t(tmp$v)
+  tmp <- eigen(cmat)
+  cmat <- tmp$vectors %*% (abs(tmp$values) * t(tmp$vectors))
 }
 
 if(d.size>1){
-  if(all(diag(cmat)>0)){
-    sdmat <- diag(sqrt(diag(cmat)))
-    cormat <- solve(sdmat) %*% cmat %*% solve(sdmat)
-  }else{
-    cormat <- NA
-  }
+  #if(all(diag(cmat)>0)){
+    #sdmat <- diag(sqrt(diag(cmat)))
+    #cormat <- solve(sdmat) %*% cmat %*% solve(sdmat)
+  #}else{
+  #  cormat <- NA
+  #}
+  cormat <- cov2cor(cmat)
 }else{
   cormat <- as.matrix(1)
 }
+
 rownames(cmat) <- names(data)
 colnames(cmat) <- names(data)
 rownames(cormat) <- names(data)
 colnames(cormat) <- names(data)
+
 return(list(covmat=cmat,cormat=cormat))
 })

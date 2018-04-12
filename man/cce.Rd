@@ -134,7 +134,9 @@ a numeric vector or list indicating the threshold parameter(s). Each of its comp
 }
   \item{utime}{
 %%     ~~Describe \code{utime} here~~
-a positive number indicating what seconds the number ``1'' corresponds to. The default value is 23400 (this means 6.5 hours) if the time indices of the (first component) of \code{x} is numeric, otherwise 1.
+a positive number indicating what seconds the interval [0,1] corresponds to. 
+%The default value is 23400 (this means 6.5 hours) if the time indices of the (first component) of \code{x} is numeric, otherwise 1.
+The default value is the difference between the maximum and the minimum of the sampling times, multiplied by 23,400. Here, 23,400 seconds correspond to 6.5 hours, hence if the data is sampled on the interval [0,1], then the sampling interval is regarded as 6.5 hours. 
 }
 \item{psd}{
 logical. If \code{TRUE}, the estimated covariance matrix \code{C} is converted to \code{(C\%*\%C)^(1/2)} for ensuring the positive semi-definiteness. In this case the absolute values of the estimated correlations are always ensured to be less than or equal to 1. 
