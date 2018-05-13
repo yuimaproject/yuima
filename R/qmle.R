@@ -233,8 +233,14 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     }
 
     if(yuima@model@measure.type=="code"){
-      tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
-      measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
+      if(class(yuima@model@measure$df)=="yuima.law"){
+        measurefunc <- "yuima.law"
+      }
+      else{
+          
+          tmp <- regexpr("\\(", yuima@model@measure$df$exp)[1]
+          measurefunc <- substring(yuima@model@measure$df$exp, 1, tmp-1)
+      }
       if(!is.na(match(measurefunc,codelist))){
         yuima.warn("carma(p,q): the qmle for a carma(p,q) driven by a non-Negative Levy  will be implemented as soon as possible")
         NoNeg.Noise<-TRUE
@@ -512,8 +518,13 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   #SMI: 2/9/214 jump
   if(length(measure.par)>0){
 
-
-    args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1",yuima@model@measure$df$expr,perl=TRUE)), ","))
+  #  "yuima.law" LM 13/05/2018
+    
+    if(class(yuima@model@measure$df)=="yuima.law"){
+      args <- yuima@model@parameter@measure
+    }else{
+      args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1",yuima@model@measure$df$expr,perl=TRUE)), ","))
+    }
     idx.intensity <- numeric(0)
     for(i in 1:length(measure.par)){
       if(sum(grepl(measure.par[i],yuima@model@measure$intensity)))
