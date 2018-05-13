@@ -44,7 +44,7 @@ setMethod("simulate", "yuima.multimodel",
       randomGenerator<-object@model@measure$df
       if(samp@regular){
         tForMeas<-samp@delta
-        NumbIncr<-samp@n
+        NumbIncr<-samp@n[1]
         if(missing(true.parameter)){
           eval(parse(text= paste0("measureparam$",
                                   object@model@time.variable," <- tForMeas",collapse="")))
@@ -70,7 +70,7 @@ setMethod("simulate", "yuima.multimodel",
              object@model@time.variable," <- tForMeas",collapse="")))
 
           }
-          Noise<- rand(object = randomGenerator, n=1, param=measureparam)
+          Noise<- rand(object = randomGenerator, n=samp@n[1], param=measureparam)
         }
         Noise<-sapply(X=tForMeas, FUN=my.InternalFunforLevy,
               randomGenerator=randomGenerator,
