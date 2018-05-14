@@ -1320,11 +1320,17 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
       }
       if(yuima@model@measure.type=="code"){
         #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rvgamma"
-        name.func.dummy <- as.character(model@measure$df$expr[1])
-        name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
-        names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
-        valuemeasure<-as.numeric(names.measpar)
-        NaIdx<-which(!is.na(valuemeasure))
+        if(class(model@measure$df)=="yuima.law"){
+          valuemeasure <- "yuima.law"
+          NaIdx<-NULL
+        }else{
+          name.func.dummy <- as.character(model@measure$df$expr[1])
+          name.func<- substr(name.func.dummy,1,(nchar(name.func.dummy)-1))
+          names.measpar<-as.vector(strsplit(name.func,', '))[[1]][-1]
+          valuemeasure<-as.numeric(names.measpar)
+        
+          NaIdx<-which(!is.na(valuemeasure))
+        }
         if(length(NaIdx)!=0){
           yuima.warn("the constrained MLE for levy increment will be implemented as soon as possible")
           carma_final_res<-new("yuima.carma.qmle", call = call, coef = coef, fullcoef = unlist(mycoef),
@@ -1334,7 +1340,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
           return(carma_final_res)
         }
         if(aggregation==TRUE){
-          if(floor(yuima@sampling@n/yuima@sampling@Terminal)!=yuima@sampling@n/yuima@sampling@Terminal){
+          if(all(floor(yuima@sampling@n/yuima@sampling@Terminal)!=yuima@sampling@n/yuima@sampling@Terminal)){
             yuima.stop("the n/Terminal in sampling information is not an integer. Aggregation=FALSE is recommended")
           }
           inc.levy1<-diff(cumsum(c(0,inc.levy))[seq(from=1,
@@ -1343,6 +1349,52 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
           )])
         }else{
           inc.levy1<-inc.levy
+        }
+        if(measurefunc=="yuima.law"){
+  
+          dummyParMeas<-c(coef[measure.par],1)
+          names(dummyParMeas)<-c(measure.par,yuima@model@time.variable)
+          cond <- length(dens(yuima@model@measure$df,x=as.numeric(inc.levy1),param=as.list(dummyParMeas)))
+          if(cond==0){
+            result.Lev <- list(estLevpar=coef[measure.par],
+                               covLev=matrix(NA,
+                                             length(coef[measure.par]),
+                                             length(coef[measure.par]))
+                                             )
+            yuima.warn("Levy measure parameters can not be estimated.")
+          }else{
+            dummyMyfunMeas<-function(par, Law, Data, time, param.name, name.time){
+              
+              dummyParMeas<-c(par,time)
+              names(dummyParMeas)<-c(param.name,name.time)
+              v <- log(pmax(na.omit(dens(Law,x=Data,param=as.list(dummyParMeas))), 10^(-40)))
+              v1 <- v[!is.infinite(v)]
+              return(-sum(v1))
+              #-sum(dens(Law,x=Data,param=as.list(dummyParMeas),log = TRUE),na.rm=TRUE)
+            }
+            # aa <- dummyMyfunMeas(par=coef[measure.par], Law=yuima@model@measure$df, 
+            #               Data=as.numeric(inc.levy), 
+            #               time=yuima@sampling@delta, param.name=measure.par, 
+            #               name.time = yuima@model@time.variable)
+            if(aggregation){
+              mytime<-1
+            }else{
+              mytime<-yuima@sampling@delta
+              inc.levy1<- as.numeric(inc.levy1)
+            }
+            
+            prova <- optim(fn = dummyMyfunMeas, par = coef[measure.par],
+                          method = method,Law=yuima@model@measure$df, 
+                         Data=inc.levy1, 
+                         time=mytime, param.name=measure.par, 
+                         name.time = yuima@model@time.variable)
+            Heeee<-optimHess(fn = dummyMyfunMeas, par = coef[measure.par],
+                      Law=yuima@model@measure$df, 
+                      Data=inc.levy1, 
+                      time=mytime, param.name=measure.par, 
+                      name.time = yuima@model@time.variable)
+            result.Lev <- list(estLevpar=prova$par,covLev=solve(Heeee))
+          }
         }
 
         if(measurefunc=="rIG"){
