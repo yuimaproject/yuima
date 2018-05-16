@@ -3,16 +3,16 @@
 \alias{NoisePPR}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Extract arrival times from an object of class \code{yuima.Ppr}
+Extract arrival times from an object of class \code{yuima.PPR}
 }
-\description{This function extracts arrival times from an object of class \code{\link{yuima.Ppr}}.}
+\description{This function extracts arrival times from an object of class \code{\link{yuima.PPR}}.}
 \usage{
 get.counting.data(yuimaPPR,type="zoo")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{yuimaPPR}{An object of class \code{\link{yuima.Ppr}}.}
-  \item{type}{By default \code{type="zoo"} the function returns an object of class \code{zoo}. Other values are \code{yuima.Ppr} and \code{matrix}.}
+  \item{yuimaPPR}{An object of class \code{\link{yuima.PPR}}.}
+  \item{type}{By default \code{type="zoo"} the function returns an object of class \code{zoo}. Other values are \code{yuima.PPR} and \code{matrix}.}
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -63,7 +63,7 @@ modHawkes <- setModel(drift = c("0"), diffusion = matrix("0",1,1),
   measure.type = "code", solve.variable = c("N"),
   xinit=c("0"))
 
-prvHawkes <- setPpr(yuima = modHawkes, counting.var="N", gFun=gFun,
+prvHawkes <- setPPR(yuima = modHawkes, counting.var="N", gFun=gFun,
   Kernel = as.matrix(Kernel), lambda.var = "lambda", 
   var.dx = "N", lower.var="0", upper.var = "t")
 
@@ -103,13 +103,13 @@ my.rKern <- function(n,t){
   return(res)
 }
 
-Law.PprKern <- setLaw(rng = my.rKern)
+Law.PPRKern <- setLaw(rng = my.rKern)
 
 # Point Process definition
 modKern <- setModel(drift = c("0.4*(0.1-X)","0"),
                     diffusion = c("0","0"),
                     jump.coeff = matrix(c("1","0","0","1"),2,2),
-                    measure = list(df = Law.PprKern),
+                    measure = list(df = Law.PPRKern),
                     measure.type = c("code","code"),
                     solve.variable = c("X","N"),
                     xinit=c("0.25","0"))
@@ -118,7 +118,7 @@ gFun <- "exp(mu*log(1+X))"
 #
 Kernel <- "alpha*exp(-beta*(t-s))"
 
-prvKern <- setPpr(yuima = modKern,
+prvKern <- setPPR(yuima = modKern,
                   counting.var="N", gFun=gFun,
                   Kernel = as.matrix(Kernel),
                   lambda.var = "lambda", var.dx = "N",

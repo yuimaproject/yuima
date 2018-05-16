@@ -1,10 +1,10 @@
-\name{setPpr}
-\alias{setPpr}
+\name{setPPR}
+\alias{setPPR}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Point Process}
 \description{Constructor of a Point Process }
 \usage{
-setPpr(yuima, counting.var = "N", gFun, Kernel,
+setPPR(yuima, counting.var = "N", gFun, Kernel,
   var.dx = "s", var.dt = "s", lambda.var = "lambda",
   lower.var = "0", upper.var = "t", nrow = 1, ncol = 1)
 }

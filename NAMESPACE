@@ -88,8 +88,8 @@ exportClasses("yuima",
 "Integrand",
 "Integral.sde",
 "yuima.Integral",
-"info.Ppr",
-"yuima.Ppr",
+"info.PPR",
+"yuima.PPR",
 "yuima.Hawkes"
 )
 
@@ -140,7 +140,7 @@ export(setSampling)
 export(setCharacteristic)
 export(setCarma)
 export(setPoisson)
-export(setPpr)
+export(setPPR)
 export(setHawkes)
 export(dconst)
 export(rconst)
@@ -206,7 +206,7 @@ export(qmleR)
 export(qmleL)
 export(qmleLevy)
 export(IC)
-export(DataPpr)
+export(DataPPR)
 
 
 export(Intensity.PPR)

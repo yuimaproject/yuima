@@ -4,11 +4,11 @@
 \title{Intesity Process for the Point Process Regression Model}
 \description{This function returns the intensity process of a Point Process Regression Model}
 \usage{
-Intensity.PPR(yuimaPPr, param)
+Intensity.PPR(yuimaPPR, param)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{yuimaPPr}{An object of class \code{yuima.ppr}}
+  \item{yuimaPPR}{An object of class \code{yuima.PPR}}
   \item{param}{Model parameters}
 }
 \value{On obejct of class \code{yuima.data}}

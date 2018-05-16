@@ -262,7 +262,7 @@ setModel <- function(drift=NULL,
         }#else if(is.na(match(measurefunc, CPlist))){
         # warning(paste("\ndistribution function", measurefunc, "is not officialy supported as type CP.\n"))
         #}
-        MEASURE$df$func <- eval(parse(text=measurefunc))
+        MEASURE$df$func <- eval(parse(text=measurefunc)) #LM 15/05/2017
         MEASURE$df$expr <- parse(text=measure$df)
         MEASURE$intensity <- parse(text=measure$intensity)
 

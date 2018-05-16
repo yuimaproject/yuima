@@ -1,10 +1,10 @@
-setPpr <- function(yuima, counting.var="N", gFun, Kernel,
+setPPR <- function(yuima, counting.var="N", gFun, Kernel,
                    var.dx= "s", var.dt = "s", lambda.var = "lambda",
                    lower.var="0", upper.var = "t",
                    nrow =1 ,ncol=1){
 
   general <- TRUE
-  ret <- aux.setPpr(yuima, counting.var, gFun,
+  ret <- aux.setPPR(yuima, counting.var, gFun,
     Kernel, var.dx, var.dt, lambda.var,
     lower.var="0", upper.var = "t",
     nrow =1 ,ncol=1,general =general)
@@ -12,7 +12,7 @@ setPpr <- function(yuima, counting.var="N", gFun, Kernel,
 }
 
 
-aux.setPpr <-function(yuima, counting.var="N", gFun, Kernel,
+aux.setPPR <-function(yuima, counting.var="N", gFun, Kernel,
                       var.dx, var.dt = "s", lambda.var = "lambda",
                       lower.var="0", upper.var = "t",
                       nrow =1 ,ncol=1, general){
@@ -50,7 +50,7 @@ aux.setPpr <-function(yuima, counting.var="N", gFun, Kernel,
                       gFun = g@Output@param@allparamMap,
                       Kern = Integral@Integral@param.Integral@Integrandparam)
 
-  #   IntPpr<- yuima:::setIntegral(yuima=yuimadum,
+  #   IntPPR<- yuima:::setIntegral(yuima=yuimadum,
   #     integrand y= Kernel, var.dx = "N",
   #     lower.var = lower.var, upper.var = upper.var,
   #     out.var = "", nrow = nrow, ncol = ncol)
@@ -134,9 +134,9 @@ aux.setPpr <-function(yuima, counting.var="N", gFun, Kernel,
       }
 
     }
-    Ppr <- new("info.Ppr",
+    PPR <- new("info.PPR",
                allparam = paramHawkes$allparam,
-               allparamPpr = unique(c(paramHawkes$gFun,paramHawkes$Kern)),
+               allparamPPR = unique(c(paramHawkes$gFun,paramHawkes$Kern)),
                common = paramHawkes$common,
                counting.var = counting.var,
                var.dx = var.dx,
@@ -150,15 +150,15 @@ aux.setPpr <-function(yuima, counting.var="N", gFun, Kernel,
                IntensWithCount=IntensWithCount)
 
 
-    ret <- new("yuima.Ppr", Ppr = Ppr,
+    ret <- new("yuima.PPR", PPR = PPR,
                gFun = g@Output,
                Kernel = Integral@Integral,
                yuima = yuima1)
   }else{
 
-    Ppr <- new("info.Ppr",
+    PPR <- new("info.PPR",
                allparam = paramHawkes$allparam,
-               allparamPpr = unique(c(paramHawkes$gFun,paramHawkes$Kern)),
+               allparamPPR = unique(c(paramHawkes$gFun,paramHawkes$Kern)),
                common = paramHawkes$common,
                counting.var = counting.var,
                var.dx = var.dx,
@@ -168,7 +168,7 @@ aux.setPpr <-function(yuima, counting.var="N", gFun, Kernel,
                var.dt = var.dt,
                additional.info = "Exponential Hawkes",
                Info.measure = list(type=type,measure=measure))
-    ret <- new("yuima.Hawkes", Ppr = Ppr,
+    ret <- new("yuima.Hawkes", PPR = PPR,
                gFun = g@Output,
                Kernel = Integral@Integral,
                yuima = yuima1)

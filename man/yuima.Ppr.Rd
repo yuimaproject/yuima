@@ -1,9 +1,9 @@
-\name{yuima.Ppr}
+\name{yuima.PPR}
 \docType{class}
-\alias{yuima.Ppr}
-\alias{yuima.Ppr-class}
-\alias{initialize,yuima.Ppr-method}
-\alias{simulate,yuima.Ppr-method}
+\alias{yuima.PPR}
+\alias{yuima.PPR-class}
+\alias{initialize,yuima.PPR-method}
+\alias{simulate,yuima.PPR-method}
 
 \title{Class for a mathematical description of a Point Process}
 \description{

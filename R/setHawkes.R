@@ -4,21 +4,21 @@ setHawkes <- function(lower.var="0", upper.var = "t", var.dt = "s",
   const = "nu", measure = NULL, measure.type = NULL){
   if(dimension==1){
     if(is.null(measure)){
-      my.rPpr1 <- function(n){
+      my.rPPR1 <- function(n){
         res <- t(t(rep(1,n)))
         return(res)
       }
 
 
-      my.dPpr1 <-function(x){
+      my.dPPR1 <-function(x){
         res<-1
         return(res)
       }
 
       # yuima.law for the underlying source of randomness
 
-      Law.Ppr1 <- setLaw(rng = my.rPpr1, density = my.dPpr1)
-      measure <- list(df = Law.Ppr1)
+      Law.PPR1 <- setLaw(rng = my.rPPR1, density = my.dPPR1)
+      measure <- list(df = Law.PPR1)
       measure.type <- "code"
     }
   }else{
@@ -46,7 +46,7 @@ setHawkes <- function(lower.var="0", upper.var = "t", var.dt = "s",
 
   Kernel<- matrix(paste0(Ccoeff,"*exp(-",Acoeff,"*(","t-",var.dt,"))"),dimension, dimension)
 
-  res <- aux.setPpr(yuima = mod1, counting.var=PROCESS,
+  res <- aux.setPPR(yuima = mod1, counting.var=PROCESS,
     gFun, Kernel,
     var.dx = PROCESS, var.dt = var.dt, lambda.var = INTENSITY,
     lower.var=lower.var, upper.var = upper.var,

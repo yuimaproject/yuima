@@ -11,7 +11,7 @@
 # y1@data@original.data
 # simprvKern->yuimaPPR
 get.counting.data<-function(yuimaPPR,type="zoo"){
-  count <- yuimaPPR@Ppr@counting.var
+  count <- yuimaPPR@PPR@counting.var
   dimCount <- length(count)
   Time_Arrivals_Grid <- index(yuimaPPR@data@zoo.data[[1]])
   if(dimCount==1){
@@ -37,7 +37,7 @@ get.counting.data<-function(yuimaPPR,type="zoo"){
     Data <- Data
     return(Data)
   }
-  if(type=="yuima.Ppr"){
+  if(type=="yuima.PPR"){
     yuimaPPR@data@original.data <- Data
     return(yuimaPPR)
   }
@@ -48,8 +48,8 @@ get.counting.data<-function(yuimaPPR,type="zoo"){
   yuima.stop("type is not supported.")
 }
 
-DataPpr <- function(CountVar, yuimaPPR, samp){
-  if(!is(yuimaPPR,"yuima.Ppr")){
+DataPPR <- function(CountVar, yuimaPPR, samp){
+  if(!is(yuimaPPR,"yuima.PPR")){
     yuima.stop("...")
   }
   if(!is(samp,"yuima.sampling")){

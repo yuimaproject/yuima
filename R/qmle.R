@@ -162,7 +162,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
     return(res)
   }
 
-  if(is.Ppr(yuima)){
+  if(is.PPR(yuima)){
     if(missing(lower))
       lower <- list()
 
@@ -171,7 +171,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 
     # res <- NULL
     # if("grideq" %in% names(as.list(call)[-(1:2)])){
-    res  <- quasiLogLik.Ppr(yuimaPpr = yuima, parLambda = start, method=method, fixed = list(),
+    res  <- quasiLogLik.PPR(yuimaPPR = yuima, parLambda = start, method=method, fixed = list(),
                             lower, upper, call, ...)
     # }else{
     #   res  <- PseudoLogLik.COGARCH(yuima, start, method=method, fixed = list(),

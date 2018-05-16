@@ -21,7 +21,7 @@ aux.simulatHawkes<- function(object, nsim, seed,
   xinit, true.parameter, space.discretized, increment.W,
   increment.L, method, hurst, methodfGn, sampling, subsampling){
   # Here we can construct specific algorithm for the standard Hawkes process
-  res <- aux.simulatPpr(object, nsim = nsim, seed = seed,
+  res <- aux.simulatPPR(object, nsim = nsim, seed = seed,
                         xinit = xinit, true.parameter = true.parameter,
                         space.discretized = space.discretized, increment.W = increment.W,
                         increment.L = increment.L, method = method, hurst = hurst,
@@ -33,7 +33,7 @@ aux.simulatHawkes<- function(object, nsim, seed,
 #   simOzaki.aux(gFun=object@gFun@formula,a,cCoeff, Time, numJump)
 }
 
-setMethod("simulate", "yuima.Ppr",
+setMethod("simulate", "yuima.PPR",
           function(object, nsim=1, seed=NULL, xinit, true.parameter,
                    space.discretized=FALSE, increment.W=NULL, increment.L=NULL, method="euler",
                    hurst, methodfGn="WoodChan",
@@ -42,7 +42,7 @@ setMethod("simulate", "yuima.Ppr",
                    #	grid, random = FALSE, sdelta=as.numeric(NULL),
                    #	sgrid=as.numeric(NULL), interpolation="none"
                    ...){
-            res <- aux.simulatPpr(object, nsim = nsim, seed = seed,
+            res <- aux.simulatPPR(object, nsim = nsim, seed = seed,
                                      xinit = xinit, true.parameter = true.parameter,
                                      space.discretized = space.discretized, increment.W = increment.W,
                                      increment.L = increment.L, method = method, hurst = hurst,
@@ -73,7 +73,7 @@ constHazIntPr <- function(g.Fun , Kern.Fun){
   res <- list(Intens = Int.Intens)
 }
 
-aux.simulatPpr<- function(object, nsim = nsim, seed = seed,
+aux.simulatPPR<- function(object, nsim = nsim, seed = seed,
                xinit = xinit, true.parameter = true.parameter,
                space.discretized = space.discretized, increment.W = increment.W,
                increment.L = increment.L, method = method, hurst = hurst,
@@ -81,14 +81,14 @@ aux.simulatPpr<- function(object, nsim = nsim, seed = seed,
                subsampling = subsampling){
   ROLDVER<-!(is(object@model@measure$df,"yuima.law"))
   if(ROLDVER){
-    object <- aux.simulatPprROldVersion(object, nsim = nsim, seed = seed,
+    object <- aux.simulatPPRROldVersion(object, nsim = nsim, seed = seed,
                                           xinit = xinit, true.parameter = true.parameter,
                                           space.discretized = space.discretized, increment.W = increment.W,
                                           increment.L = increment.L, method = method, hurst = hurst,
                                           methodfGn = methodfGn, sampling = sampling,
                                           subsampling = subsampling)
   }else{
-    object <- aux.simulatPprROldNew(object, nsim = nsim, seed = seed,
+    object <- aux.simulatPPRROldNew(object, nsim = nsim, seed = seed,
                                         xinit = xinit, true.parameter = true.parameter,
                                         space.discretized = space.discretized, increment.W = increment.W,
                                         increment.L = increment.L, method = method, hurst = hurst,
@@ -98,7 +98,7 @@ aux.simulatPpr<- function(object, nsim = nsim, seed = seed,
   return(object)
 }
 
-aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
+aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
                           xinit = xinit, true.parameter = true.parameter,
                           space.discretized = space.discretized, increment.W = increment.W,
                           increment.L = increment.L, method = method, hurst = 0.5,
@@ -115,7 +115,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
   Kern <- object@Kernel
 
   if(missing(xinit)){
-    if(object@Ppr@RegressWithCount){
+    if(object@PPR@RegressWithCount){
 
       yuima.warn("Counting Variables are also covariates.
                  In this case, the algorthim will be implemented
@@ -123,14 +123,14 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
       return(NULL)
     }
   }else{
-    if(object@Ppr@RegressWithCount){
+    if(object@PPR@RegressWithCount){
       yuima.warn("Counting Variables are also covariates.
                  In this case, the algorthim will be implemented
                  as soon as possible.")
       return(NULL)
     }
   }
-  if(!object@Ppr@RegressWithCount && !object@Ppr@IntensWithCount){
+  if(!object@PPR@RegressWithCount && !object@PPR@IntensWithCount){
     auxg <- setMap(func = gFun@formula, yuima =Model)
     dummyKernIntgrand <- Kern@Integrand@IntegrandList
     dummyUpperTime<- paste0(Kern@variable.Integral@upper.var,
@@ -212,7 +212,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
       globPos <- unique(globPos)
       globPos <- globPos[(globPos<=samp@n)]
       NewNoise.L <- Noise.L
-      cod <-Model@solve.variable%in%object@Ppr@counting.var
+      cod <-Model@solve.variable%in%object@PPR@counting.var
       NeWNoise.W<-Noise.W
       NeWNoise.W[cod,] <- 0
       NewNoise.L[cod,] <- 0
@@ -231,7 +231,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
       }
     }
   }else{
-    if(!object@Ppr@RegressWithCount && object@Ppr@IntensWithCount){
+    if(!object@PPR@RegressWithCount && object@PPR@IntensWithCount){
       ## Here we consider the case where we have a counting variable in the intensity but
       ## we haven't it in the coefficients of the covariates.
 
@@ -269,17 +269,17 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
         Time <- samp@Initial
 
         my.env <- new.env()
-        for(i in c(1:length(object@Ppr@allparam))){
-          assign(object@Ppr@allparam[i],
-            as.numeric(true.parameter[object@Ppr@allparam[i]]),
+        for(i in c(1:length(object@PPR@allparam))){
+          assign(object@PPR@allparam[i],
+            as.numeric(true.parameter[object@PPR@allparam[i]]),
             envir = my.env)
         }
 
-        dimCov <- length(object@Ppr@covariates)
+        dimCov <- length(object@PPR@covariates)
         if (dimCov>0){
           for(j in c(1:dimCov)){
-          assign(object@Ppr@covariates[j],
-                   as.numeric(simMod@data@original.data[1,object@Ppr@covariates[j]]),
+          assign(object@PPR@covariates[j],
+                   as.numeric(simMod@data@original.data[1,object@PPR@covariates[j]]),
                    envir = my.env)
           }
         }
@@ -339,12 +339,12 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
                 noExit <- FALSE
               }
               if(i<dim(simMod@data@original.data)[1]){  
-              dimCov <- length(object@Ppr@covariates)
+              dimCov <- length(object@PPR@covariates)
                 
               if (dimCov>0){
                   for(j in c(1:dimCov)){
-                    assign(object@Ppr@covariates[j],
-                           as.numeric(simMod@data@original.data[1:i,object@Ppr@covariates[j]]),
+                    assign(object@PPR@covariates[j],
+                           as.numeric(simMod@data@original.data[1:i,object@PPR@covariates[j]]),
                            envir = my.env)
                   }
                 }  
@@ -459,7 +459,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
       # #         posMid
       # #       }
       # #       oldprova <- prova
-      # #       prova <- SolvePpr(posMid, posLeft, posRight, solveLeft, solveRight,
+      # #       prova <- SolvePPR(posMid, posLeft, posRight, solveLeft, solveRight,
       # #                         cost, Kern, simMod, samp, Model, ExprHaz,
       # #                          my.env, Time, IntensityProc)
       # #       if(length(prova$left)==0){
@@ -508,7 +508,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
       # # }
       # }
         cond <- samp@grid[[1]][-1] %in% Time[-1]
-        countVar <- Model@solve.variable %in%  object@Ppr@counting.var
+        countVar <- Model@solve.variable %in%  object@PPR@counting.var
         increment.L[!cond, countVar]<-0
         if(missing(xinit)){
           simModNew <- simulate(object = Model, hurst = hurst,
@@ -534,7 +534,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
   return(NULL)
 }
 
-# SolvePpr <- function(posMid, posLeft, posRight, solveLeft = NULL, solveRight = NULL,
+# SolvePPR <- function(posMid, posLeft, posRight, solveLeft = NULL, solveRight = NULL,
 #                      cost, Kern, simMod, samp, Model, ExprHaz,
 #                       my.env, Time, IntensityProc){
 #
@@ -634,7 +634,7 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
 # }
 
 
-# SolvePpr <- function(TopposInGridIn, OldTimePoint, solveLambdaInOld,
+# SolvePPR <- function(TopposInGridIn, OldTimePoint, solveLambdaInOld,
 #                      cost, Kern, simMod, samp, Model, ExprHaz, dN,
 #                      LastTime, my.env, Time, IntensityProc, checkside = FALSE,
 #                      solveLeft=NULL, solveRight=NULL){
@@ -899,26 +899,26 @@ aux.simulatPprROldNew<-function(object, nsim = nsim, seed = seed,
 
 
 
-aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
+aux.simulatPPRROldVersion <- function(object, nsim = nsim, seed = seed,
                                       xinit = xinit, true.parameter = true.parameter,
                                       space.discretized = space.discretized, increment.W = increment.W,
                                       increment.L = increment.L, method = method, hurst = hurst,
                                       methodfGn = methodfGn, sampling = sampling,
                                       subsampling = subsampling){
   Time <- sampling@Terminal
-  numbVardx <- length(object@Ppr@var.dx)
-  numbCountVar <- length(object@Ppr@counting.var)
+  numbVardx <- length(object@PPR@var.dx)
+  numbCountVar <- length(object@PPR@counting.var)
   U <- runif(numbCountVar)
 
   my.env<- new.env()
 
   true.parameter <- unlist(true.parameter)
 
-  if(!all(names(true.parameter)==object@Ppr@allparam)){
+  if(!all(names(true.parameter)==object@PPR@allparam)){
     yuima.stop("true.parameters mismatch the model parameters")
   }
-  for(i in c(1:length(object@Ppr@allparam))){
-    assign(object@Ppr@allparam[i],true.parameter[object@Ppr@allparam[i]], envir = my.env)
+  for(i in c(1:length(object@PPR@allparam))){
+    assign(object@PPR@allparam[i],true.parameter[object@PPR@allparam[i]], envir = my.env)
   }
 
   assign("t",object@gFun@param@time.var, envir = my.env)
@@ -936,9 +936,9 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
     dimL <- length(object@model@jump.coeff[[1]])
     L <- matrix(0,nrow=dimL,ncol=sampling@n)
     Condcovariate <- FALSE
-    # if(length(object@Ppr@covariates)!=0)
+    # if(length(object@PPR@covariates)!=0)
     #    Condcovariate <- TRUE
-    cond <- !(object@model@solve.variable %in% object@Ppr@counting.var)
+    cond <- !(object@model@solve.variable %in% object@PPR@counting.var)
     if(any(cond)){
       Condcovariate <- TRUE
     }
@@ -946,8 +946,8 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
     dumMod <- setModel(drift = rep("0",dimMd),
                        diffusion = matrix("0",dimMd,1),
                        jump.coeff = diag("1",dimMd,dimMd),
-                       measure = object@Ppr@Info.measure$measure,
-                       measure.type = object@Ppr@Info.measure$type,
+                       measure = object@PPR@Info.measure$measure,
+                       measure.type = object@PPR@Info.measure$type,
                        solve.variable = object@model@solve.variable)
     if(length(object@model@parameter@measure)!=0){
       simMod <- simulate(object = dumMod,
@@ -979,9 +979,9 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
     env$t<-part[-length(part)]
     if(Condcovariate){
       yuima<- object@model
-      for(i in c(1:length(object@Ppr@covariates))){
-        assign(object@Ppr@covariates[i],
-               eval(yuima@xinit[yuima@solve.variable==object@Ppr@covariates[i]],
+      for(i in c(1:length(object@PPR@covariates))){
+        assign(object@PPR@covariates[i],
+               eval(yuima@xinit[yuima@solve.variable==object@PPR@covariates[i]],
                     envir = env), envir = env)
       }
       if(u!=0){
@@ -990,17 +990,17 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
         #   Mat[i,1] = eval(yuima@xinit[i],envir = env)
         # }
         Linc <- env$L[,c(1:(length(part)-1))]
-        # Linc[yuima@solve.variable!=object@Ppr@covariates,]<-matrix(0,
-        #   sum(yuima@solve.variable!=object@Ppr@covariates), dim(Linc)[2])
-        Linc[yuima@solve.variable!=object@Ppr@covariates,] <- 0
+        # Linc[yuima@solve.variable!=object@PPR@covariates,]<-matrix(0,
+        #   sum(yuima@solve.variable!=object@PPR@covariates), dim(Linc)[2])
+        Linc[yuima@solve.variable!=object@PPR@covariates,] <- 0
         DumUnderlMod <- simulate(yuima, true.parameter = true.parameter,
                                  increment.L = env$L[,c(1:(length(part)-1))],
                                  sampling = setSampling(Terminal = u, n= (length(part)-1)))
 
 
-        for(i in c(1:length(object@Ppr@covariates))){
-          VariableDum <- DumUnderlMod@data@original.data[,yuima@solve.variable==object@Ppr@covariates[i]]
-          assign(object@Ppr@covariates[i], as.numeric(VariableDum), envir = env)
+        for(i in c(1:length(object@PPR@covariates))){
+          VariableDum <- DumUnderlMod@data@original.data[,yuima@solve.variable==object@PPR@covariates[i]]
+          assign(object@PPR@covariates[i], as.numeric(VariableDum), envir = env)
         }
       }
     }
@@ -1020,18 +1020,18 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
     }
     if(Condcovariate){
       LevIncr <- env$L[, length(dumpart)+c(1:(length(env$t)))]
-      LevIncr[object@Ppr@counting.var,]<-0
+      LevIncr[object@PPR@counting.var,]<-0
       yuima<- object@model
-      xinit<- numeric(length(object@Ppr@covariates))
-      names(xinit)<- object@Ppr@covariates
-      for(i in c(1:length(object@Ppr@covariates))){
-        xinit[i] <- env[[object@Ppr@covariates[i]]]
+      xinit<- numeric(length(object@PPR@covariates))
+      names(xinit)<- object@PPR@covariates
+      for(i in c(1:length(object@PPR@covariates))){
+        xinit[i] <- env[[object@PPR@covariates[i]]]
       }
 
-      xinitCount <- numeric(length(object@Ppr@counting.var))
-      names(xinitCount) <- object@Ppr@counting.var
+      xinitCount <- numeric(length(object@PPR@counting.var))
+      names(xinitCount) <- object@PPR@counting.var
       for(i in c(1:length(xinitCount))){
-        xinitCount[i] <- tail(env[[object@Ppr@counting.var[i]]],n = 1)
+        xinitCount[i] <- tail(env[[object@PPR@counting.var[i]]],n = 1)
       }
       xinit <- c(xinit,xinitCount)
       if(part[length(part)]-part[1]!=0){
@@ -1041,14 +1041,14 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
                                sampling =  setSampling(Terminal = (part[length(part)]-part[1]),
                                                        n = dim(LevIncr)[2]),
                                xinit=xinit[yuima@solve.variable])
-        for(i in c(1:length(object@Ppr@covariates))){
-          VariableDum <- DumVarCov@data@original.data[,yuima@solve.variable==object@Ppr@covariates[i]]
-          assign(object@Ppr@covariates[i], as.numeric(VariableDum), envir = env)
+        for(i in c(1:length(object@PPR@covariates))){
+          VariableDum <- DumVarCov@data@original.data[,yuima@solve.variable==object@PPR@covariates[i]]
+          assign(object@PPR@covariates[i], as.numeric(VariableDum), envir = env)
         }
       }else{
-        for(i in c(1:length(object@Ppr@covariates))){
-          VariableDum <- xinit[yuima@solve.variable==object@Ppr@covariates[i]]
-          assign(object@Ppr@covariates[i], as.numeric(VariableDum), envir = env)
+        for(i in c(1:length(object@PPR@covariates))){
+          VariableDum <- xinit[yuima@solve.variable==object@PPR@covariates[i]]
+          assign(object@PPR@covariates[i], as.numeric(VariableDum), envir = env)
         }
       }
       #Insert Here simulation Covariate
@@ -1077,7 +1077,7 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
 
 
   u <- numeric(length = numbCountVar)
-  names(u) <- object@Ppr@counting.var
+  names(u) <- object@PPR@counting.var
   for(i in c(1:numbCountVar)){
     assign("gFun", object@gFun@formula[[i]], envir=my.env)
     assign("U",runif(1),envir = my.env)
@@ -1099,7 +1099,7 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
 
   JUMP <- matrix(0,nrow=numbCountVar,ncol=sampling@n)
 
-  rownames(JUMP)<- object@Ppr@counting.var
+  rownames(JUMP)<- object@PPR@counting.var
   pos<-sum(sampling@grid[[1]][-1]<=t_1)
   t_1 <- sampling@grid[[1]][-1][pos]
   recordTime<-c(0,t_1)
@@ -1108,7 +1108,7 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
   JUMP[namesContVarJump, pos] <- L[namesContVarJump, pos]
   ntot <- sampling@n
   dL <- L
-  dL[object@Ppr@counting.var,c((pos0+1):pos)]<-JUMP[object@Ppr@counting.var,c((pos0+1):pos)]
+  dL[object@PPR@counting.var,c((pos0+1):pos)]<-JUMP[object@PPR@counting.var,c((pos0+1):pos)]
 
   X_mat <- matrix(0, length(object@model@solve.variable),
                   ntot)
@@ -1199,7 +1199,7 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
 
       pos <- min(pos,dim(L)[2])
       JUMP[namesContVarJump, pos] <- L[namesContVarJump, pos]
-      dL[object@Ppr@counting.var,c((pos0+1):pos)]<-JUMP[object@Ppr@counting.var,c((pos0+1):pos)]
+      dL[object@PPR@counting.var,c((pos0+1):pos)]<-JUMP[object@PPR@counting.var,c((pos0+1):pos)]
       aa<-setSampling(Terminal = (t_1-my.env$old_u),
                       n = length((pos0+1):pos))
       dummyX <- simulate(object@model, true.parameter = true.parameter,
@@ -1244,12 +1244,12 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
   res.dum <- list(X_mat=X_mat,timeJump = recordTime, grid=sampling)
 
   solve.variable <-unique(c(object@model@solve.variable))
-  N.VarPPr<-length(solve.variable)
+  N.VarPPR<-length(solve.variable)
 
-  dummy.mod <- setModel(drift=rep("0",N.VarPPr),
-                        diffusion = NULL, jump.coeff = diag(rep("1",N.VarPPr)),
-                        measure = object@Ppr@Info.measure$measure,
-                        measure.type = object@Ppr@Info.measure$type,
+  dummy.mod <- setModel(drift=rep("0",N.VarPPR),
+                        diffusion = NULL, jump.coeff = diag(rep("1",N.VarPPR)),
+                        measure = object@PPR@Info.measure$measure,
+                        measure.type = object@PPR@Info.measure$type,
                         solve.variable = solve.variable, xinit=c(object@model@xinit))
 
   mynewincr <- if(is.matrix(res.dum$X_mat)){t(as.matrix(apply(cbind(0,res.dum$X_mat),1,diff)))}else{apply(cbind(0,res.dum$X_mat),1,diff)}
@@ -1268,7 +1268,7 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
                            sampling = sampling,
                            increment.L = mynewincr)
   dummyObject <- object@Kernel
-  dummyObject@variable.Integral@out.var <-object@Ppr@additional.info
+  dummyObject@variable.Integral@out.var <-object@PPR@additional.info
   resInt <- new("yuima.Integral",
                 Integral = dummyObject,
                 yuima = setYuima(model=dummy.mod,sampling = sampling))
@@ -1280,14 +1280,14 @@ aux.simulatPprROldVersion <- function(object, nsim = nsim, seed = seed,
   DataIntensity <- interResGfun@data@original.data + interResInt@data@original.data
   InterMDia<-zoo(interResMod@data@original.data, order.by = index(DataIntensity))
   Alldata <-merge(InterMDia,DataIntensity)
-  colnames(Alldata)<-c(solve.variable,object@Ppr@additional.info)
-  # for(i in c(1:N.VarPPr)){
+  colnames(Alldata)<-c(solve.variable,object@PPR@additional.info)
+  # for(i in c(1:N.VarPPR)){
   #   assign(solve.variable[i],interRes@data@original.data[,i],envir=my.env)
   # }
   # dummy<-NULL
-  # for(t in c(1:length(object@Ppr@additional.info))){
+  # for(t in c(1:length(object@PPR@additional.info))){
   #   dummy <-eval(object@gFun)
-  #   assign(object@Ppr@additional.info[[]])
+  #   assign(object@PPR@additional.info[[]])
   # }
   object@data<-setData(Alldata)
   return(object)

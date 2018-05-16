@@ -1,6 +1,6 @@
-setClass("info.Ppr",
+setClass("info.PPR",
          representation(allparam = "character",
-                        allparamPpr = "character",
+                        allparamPPR = "character",
                         common ="character",
                         counting.var = "character",
                         var.dx = "character",
@@ -14,18 +14,18 @@ setClass("info.Ppr",
                         IntensWithCount = "logical")
          )
 
-setClass("yuima.Ppr",
-         representation(Ppr = "info.Ppr",
+setClass("yuima.PPR",
+         representation(PPR = "info.PPR",
                         gFun = "info.Map",
                         Kernel = "Integral.sde"),
          contains="yuima"
 )
 
 setMethod("initialize",
-          "info.Ppr",
+          "info.PPR",
           function(.Object,
                    allparam = character(),
-                   allparamPpr = character(),
+                   allparamPPR = character(),
                    common = character(),
                    counting.var = character(),
                    var.dx = character(),
@@ -38,7 +38,7 @@ setMethod("initialize",
                    RegressWithCount = FALSE,
                    IntensWithCount = TRUE){
             .Object@allparam <- allparam
-            .Object@allparamPpr <- allparamPpr
+            .Object@allparamPPR <- allparamPPR
             .Object@common <- common
             .Object@counting.var <- counting.var
             .Object@var.dx <- var.dx
@@ -55,14 +55,14 @@ setMethod("initialize",
 )
 
 setMethod("initialize",
-          "yuima.Ppr",
+          "yuima.PPR",
           function(.Object,
-                   Ppr = new("info.Ppr"),
+                   PPR = new("info.PPR"),
                    gFun = new("info.Map"),
                    Kernel = new("Integral.sde"),
                    yuima = new("yuima")){
             #.Object@param <- param
-            .Object@Ppr <- Ppr
+            .Object@PPR <- PPR
             .Object@gFun <- gFun
             .Object@Kernel <- Kernel
             .Object@data <- yuima@data
@@ -75,5 +75,5 @@ setMethod("initialize",
 )
 
 setClass("yuima.Hawkes",
-         contains="yuima.Ppr"
+         contains="yuima.PPR"
 )

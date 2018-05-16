@@ -4,15 +4,15 @@
 \title{
 Intensity of a Point Process Regression Model
 }
-\description{This function returns the intensity process of a Ppr model when covariates and counting processes are obsered on discrete time}
+\description{This function returns the intensity process of a PPR model when covariates and counting processes are obsered on discrete time}
 \usage{
-lambdaFromData(yuimaPpr, PprData = NULL, parLambda = list())
+lambdaFromData(yuimaPPR, PPRData = NULL, parLambda = list())
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{yuimaPpr}{ Mathematical Description of Ppr model
+  \item{yuimaPPR}{ Mathematical Description of PPR model
 }
-  \item{PprData}{Observed data}
+  \item{PPRData}{Observed data}
   \item{parLambda}{Values of intesity parameters}
 }
 \details{ ... }
