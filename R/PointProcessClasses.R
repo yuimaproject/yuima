@@ -77,3 +77,30 @@ setMethod("initialize",
 setClass("yuima.Hawkes",
          contains="yuima.PPR"
 )
+
+# Class yuima.PPR.qmle
+
+setClass("yuima.PPR.qmle",representation(
+  model = "yuima.PPR"),
+  contains="mle"
+)
+
+
+setClass("summary.yuima.PPR.qmle",
+         representation(
+           model = "yuima.PPR"),
+         contains="summary.mle"
+)
+
+setMethod("show", "summary.yuima.PPR.qmle",
+          function (object)
+          {
+            
+            cat("Quasi-Maximum likelihood estimation\n\nCall:\n")
+            print(object@call)
+            cat("\nCoefficients:\n")
+            print(coef(object))
+            cat("\n-2 log L:", object@m2logL, "\n")
+            
+          }
+)
