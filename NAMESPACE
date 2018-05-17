@@ -90,7 +90,8 @@ exportClasses("yuima",
 "yuima.Integral",
 "info.PPR",
 "yuima.PPR",
-"yuima.Hawkes"
+"yuima.Hawkes",
+"yuima.PPR.qmle"
 )
 
 exportMethods(
