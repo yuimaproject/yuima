@@ -37,7 +37,8 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
     oldpar <- my.envd1$oldpar
   }
   ret <- -logLik/sum(cond2,na.rm=TRUE)#+sum((param-oldpar)^2*param^2)/2
-  cat("\n ",logLik, param)
+  # line 40 necessary for the development of the cod
+  # cat("\n ",logLik, param)
   
   #assign("oldpar",param,envir = my.envd1)
   
@@ -256,9 +257,24 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, ...)
   }
-
-
-  return(out)
+   Hessian <- tryCatch(optimHess(as.list(out$par),
+                 fn=Internal.LogLikPPR,
+                 my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3),
+                 error=function(){NULL})
+   
+   cond1 <- my.envd3$YUIMA.PPR@model@solve.variable %in% my.envd3$YUIMA.PPR@PPR@counting.var
+   cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data[,cond1]))
+   N.jump <- sum(cond2,na.rm=TRUE)
+   if(is.null(Hessian)){
+      vcov <- matrix(NA,length(out$par),length(out$par))
+   }else{
+      vcov <- solve(Hessian)/N.jump
+   }
+   minuslog <- out$value*N.jump
+   final_res<-new("yuima.PPR.qmle", call = call, coef = out$par, fullcoef = out$par,
+                  vcov = vcov, min = minuslog, details = out, minuslogl = Internal.LogLikPPR,
+                  method = method, nobs=as.integer(N.jump), model=my.envd3$YUIMA.PPR)
+  return(final_res)
 
 }
 
@@ -611,3 +627,6 @@ aux.lambdaFromData <-function(param, gFun, Kern, intensityParm, envPPR,logLikeli
 }
 
 DumFun<- function(X,Y){eval(X,envir=Y)}
+
+
+

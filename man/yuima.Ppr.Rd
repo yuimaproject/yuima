@@ -10,7 +10,7 @@
 The \code{yuima.PPR} class is a class of the \pkg{yuima} package that extends the \code{\link{yuima-class}}. The object of this class contains all the information about the Point Process Regression Model.
 }
 \section{Objects from the Class}{
-Objects can be created by calls of the functions \code{\link{setPPR}}.
+Objects can be created by calls of the function \code{\link{setPPR}}.
 }
 \section{Slots}{
   \describe{

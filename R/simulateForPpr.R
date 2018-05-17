@@ -350,8 +350,8 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
                 }  
             
 
-              
-              cat("\n ", i, grid[i])
+              # Line 354 necessary for the development of the code.
+              # cat("\n ", i, grid[i])
               }
             }
             if(i<dim(simMod@data@original.data)[1]){ 
