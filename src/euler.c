@@ -16,7 +16,7 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
     
     int i, j, k, n, d, r;
     double *rdt, *rdW, *rX, *rx0, *b, *sigma;
-    SEXP X, xpar, tpar;
+    SEXP X, xpar, tpar, b0, sigma0;
     //SEXP X, xpar, tpar, xvar, tvar;
     
     PROTECT(x0 = AS_NUMERIC(x0));
@@ -67,8 +67,10 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         /*defineVar(install("env"), env, rho);*/
         
         /* evaluate coefficients */
-        b = REAL(eval(drift, rho));
-        sigma = REAL(eval(diffusion, rho));
+        PROTECT(b0 = eval(drift, rho));
+        PROTECT(sigma0 = eval(diffusion, rho));
+        b = REAL(b0);
+        sigma = REAL(sigma0);
         
         for (j = 0; j < d; j++) {
             rX[j + (i + 1) * d] = rX[j + i * d] + b[j] * rdt[i];
@@ -82,6 +84,8 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         /*rX[i + 1] = rX[i] + *REAL(eval(drift, rho)) * REAL(dt)[i] + *REAL(eval(diffusion, rho)) * REAL(dW)[i];*/
         
         REAL(tpar)[0] += rdt[i];
+        
+        UNPROTECT(2);
     }
     
     UNPROTECT(6);

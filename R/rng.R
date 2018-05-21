@@ -118,7 +118,7 @@ rGH<-function(x,lambda,alpha,beta,delta,mu,Lambda){
     }
     
     ## univariate case
-    if(is.na(Lambda)){
+    if(any(is.na(Lambda))){
         if(length(mu)!=1 || length(beta)!=1){
             stop("Error: wrong input dimension.")
         }
@@ -195,7 +195,7 @@ dGH<-function(x,lambda,alpha,beta,delta,mu,Lambda){
     }
     
     ## univariate case
-    if(is.na(Lambda)){
+    if(any(is.na(Lambda))){
         if(length(mu)!=1 || length(beta)!=1){
             stop("Error: wrong input dimension.")
         }
@@ -276,7 +276,7 @@ rvgamma <- function(x,lambda,alpha,beta,mu,Lambda){
   if(missing(Lambda))
    Lambda <- NA
   
-  if(is.na(Lambda)){
+  if(any(is.na(Lambda))){
     ## univariate case
     if(length(mu)!=1 || length(beta)!=1){
       stop("Error: wrong input dimension.")
@@ -350,7 +350,7 @@ dvgamma <- function(x,lambda,alpha,beta,mu,Lambda){
   }
   if(missing(Lambda))
     Lambda <- NA
-  if(is.na(Lambda)){
+  if(any(is.na(Lambda))){
     ## univariate case
     if(length(mu)!=1 || length(beta)!=1){
       stop("Error: wrong input dimension.")
@@ -440,7 +440,7 @@ rNIG <- function(x,alpha,beta,delta,mu,Lambda){
   if(missing(Lambda))
    Lambda <- NA
 
-  if(any(is.na(Lambda)==TRUE) & length(Lambda)==1){
+  if(any(is.na(Lambda)) & length(Lambda)==1){
     ## univariate case
     gamma <- sqrt(alpha^2 - beta^2)
     if(gamma <0){
@@ -508,7 +508,7 @@ dNIG <- function(x,alpha,beta,delta,mu,Lambda){
     stop("delta must be positive.")
   if(missing(Lambda))
     Lambda <- NA
-  if(is.na(Lambda)){
+  if(any(is.na(Lambda))){
     #univraiate case
     if(length(beta)>1||length(mu)>1)
       stop("beta and mu must be numeric")
@@ -642,7 +642,7 @@ rnts<-function(x,alpha,a,b,beta,mu,Lambda){
   if( b <= 0 )
     stop("b must be positive value.")
   
-  if(is.na(Lambda)){
+  if(any(is.na(Lambda))){
     ## univariate case
     if(length(mu)!=1 || length(beta)!=1){
       stop("Error: wrong input dimension.")
