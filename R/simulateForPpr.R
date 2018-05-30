@@ -52,13 +52,79 @@ setMethod("simulate", "yuima.PPR",
           }
 )
 
-constHazIntPr <- function(g.Fun , Kern.Fun){
+constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var){
   numb.Int <- length(g.Fun)
   Int.Intens <- list()
   for(i in c(1:numb.Int)){
     dum.g <- as.character(g.Fun[i])
+    dum.g <- gsub("(", "( ", fixed=TRUE,x = dum.g)
+    dum.g <- gsub(")", " )", fixed=TRUE,x = dum.g)
+    
+    if(length(counting.var)>0){  
+      for(i in c(1:length(counting.var))){
+        my.countOld <- paste0(counting.var[i] ," ")
+        #my.countNew <- paste0("as.numeric(", counting.var[i] ,")")
+        my.countNew <- paste0("(", counting.var[i] ,")")
+        dum.g <- gsub(my.countOld, my.countNew, x = dum.g, fixed=TRUE)
+        my.countOld <- paste0(counting.var[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
+        
+        my.countNew <- paste0("(", counting.var[i] ,")")
+        dum.g <- gsub(my.countOld, my.countNew, x = dum.g, fixed=TRUE)
+      }
+    }
+    if(length(covariates)>0){
+      for(i in c(1:length(covariates))){
+        my.covarOld <- paste0(covariates[i] ," ")
+        my.covarNew <-  covariates[i]
+        dum.g <- gsub(my.covarOld, my.covarNew, x = dum.g, fixed=TRUE)
+        my.covarOld <- paste0(covariates[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
+        my.covarNew <- covariates[i] 
+        dum.g <- gsub(my.covarOld, my.covarNew, x = dum.g, fixed=TRUE)
+      }
+    }
+    
     dum.g <- paste("tail(",dum.g,", n=1L)")
     dum.Ker <- as.character(Kern.Fun@Integrand@IntegrandList[[i]])
+    dum.Ker <- gsub("(", "( ", fixed=TRUE,x = dum.Ker)
+    dum.Ker <- gsub(")", " )", fixed=TRUE,x = dum.Ker)
+    
+    if(length(counting.var)>0){  
+      for(i in c(1:length(counting.var))){
+        my.countOld <- paste0(counting.var[i] ," ")
+        my.countNew <- paste0( counting.var[i] ,
+                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+        dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+        my.countOld <- paste0(counting.var[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
+        my.countNew <- paste0( counting.var[i] ,
+                              "[ as.character( ",Kern.Fun@variable.Integral@upper.var ," ) ]")
+        dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+        
+        my.countOld <- paste0(counting.var[i] ,"[",Kern.Fun@variable.Integral@var.time,"]")
+        my.countNew <- paste0(counting.var[i] ,
+                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+        dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+        
+      }
+    }
+    if(length(covariates)>0){
+      for(i in c(1:length(covariates))){
+        
+        my.countOld <- paste0(covariates[i] ," ")
+        my.countNew <- paste0( covariates[i] ,
+                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+        dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+        
+        my.countOld <- paste0(covariates[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
+        my.countNew <- paste0( covariates[i] ,
+                              "[ as.character( ",Kern.Fun@variable.Integral@upper.var ," ) ]")
+        dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+        
+        my.countOld <- paste0(covariates[i] ,"[",Kern.Fun@variable.Integral@var.time,"]")
+        my.countNew <- paste0( covariates[i] ,
+                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+        dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+      }
+    }
     dif.dx <- paste("d",Kern.Fun@variable.Integral@var.dx, sep="")
     dum.Ker <- paste(dum.Ker,dif.dx, sep = "*")
     if(length(dum.Ker)>1){
@@ -72,6 +138,9 @@ constHazIntPr <- function(g.Fun , Kern.Fun){
   }
   res <- list(Intens = Int.Intens)
 }
+
+
+
 
 aux.simulatPPR<- function(object, nsim = nsim, seed = seed,
                xinit = xinit, true.parameter = true.parameter,
@@ -104,6 +173,110 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
                           increment.L = increment.L, method = method, hurst = 0.5,
                           methodfGn = methodfGn, sampling = sampling,
                           subsampling = subsampling){
+  myhawkesP <- function(simMod, Kern,
+                        samp, Model, my.env, ExprHaz,
+                        Time, dN){
+    noExit<-TRUE
+    const <- -log(runif(1))
+    delta <- samp@delta
+    grid <- samp@grid[[1]]
+    while(const<delta){
+      const <- -log(runif(1))
+    }
+    jumpT<-NULL
+    i <- 1
+    dimGrid <-length(grid)
+    cond <- const
+    allconst <- NULL
+    allcond <- NULL
+    allhaz <- NULL
+    while(noExit){
+      HazardRate<-0
+      while(cond>0 && noExit){
+        #lastJump <- tail(jumpT,n=1L)
+        lambda<-compErrHazR2(simMod, Kern, capitalTime=samp@grid[[1]][i], Model, my.env, ExprHaz,
+                             Time=jumpT, dN)
+        # lambda<-hawkesInt(mu=mu, alpha=alpha, beta=beta,
+        #                   timet=grid[i], JumpT=jumpT)
+        incrlambda <- lambda*delta
+        HazardRate <- HazardRate+incrlambda
+        cond <- const-HazardRate
+        i<-i+1
+        if(i>=(dimGrid-1)){
+          noExit <- FALSE
+        }
+        if(i<dim(simMod@data@original.data)[1]){  
+          dimCov <- length(object@PPR@covariates)
+          
+          if (dimCov>0){
+            for(j in c(1:dimCov)){
+              my.covdata <- simMod@data@original.data[1:i,object@PPR@covariates[j]]
+              names(my.covdata) <-simMod@sampling@grid[[1]][1:i]
+              
+              assign(object@PPR@covariates[j],
+                     my.covdata,
+                     envir = my.env)
+              
+              # assign(object@PPR@covariates[j],
+              #        as.numeric(simMod@data@original.data[1:i,object@PPR@covariates[j]]),
+              #        envir = my.env)
+            }
+          }  
+          
+          
+          # Line 354 necessary for the development of the code.
+          # cat("\n ", i, grid[i])
+        }
+      }
+      if(i<dim(simMod@data@original.data)[1]){ 
+        jumpT<-c(jumpT,grid[i])
+        # if(i==7001){
+        #   cat("\n",noExit)
+        # }
+        if(dN[1]==0){
+          dN <- 1
+        }else{
+          dN <- c(dN,1)
+        }
+        names(dN)<-jumpT
+        allhaz <- c(allhaz,HazardRate)
+        allcond <- c(allcond,cond)
+        cond <- const
+        allconst <- c(allconst, const)
+        const <- -log(runif(1))
+        while(const<delta){
+          const <- -log(runif(1))
+        }
+      }
+    }
+    return(list(jumpT=jumpT,allcond=allcond,allconst=allconst, allhaz=allhaz))
+  }
+  
+  
+  compErrHazR2 <- function(simMod, Kern,
+                           capitalTime, Model, my.env, ExprHaz,
+                           Time, dN){
+    #  dummyLambda <- numeric(length=(samp@n+1))
+    if(length(Kern@variable.Integral@var.dx)==1){
+      #   MyPos <- sum(samp@grid[[1]]<=tail(Time,n=1L))
+      assign(Kern@variable.Integral@var.time, Time, envir = my.env)
+      #  cond <- -log(cost)-sum(dummyLambda)*samp@delta
+      
+      assign(Model@time.variable, capitalTime, envir = my.env)
+      assign(paste0("d",Kern@variable.Integral@var.dx), dN, envir =my.env)
+      
+      # condPointIngrid <- simMod@sampling@grid[[1]]<=my.env$t
+      # PointIngridInt <- simMod@sampling@grid[[1]][condPointIngrid]
+      # CondJumpGrid <- PointIngridInt %in% my.env$s 
+      # assign("CondJumpGrid", CondJumpGrid, envir = my.env)
+      
+      Lambda <- eval(ExprHaz[[1]], envir=my.env)
+      return(Lambda)
+    }else{
+      return(NULL)
+    }
+  }
+  
 
   # We need an expression for the evaluation of the hazard
   if(missing(hurst)){
@@ -262,7 +435,8 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
       Data.tot <- as.matrix(simMod@data@original.data)
 
       ExprHaz <- constHazIntPr(g.Fun = object@gFun@formula,
-        Kern.Fun = object@Kernel)$Intens
+        Kern.Fun = object@Kernel, covariates = object@PPR@covariates,
+        counting.var = object@PPR@counting.var)$Intens
 
       if(length(ExprHaz)==1){
 
@@ -278,104 +452,30 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
         dimCov <- length(object@PPR@covariates)
         if (dimCov>0){
           for(j in c(1:dimCov)){
-          assign(object@PPR@covariates[j],
-                   as.numeric(simMod@data@original.data[1,object@PPR@covariates[j]]),
+              # assign(object@PPR@covariates[j],
+              #      as.numeric(simMod@data@original.data[1,object@PPR@covariates[j]]),
+              #      envir = my.env)
+            my.covdata <- simMod@data@original.data[1,object@PPR@covariates[j]]
+            names(my.covdata) <-simMod@sampling@grid[[1]][1]
+            
+            assign(object@PPR@covariates[j],
+                   my.covdata,
                    envir = my.env)
+            
           }
         }
         
-        compErrHazR2 <- function(simMod, Kern,
-                                 capitalTime, Model, my.env, ExprHaz,
-                                 Time, dN){
-          #  dummyLambda <- numeric(length=(samp@n+1))
-          if(length(Kern@variable.Integral@var.dx)==1){
-            #   MyPos <- sum(samp@grid[[1]]<=tail(Time,n=1L))
-            assign(Kern@variable.Integral@var.time, Time, envir = my.env)
-            #  cond <- -log(cost)-sum(dummyLambda)*samp@delta
-
-            assign(Model@time.variable, capitalTime, envir = my.env)
-            assign(paste0("d",Kern@variable.Integral@var.dx), dN, envir =my.env)
-            Lambda <- eval(ExprHaz[[1]], envir=my.env)
-            return(Lambda)
-          }else{
-            return(NULL)
-          }
-        }
+        
 
         IntensityProc <- 0
         #set.seed(1)
         dN<-0
 
-        myhawkesP <- function(simMod, Kern,
-                              samp, Model, my.env, ExprHaz,
-                              Time){
-          noExit<-TRUE
-          const <- -log(runif(1))
-          delta <- samp@delta
-          grid <- samp@grid[[1]]
-          while(const<delta){
-            const <- -log(runif(1))
-          }
-          jumpT<-0
-          i <- 1
-          dimGrid <-length(grid)
-          cond <- const
-          allconst <- NULL
-          allcond <- NULL
-          allhaz <- NULL
-          while(noExit){
-            HazardRate<-0
-            while(cond>0 && noExit){
-              #lastJump <- tail(jumpT,n=1L)
-              lambda<-compErrHazR2(simMod, Kern, capitalTime=samp@grid[[1]][i], Model, my.env, ExprHaz,
-                                   Time=jumpT, dN)
-              # lambda<-hawkesInt(mu=mu, alpha=alpha, beta=beta,
-              #                   timet=grid[i], JumpT=jumpT)
-              incrlambda <- lambda*delta
-              HazardRate <- HazardRate+incrlambda
-              cond <- const-HazardRate
-              i<-i+1
-              if(i>=(dimGrid-1)){
-                noExit <- FALSE
-              }
-              if(i<dim(simMod@data@original.data)[1]){  
-              dimCov <- length(object@PPR@covariates)
-                
-              if (dimCov>0){
-                  for(j in c(1:dimCov)){
-                    assign(object@PPR@covariates[j],
-                           as.numeric(simMod@data@original.data[1:i,object@PPR@covariates[j]]),
-                           envir = my.env)
-                  }
-                }  
-            
-
-              # Line 354 necessary for the development of the code.
-              # cat("\n ", i, grid[i])
-              }
-            }
-            if(i<dim(simMod@data@original.data)[1]){ 
-              jumpT<-c(jumpT,grid[i])
-              # if(i==7001){
-              #   cat("\n",noExit)
-              # }
-              dN<-c(dN,1)
-              allhaz <- c(allhaz,HazardRate)
-              allcond <- c(allcond,cond)
-              cond <- const
-              allconst <- c(allconst, const)
-              const <- -log(runif(1))
-              while(const<delta){
-                const <- -log(runif(1))
-              }
-            }
-          }
-          return(list(jumpT=jumpT,allcond=allcond,allconst=allconst, allhaz=allhaz))
-        }
+        
 
         prova1<-myhawkesP(simMod, Kern,
                           samp, Model, my.env, ExprHaz,
-                          Time)
+                          Time, dN)
 
         Time<-prova1$jumpT
       #  return(Time)
@@ -507,7 +607,8 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
       # #     cat(sprintf("\n%.5f ", tail(Time,n=1L)))
       # # }
       # }
-        cond <- samp@grid[[1]][-1] %in% Time[-1]
+        #cond <- samp@grid[[1]][-1] %in% Time[-1]
+        cond <- samp@grid[[1]][-1] %in% Time
         countVar <- Model@solve.variable %in%  object@PPR@counting.var
         increment.L[!cond, countVar]<-0
         if(missing(xinit)){
