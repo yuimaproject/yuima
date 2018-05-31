@@ -92,16 +92,17 @@ constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var){
       for(i in c(1:length(counting.var))){
         my.countOld <- paste0(counting.var[i] ," ")
         my.countNew <- paste0( counting.var[i] ,
-                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+                              "[CondJumpGrid]")
         dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
         my.countOld <- paste0(counting.var[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
-        my.countNew <- paste0( counting.var[i] ,
-                              "[ as.character( ",Kern.Fun@variable.Integral@upper.var ," ) ]")
+        # my.countNew <- paste0( counting.var[i] ,
+        #                       "[ as.character( ",Kern.Fun@variable.Integral@upper.var ," ) ]")
+        my.countNew <- paste0( "tail(",counting.var[i] ,",n=1L) ")
         dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
         
         my.countOld <- paste0(counting.var[i] ,"[",Kern.Fun@variable.Integral@var.time,"]")
         my.countNew <- paste0(counting.var[i] ,
-                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+                              "[CondJumpGrid]")
         dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
         
       }
@@ -111,17 +112,16 @@ constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var){
         
         my.countOld <- paste0(covariates[i] ," ")
         my.countNew <- paste0( covariates[i] ,
-                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+                              "[CondJumpGrid]")
         dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
         
         my.countOld <- paste0(covariates[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
-        my.countNew <- paste0( covariates[i] ,
-                              "[ as.character( ",Kern.Fun@variable.Integral@upper.var ," ) ]")
+        my.countNew <- paste0("tail(", covariates[i] , " n=1L ) ")
         dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
         
         my.countOld <- paste0(covariates[i] ,"[",Kern.Fun@variable.Integral@var.time,"]")
         my.countNew <- paste0( covariates[i] ,
-                              "[ as.character( ",Kern.Fun@variable.Integral@var.time ," ) ]")
+                              "[CondJumpGrid]")
         dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
       }
     }
@@ -210,16 +210,16 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
           
           if (dimCov>0){
             for(j in c(1:dimCov)){
-              my.covdata <- simMod@data@original.data[1:i,object@PPR@covariates[j]]
-              names(my.covdata) <-simMod@sampling@grid[[1]][1:i]
+              # my.covdata <- simMod@data@original.data[1:i,object@PPR@covariates[j]]
+              # names(my.covdata) <-simMod@sampling@grid[[1]][1:i]
+              # 
+              # assign(object@PPR@covariates[j],
+              #        my.covdata,
+              #        envir = my.env)
               
               assign(object@PPR@covariates[j],
-                     my.covdata,
+                     as.numeric(simMod@data@original.data[1:i,object@PPR@covariates[j]]),
                      envir = my.env)
-              
-              # assign(object@PPR@covariates[j],
-              #        as.numeric(simMod@data@original.data[1:i,object@PPR@covariates[j]]),
-              #        envir = my.env)
             }
           }  
           
@@ -238,7 +238,7 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
         }else{
           dN <- c(dN,1)
         }
-        names(dN)<-jumpT
+        #names(dN)<-jumpT
         allhaz <- c(allhaz,HazardRate)
         allcond <- c(allcond,cond)
         cond <- const
@@ -265,10 +265,10 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
       assign(Model@time.variable, capitalTime, envir = my.env)
       assign(paste0("d",Kern@variable.Integral@var.dx), dN, envir =my.env)
       
-      # condPointIngrid <- simMod@sampling@grid[[1]]<=my.env$t
-      # PointIngridInt <- simMod@sampling@grid[[1]][condPointIngrid]
-      # CondJumpGrid <- PointIngridInt %in% my.env$s 
-      # assign("CondJumpGrid", CondJumpGrid, envir = my.env)
+      condPointIngrid <- simMod@sampling@grid[[1]]<=my.env$t
+      PointIngridInt <- simMod@sampling@grid[[1]][condPointIngrid]
+      CondJumpGrid <- PointIngridInt %in% my.env$s
+      assign("CondJumpGrid", CondJumpGrid, envir = my.env)
       
       Lambda <- eval(ExprHaz[[1]], envir=my.env)
       return(Lambda)
@@ -452,15 +452,16 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
         dimCov <- length(object@PPR@covariates)
         if (dimCov>0){
           for(j in c(1:dimCov)){
-              # assign(object@PPR@covariates[j],
-              #      as.numeric(simMod@data@original.data[1,object@PPR@covariates[j]]),
-              #      envir = my.env)
-            my.covdata <- simMod@data@original.data[1,object@PPR@covariates[j]]
-            names(my.covdata) <-simMod@sampling@grid[[1]][1]
-            
-            assign(object@PPR@covariates[j],
-                   my.covdata,
+              assign(object@PPR@covariates[j],
+                   as.numeric(simMod@data@original.data[1,object@PPR@covariates[j]]),
                    envir = my.env)
+
+            # my.covdata <- simMod@data@original.data[1,object@PPR@covariates[j]]
+            # names(my.covdata) <-simMod@sampling@grid[[1]][1]
+            # 
+            # assign(object@PPR@covariates[j],
+            #        my.covdata,
+            #        envir = my.env)
             
           }
         }
