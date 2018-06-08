@@ -89,23 +89,52 @@ InternalConstractionIntensity<-function(param,my.envd1=NULL,
 InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my.envd2=NULL,
                                       Univariate=TRUE, ExistdN, ExistdX, gridTime){
   if(Univariate){
-    if(ExistdN){
+    
       dimCol<- dim(Integrand2)[2]
       NameCol<-colnames(Integrand2)
-      assign(my.envd1$t.time,gridTime, envir=my.envd1)
+      if(ExistdN){
+        assign(my.envd1$t.time,gridTime, envir=my.envd1)
+      }
+      if(ExistdX){
+        assign(my.envd2$t.time,gridTime, envir=my.envd2)
+      }
+      
       IntegralKernel<- 0
       for(i in c(1:dimCol)){
 
         # cond <- NameCol[i] %in% my.envd1$NamesIntgra
         # assign(my.envd1$var.time, time(my.envd1[[my.envd1$namedX[cond]]]), my.envd1)
         # since it is just univariate we don't need a cycle for
-        cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd1$namedJumpTimeX
-        assign(my.envd1$var.time,my.envd1[[my.envd1$namedJumpTimeX[cond]]],envir=my.envd1)
-
-        IntegralKernelDum<- sum(eval(Integrand2expr[cond], envir=my.envd1),na.rm = TRUE)
-        IntegralKernel<-IntegralKernel+IntegralKernelDum
+        if(ExistdN){  
+          cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd1$namedJumpTimeX
+          if(cond){
+            assign(my.envd1$var.time,my.envd1[[my.envd1$namedJumpTimeX[cond]]],envir=my.envd1)
+            condpos <- NameCol %in% my.envd1$namedX 
+            if(any(condpos)){
+              IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd1),na.rm = TRUE)
+              IntegralKernel<-IntegralKernel+IntegralKernelDum
+            }
+          }
+        }
+        
+        if(ExistdX){  
+          cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd2$namedJumpTimeX
+          if(cond){
+            assign(my.envd2$var.time,my.envd2[[my.envd2$namedJumpTimeX[cond]]],envir=my.envd2)
+            condpos <- NameCol %in% my.envd2$namedX 
+            if(any(condpos)){
+              IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd2),na.rm = TRUE)
+              IntegralKernel<-IntegralKernel+IntegralKernelDum
+            }
+          }
+        }
+        # condpos <- NameCol %in% my.envd2$namedX 
+        # if(any(condpos)){
+        #   IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd2),na.rm = TRUE)
+        #   IntegralKernel<-IntegralKernel+IntegralKernelDum
+        # }
         #       cat("\n", IntegralKernel)
-      }
+      
     }
 
   }else{
@@ -152,17 +181,17 @@ InternalConstractionIntensity2<-function(param,my.envd1=NULL,
   }
 
 
-  KerneldN<- numeric(length=length(gridTime))
+  Kernel<- numeric(length=length(gridTime))
   # for(i in c(1:length(gridTime))){
   #   KerneldN[i] <- InternalKernelFromPPRModel(Integrand2,Integrand2expr,my.envd1=my.envd1,my.envd2=my.envd2,
   #                                             Univariate=Univariate, ExistdN, ExistdX, gridTime=gridTime[i])
   # }
-  KerneldN <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
+  Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
                      Integrand2=Integrand2, Integrand2expr = Integrand2expr,my.envd1=my.envd1,my.envd2=my.envd2,
                      Univariate=Univariate, ExistdN =ExistdN, ExistdX=ExistdX )
-  KerneldCov<- numeric(length=length(gridTime))
+  #KerneldCov<- numeric(length=length(gridTime))
   Evalgfun <- internalGfunFromPPRModel(gfun,my.envd3, univariate=Univariate)
-  result<-KerneldN+KerneldCov+Evalgfun
+  result<-Kernel+Evalgfun
 
 }
 
@@ -191,12 +220,20 @@ Intensity.PPR <- function(yuimaPPR,param){
   }
   colnames(Integrand2) <- paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx)
   NamesIntegrandExpr <- as.character(matrix(colnames(Integrand2), dim(Integrand2)[1],dim(Integrand2)[2], byrow = TRUE))
+  # if(yuimaPPR@Kernel@Integrand@dimIntegrand[2]==1 & yuimaPPR@Kernel@Integrand@dimIntegrand[1]==1)
+  #   Integrand2expr<- parse(text=Integrand2)
+  # 
+  # if(yuimaPPR@Kernel@Integrand@dimIntegrand[2]>1 & yuimaPPR@Kernel@Integrand@dimIntegrand[1]==1){
+  #   dum <- paste0(Integrand2,collapse=" + ")
+  #   Integrand2expr <- parse(text=dum)
+  # }
+  
   Integrand2expr<- parse(text=Integrand2)
-
+  
   gridTime <- time(yuimaPPR@data@original.data)
 
   yuimaPPR@Kernel@variable.Integral@var.dx
-  if(any(yuimaPPR@Kernel@variable.Integral@var.dx %in% yuimaPPR@model@solve.variable)){
+  if(any(yuimaPPR@Kernel@variable.Integral@var.dx %in% yuimaPPR@PPR@counting.var)){
     my.envd1<-new.env()
     ExistdN<-TRUE
   }else{
@@ -206,7 +243,7 @@ Intensity.PPR <- function(yuimaPPR,param){
   if(length(yuimaPPR@PPR@counting.var)==1){
     Univariate<-TRUE
   }
-  if(any(!(yuimaPPR@Kernel@variable.Integral@var.dx %in% yuimaPPR@model@solve.variable))){
+  if(any(yuimaPPR@Kernel@variable.Integral@var.dx %in% yuimaPPR@PPR@covariates)){
     my.envd2<-new.env()
     ExistdX<-TRUE
   }else{
@@ -224,12 +261,12 @@ Intensity.PPR <- function(yuimaPPR,param){
   if(ExistdN){
 
     #CountingVariable
-    for(i in c(1:length(yuimaPPR@PPR@counting.var))){
-      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i] 
-      condTime <- gridTime %in% my.envd1$JumpTime.dN
-      dummyData <- yuimaPPR@data@original.data[condTime,cond]
-      assign(yuimaPPR@PPR@counting.var[i], as.numeric(dummyData),envir=my.envd1)
-    }
+    # for(i in c(1:length(yuimaPPR@PPR@counting.var))){
+    #   cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i] 
+    #   condTime <- gridTime %in% my.envd1$JumpTime.dN
+    #   dummyData <- yuimaPPR@data@original.data[condTime,cond]
+    #   assign(yuimaPPR@PPR@counting.var[i], as.numeric(dummyData),envir=my.envd1)
+    # }
     # Names expression
     assign("NamesIntgra", NamesIntegrandExpr, envir=my.envd1)
     #dN
@@ -256,13 +293,23 @@ Intensity.PPR <- function(yuimaPPR,param){
     assign("var.time",yuimaPPR@Kernel@variable.Integral@var.time,envir=my.envd1)
     assign("t.time",yuimaPPR@Kernel@variable.Integral@upper.var,envir=my.envd1)
 
+    #CountingVariable
+    for(i in c(1:length(yuimaPPR@PPR@counting.var))){
+      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]
+      condTime <- gridTime %in% my.envd1$JumpTime.dN
+      
+      dummyData <- yuimaPPR@data@original.data[condTime,cond]
+      assign(yuimaPPR@PPR@counting.var[i], as.numeric(dummyData),envir=my.envd1)
+    }
+    
     # Covariates
     if(length(yuimaPPR@PPR@covariates)>0){
       # Covariates should be identified at jump time
       # return(NULL)
       for(i in c(1:length(yuimaPPR@PPR@covariates))){
         cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@covariates[i]  
-        dummyData <-yuimaPPR@data@original.data[,cond]
+        #dummyData <-yuimaPPR@data@original.data[,cond]
+        dummyData <-yuimaPPR@data@original.data[condTime, cond]
         assign(yuimaPPR@PPR@covariates[i], dummyData,envir=my.envd1)
       }
     }
@@ -273,14 +320,38 @@ Intensity.PPR <- function(yuimaPPR,param){
   # construction my.envd2
   if(ExistdX){
     #Covariate
-
+    dummyData<-NULL
     #CountingVariable
     for(i in c(1:length(yuimaPPR@PPR@counting.var))){
-      cond <- yuimaPPR@PPR@counting.var[i] %in% yuimaPPR@model@solve.variable
-      dummyData <-yuimaPPR@data@original.data[,cond]
-      assign(yuimaPPR@PPR@counting.var[i], dummyData,envir=my.envd1)
+      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]  
+      dummyData <-as.numeric(yuimaPPR@data@original.data[,cond])
+      assign(yuimaPPR@PPR@counting.var[i], dummyData[-length(dummyData)],envir=my.envd2)
     }
-
+    namedX<-NULL
+    namedJumpTimeX<-NULL
+    for(i in c(1:length(yuimaPPR@Kernel@variable.Integral@var.dx))){
+      if(yuimaPPR@Kernel@variable.Integral@var.dx[i] %in% yuimaPPR@PPR@covariates){
+        cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@Kernel@variable.Integral@var.dx[i]
+        namedX<-c(namedX,paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx[i]))
+        namedJumpTimeX <-c(namedJumpTimeX,paste0("JumpTime.d",yuimaPPR@Kernel@variable.Integral@var.dx[i]))
+        dummyData <- diff(as.numeric(yuimaPPR@data@original.data[,cond]))# We consider only Jump
+        #dummyJumpTime <- gridTime[-1][dummyData>0]
+        assign(paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), dummyData ,envir=my.envd2)
+        assign(paste0("JumpTime.d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), gridTime[-1] ,envir=my.envd2)
+      }
+    }
+    
+    assign("namedX",namedX, envir = my.envd2)
+    assign("namedJumpTimeX",namedJumpTimeX, envir = my.envd2)
+    assign("var.time",yuimaPPR@Kernel@variable.Integral@var.time,envir=my.envd2)
+    assign("t.time",yuimaPPR@Kernel@variable.Integral@upper.var,envir=my.envd2)
+    
+    for(i in c(1:length(yuimaPPR@PPR@covariates))){
+      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@covariates[i]  
+      #dummyData <-yuimaPPR@data@original.data[,cond]
+      dummyData <-as.numeric(yuimaPPR@data@original.data[, cond])
+      assign(yuimaPPR@PPR@covariates[i], dummyData[-length(dummyData)],envir=my.envd2)
+    }
 
   }else{
     assign("KerneldX",NULL,envir=my.envd2)

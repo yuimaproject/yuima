@@ -86,7 +86,7 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   if(length(yuimaPPR@PPR@counting.var)==1){
     Univariate<-TRUE
   }
-  if(any(!(yuimaPPR@Kernel@variable.Integral@var.dx %in% yuimaPPR@model@solve.variable))){
+  if(any(yuimaPPR@Kernel@variable.Integral@var.dx %in% yuimaPPR@PPR@covariates)){
     my.envd2<-new.env()
     ExistdX<-TRUE
   }else{
@@ -103,12 +103,6 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   # construction my.envd1
   if(ExistdN){
 
-    #CountingVariable
-    for(i in c(1:length(yuimaPPR@PPR@counting.var))){
-      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]
-      dummyData <-unique(yuimaPPR@data@original.data[,cond])[-1]
-      assign(yuimaPPR@PPR@counting.var[i], rep(1,length(dummyData)),envir=my.envd1)
-    }
     # Names expression
     assign("NamesIntgra", NamesIntegrandExpr, envir=my.envd1)
     #dN
@@ -133,7 +127,15 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
     assign("namedJumpTimeX",namedJumpTimeX, envir = my.envd1)
     assign("var.time",yuimaPPR@Kernel@variable.Integral@var.time,envir=my.envd1)
     assign("t.time",yuimaPPR@Kernel@variable.Integral@upper.var,envir=my.envd1)
-
+    
+    #CountingVariable
+    for(i in c(1:length(yuimaPPR@PPR@counting.var))){
+      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]
+      dummyData <-unique(yuimaPPR@data@original.data[,cond])[-1]
+      assign(yuimaPPR@PPR@counting.var[i], rep(1,length(dummyData)),envir=my.envd1)
+    }
+    
+    
     # Covariates
     if(length(yuimaPPR@PPR@covariates)>0){
       # Covariates should be identified at jump time
@@ -152,12 +154,45 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
     #Covariate
 
     #CountingVariable
+    # for(i in c(1:length(yuimaPPR@PPR@counting.var))){
+    #   cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]
+    #   dummyData <-yuimaPPR@data@original.data[,cond]
+    #   assign(yuimaPPR@PPR@counting.var[i], dummyData,envir=my.envd1)
+    # }
+    
+    #Covariate
+    dummyData<-NULL
+    #CountingVariable
     for(i in c(1:length(yuimaPPR@PPR@counting.var))){
-      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]
-      dummyData <-yuimaPPR@data@original.data[,cond]
-      assign(yuimaPPR@PPR@counting.var[i], dummyData,envir=my.envd1)
+      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]  
+      dummyData <-as.numeric(yuimaPPR@data@original.data[,cond])
+      assign(yuimaPPR@PPR@counting.var[i], dummyData[-length(dummyData)],envir=my.envd2)
     }
-
+    namedX<-NULL
+    namedJumpTimeX<-NULL
+    for(i in c(1:length(yuimaPPR@Kernel@variable.Integral@var.dx))){
+      if(yuimaPPR@Kernel@variable.Integral@var.dx[i] %in% yuimaPPR@PPR@covariates){
+        cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@Kernel@variable.Integral@var.dx[i]
+        namedX<-c(namedX,paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx[i]))
+        namedJumpTimeX <-c(namedJumpTimeX,paste0("JumpTime.d",yuimaPPR@Kernel@variable.Integral@var.dx[i]))
+        dummyData <- diff(as.numeric(yuimaPPR@data@original.data[,cond]))# We consider only Jump
+        #dummyJumpTime <- gridTime[-1][dummyData>0]
+        assign(paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), dummyData ,envir=my.envd2)
+        assign(paste0("JumpTime.d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), gridTime[-1] ,envir=my.envd2)
+      }
+    }
+    
+    assign("namedX",namedX, envir = my.envd2)
+    assign("namedJumpTimeX",namedJumpTimeX, envir = my.envd2)
+    assign("var.time",yuimaPPR@Kernel@variable.Integral@var.time,envir=my.envd2)
+    assign("t.time",yuimaPPR@Kernel@variable.Integral@upper.var,envir=my.envd2)
+    
+    for(i in c(1:length(yuimaPPR@PPR@covariates))){
+      cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@covariates[i]  
+      #dummyData <-yuimaPPR@data@original.data[,cond]
+      dummyData <-as.numeric(yuimaPPR@data@original.data[, cond])
+      assign(yuimaPPR@PPR@covariates[i], dummyData[-length(dummyData)],envir=my.envd2)
+    }
 
   }else{
     assign("KerneldX",NULL,envir=my.envd2)

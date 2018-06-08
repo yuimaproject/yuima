@@ -84,7 +84,7 @@ constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var){
     }
     
     dum.g <- paste("tail(",dum.g,", n=1L)")
-    dum.Ker <- as.character(Kern.Fun@Integrand@IntegrandList[[i]])
+    dum.Ker <- as.character(unlist(Kern.Fun@Integrand@IntegrandList))
     dum.Ker <- gsub("(", "( ", fixed=TRUE,x = dum.Ker)
     dum.Ker <- gsub(")", " )", fixed=TRUE,x = dum.Ker)
     
@@ -127,13 +127,19 @@ constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var){
     }
     dif.dx <- paste("d",Kern.Fun@variable.Integral@var.dx, sep="")
     dum.Ker <- paste(dum.Ker,dif.dx, sep = "*")
-    if(length(dum.Ker)>1){
-      dum.Ker <- paste(dum.Ker,collapse = "+")
-    }
-    dum.Ker <- paste("(",dum.Ker,") * (")
     cond.Sup <- paste(Kern.Fun@variable.Integral@var.time, "<", Kern.Fun@variable.Integral@upper.var)
-    dum.Ker <- paste(dum.Ker, cond.Sup, ")")
+    dum.Ker <- paste("(",dum.Ker, ") * (", cond.Sup, ")")
     dum.Ker <- paste0("sum(",dum.Ker,")")
+    if(Kern.Fun@Integrand@dimIntegrand[2]>1 & Kern.Fun@Integrand@dimIntegrand[1]==1){
+      dum.Ker <- paste(dum.Ker,collapse = " + ")
+    }
+    if(Kern.Fun@Integrand@dimIntegrand[1]>1){
+      yuima.stop("Check")
+    }
+    # dum.Ker <- paste("(",dum.Ker,") * (")
+    # cond.Sup <- paste(Kern.Fun@variable.Integral@var.time, "<", Kern.Fun@variable.Integral@upper.var)
+    # dum.Ker <- paste(dum.Ker, cond.Sup, ")")
+    
     Int.Intens[[i]] <- parse(text = paste(dum.g, dum.Ker, sep = " + "))
   }
   res <- list(Intens = Int.Intens)
@@ -273,7 +279,34 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
       Lambda <- eval(ExprHaz[[1]], envir=my.env)
       return(Lambda)
     }else{
-      return(NULL)
+      if(Kern@Integrand@dimIntegrand[1]==1){
+        assign(Kern@variable.Integral@var.time, Time, envir = my.env)
+      #  cond <- -log(cost)-sum(dummyLambda)*samp@delta
+      
+        assign(Model@time.variable, capitalTime, envir = my.env)
+        for(i in c(1:length(Kern@variable.Integral@var.dx)) ){
+          if(Kern@variable.Integral@var.dx[i]==my.env$info.PPR@counting.var){
+            assign(paste0("d",Kern@variable.Integral@var.dx[i]), dN, envir =my.env)
+          }
+          if(Kern@variable.Integral@var.dx[i]%in%my.env$info.PPR@covariates){  
+            assign(paste0("d",Kern@variable.Integral@var.dx[i]),
+                   diff(c(0,my.env[[Kern@variable.Integral@var.dx[i]]])) , 
+                   envir =my.env)
+          }
+          if(Kern@variable.Integral@var.dx[i]%in%my.env$info.PPR@var.dt){
+            assign(paste0("d",Kern@variable.Integral@var.dx[i]),
+                   diff(c(0,my.env[[Kern@variable.Integral@var.dx[i]]])) , 
+                   envir =my.env)
+          }
+        } 
+        condPointIngrid <- simMod@sampling@grid[[1]]<=my.env$t
+        PointIngridInt <- simMod@sampling@grid[[1]][condPointIngrid]
+        CondJumpGrid <- PointIngridInt %in% my.env$s
+        assign("CondJumpGrid", CondJumpGrid, envir = my.env)
+      
+        Lambda <- eval(ExprHaz[[1]], envir=my.env)
+      return(Lambda)
+      }
     }
   }
   
@@ -443,6 +476,9 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
         Time <- samp@Initial
 
         my.env <- new.env()
+        
+        assign("info.PPR", object@PPR, my.env)
+        
         for(i in c(1:length(object@PPR@allparam))){
           assign(object@PPR@allparam[i],
             as.numeric(true.parameter[object@PPR@allparam[i]]),
