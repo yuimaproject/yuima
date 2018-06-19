@@ -106,10 +106,12 @@ InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my
         # assign(my.envd1$var.time, time(my.envd1[[my.envd1$namedX[cond]]]), my.envd1)
         # since it is just univariate we don't need a cycle for
         if(ExistdN){  
-          cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd1$namedJumpTimeX
-          if(cond){
+          # cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd1$namedJumpTimeX
+          cond <- my.envd1$namedJumpTimeX %in% paste0("JumpTime.",NameCol[i])
+          if(any(cond)){
             assign(my.envd1$var.time,my.envd1[[my.envd1$namedJumpTimeX[cond]]],envir=my.envd1)
-            condpos <- NameCol %in% my.envd1$namedX 
+            # condpos <- NameCol %in% my.envd1$namedX
+            condpos <- my.envd1$namedX %in% NameCol[i]  
             if(any(condpos)){
               IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd1),na.rm = TRUE)
               IntegralKernel<-IntegralKernel+IntegralKernelDum
@@ -118,23 +120,20 @@ InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my
         }
         
         if(ExistdX){  
-          cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd2$namedJumpTimeX
-          if(cond){
+          # cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd2$namedJumpTimeX
+          cond <- my.envd2$namedJumpTimeX %in% paste0("JumpTime.",NameCol[i]) 
+          if(any(cond)){
             assign(my.envd2$var.time,my.envd2[[my.envd2$namedJumpTimeX[cond]]],envir=my.envd2)
-            condpos <- NameCol %in% my.envd2$namedX 
+            # condpos <- NameCol %in% my.envd2$namedX
+            condpos <- my.envd2$namedX %in% NameCol[i]
             if(any(condpos)){
               IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd2),na.rm = TRUE)
               IntegralKernel<-IntegralKernel+IntegralKernelDum
             }
           }
         }
-        # condpos <- NameCol %in% my.envd2$namedX 
-        # if(any(condpos)){
-        #   IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd2),na.rm = TRUE)
-        #   IntegralKernel<-IntegralKernel+IntegralKernelDum
-        # }
-        #       cat("\n", IntegralKernel)
-      
+
+        
     }
 
   }else{
@@ -180,19 +179,34 @@ InternalConstractionIntensity2<-function(param,my.envd1=NULL,
     assign(paramPPR[i], param[cond], envir = my.envd3)
   }
 
-
-  Kernel<- numeric(length=length(gridTime))
+  
   # for(i in c(1:length(gridTime))){
   #   KerneldN[i] <- InternalKernelFromPPRModel(Integrand2,Integrand2expr,my.envd1=my.envd1,my.envd2=my.envd2,
   #                                             Univariate=Univariate, ExistdN, ExistdX, gridTime=gridTime[i])
   # }
-  Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
+  length(my.envd3$YUIMA.PPR@PPR@counting.var)
+  if(Univariate){
+    Kernel<- numeric(length=length(gridTime))
+    Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
                      Integrand2=Integrand2, Integrand2expr = Integrand2expr,my.envd1=my.envd1,my.envd2=my.envd2,
                      Univariate=Univariate, ExistdN =ExistdN, ExistdX=ExistdX )
   #KerneldCov<- numeric(length=length(gridTime))
-  Evalgfun <- internalGfunFromPPRModel(gfun,my.envd3, univariate=Univariate)
-  result<-Kernel+Evalgfun
-
+    Evalgfun <- internalGfunFromPPRModel(gfun,my.envd3, univariate=Univariate)
+    result<-Kernel+Evalgfun
+  }else{
+    n.row <- length(my.envd3$YUIMA.PPR@PPR@counting.var)
+    n.col <- length(gridTime)
+    result <- matrix(NA,n.row, n.col) 
+    Kernel<- numeric(length=n.col)
+    for(i in c(1:n.row)){
+      Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
+                       Integrand2=t(Integrand2[i,]), Integrand2expr = Integrand2expr[[i]],my.envd1=my.envd1,my.envd2=my.envd2,
+                       Univariate=TRUE, ExistdN =ExistdN, ExistdX=ExistdX )
+      Evalgfun <- internalGfunFromPPRModel(gfun[i],my.envd3, univariate=TRUE)
+      result[i,]<-Kernel+Evalgfun
+    }
+  }
+  return(result)
 }
 
 
@@ -227,8 +241,14 @@ Intensity.PPR <- function(yuimaPPR,param){
   #   dum <- paste0(Integrand2,collapse=" + ")
   #   Integrand2expr <- parse(text=dum)
   # }
-  
-  Integrand2expr<- parse(text=Integrand2)
+  if(yuimaPPR@Kernel@Integrand@dimIntegrand[1]==1){
+    Integrand2expr<- parse(text=Integrand2)
+  }else{
+    Integrand2expr <- list()
+    for(hh in c(1:yuimaPPR@Kernel@Integrand@dimIntegrand[1])){
+      Integrand2expr[[hh]] <- parse(text=Integrand2[hh,])
+    }
+  }
   
   gridTime <- time(yuimaPPR@data@original.data)
 
@@ -407,8 +427,16 @@ Intensity.PPR <- function(yuimaPPR,param){
   param<-unlist(param)
   result<-InternalConstractionIntensity2(param,my.envd1,
                                            my.envd2,my.envd3)
-  Int2<-zoo(as.matrix(result),order.by = gridTime)
-  colnames(Int2)<-"lambda"
+  if(class(result)=="matrix"){
+    my.matr <- t(result)
+    colnames(my.matr) <-paste0("lambda",c(1:yuimaPPR@Kernel@Integrand@dimIntegrand[1]))
+    Int2<-zoo(my.matr,order.by = gridTime)
+  }else{
+    Int2<-zoo(as.matrix(result),order.by = gridTime)
+    colnames(Int2)<-"lambda"
+  }
+  
+  
   res<-setData(Int2)
   return(res)
 
