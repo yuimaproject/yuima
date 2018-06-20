@@ -12,31 +12,55 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   # IntLambda<-InternalConstractionIntensity(param,my.envd1,
   #                                          my.envd2,my.envd3)
   Index<-my.envd3$gridTime
-  Integr1a <- -sum(IntLambda[-length(IntLambda)]*diff(Index),na.rm=TRUE)
-  Integr1b <- -sum(IntLambda[-1]*diff(Index),na.rm=TRUE)
-  Integr1 <- (Integr1a+Integr1b)/2
-  # if(is.nan(Integr1)){
-  #   Integr1 <- -10^6
-  # }
-  if(length(my.envd3$YUIMA.PPR@PPR@counting.var)>0){
-    cond1 <- my.envd3$YUIMA.PPR@model@solve.variable %in% my.envd3$YUIMA.PPR@PPR@counting.var
-    cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data[,cond1]))
-    #Integr2<- sum(log(IntLambda[-1][cond2!=0]),na.rm=TRUE)
-    Integr2 <- sum(log(IntLambda[cond2!=0]),na.rm=TRUE)
-    #Integr2 <- (Integr2a+Integr2b)/2
+  if(my.envd3$YUIMA.PPR@gFun@dimension[1]==1){
+    Integr1a <- -sum(IntLambda[-length(IntLambda)]*my.envd3$YUIMA.PPR@sampling@delta,na.rm=TRUE)
+    Integr1b <- -sum(IntLambda[-1]*my.envd3$YUIMA.PPR@sampling@delta,na.rm=TRUE)
+    Integr1 <- (Integr1a+Integr1b)/2
+    # if(is.nan(Integr1)){
+    #   Integr1 <- -10^6
+    # }
+    if(length(my.envd3$YUIMA.PPR@PPR@counting.var)>0){
+      cond1 <- my.envd3$YUIMA.PPR@model@solve.variable %in% my.envd3$YUIMA.PPR@PPR@counting.var
+      cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data[,cond1]))
+      #Integr2<- sum(log(IntLambda[-1][cond2!=0]),na.rm=TRUE)
+      Integr2 <- sum(log(IntLambda[cond2!=0]),na.rm=TRUE)
+      #Integr2 <- (Integr2a+Integr2b)/2
+      logLik <- Integr1+Integr2
+    }else{
+      yuima.stop("Spal")
+    }
+    if(is.null(my.envd1$oldpar)){
+      oldpar <- param
+    }else{
+      oldpar <- my.envd1$oldpar
+    }
+    ret <- -logLik/sum(cond2,na.rm=TRUE)
   }else{
-    yuima.stop("Spal")
+    posAAA <- dim(IntLambda)[2]
+    logLik <- 0
+    Njump <- 0
+    cond0 <- length(my.envd3$YUIMA.PPR@PPR@counting.var)>0
+    for(hh in c(1:my.envd3$YUIMA.PPR@gFun@dimension[1])){
+      Integr1a <- -sum(IntLambda[hh ,-posAAA]*my.envd3$YUIMA.PPR@sampling@delta,na.rm=TRUE)
+      Integr1b <- -sum(IntLambda[hh ,-1]*my.envd3$YUIMA.PPR@sampling@delta,na.rm=TRUE)
+      Integr1 <- (Integr1a+Integr1b)/2
+      if(cond0){
+        cond1 <- my.envd3$YUIMA.PPR@model@solve.variable %in% my.envd3$YUIMA.PPR@PPR@counting.var[hh]
+        cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data[,cond1]))
+        #Integr2<- sum(log(IntLambda[-1][cond2!=0]),na.rm=TRUE)
+        Integr2 <- sum(log(IntLambda[hh, cond2!=0]),na.rm=TRUE)
+        #Integr2 <- (Integr2a+Integr2b)/2
+        logLik <- logLik+Integr1+Integr2
+        Njump <- Njump + sum(cond2,na.rm=TRUE) 
+        ret <- -logLik/Njump
+      }
+    }
   }
   # if(is.nan(Integr2)){
   #   Integr2 <- -10^6
   # }
-  logLik <- Integr1+Integr2
-  if(is.null(my.envd1$oldpar)){
-    oldpar <- param
-  }else{
-    oldpar <- my.envd1$oldpar
-  }
-  ret <- -logLik/sum(cond2,na.rm=TRUE)#+sum((param-oldpar)^2*param^2)/2
+  
+  #+sum((param-oldpar)^2*param^2)/2
   # line 40 necessary for the development of the cod
   #cat("\n ",logLik, param)
   
@@ -71,7 +95,16 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   }
   colnames(Integrand2) <- paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx)
   NamesIntegrandExpr <- as.character(matrix(colnames(Integrand2), dim(Integrand2)[1],dim(Integrand2)[2], byrow = TRUE))
-  Integrand2expr<- parse(text=Integrand2)
+  # Integrand2expr<- parse(text=Integrand2)
+  
+  if(yuimaPPR@Kernel@Integrand@dimIntegrand[1]==1){
+    Integrand2expr<- parse(text=Integrand2)
+  }else{
+    Integrand2expr <- list()
+    for(hh in c(1:yuimaPPR@Kernel@Integrand@dimIntegrand[1])){
+      Integrand2expr[[hh]] <- parse(text=Integrand2[hh,])
+    }
+  }
 
   gridTime <- time(yuimaPPR@data@original.data)
 
