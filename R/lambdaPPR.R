@@ -87,11 +87,12 @@ InternalConstractionIntensity<-function(param,my.envd1=NULL,
 
 
 InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my.envd2=NULL,
-                                      Univariate=TRUE, ExistdN, ExistdX, gridTime){
+                                      Univariate=TRUE, ExistdN, ExistdX, gridTime, dimCol, NameCol,
+                                      JumpTimeName){
   if(Univariate){
-    
-      dimCol<- dim(Integrand2)[2]
-      NameCol<-colnames(Integrand2)
+      # JumpTimeName  <- paste0("JumpTime.",NameCol[i])
+      # dimCol<- dim(Integrand2)[2]
+      # NameCol<-colnames(Integrand2)
       if(ExistdN){
         assign(my.envd1$t.time,gridTime, envir=my.envd1)
       }
@@ -107,7 +108,9 @@ InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my
         # since it is just univariate we don't need a cycle for
         if(ExistdN){  
           # cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd1$namedJumpTimeX
-          cond <- my.envd1$namedJumpTimeX %in% paste0("JumpTime.",NameCol[i])
+          # cond <- my.envd1$namedJumpTimeX %in% paste0("JumpTime.",NameCol[i])
+          cond <- my.envd1$namedJumpTimeX %in% JumpTimeName[i]
+          
           if(any(cond)){
             assign(my.envd1$var.time,my.envd1[[my.envd1$namedJumpTimeX[cond]]],envir=my.envd1)
             # condpos <- NameCol %in% my.envd1$namedX
@@ -121,7 +124,8 @@ InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my
         
         if(ExistdX){  
           # cond <- paste0("JumpTime.",NameCol[i]) %in% my.envd2$namedJumpTimeX
-          cond <- my.envd2$namedJumpTimeX %in% paste0("JumpTime.",NameCol[i]) 
+          # cond <- my.envd2$namedJumpTimeX %in% paste0("JumpTime.",NameCol[i]) 
+          cond <- my.envd2$namedJumpTimeX %in% JumpTimeName[i]
           if(any(cond)){
             assign(my.envd2$var.time,my.envd2[[my.envd2$namedJumpTimeX[cond]]],envir=my.envd2)
             # condpos <- NameCol %in% my.envd2$namedX
@@ -198,10 +202,16 @@ InternalConstractionIntensity2<-function(param,my.envd1=NULL,
     n.col <- length(gridTime)
     result <- matrix(NA,n.row, n.col) 
     Kernel<- numeric(length=n.col)
+    
+     dimCol<- dim(Integrand2)[2]
+     NameCol<-colnames(Integrand2)
+     JumpTimeName  <- paste0("JumpTime.",NameCol)
+    
     for(i in c(1:n.row)){
       Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
                        Integrand2=t(Integrand2[i,]), Integrand2expr = Integrand2expr[[i]],my.envd1=my.envd1,my.envd2=my.envd2,
-                       Univariate=TRUE, ExistdN =ExistdN, ExistdX=ExistdX )
+                       Univariate=TRUE, ExistdN =ExistdN, ExistdX=ExistdX, dimCol=dimCol, NameCol = NameCol,
+                       JumpTimeName =JumpTimeName)
       Evalgfun <- internalGfunFromPPRModel(gfun[i],my.envd3, univariate=TRUE)
       result[i,]<-Kernel+Evalgfun
     }
