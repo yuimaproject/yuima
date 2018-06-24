@@ -89,6 +89,7 @@ InternalConstractionIntensity<-function(param,my.envd1=NULL,
 InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my.envd2=NULL,
                                       Univariate=TRUE, ExistdN, ExistdX, gridTime, dimCol, NameCol,
                                       JumpTimeName){
+  
   if(Univariate){
       # JumpTimeName  <- paste0("JumpTime.",NameCol[i])
       # dimCol<- dim(Integrand2)[2]
@@ -116,7 +117,7 @@ InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my
             # condpos <- NameCol %in% my.envd1$namedX
             condpos <- my.envd1$namedX %in% NameCol[i]  
             if(any(condpos)){
-              IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd1),na.rm = TRUE)
+              IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd1),na.rm=TRUE)
               IntegralKernel<-IntegralKernel+IntegralKernelDum
             }
           }
@@ -131,7 +132,7 @@ InternalKernelFromPPRModel2<-function(Integrand2,Integrand2expr,my.envd1=NULL,my
             # condpos <- NameCol %in% my.envd2$namedX
             condpos <- my.envd2$namedX %in% NameCol[i]
             if(any(condpos)){
-              IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd2),na.rm = TRUE)
+              IntegralKernelDum<- sum(eval(Integrand2expr[condpos], envir=my.envd2))
               IntegralKernel<-IntegralKernel+IntegralKernelDum
             }
           }
@@ -191,9 +192,17 @@ InternalConstractionIntensity2<-function(param,my.envd1=NULL,
   length(my.envd3$YUIMA.PPR@PPR@counting.var)
   if(Univariate){
     Kernel<- numeric(length=length(gridTime))
-    Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
-                     Integrand2=Integrand2, Integrand2expr = Integrand2expr,my.envd1=my.envd1,my.envd2=my.envd2,
-                     Univariate=Univariate, ExistdN =ExistdN, ExistdX=ExistdX )
+    NameCol <- colnames(Integrand2)
+    # Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
+    #                  Integrand2=Integrand2, Integrand2expr = Integrand2expr,my.envd1=my.envd1,my.envd2=my.envd2,
+    #                  Univariate=Univariate, ExistdN =ExistdN, ExistdX=ExistdX, 
+    #                  dimCol=dim(Integrand2)[2], NameCol = NameCol,
+    #                  JumpTimeName =paste0("JumpTime.",NameCol))
+
+    NameCol <- colnames(Integrand2)
+    Kernel <- evalKernelCpp(Integrand2, Integrand2expr,my.envd1, my.envd2,
+                            ExistdN, ExistdX, gridTime, dim(Integrand2)[2], NameCol,
+                            paste0("JumpTime.",NameCol))
   #KerneldCov<- numeric(length=length(gridTime))
     Evalgfun <- internalGfunFromPPRModel(gfun,my.envd3, univariate=Univariate)
     result<-Kernel+Evalgfun
@@ -208,10 +217,23 @@ InternalConstractionIntensity2<-function(param,my.envd1=NULL,
      JumpTimeName  <- paste0("JumpTime.",NameCol)
     
     for(i in c(1:n.row)){
-      Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
-                       Integrand2=t(Integrand2[i,]), Integrand2expr = Integrand2expr[[i]],my.envd1=my.envd1,my.envd2=my.envd2,
-                       Univariate=TRUE, ExistdN =ExistdN, ExistdX=ExistdX, dimCol=dimCol, NameCol = NameCol,
-                       JumpTimeName =JumpTimeName)
+      # Kernel <- pvec(v=gridTime,FUN = InternalKernelFromPPRModel2,
+      #                  Integrand2=t(Integrand2[i,]), Integrand2expr = Integrand2expr[[i]],my.envd1=my.envd1,my.envd2=my.envd2,
+      #                  Univariate=TRUE, ExistdN =ExistdN, ExistdX=ExistdX, dimCol=dimCol, NameCol = NameCol,
+      #                  JumpTimeName =JumpTimeName)
+      # Kernel <- sapply(X=gridTime,FUN = InternalKernelFromPPRModel2,
+      #                  Integrand2=t(Integrand2[i,]), Integrand2expr = Integrand2expr[[i]],my.envd1=my.envd1,my.envd2=my.envd2,
+      #                  Univariate=TRUE, ExistdN =ExistdN, ExistdX=ExistdX, dimCol=dimCol, NameCol = NameCol,
+      #                  JumpTimeName =JumpTimeName)
+      # Kernel <- sapply(X=gridTime,FUN = evalKernelCppPvec,
+      #                   Integrand2=t(Integrand2[i,]), Integrand2expr = Integrand2expr[[i]],
+      #                   myenvd1=my.envd1,myenvd2=my.envd2,
+      #                   ExistdN =ExistdN, ExistdX=ExistdX,
+      #                   dimCol=dimCol, NameCol = NameCol,
+      #                   JumpTimeName =JumpTimeName)
+      Kernel <- evalKernelCpp(t(Integrand2[i,]), Integrand2expr[[i]],my.envd1, my.envd2,
+                     ExistdN, ExistdX, gridTime, dimCol, NameCol,
+                     JumpTimeName)
       Evalgfun <- internalGfunFromPPRModel(gfun[i],my.envd3, univariate=TRUE)
       result[i,]<-Kernel+Evalgfun
     }

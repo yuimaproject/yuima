@@ -62,7 +62,7 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   
   #+sum((param-oldpar)^2*param^2)/2
   # line 40 necessary for the development of the cod
-  cat("\n ",logLik, param)
+  #cat("\n ",logLik, param)
   
   #assign("oldpar",param,envir = my.envd1)
   
@@ -325,6 +325,7 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, ...)
   }
+  
    Hessian <- tryCatch(optimHess(as.list(out$par),
                  fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3),
@@ -689,8 +690,8 @@ aux.lambdaFromData <-function(param, gFun, Kern, intensityParm, envPPR,logLikeli
     logLiklihood2 <- -10^10
   }
   minusLoglik <- -sum(logLiklihood2+logLiklihood1)
-   cat(sprintf("\n%.5f",minusLoglik))
-   cat(sprintf("\n%.5f",param))
+   # cat(sprintf("\n%.5f",minusLoglik))
+   # cat(sprintf("\n%.5f",param))
   return(minusLoglik)
 }
 
