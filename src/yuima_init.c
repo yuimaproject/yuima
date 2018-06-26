@@ -26,6 +26,9 @@ extern void rGIG(void *, void *, void *, void *, void *);
 extern void rpts(void *, void *, void *, void *, void *);
 
 /* .Call calls */
+extern SEXP Cycle_Carma(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP euler(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP pseudoLoglik_COGARCH1(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP yuima_detcpp(SEXP);
 extern SEXP yuima_evalKernelCpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP yuima_Irregular_PseudoLoglik_COG(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -37,9 +40,6 @@ extern SEXP yuima_sqnorm(SEXP);
 extern SEXP yuima_sub_f(SEXP, SEXP);
 extern SEXP yuima_W1(SEXP, SEXP, SEXP, SEXP);
 extern SEXP yuima_W2(SEXP, SEXP, SEXP);
-extern SEXP Cycle_Carma(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP euler(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP pseudoLoglik_COGARCH1(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CMethodDef CEntries[] = {
   {"bibsynchro",         (DL_FUNC) &bibsynchro,          9},
@@ -62,20 +62,20 @@ static const R_CMethodDef CEntries[] = {
 };
 
 static const R_CallMethodDef CallEntries[] = {
-  {"yuima_detcpp",                     (DL_FUNC) &yuima_detcpp,                      1},
-  {"yuima_evalKernelCpp",              (DL_FUNC) &yuima_evalKernelCpp,              10},
-  {"yuima_Irregular_PseudoLoglik_COG", (DL_FUNC) &yuima_Irregular_PseudoLoglik_COG, 15},
-  {"yuima_likndim",                    (DL_FUNC) &yuima_likndim,                     4},
-  {"yuima_makeprop",                   (DL_FUNC) &yuima_makeprop,                    4},
-  {"yuima_Smake",                      (DL_FUNC) &yuima_Smake,                       2},
-  {"yuima_solvecpp",                   (DL_FUNC) &yuima_solvecpp,                    1},
-  {"yuima_sqnorm",                     (DL_FUNC) &yuima_sqnorm,                      1},
-  {"yuima_sub_f",                      (DL_FUNC) &yuima_sub_f,                       2},
-  {"yuima_W1",                         (DL_FUNC) &yuima_W1,                          4},
-  {"yuima_W2",                         (DL_FUNC) &yuima_W2,                          3},
   {"Cycle_Carma",                       (DL_FUNC) &Cycle_Carma,                       12},
   {"euler",                             (DL_FUNC) &euler,                             11},
   {"pseudoLoglik_COGARCH1",             (DL_FUNC) &pseudoLoglik_COGARCH1,             14},
+  {"yuima_detcpp",                      (DL_FUNC) &yuima_detcpp,                      1},
+  {"yuima_evalKernelCpp",               (DL_FUNC) &yuima_evalKernelCpp,              10},
+  {"yuima_Irregular_PseudoLoglik_COG",  (DL_FUNC) &yuima_Irregular_PseudoLoglik_COG, 15},
+  {"yuima_likndim",                     (DL_FUNC) &yuima_likndim,                     4},
+  {"yuima_makeprop",                    (DL_FUNC) &yuima_makeprop,                    4},
+  {"yuima_Smake",                       (DL_FUNC) &yuima_Smake,                       2},
+  {"yuima_solvecpp",                    (DL_FUNC) &yuima_solvecpp,                    1},
+  {"yuima_sqnorm",                      (DL_FUNC) &yuima_sqnorm,                      1},
+  {"yuima_sub_f",                       (DL_FUNC) &yuima_sub_f,                       2},
+  {"yuima_W1",                          (DL_FUNC) &yuima_W1,                          4},
+  {"yuima_W2",                          (DL_FUNC) &yuima_W2,                          3},
   {NULL, NULL, 0}
 };
 
