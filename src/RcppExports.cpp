@@ -6,6 +6,26 @@
 
 using namespace Rcpp;
 
+// evalKernelCpp
+NumericVector evalKernelCpp(StringMatrix Integrand2, ExpressionVector Integrand2expr, Environment myenvd1, Environment myenvd2, LogicalVector ExistdN, LogicalVector ExistdX, NumericVector gridTime, IntegerVector dimCol, StringVector NameCol, StringVector JumpTimeName);
+RcppExport SEXP yuima_evalKernelCpp(SEXP Integrand2SEXP, SEXP Integrand2exprSEXP, SEXP myenvd1SEXP, SEXP myenvd2SEXP, SEXP ExistdNSEXP, SEXP ExistdXSEXP, SEXP gridTimeSEXP, SEXP dimColSEXP, SEXP NameColSEXP, SEXP JumpTimeNameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< StringMatrix >::type Integrand2(Integrand2SEXP);
+    Rcpp::traits::input_parameter< ExpressionVector >::type Integrand2expr(Integrand2exprSEXP);
+    Rcpp::traits::input_parameter< Environment >::type myenvd1(myenvd1SEXP);
+    Rcpp::traits::input_parameter< Environment >::type myenvd2(myenvd2SEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type ExistdN(ExistdNSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type ExistdX(ExistdXSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type gridTime(gridTimeSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type dimCol(dimColSEXP);
+    Rcpp::traits::input_parameter< StringVector >::type NameCol(NameColSEXP);
+    Rcpp::traits::input_parameter< StringVector >::type JumpTimeName(JumpTimeNameSEXP);
+    rcpp_result_gen = Rcpp::wrap(evalKernelCpp(Integrand2, Integrand2expr, myenvd1, myenvd2, ExistdN, ExistdX, gridTime, dimCol, NameCol, JumpTimeName));
+    return rcpp_result_gen;
+END_RCPP
+}
 // W1
 double W1(NumericMatrix crossdx, NumericMatrix b, NumericMatrix A, double h);
 RcppExport SEXP yuima_W1(SEXP crossdxSEXP, SEXP bSEXP, SEXP ASEXP, SEXP hSEXP) {
