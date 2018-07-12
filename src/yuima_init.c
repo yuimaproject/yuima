@@ -70,7 +70,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"yuima_likndim",                    (DL_FUNC) &yuima_likndim,                     4},
   {"yuima_makeprop",                   (DL_FUNC) &yuima_makeprop,                    4},
   {"yuima_Smake",                      (DL_FUNC) &yuima_Smake,                       2},
-  {"yuima_solvecpp",                   (DL_FUNC) &_yuima_solvecpp,                    1},
+  {"yuima_solvecpp",                   (DL_FUNC) &yuima_solvecpp,                    1},
   {"yuima_sqnorm",                     (DL_FUNC) &yuima_sqnorm,                      1},
   {"yuima_sub_f",                      (DL_FUNC) &yuima_sub_f,                       2},
   {"yuima_W1",                         (DL_FUNC) &yuima_W1,                          4},
