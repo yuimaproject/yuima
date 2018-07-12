@@ -82,21 +82,22 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   dimIntegr <- length(yuimaPPR@Kernel@Integrand@IntegrandList)
   Integrand2 <- character(length=dimIntegr)
   for(i in c(1:dimIntegr)){
-    Integrand1 <- as.character(yuimaPPR@Kernel@Integrand@IntegrandList[[i]])
-    timeCond <- paste0(" * (",yuimaPPR@Kernel@variable.Integral@var.time," < ",yuimaPPR@Kernel@variable.Integral@upper.var,")")
-    Integrand2[i] <-paste0(Integrand1,timeCond)
+    #Integrand1 <- as.character(yuimaPPR@Kernel@Integrand@IntegrandList[[i]])
+    #timeCond <- paste0(" * (",yuimaPPR@Kernel@variable.Integral@var.time," < ",yuimaPPR@Kernel@variable.Integral@upper.var,")")
+    #Integrand2[i] <-paste0(Integrand1,timeCond)
+    Integrand2[i] <- as.character(yuimaPPR@Kernel@Integrand@IntegrandList[[i]])
   }
 
   Integrand2<- matrix(Integrand2,yuimaPPR@Kernel@Integrand@dimIntegrand[1],yuimaPPR@Kernel@Integrand@dimIntegrand[2])
 
 
-  for(j in c(1:yuimaPPR@Kernel@Integrand@dimIntegrand[2])){
-    Integrand2[,j]<-paste0(Integrand2[,j]," * d",yuimaPPR@Kernel@variable.Integral@var.dx[j])
-  }
+  # for(j in c(1:yuimaPPR@Kernel@Integrand@dimIntegrand[2])){
+  #   Integrand2[,j]<-paste0(Integrand2[,j]," * d",yuimaPPR@Kernel@variable.Integral@var.dx[j])
+  # }
   colnames(Integrand2) <- paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx)
   NamesIntegrandExpr <- as.character(matrix(colnames(Integrand2), dim(Integrand2)[1],dim(Integrand2)[2], byrow = TRUE))
   # Integrand2expr<- parse(text=Integrand2)
-  
+
   if(yuimaPPR@Kernel@Integrand@dimIntegrand[1]==1){
     Integrand2expr<- parse(text=Integrand2)
   }else{
@@ -151,9 +152,15 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
         dummyData2 <- diff(unique(cumsum(dummyData)))
         #dummyData3 <- zoo(dummyData2,order.by = dummyJumpTime)
         dummyData3 <- rep(1,length(dummyData2))
-        JumpTime <- dummyJumpTime
-        assign(paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), dummyData3 ,envir=my.envd1)
-        assign(paste0("JumpTime.d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), dummyJumpTime ,envir=my.envd1)
+        #JumpTime <- dummyJumpTime
+        Jump <- lapply(X=as.numeric(gridTime), FUN = function(X,JumpT,Jump){Jump[JumpT<X]},
+                       JumpT = dummyJumpTime, Jump = as.numeric(dummyData3!=0))
+        assign(paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), 
+               Jump ,
+               envir=my.envd1)
+        dummyJumpTimeNew <- lapply(X=as.numeric(gridTime), FUN = function(X,JumpT){JumpT[JumpT<X]},
+                                   JumpT = dummyJumpTime)
+        assign(paste0("JumpTime.d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), dummyJumpTimeNew ,envir=my.envd1)
       }
     }
     assign("namedX",namedX, envir = my.envd1)
@@ -162,21 +169,45 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
     assign("t.time",yuimaPPR@Kernel@variable.Integral@upper.var,envir=my.envd1)
     
     #CountingVariable
+    PosListCountingVariable <- NULL
     for(i in c(1:length(yuimaPPR@PPR@counting.var))){
+      # cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]
+      # dummyData <-unique(yuimaPPR@data@original.data[,cond])[-1]
+      # assign(yuimaPPR@PPR@counting.var[i], rep(1,length(dummyData)),envir=my.envd1)
       cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@counting.var[i]
-      dummyData <-unique(yuimaPPR@data@original.data[,cond])[-1]
-      assign(yuimaPPR@PPR@counting.var[i], rep(1,length(dummyData)),envir=my.envd1)
+      #JUMPTIME <- tail(my.envd1$JumpTime.dN,1L)[[1]]
+      JUMPTIME <- tail(my.envd1[[paste0("JumpTime.d",yuimaPPR@Kernel@variable.Integral@var.dx[i])]],1L)[[1]]
+      condTime <- gridTime %in% JUMPTIME 
+      
+      dummyData <- yuimaPPR@data@original.data[condTime,cond]
+      dummyDataA <- lapply(X=as.numeric(gridTime), FUN = function(X,JumpT,Jump){Jump[JumpT<X]},
+                           JumpT = JUMPTIME, Jump = dummyData)
+      dummyList <- paste0("List_",yuimaPPR@PPR@counting.var[i])
+      PosListCountingVariable <- c(PosListCountingVariable,dummyList)
+      assign(dummyList, dummyDataA, envir=my.envd1)
+      assign(yuimaPPR@PPR@counting.var[i], numeric(length=0L), envir=my.envd1)
     }
-    
+    assign("PosListCountingVariable", PosListCountingVariable, envir=my.envd1)
     
     # Covariates
     if(length(yuimaPPR@PPR@covariates)>0){
       # Covariates should be identified at jump time
+      PosListCovariates <- NULL
       for(i in c(1:length(yuimaPPR@PPR@covariates))){
-        cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@covariates[i]
-        condTime <- gridTime %in% my.envd1$JumpTime.dN
-        assign(yuimaPPR@PPR@covariates[i],yuimaPPR@data@original.data[condTime,cond],envir = my.envd1)
+        # cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@covariates[i]
+        # condTime <- gridTime %in% my.envd1$JumpTime.dN
+        # assign(yuimaPPR@PPR@covariates[i],yuimaPPR@data@original.data[condTime,cond],envir = my.envd1)
+        cond <- yuimaPPR@model@solve.variable %in% yuimaPPR@PPR@covariates[i]  
+        #dummyData <-yuimaPPR@data@original.data[,cond]
+        dummyData <- yuimaPPR@data@original.data[condTime, cond]
+        dummyDataB <- lapply(X=as.numeric(gridTime), FUN = function(X,JumpT,Jump){Jump[JumpT<X]},
+                             JumpT = JUMPTIME, Jump = dummyData)
+        dummyListCov <- paste0("List_",yuimaPPR@PPR@covariates[i])
+        PosListCovariates <- c(PosListCovariates,dummyListCov)
+        assign(dummyListCov, dummyDataB,envir=my.envd1)
+        assign(yuimaPPR@PPR@covariates[i], numeric(length=0L),envir=my.envd1)
       }
+      assign("PosListCovariates", PosListCovariates,envir=my.envd1)
     }
 
   }
@@ -260,7 +291,13 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   assign("Integrand2",Integrand2,envir=my.envd3)
   assign("Integrand2expr",Integrand2expr,envir=my.envd3)
 
-  assign("gridTime",as.numeric(gridTime),envir=my.envd3)
+#  assign("gridTime",as.numeric(gridTime),envir=my.envd3)
+  l1 =as.list(as.numeric(gridTime))
+  l2 = as.list(c(1:length(l1)))
+  l3 = mapply(c, l1, l2, SIMPLIFY=FALSE)
+  
+  assign("gridTime",l3,envir=my.envd3)
+  
   assign("Univariate",Univariate,envir=my.envd3)
   assign("ExistdN",ExistdN,envir=my.envd3)
   assign("ExistdX",ExistdX,envir=my.envd3)
