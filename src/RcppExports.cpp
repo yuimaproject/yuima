@@ -28,7 +28,7 @@ END_RCPP
 }
 // evalKernelCpp2
 NumericVector evalKernelCpp2(StringMatrix Integrand2, ExpressionVector Integrand2expr, Environment myenvd1, Environment myenvd2, LogicalVector CondIntensity, StringVector NameCountingVar, StringVector Namecovariates, LogicalVector ExistdN, LogicalVector ExistdX, List gridTime, IntegerVector dimCol, StringVector NameCol, StringVector JumpTimeName);
-RcppExport SEXP _yuima_evalKernelCpp2(SEXP Integrand2SEXP, SEXP Integrand2exprSEXP, SEXP myenvd1SEXP, SEXP myenvd2SEXP, SEXP CondIntensitySEXP, SEXP NameCountingVarSEXP, SEXP NamecovariatesSEXP, SEXP ExistdNSEXP, SEXP ExistdXSEXP, SEXP gridTimeSEXP, SEXP dimColSEXP, SEXP NameColSEXP, SEXP JumpTimeNameSEXP) {
+RcppExport SEXP yuima_evalKernelCpp2(SEXP Integrand2SEXP, SEXP Integrand2exprSEXP, SEXP myenvd1SEXP, SEXP myenvd2SEXP, SEXP CondIntensitySEXP, SEXP NameCountingVarSEXP, SEXP NamecovariatesSEXP, SEXP ExistdNSEXP, SEXP ExistdXSEXP, SEXP gridTimeSEXP, SEXP dimColSEXP, SEXP NameColSEXP, SEXP JumpTimeNameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -89,7 +89,7 @@ END_RCPP
 }
 // makeprop
 NumericVector makeprop(NumericVector mu, NumericVector sample, NumericVector low, NumericVector up);
-RcppExport SEXP _yuima_makeprop(SEXP muSEXP, SEXP sampleSEXP, SEXP lowSEXP, SEXP upSEXP) {
+RcppExport SEXP yuima_makeprop(SEXP muSEXP, SEXP sampleSEXP, SEXP lowSEXP, SEXP upSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -128,7 +128,7 @@ END_RCPP
 }
 // detcpp
 double detcpp(NumericMatrix A);
-RcppExport SEXP _yuima_detcpp(SEXP ASEXP) {
+RcppExport SEXP yuima_detcpp(SEXP ASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
