@@ -5,6 +5,10 @@ evalKernelCpp <- function(Integrand2, Integrand2expr, myenvd1, myenvd2, ExistdN,
     .Call('yuima_evalKernelCpp', PACKAGE = 'yuima', Integrand2, Integrand2expr, myenvd1, myenvd2, ExistdN, ExistdX, gridTime, dimCol, NameCol, JumpTimeName)
 }
 
+evalKernelCpp2 <- function(Integrand2, Integrand2expr, myenvd1, myenvd2, CondIntensity, NameCountingVar, Namecovariates, ExistdN, ExistdX, gridTime, dimCol, NameCol, JumpTimeName) {
+    .Call('yuima_evalKernelCpp2', PACKAGE = 'yuima', Integrand2, Integrand2expr, myenvd1, myenvd2, CondIntensity, NameCountingVar, Namecovariates, ExistdN, ExistdX, gridTime, dimCol, NameCol, JumpTimeName)
+}
+
 W1 <- function(crossdx, b, A, h) {
     .Call('yuima_W1', PACKAGE = 'yuima', crossdx, b, A, h)
 }
