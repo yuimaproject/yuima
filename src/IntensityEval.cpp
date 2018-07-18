@@ -102,7 +102,7 @@ NumericVector evalKernelCpp2(StringMatrix Integrand2,
                              LogicalVector ExistdN, LogicalVector ExistdX,
                              List gridTime, IntegerVector dimCol,
                              StringVector NameCol, StringVector JumpTimeName){
-  int FinT = gridTime.size()-1;
+  int FinT = gridTime.size();
   int lengtcov= Namecovariates.size();
   NumericVector GlobalKernel(FinT);
   for(int t=0;t<FinT;t++){
