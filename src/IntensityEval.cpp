@@ -146,7 +146,7 @@ NumericVector evalKernelCpp2(StringMatrix Integrand2,
             List dNAll = myenvd1.get(dumdN);
             NumericVector dN = dNAll[t];
             if(dN.size()==0){
-              NumericVector dN[0] = {0};
+              dN[0] = 0;
             }
             Language eval_call( "eval", Integrand2expr[i], myenvd1);
             SEXP X = Rf_eval( eval_call, myenvd1);
