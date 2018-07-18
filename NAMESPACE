@@ -250,6 +250,6 @@ S3method(cbind, yuima)
 
 S3method(plot, yuima.llag) # Oct. 10, 2015
 S3method(plot, yuima.mllag) # Oct. 10, 2015
-useDynLib(yuima,.registration = TRUE)
+useDynLib(yuima)
 
 
