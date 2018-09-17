@@ -203,7 +203,7 @@ aux.simulatPPR<- function(object, nsim = nsim, seed = seed,
   return(object)
 }
 
-eulerPPR<-function(xinit,yuima,Initial,Terminal, dW, env){
+eulerPPR<-function(xinit,yuima,Initial,Terminal, dW, n, env){
   
   sdeModel<-yuima@model
   
@@ -216,7 +216,7 @@ eulerPPR<-function(xinit,yuima,Initial,Terminal, dW, env){
   # Terminal <- yuima@sampling@Terminal[1]
   # Initial <- yuima@sampling@Initial[1]
   
-  n <- yuima@sampling@n[1]
+  #n <- ceiling((Terminal-Initial)/yuima@sampling@delta)
   dL <- env$dL
   
   if(length(unique(as.character(xinit)))==1 &&
@@ -295,7 +295,7 @@ eulerPPR<-function(xinit,yuima,Initial,Terminal, dW, env){
       return(tmp)
     }
     
-    X_mat <- matrix(0, d.size, n+1)
+    X_mat <- matrix(0, d.size, (n+1))
     X_mat[,1] <- dX
     
     if(has.drift){  
@@ -327,6 +327,9 @@ eulerPPR<-function(xinit,yuima,Initial,Terminal, dW, env){
     if(is.null(dim(dZ)))
       dZ <- matrix(dZ,nrow=1)
     for(i in 1:n){
+      # if(i==720 & n==720){
+      #   aa<-NULL
+      # }
       assign(sdeModel@jump.variable, dZ[,i], env)
       
       if(sdeModel@J.flag){
@@ -437,9 +440,15 @@ aux.simulatPPRWithCount<-function(object, nsim = nsim, seed = seed,
     assign("dL",Noise.Laux,myenv)
     
     
+    condMatrdW <- is.matrix(dW)
+    if(condMatrdW){
+      dimdW <- dim(dW)[2]
+    }else{
+      dimdW <- length(dW)
+    }
     
     CovariateSim<- eulerPPR(xinit=xinit,yuima=object,dW=dW, 
-             Initial=samp@Initial,Terminal=samp@Terminal,
+             Initial=samp@Initial,Terminal=samp@Terminal,n=samp@n,
              env=myenv)
     rownames(CovariateSim)<- Model@solve.variable
     assign("info.PPR", object@PPR, myenv)
@@ -452,6 +461,10 @@ aux.simulatPPRWithCount<-function(object, nsim = nsim, seed = seed,
                envir = myenv)
       }
     }
+    
+    dimNoise<-dim(Noise.Laux)
+    dimCovariateSim <- dim(CovariateSim)
+    
     
     ExprHaz <- constHazIntPr(g.Fun = object@gFun@formula,
        Kern.Fun = object@Kernel, covariates = object@PPR@covariates,
@@ -519,8 +532,7 @@ aux.simulatPPRWithCount<-function(object, nsim = nsim, seed = seed,
         while(cond[j]>0 && noExit[j]){
           lambda<-compErrHazR4(samp, Kern, capitalTime=samp@grid[[1]][inter_i[j]], 
                                Model, myenv, ExprHaz, Time=jumpT, dN, Index, j)
-          # lambda<-hawkesInt(mu=mu, alpha=alpha, beta=beta,
-          #                   timet=grid[i], JumpT=jumpT)
+    
           incrlambda <- lambda*delta
           HazardRate <- HazardRate+incrlambda
           cond[j] <- const[j]-HazardRate
@@ -533,22 +545,11 @@ aux.simulatPPRWithCount<-function(object, nsim = nsim, seed = seed,
             
             if (dimCov>0){
               for(j in c(1:dimCov)){
-                # my.covdata <- simMod@data@original.data[1:i,object@PPR@covariates[j]]
-                # names(my.covdata) <-simMod@sampling@grid[[1]][1:i]
-                # 
-                # assign(object@PPR@covariates[j],
-                #        my.covdata,
-                #        envir = my.env)
-                
                 assign(object@PPR@covariates[j],
                        as.numeric(CovariateSim[object@PPR@covariates[j],1:inter_i[j]]),
                        envir = myenv)
               }
             }  
-            
-            
-            # Line 354 necessary for the development of the code.
-            # cat("\n ", i, grid[i])
           }
         }
       }
@@ -570,12 +571,29 @@ aux.simulatPPRWithCount<-function(object, nsim = nsim, seed = seed,
             dN <- cbind(dN,dumdN)
           }
           cat("\n ", i, grid[i])
-          assign("dL",Noise.Laux,myenv)
           
-          CovariateSim<- eulerPPR(xinit=xinit,yuima=object,dW=dW,
-                                  Initial=samp@Initial,Terminal=samp@Terminal,
-                                  env=myenv)
-           
+          # assign("dL",Noise.Laux,myenv)
+          # 
+          # CovariateSim<- eulerPPR(xinit=xinit,yuima=object,dW=dW,
+          #                         Initial=samp@Initial,Terminal=samp@Terminal,
+          #                         env=myenv)
+          
+          assign("dL",Noise.Laux[,c((i-1):dimNoise[2])],myenv)
+          xinit <- CovariateSim[,i-1]
+
+
+          if(condMatrdW){
+            CovariateSim[,(i-1):dimCovariateSim[2]] <- eulerPPR(xinit=xinit,
+              yuima=object,dW=dW[,(i-1):dimdW],
+              Initial=samp@grid[[1]][i-1],Terminal=samp@Terminal,n=(samp@n-(i-1)+1),
+              env=myenv)
+          }else{
+            CovariateSim[,(i-1):dimCovariateSim[2]] <- eulerPPR(xinit=xinit,
+              yuima=object, dW=dW[(i-1):dimdW],
+             Initial=samp@grid[[1]][i-1],Terminal=samp@Terminal,n=(samp@n-(i-1)+1),
+             env=myenv)
+          }
+          
           rownames(CovariateSim)<- Model@solve.variable
           
           
