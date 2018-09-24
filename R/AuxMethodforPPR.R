@@ -151,10 +151,13 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
         dummyJumpTime <- gridTime[-1][dummyData!=0]
         dummyData2 <- diff(unique(cumsum(dummyData)))
         #dummyData3 <- zoo(dummyData2,order.by = dummyJumpTime)
-        dummyData3 <- rep(1,length(dummyData2))
+        # dummyData3 <- rep(1,length(dummyData2))
         #JumpTime <- dummyJumpTime
+        
+        # Jump <- lapply(X=as.numeric(gridTime), FUN = function(X,JumpT,Jump){Jump[JumpT<X]},
+        #                JumpT = dummyJumpTime, Jump = as.numeric(dummyData3!=0))
         Jump <- lapply(X=as.numeric(gridTime), FUN = function(X,JumpT,Jump){Jump[JumpT<X]},
-                       JumpT = dummyJumpTime, Jump = as.numeric(dummyData3!=0))
+          JumpT = dummyJumpTime, Jump = dummyData2)
         assign(paste0("d",yuimaPPR@Kernel@variable.Integral@var.dx[i]), 
                Jump ,
                envir=my.envd1)
