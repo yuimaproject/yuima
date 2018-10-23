@@ -5,10 +5,13 @@ is.PPR <- function(yuimaPPR){is(yuimaPPR,"yuima.PPR")}
 Internal.LogLikPPR <- function(param,my.envd1=NULL,
                                my.envd2=NULL,my.envd3=NULL){
   param<-unlist(param)
-
-  IntLambda<-InternalConstractionIntensity2(param,my.envd1,
+  if(my.envd3$CondIntensityInKern){
+    IntLambda<- InternalConstractionIntensityFeedBackIntegrand(param,my.envd1,
+                                                   my.envd2,my.envd3)
+  }else{
+    IntLambda<-InternalConstractionIntensity2(param,my.envd1,
                                            my.envd2,my.envd3)
-
+  }
   # IntLambda<-InternalConstractionIntensity(param,my.envd1,
   #                                          my.envd2,my.envd3)
   Index<-my.envd3$gridTime
@@ -62,7 +65,7 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   
   #+sum((param-oldpar)^2*param^2)/2
   # line 40 necessary for the development of the cod
-  #cat("\n ",logLik, param)
+  cat("\n ",logLik, param)
   
   #assign("oldpar",param,envir = my.envd1)
   
@@ -308,8 +311,10 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   assign("Univariate",Univariate,envir=my.envd3)
   assign("ExistdN",ExistdN,envir=my.envd3)
   assign("ExistdX",ExistdX,envir=my.envd3)
-
-
+  assign("JumpTimeLogical",c(FALSE,as.integer(diff(my.envd3$N))!=0),envir=my.envd3)
+  assign("CondIntensityInKern",
+    my.envd3$YUIMA.PPR@PPR@additional.info %in% all.vars(my.envd3$Integrand2expr),
+    envir=my.envd3)
 
   out<-NULL
 

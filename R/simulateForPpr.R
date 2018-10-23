@@ -52,7 +52,7 @@ setMethod("simulate", "yuima.PPR",
           }
 )
 
-constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var){
+constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var,statevar=NULL){
   numb.Int <- length(g.Fun)
   Int.Intens <- list()
   dum.g <- character(length=numb.Int)
@@ -90,6 +90,33 @@ constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var){
   dum.Ker <- as.character(unlist(Kern.Fun@Integrand@IntegrandList))
   dum.Ker <- gsub("(", "( ", fixed=TRUE,x = dum.Ker)
   dum.Ker <- gsub(")", " )", fixed=TRUE,x = dum.Ker)
+  
+  dimKernel<-length(dum.Ker)
+  condIntInKer <- FALSE
+  for(i in c(1:dimKernel)){
+    if(!condIntInKer)
+      condIntInKer <- statevar%in%all.vars(parse(text=dum.Ker[i]))
+  }
+  if(condIntInKer){
+    for(i in c(1:length(statevar))){
+      my.countOld <- paste0(statevar[i] ," ")
+      my.countNew <- paste0( statevar[i] ,
+                             "ForKernel[CondJumpGrid]")
+      dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+      my.countOld <- paste0(statevar[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
+      # my.countNew <- paste0( counting.var[i] ,
+      #                       "[ as.character( ",Kern.Fun@variable.Integral@upper.var ," ) ]")
+      my.countNew <- paste0( "tail(",statevar[i] ,"ForKernel ,n=1L) ")
+      dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+      
+      my.countOld <- paste0(statevar[i] ,"[",Kern.Fun@variable.Integral@var.time,"]")
+      my.countNew <- paste0(statevar[i] ,
+                            "ForKernel[CondJumpGrid]")
+      dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
+      
+    }
+  }
+  
     
   if(length(counting.var)>0){  
     for(i in c(1:length(counting.var))){
@@ -814,7 +841,7 @@ aux.simulatPPRWithIntesFeedBack<-function(object, nsim = nsim, seed = seed,
   Kern <- object@Kernel
   object@sampling <- samp
   randomGenerator<-object@model@measure$df
-  
+  nameIntensityProc <- object@PPR@additional.info
   if(missing(increment.W) | is.null(increment.W)){
     
     if( Model@hurst!=0.5 ){
@@ -950,15 +977,19 @@ aux.simulatPPRWithIntesFeedBack<-function(object, nsim = nsim, seed = seed,
     }
   }
   CovariateSim <-matrix(0,Model@equation.number,(samp@n+1))
-  
+  #IntensityProcInter <- matrix(0,length(nameIntensityProc),(samp@n+1))
   ExprHaz <- constHazIntPr(g.Fun = object@gFun@formula,
                            Kern.Fun = object@Kernel, covariates = object@PPR@covariates,
-                           counting.var = object@PPR@counting.var)$Intens
-  
+                           counting.var = object@PPR@counting.var, statevar=nameIntensityProc)$Intens
+  IntensityProcInter <- as.matrix(tryCatch(eval(object@gFun@formula,envir=myenv),error =function(){1}))
   dN <- matrix(0,object@gFun@dimension[1],object@gFun@dimension[2])
+  rownames(CovariateSim)<- Model@solve.variable
+  assign(object@PPR@counting.var,CovariateSim[object@PPR@counting.var,1],envir=myenv)
   grid <- samp@grid[[1]]
   const <- -log(runif(gFun@dimension[1]))
   condMyTR <- const<delta
+  AllnameIntensityProc <- paste0(nameIntensityProc,"ForKernel")
+  assign(AllnameIntensityProc,IntensityProcInter,envir=myenv)
   while(any(condMyTR)){
     if(sum(condMyTR)==0){
       const <- -log(runif(length(condMyTR)))
@@ -984,7 +1015,14 @@ aux.simulatPPRWithIntesFeedBack<-function(object, nsim = nsim, seed = seed,
         lambda<-compErrHazR4(samp, Kern, capitalTime=samp@grid[[1]][inter_i[j]], 
                              Model, myenv, ExprHaz, Time=jumpT, dN, Index, j)
         if(is.matrix(posLambda)){}else{
-           assign(object@model@state.variable[posLambda],lambda, envir = myenv)
+          #assign(object@model@state.variable[posLambda],lambda, envir = myenv)
+          assign(nameIntensityProc,lambda[j], envir = myenv)
+          # myenv[[AllnameIntensityProc]][j,]<-cbind(myenv[[AllnameIntensityProc]][j,],
+          #                                                   lambda[j])
+          assign(AllnameIntensityProc,
+                 cbind(t(myenv[[AllnameIntensityProc]][j,]),
+                       lambda[j]),
+                 envir=myenv)
         }
         
         
@@ -1010,18 +1048,20 @@ aux.simulatPPRWithIntesFeedBack<-function(object, nsim = nsim, seed = seed,
                                                       Terminal=samp@grid[[1]][inter_i[j]],n=1,
                                                       env=myenv)[,-1]
         }
-        
+        # if(inter_i[j]==66){
+        #   aaaaa<-1
+        # }
         
         if(inter_i[j]>=(dimGrid)){
           noExit[j] <- FALSE
         }
         if(inter_i[j]<=dimGrid){  
+          assign(object@PPR@counting.var,CovariateSim[object@PPR@counting.var[j],1:inter_i[j]],envir=myenv)
           dimCov <- length(object@PPR@covariates)
-          
           if (dimCov>0){
-            for(j in c(1:dimCov)){
-              assign(object@PPR@covariates[j],
-                     as.numeric(CovariateSim[object@PPR@covariates[j],1:inter_i[j]]),
+            for(jj in c(1:dimCov)){
+              assign(object@PPR@covariates[jj],
+                     as.numeric(CovariateSim[object@PPR@covariates[jj],1:inter_i[j]]),
                      envir = myenv)
             }
           }  
@@ -1045,7 +1085,7 @@ aux.simulatPPRWithIntesFeedBack<-function(object, nsim = nsim, seed = seed,
           Noise.Laux[object@PPR@counting.var,i-1] <- dumdN[i==inter_i] 
           dN <- cbind(dN,dumdN)
         }
-        cat("\n ", i, grid[i])
+        # cat("\n ", i, grid[i])
         
         # assign("dL",Noise.Laux,myenv)
         # 
@@ -1825,7 +1865,7 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
           }
         
           jumpT<-c(jumpT,next_jump)
-          cat("\n ", c(next_jump, checkFunDum,count))
+         # cat("\n ", c(next_jump, checkFunDum,count))
           
           u_bar <- tail(jumpT,1L)
           posInitial<- sum(grid<=next_jump)

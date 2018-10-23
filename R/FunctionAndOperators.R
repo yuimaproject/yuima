@@ -270,6 +270,13 @@ aux.setIntegral <- function(yuima, integrand, var.dx,
   }
 
   paramIntegrand <- paramIntegrand[!Cond]
+  # state variable
+  Cond <- (paramIntegrand %in% mod@state.variable)
+  if(sum(Cond)==0){
+    yuima.warn("Integrand fuction does not depend on state.variable")
+  }
+  
+  paramIntegrand <- paramIntegrand[!Cond]
   # time variable
   Cond <- (paramIntegrand %in% mod@time.variable)
   paramIntegrand <- paramIntegrand[!Cond]
