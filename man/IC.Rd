@@ -10,7 +10,7 @@ Calculate the information criteria BIC, Quasi-BIC (QBIC) and CIC for the stochas
 }
 
 \usage{
-IC(yuima, data, start, lower, upper, joint = FALSE, rcpp = FALSE, ...)
+IC(yuima, data = NULL, start, lower, upper, joint = FALSE, rcpp = FALSE, ...)
 }
 
 \arguments{
@@ -80,7 +80,7 @@ Uchida, M. (2010). Contrast-based information criterion for ergodic diffusion pr
 \author{
 The YUIMA Project Team
 
-Contacts: Shoichi Eguchi \email{s-eguchi@math.kyushu-u.ac.jp}
+Contacts: Shoichi Eguchi \email{eguchi@sigmath.es.osaka-u.ac.jp}
 }
 
 \note{
