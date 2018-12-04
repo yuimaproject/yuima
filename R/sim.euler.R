@@ -166,7 +166,8 @@ euler<-function(xinit,yuima,dW,env){
     
     X_mat <- .Call("euler", dX, Initial, as.integer(r.size), 
                    rep(1, n) * delta, dW, modeltime, modelstate, quote(eval(b, env)), 
-                   quote(eval(vecV, env)), env, new.env())
+                   quote(eval(vecV, env)), env, new.env(),
+                   PACKAGE = "yuima") # PACKAGE is added (YK, Dec 4, 2018)
     #}
     #tsX <- ts(data=t(X_mat), deltat=delta , start=0)
     tsX <- ts(data=t(X_mat), deltat=delta , start = yuima@sampling@Initial) #LM

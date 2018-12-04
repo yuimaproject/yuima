@@ -80,7 +80,8 @@ hyavar <- function(yuima, bw, nonneg = TRUE, psd = TRUE){
                    as.double(ser.X[[j]]),
                    as.integer(N.max),
                    as.double(bw[i, j]),
-                   avar = double(4))$avar
+                   avar = double(4),
+                   PACKAGE = "yuima")$avar
         ## avar[1] = var(HYij), avar[2] = cov(HYii, HYij), avar[3] = cov(HYij, HYjj), avar[4] = cov(HYii, HYjj)
         
         avar.cov[i, j] <- avar[1]

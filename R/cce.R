@@ -104,7 +104,9 @@ refresh_sampling <- function(data){
                      as.integer(diffinv(ser.lengths[-d.size],xi=0)),
                      min(sapply(ser.times,FUN="tail",n=1)),
                      as.integer(MinL),
-                     result=integer(d.size*MinL))$result,ncol=d.size)
+                     result=integer(d.size*MinL),
+                     PACKAGE = "yuima")$result, # PACKAGE is added (YK, Dec 4, 2018)
+                  ncol=d.size)
     
     result <- vector(d.size, mode="list")
     
@@ -197,7 +199,8 @@ refresh_sampling.PHY <- function(data){
               min(sapply(ser.times,FUN="tail",n=1)),
               as.integer(MinL),
               Samplings=integer(d.size*(MinL+1)),
-              rNum=integer(1))
+              rNum=integer(1),
+              PACKAGE = "yuima") # PACKAGE is added (YK, Dec 4, 2018)
     
     refresh.times <- obj$rtimes[1:obj$rNum]
     idx <- matrix(obj$Samplings,ncol=d.size)
@@ -354,7 +357,8 @@ Bibsynchro <- function(x,y){
               w=integer(N.max),
               q=integer(N.max),
               r=integer(N.max),
-              Num=integer(1))
+              Num=integer(1),
+              PACKAGE = "yuima")
   
   Num <- sdata$Num
   
@@ -424,7 +428,8 @@ RV.sparse <- function(zdata,frequency=1200,utime){
                     as.integer(n.sparse),
                     as.integer(n.size),
                     as.double(grid),
-                    result=double(frequency*n.sparse))$result,
+                    result=double(frequency*n.sparse),
+                    PACKAGE = "yuima")$result,
                  n.sparse,frequency)
   
   result <- double(frequency)
@@ -678,7 +683,8 @@ HY <- function(data) {
         cmat[j,i] <- .C("HayashiYoshida",as.integer(length(ser.times[[i]])),
                         as.integer(length(ser.times[[j]])),as.double(ser.times[[i]]),
                         as.double(ser.times[[j]]),as.double(ser.diffX[[i]]),
-                        as.double(ser.diffX[[j]]),value=double(1))$value
+                        as.double(ser.diffX[[j]]),value=double(1),
+                        PACKAGE = "yuima")$value
       }else{
         cmat[i,j] <- sum(ser.diffX[[i]]^2)
       }
@@ -818,7 +824,8 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
                               as.double(ser.times[[2]]),
                               as.double(ser.barX[[1]]),
                               as.double(ser.barX[[2]]),
-                              value=double(1))$value
+                              value=double(1),
+                              PACKAGE = "yuima")$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -897,7 +904,8 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
                               as.double(ser.times[[2]]),
                               as.double(ser.barX[[1]]),
                               as.double(ser.barX[[2]]),
-                              value=double(1))$value
+                              value=double(1),
+                              PACKAGE = "yuima")$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -984,7 +992,8 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
                             as.double(ser.times[[j]]),
                             as.double(ser.barX[[i]]),
                             as.double(ser.barX[[j]]),
-                            value=double(1))$value
+                            value=double(1),
+                            PACKAGE = "yuima")$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
@@ -1060,7 +1069,8 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
                             as.double(ser.times[[2]]),
                             as.double(ser.barX[[1]]),
                             as.double(ser.barX[[2]]),
-                            value=double(1))$value
+                            value=double(1),
+                            PACKAGE = "yuima")$value
             
             cmat[i,j] <- cmat[i,j]/(psi.kn^2)
             cmat[j,i] <- cmat[i,j]
@@ -1148,7 +1158,8 @@ PHY <- function(data,theta,kn,g,refreshing=TRUE,cwise=TRUE){
                             as.double(ser.times[[j]]),
                             as.double(ser.barX[[i]]),
                             as.double(ser.barX[[j]]),
-                            value=double(1))$value
+                            value=double(1),
+                            PACKAGE = "yuima")$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
@@ -1240,7 +1251,8 @@ GME <- function(data,c.multi,utime){
                   as.double(sdata$xl),
                   as.double(sdata$ygamma),
                   as.double(sdata$ylambda),
-                  result=double(M))$result
+                  result=double(M),
+                  PACKAGE = "yuima")$result
         
         cmat[i,j] <- (alpha/(1:M))%*%tmp
         
@@ -1269,7 +1281,8 @@ GME <- function(data,c.multi,utime){
                   as.double(X[1:N]),
                   as.double(X[-1]),
                   as.double(X[1:N]),
-                  result=double(M))$result
+                  result=double(M),
+                  PACKAGE = "yuima")$result
         
         cmat[i,j] <- (alpha/(1:M))%*%tmp
         
@@ -1663,7 +1676,8 @@ THY <- function(data,threshold) {
         cmat[j,i] <- .C("HayashiYoshida",as.integer(length(ser.times[[i]])),
                         as.integer(length(ser.times[[j]])),as.double(ser.times[[i]]),
                         as.double(ser.times[[j]]),as.double(ser.diffX[[i]]),
-                        as.double(ser.diffX[[j]]),value=double(1))$value
+                        as.double(ser.diffX[[j]]),value=double(1),
+                        PACKAGE = "yuima")$value
       }else{
         cmat[i,j] <- sum(ser.diffX[[i]]^2)
       }
@@ -1787,7 +1801,8 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
                               as.double(ser.times[[2]]),
                               as.double(ser.barX[[1]]),
                               as.double(ser.barX[[2]]),
-                              value=double(1))$value
+                              value=double(1),
+                              PACKAGE = "yuima")$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -1929,7 +1944,8 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
                               as.double(ser.times[[2]]),
                               as.double(ser.barX[[1]]),
                               as.double(ser.barX[[2]]),
-                              value=double(1))$value
+                              value=double(1),
+                              PACKAGE = "yuima")$value
               
               cmat[i,j] <- cmat[i,j]/(psi.kn^2)
               cmat[j,i] <- cmat[i,j]
@@ -2115,7 +2131,8 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
                             as.double(ser.times[[j]]),
                             as.double(ser.barX[[i]]),
                             as.double(ser.barX[[j]]),
-                            value=double(1))$value
+                            value=double(1),
+                            PACKAGE = "yuima")$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
@@ -2225,7 +2242,8 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
                             as.double(ser.times[[2]]),
                             as.double(ser.barX[[1]]),
                             as.double(ser.barX[[2]]),
-                            value=double(1))$value
+                            value=double(1),
+                            PACKAGE = "yuima")$value
             
             cmat[i,j] <- cmat[i,j]/(psi.kn^2)
             cmat[j,i] <- cmat[i,j]
@@ -2382,7 +2400,8 @@ PTHY <- function(data,theta,kn,g,threshold,refreshing=TRUE,
                             as.double(ser.times[[j]]),
                             as.double(ser.barX[[i]]),
                             as.double(ser.barX[[j]]),
-                            value=double(1))$value
+                            value=double(1),
+                            PACKAGE = "yuima")$value
             cmat[j,i] <- cmat[i,j]
           }else{
             tmp <- ser.barX[[i]][1:ser.num.barX[i]]
@@ -2442,7 +2461,8 @@ SRC <- function(data,frequency=300,avg=TRUE,utime){
                            as.double(ser.times[[d]]),
                            as.integer(frequency),as.integer(n.sparse),
                            as.integer(ser.numX[d]),as.double(grid),
-                           result=double(frequency*n.sparse))$result,
+                           result=double(frequency*n.sparse),
+                           PACKAGE = "yuima")$result,
                         n.sparse,frequency)
     
     sdiff1[d,,] <- diff(subsample[,1:K])
@@ -2563,7 +2583,8 @@ SBPC <- function(data,frequency=300,avg=TRUE,utime){
                            as.double(ser.times[[d]]),
                            as.integer(frequency),as.integer(n.sparse),
                            as.integer(ser.numX[d]),as.double(grid),
-                           result=double(frequency*n.sparse))$result,
+                           result=double(frequency*n.sparse),
+                           PACKAGE = "yuima")$result,
                         n.sparse,frequency)
     
     sdata1[d,,] <- subsample[,1:K]

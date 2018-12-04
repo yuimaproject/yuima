@@ -167,7 +167,8 @@ llag.avar <- function(x, grid, bw, alpha, fisher, ser.diffX, ser.times, vol, cor
                      as.double(2 * d2),
                      as.double(2 * d1 * d2),
                      covar = double(length(G[[num]])),
-                     corr = double(length(G[[num]])))$corr / (vol[i] * vol[j])
+                     corr = double(length(G[[num]])),
+                     PACKAGE = "yuima")$corr / (vol[i] * vol[j])
       
       #avar[[num]][avar[[num]] <= 0] <- NA
       
@@ -703,7 +704,8 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     as.double(ser.diffX[[j]]),
                     as.double(vol[i]),
                     as.double(vol[j]),
-                    value=double(n-2))$value
+                    value=double(n-2),
+                    PACKAGE = "yuima")$value
           
           idx <- which.max(abs(tmp))
           mlag <- -y[idx] # make the first timing of max or min
@@ -749,7 +751,8 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     as.double(ser.diffX[[j]]),
                     as.double(vol[i]),
                     as.double(vol[j]),
-                    value=double(length(grid[[num]])))$value
+                    value=double(length(grid[[num]])),
+                    PACKAGE = "yuima")$value
           
           idx <- which.max(abs(tmp))
           mlag <- -grid[[num]][idx] # make the first timing of max or min
@@ -853,7 +856,8 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     double(length(time2)),
                     as.double(ser.diffX[[i]]),
                     as.double(ser.diffX[[j]]),
-                    value=double(n-2))$value
+                    value=double(n-2),
+                    PACKAGE = "yuima")$value
           
           idx <- which.max(abs(tmp))
           mlag <- -y[idx] # make the first timing of max or min
@@ -897,7 +901,8 @@ setMethod( "llag", "yuima.data", function(x,from=-Inf,to=Inf,division=FALSE,
                     double(length(time2)),
                     as.double(ser.diffX[[i]]),
                     as.double(ser.diffX[[j]]),
-                    value=double(length(grid[[num]])))$value
+                    value=double(length(grid[[num]])),
+                    PACKAGE = "yuima")$value
           
           idx <- which.max(abs(tmp))
           mlag <- -grid[[num]][idx] # make the first timing of max or min

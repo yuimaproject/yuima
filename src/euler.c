@@ -67,8 +67,11 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         /*defineVar(install("env"), env, rho);*/
         
         /* evaluate coefficients */
-        PROTECT(b0 = eval(drift, rho));
+        /* PROTECT(b0 = eval(drift, rho));
         PROTECT(sigma0 = eval(diffusion, rho));
+        AS_NUMERIC is added by YK (Dec 4, 2018) */
+        PROTECT(b0 = AS_NUMERIC(eval(drift, rho)));
+        PROTECT(sigma0 = AS_NUMERIC(eval(diffusion, rho)));
         b = REAL(b0);
         sigma = REAL(sigma0);
         
