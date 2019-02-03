@@ -65,7 +65,7 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
   
   #+sum((param-oldpar)^2*param^2)/2
   # line 40 necessary for the development of the cod
-  cat("\n ",logLik, param)
+  #cat("\n ",logLik, param)
   
   #assign("oldpar",param,envir = my.envd1)
   

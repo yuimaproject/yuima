@@ -660,7 +660,8 @@ aux.simulatPPRWithCount<-function(object, nsim = nsim, seed = seed,
     
     ExprHaz <- constHazIntPr(g.Fun = object@gFun@formula,
        Kern.Fun = object@Kernel, covariates = object@PPR@covariates,
-       counting.var = object@PPR@counting.var)$Intens
+       counting.var = object@PPR@counting.var,
+       statevar = object@model@state.variable)$Intens
     
     
     # Start Simulation PPR
@@ -1644,7 +1645,8 @@ aux.simulatPPRROldNew<-function(object, nsim = nsim, seed = seed,
 
       ExprHaz <- constHazIntPr(g.Fun = object@gFun@formula,
         Kern.Fun = object@Kernel, covariates = object@PPR@covariates,
-        counting.var = object@PPR@counting.var)$Intens
+        counting.var = object@PPR@counting.var,
+        statevar = object@model@state.variable)$Intens
      # if(FALSE){
      if(length(ExprHaz)>=1){
 
