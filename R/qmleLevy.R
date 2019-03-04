@@ -12,80 +12,82 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE)
     yuima.stop("This function is for yuima-class.")
   
   sdeModel<-yuima@model
-  code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
-  
-  candinoise<-c("rNIG","rvgamma","rnts","rbgamma")
-  
-  if(is.na(match(code,candinoise))){
-    yuima.stop("This function works only for the standardized normal inverse Gaussian process, variance gamma process, bilateral gamma process, and normal tempered stable process now.")
-  }
-  
-  
-  if(length(sdeModel@xinit) == 1){
-    args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
-  if(code == "rNIG"){
-      if(!((abs(eval(parse(text = paste("(",args[5] ,")+(", args[3], ")*(", args[4],
-                                          ")/sqrt((", args[2], ")^2-(", args[3], ")^2)" )))) < 10^(-10))
-           && (abs(eval(parse(text = paste("(",args[2], ")^2*(", args[4], ")/(sqrt((",  args[2],
-                                             ")^2-(", args[3], ")^2))^3"))) -1) < 10^(-10))))
-      {
-        yuima.stop("This function is only for standardized Levy noises.")
-      }
+  if(class(sdeModel@measure$df)!="yuima.law"){
+    code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
+    
+    candinoise<-c("rNIG","rvgamma","rnts","rbgamma")
+    
+    if(is.na(match(code,candinoise))){
+      yuima.stop("This function works only for the standardized normal inverse Gaussian process, variance gamma process, bilateral gamma process, and normal tempered stable process now.")
     }
-    else if(code == "rvgamma"){
-      if(!((abs(eval(parse(text = paste("(", args[5], ")+2*(", args[2], ")*(", args[4], ")/((", args[3], ")^2-("
-                                          , args[4], ")^2)" )))) < 10^(-10))
-           && (abs(eval(parse(text = paste("2*((", args[2], ")*(", args[3], ")^2+(", args[4], ")^2)", "/(("
-                                             , args[3], ")^2-(", args[4], ")^2)^2"))) - 1) < 10^(-10))))
-      {
-        yuima.stop("This function is only for standardized Levy noises")
+    
+    
+    if(length(sdeModel@xinit) == 1){
+      args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE)), ","))
+    if(code == "rNIG"){
+        if(!((abs(eval(parse(text = paste("(",args[5] ,")+(", args[3], ")*(", args[4],
+                                            ")/sqrt((", args[2], ")^2-(", args[3], ")^2)" )))) < 10^(-10))
+             && (abs(eval(parse(text = paste("(",args[2], ")^2*(", args[4], ")/(sqrt((",  args[2],
+                                               ")^2-(", args[3], ")^2))^3"))) -1) < 10^(-10))))
+        {
+          yuima.stop("This function is only for standardized Levy noises.")
+        }
       }
-    }
-  else if((code == "rnts")){
-      if(!((abs(eval(parse(text = paste("(", args[6], ")-(", args[2], ")*(",
-                                          args[3], ")*(", args[4], ")^((", args[2],
-                                          ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))*(", args[5],
-                                          ")"
-      )))) < 10^(-10))
-      &&(abs(eval(parse(text = paste("(", args[3], ")*(", args[2],")*((", args[2], ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))*(", args[4], ")^((",args[2], ")-2)*(", args[5], ")^2-(",
-                                       args[2], ")*(", args[3], ")*(", args[4], ")^((", args[2], ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))"
-      ))) - 1) < 10^(-10))))
+      else if(code == "rvgamma"){
+        if(!((abs(eval(parse(text = paste("(", args[5], ")+2*(", args[2], ")*(", args[4], ")/((", args[3], ")^2-("
+                                            , args[4], ")^2)" )))) < 10^(-10))
+             && (abs(eval(parse(text = paste("2*((", args[2], ")*(", args[3], ")^2+(", args[4], ")^2)", "/(("
+                                               , args[3], ")^2-(", args[4], ")^2)^2"))) - 1) < 10^(-10))))
+        {
+          yuima.stop("This function is only for standardized Levy noises")
+        }
+      }
+    else if((code == "rnts")){
+        if(!((abs(eval(parse(text = paste("(", args[6], ")-(", args[2], ")*(",
+                                            args[3], ")*(", args[4], ")^((", args[2],
+                                            ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))*(", args[5],
+                                            ")"
+        )))) < 10^(-10))
+        &&(abs(eval(parse(text = paste("(", args[3], ")*(", args[2],")*((", args[2], ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))*(", args[4], ")^((",args[2], ")-2)*(", args[5], ")^2-(",
+                                         args[2], ")*(", args[3], ")*(", args[4], ")^((", args[2], ")-1)*gamma(1-(", args[2], "))*(-1/(", args[2],"))"
+        ))) - 1) < 10^(-10))))
+        {
+          yuima.stop("This function is only for standardized Levy processes.")
+      }
+    }else if(code == "rbgamma"){
+      if(!((abs(eval(parse(text = paste("(", args[2], ")/(", args[3],")-(", args[4],")/(", args[5], ")")))) < 10^(-10))
+           && (abs(eval(parse(text = paste("(", args[2], ")/(", args[3], ")^2","+(", args[4],")/(", args[5],")^2"
+           ))) - 1) < 10^(-10) )))
       {
         yuima.stop("This function is only for standardized Levy processes.")
+      }
     }
-  }else if(code == "rbgamma"){
-    if(!((abs(eval(parse(text = paste("(", args[2], ")/(", args[3],")-(", args[4],")/(", args[5], ")")))) < 10^(-10))
-         && (abs(eval(parse(text = paste("(", args[2], ")/(", args[3], ")^2","+(", args[4],")/(", args[5],")^2"
-         ))) - 1) < 10^(-10) )))
-    {
-      yuima.stop("This function is only for standardized Levy processes.")
+    }else{
+      warning("In this version, the standardized conditions on multidimensional noises can not be verified.
+              The expressions of mean and variance are given in help page.")
+      # The noise condition checker below does not work now (YU: 3/23).
+      
+      # args <- suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE))
+      # yuimaEnv <- new.env()
+      # yuimaEnv$mean <- switch(code,
+      #                         rNIG = function(x=1,alpha,beta,delta0,mu,Lambda){mu+as.vector(delta0/(sqrt(alpha^2-t(beta)%*%Lambda%*%beta)))*Lambda%*%beta},
+      #                         rnts = function(x=1,alpha,a,b,beta,mu,Lambda){mu+gamma(1-alpha)*a*b^(alpha-1)*Lambda%*%beta},
+      #                         rvgamma = function(x=1,lambda,alpha,beta,mu,Lambda){mu+as.vector(2*lambda/(alpha^2-t(beta)%*%Lambda%*%beta)^2)*beta}
+      #                         )
+      # 
+      # yuimaEnv$covariance <- switch(code,
+      #                               rNIG = function(x=1,alpha,beta,delta0,mu,Lambda){as.vector(delta0/(sqrt(alpha^2-t(beta)%*%Lambda%*%beta))^3)*Lambda%*%beta%*%t(beta)%*%Lambda+as.vector(delta0/sqrt(alpha^2-t(beta)%*%Lambda%*%beta))*Lambda},
+      #                               rnts = function(x=1,alpha,a,b,beta,mu,Lambda){a*(1-alpha)*gamma(1-alpha)*b^(alpha-2)*Lambda%*%beta%*%t(beta)%*%Lambda+a*gamma(1-alpha)*b^(alpha-1)*Lambda},
+      #                               rvgamma = function(x=1,lambda,alpha,beta,mu,Lambda){as.vector(4*lambda/(alpha^2-t(beta)%*%Lambda%*%beta)^2)*Lambda%*%beta%*%t(beta)%*%Lambda+as.vector(2*lambda/alpha^2-t(beta)%*%Lambda%*%beta)*Lambda}
+      #                               )
+      # judgemean<-sum(eval(parse(text = paste("mean","(",args,")")),yuimaEnv)==numeric(length(sdeModel@xinit)))
+      # judgecovariance<-sum(eval(eval(parse(text = paste("covariance","(",args,")")),yuimaEnv)==diag(1,length(sdeModel@xinit))))
+      # if(!((judgemean==length(sdeModel@xinit))&&(judgecovariance==length(sdeModel@xinit)*length(sdeModel@xinit))))
+      #    {
+      #   yuima.stop("This function is only for standardized Levy processes.")
+      # }
     }
-  }
-  }else{
-    warning("In this version, the standardized conditions on multidimensional noises can not be verified.
-            The expressions of mean and variance are given in help page.")
-    # The noise condition checker below does not work now (YU: 3/23).
-    
-    # args <- suppressWarnings(sub("^.+?\\((.+)\\)", "\\1", sdeModel@measure$df$expr, perl=TRUE))
-    # yuimaEnv <- new.env()
-    # yuimaEnv$mean <- switch(code,
-    #                         rNIG = function(x=1,alpha,beta,delta0,mu,Lambda){mu+as.vector(delta0/(sqrt(alpha^2-t(beta)%*%Lambda%*%beta)))*Lambda%*%beta},
-    #                         rnts = function(x=1,alpha,a,b,beta,mu,Lambda){mu+gamma(1-alpha)*a*b^(alpha-1)*Lambda%*%beta},
-    #                         rvgamma = function(x=1,lambda,alpha,beta,mu,Lambda){mu+as.vector(2*lambda/(alpha^2-t(beta)%*%Lambda%*%beta)^2)*beta}
-    #                         )
-    # 
-    # yuimaEnv$covariance <- switch(code,
-    #                               rNIG = function(x=1,alpha,beta,delta0,mu,Lambda){as.vector(delta0/(sqrt(alpha^2-t(beta)%*%Lambda%*%beta))^3)*Lambda%*%beta%*%t(beta)%*%Lambda+as.vector(delta0/sqrt(alpha^2-t(beta)%*%Lambda%*%beta))*Lambda},
-    #                               rnts = function(x=1,alpha,a,b,beta,mu,Lambda){a*(1-alpha)*gamma(1-alpha)*b^(alpha-2)*Lambda%*%beta%*%t(beta)%*%Lambda+a*gamma(1-alpha)*b^(alpha-1)*Lambda},
-    #                               rvgamma = function(x=1,lambda,alpha,beta,mu,Lambda){as.vector(4*lambda/(alpha^2-t(beta)%*%Lambda%*%beta)^2)*Lambda%*%beta%*%t(beta)%*%Lambda+as.vector(2*lambda/alpha^2-t(beta)%*%Lambda%*%beta)*Lambda}
-    #                               )
-    # judgemean<-sum(eval(parse(text = paste("mean","(",args,")")),yuimaEnv)==numeric(length(sdeModel@xinit)))
-    # judgecovariance<-sum(eval(eval(parse(text = paste("covariance","(",args,")")),yuimaEnv)==diag(1,length(sdeModel@xinit))))
-    # if(!((judgemean==length(sdeModel@xinit))&&(judgecovariance==length(sdeModel@xinit)*length(sdeModel@xinit))))
-    #    {
-    #   yuima.stop("This function is only for standardized Levy processes.")
-    # }
-  }
+  }else{fullcoef<-NULL}
   yuima@sampling@delta <- yuima@sampling@delta[1]
   yuima@model@noise.number <- as.integer(yuima@model@equation.number)
   if(!joint){

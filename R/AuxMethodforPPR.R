@@ -133,8 +133,48 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
 
   my.envd3 <- new.env()
   namesparam<-names(param)
+  resCov<-NULL
   if(!(all(namesparam %in% yuimaPPR@PPR@allparamPPR) && length(namesparam)==length(yuimaPPR@PPR@allparamPPR))){
-    return(NULL)
+    
+    if(length(yuimaPPR@PPR@common)==0){
+      namesCov <-yuimaPPR@PPR@covariates
+      posCov <- length(namesCov)
+      dummydrift <- as.character(yuimaPPR@model@drift[1:posCov])
+      dummydiff0<- NULL
+      for(j in c(1:posCov)){
+        dummydiff0<-c(dummydiff0,
+                      as.character(unlist(yuimaPPR@model@diffusion[[j]])))
+      }
+      
+      dummydiff <- matrix(dummydiff0, nrow = posCov, 
+                          ncol = length(dummydiff0)/posCov)
+      dimJump <- length(yuimaPPR@model@jump.coeff[[1]])-length(yuimaPPR@PPR@counting.var)
+      if(dimJump>0){
+        dummyJump0<- NULL
+        for(j in c(1:posCov)){
+          dummyJump0 <- c(dummyJump0,
+                          as.character(unlist(yuimaPPR@model@jump.coeff[[j]][1:dimJump])))
+        }
+        dummyJump <- matrix(dummyJump0, nrow=posCov,ncol=dimJump)
+        dummyModel <- setModel(drift = dummydrift,
+                               diffusion = dummydiff, jump.coeff =dummyJump,
+                               measure = list(df=yuimaPPR@model@measure$df),
+                               measure.type = yuimaPPR@model@measure.type[posCov],
+                               solve.variable = yuimaPPR@PPR@covariates,
+                               state.variable = yuimaPPR@PPR@covariates,
+                               xinit=yuimaPPR@model@xinit[posCov])
+        dummydata<-setData(original.data = yuimaPPR@data@original.data[,1:posCov],delta = yuimaPPR@sampling@delta)
+        dummyMod1 <-setYuima(model = dummyModel,
+                             data=dummydata)
+        dummyMod1@sampling<-yuimaPPR@sampling
+        
+        resCov <- qmleLevy(yuima = dummyMod1, 
+                           start=param[dummyMod1@model@parameter@all],
+                           lower = lower[dummyMod1@model@parameter@all],upper=upper[dummyMod1@model@parameter@all])
+      }else{
+        return(NULL)
+      }
+    }      
   }
 
   # construction my.envd1
@@ -379,21 +419,29 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
                  fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3),
                  error=function(){NULL})
+   if(!is.null(Hessian)){
+     Hessian <- Hessian[yuimaPPR@PPR@allparamPPR,yuimaPPR@PPR@allparamPPR]
+   }
    
    cond1 <- my.envd3$YUIMA.PPR@model@solve.variable %in% my.envd3$YUIMA.PPR@PPR@counting.var
    cond2 <- diff(as.numeric(my.envd3$YUIMA.PPR@data@original.data[,cond1]))
    N.jump <- sum(cond2,na.rm=TRUE)
    if(is.null(Hessian)){
-      vcov <- matrix(NA,length(out$par),length(out$par))
+      vcov <- matrix(NA,length(out$par[yuimaPPR@PPR@allparamPPR]),
+        length(out$par[yuimaPPR@PPR@allparamPPR]))
    }else{
       vcov <- solve(Hessian)/N.jump
    }
    minuslog <- out$value*N.jump
-   final_res<-new("yuima.PPR.qmle", call = call, coef = out$par, fullcoef = out$par,
+   final_res<-new("yuima.PPR.qmle", call = call, coef = out$par[yuimaPPR@PPR@allparamPPR], 
+                  fullcoef = out$par[yuimaPPR@PPR@allparamPPR],
                   vcov = vcov, min = minuslog, details = out, minuslogl = Internal.LogLikPPR,
                   method = method, nobs=as.integer(N.jump), model=my.envd3$YUIMA.PPR)
-  return(final_res)
-
+  if(!is.null(resCov)){
+   return(list(PPR=final_res,Covariates=resCov))
+  }else{
+   return(final_res)
+  }
 }
 
 
