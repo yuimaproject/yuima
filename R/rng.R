@@ -27,21 +27,25 @@ dbgamma<-function(x,delta.plus,gamma.plus,delta.minus,gamma.minus){
   if(delta.plus<=0||gamma.plus<=0||delta.minus<=0||gamma.minus<=0)
   stop("All of the parameters are positive.")
   
+  leng <- length(x)
+  dens <- numeric(leng)
+  
+  for(i in 1:leng){
+  if(x[i]>=0){
   ## On the positive line
   funcp<-function(x,y){y^{delta.minus-1}*(x+y/(gamma.plus+gamma.minus))^{delta.plus-1}*exp(-y)}
   intp<-function(x){integrate(funcp,lower=0,upper=Inf,x=x)$value}
   intvecp<-function(x)sapply(x,intp)
-  densp<-gamma.plus^delta.plus*gamma.minus^delta.minus/((gamma.plus+gamma.minus)^delta.minus*gamma(delta.plus)*gamma(delta.minus))*exp(-gamma.plus*x)*intvecp(x)
-  
+  dens[i]<-gamma.plus^delta.plus*gamma.minus^delta.minus/((gamma.plus+gamma.minus)^delta.minus*gamma(delta.plus)*gamma(delta.minus))*exp(-gamma.plus*x[i])*intvecp(x[i])
+  }else{
   ## On the negative line
   funcm<-function(x,y){y^{delta.plus-1}*(-x+y/(gamma.plus+gamma.minus))^{delta.minus-1}*exp(-y)}
   intm<-function(x){integrate(funcm,lower=0,upper=Inf,x=x)$value}
   intvecm<-function(x)sapply(x,intm)
-  densm<-gamma.plus^delta.plus*gamma.minus^delta.minus/((gamma.plus+gamma.minus)^delta.plus*gamma(delta.minus)*gamma(delta.plus))*exp(gamma.minus*x)*intvecm(x)
-
-  dens<-ifelse(0<=x,densp,densm)
+  dens[i]<-gamma.plus^delta.plus*gamma.minus^delta.minus/((gamma.plus+gamma.minus)^delta.plus*gamma(delta.minus)*gamma(delta.plus))*exp(gamma.minus*x[i])*intvecm(x[i])
+  }
+  }
   dens
-  
 }
 
 ## Generalized inverse Gaussian
