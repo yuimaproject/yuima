@@ -335,72 +335,73 @@ setMethod("simulate", "yuima.multimodel",
           #yuima.stop("code multivariate Levy will be implemented as soon as possible")
         }
      }else{
-       intens <- as.character(sdeModel@measure$intensity)
-       dens <- as.character(sdeModel@measure$df$expr)
-       # If we consider independence between CP and the Other Levy
-       # we have:
-       numbLev <- length(sdeModel@measure.type)
-       posCPindex <- c(1:numbLev)[sdeModel@measure.type%in%"CP"]
-       CPmeasureComp <- paste0(dens,"[,c(",toString(posCPindex),")]")
-       intens <- as.character(sdeModel@measure$intensity)
-       dumCP <- setPoisson(intensity = intens, df = CPmeasureComp,
-         dimension = length(posCPindex))
-
-       # Simulation CP part
-       dummSamp <- yuima@sampling
-       samp <- setSampling(Initial = dummSamp@Initial,
-                           Terminal = unique(dummSamp@Terminal),
-                           n = unique(dummSamp@n))
-       trajCP <- simulate(object = dumCP, sampling = samp,
-          true.parameter = true.parameter)
-
-
-       dimJumpCoeff <- length(yuima@model@measure.type)
-       dumjumpCoeff <- matrix(as.character(diag(rep(1,dimJumpCoeff))),dimJumpCoeff,dimJumpCoeff)
-       Dumsolve.variable <- paste0("MyLevyDum",c(1:dimJumpCoeff))
-       dummy.measure.code <- as.character(sdeModel@measure$df$expr)
-       LevyMod <- setMultiModel(drift=rep("0",dimJumpCoeff),
-                                diffusion = NULL,
-                                jump.coeff = dumjumpCoeff,
-                                df = dummy.measure.code,
-                                measure.type = "code",
-                                solve.variable = Dumsolve.variable)
-       yuimaLevy <- setYuima(model=LevyMod, sampling = samp)
-       yuimaLevy@model@dimension <- dimJumpCoeff
-
-       trajcode<- simCode(xinit=rep("0",length=dimJumpCoeff),
-          yuima = yuimaLevy, env=yuimaEnv)
-
-       countCP <- 0
-       countcode <- 0
-       if(yuima@model@measure.type[1]=="CP"){
-          Incr.levy <- as.matrix(as.numeric(diff(trajCP@data@zoo.data[[1]])))
-          countcode <- countcode+1
-       }else{
-         if(yuima@model@measure.type[1]=="code"){
-            Incr.levy <- as.matrix(as.numeric(diff(trajcode@data@zoo.data[[1]])))
-            countCP <- countCP+1
-         }
-       }
-
-       if(length(yuima@model@measure.type)>1){
-         for(i in c(2:length(yuima@model@measure.type))){
-           if(yuima@model@measure.type[i]=="CP"){
-             Incr.levy<-cbind(Incr.levy,as.numeric(diff(trajCP@data@zoo.data[[(i-countCP)]])))
-             countcode <- countcode+1
-           }else{
-            if(yuima@model@measure.type[i]=="code"){
-              Incr.levy <- cbind(Incr.levy,as.numeric(diff(trajcode@data@zoo.data[[i]])))
+       if(any(sdeModel@measure.type=="CP")){
+         intens <- as.character(sdeModel@measure$intensity)
+         dens <- as.character(sdeModel@measure$df$expr)
+         # If we consider independence between CP and the Other Levy
+         # we have:
+         numbLev <- length(sdeModel@measure.type)
+         posCPindex <- c(1:numbLev)[sdeModel@measure.type%in%"CP"]
+         CPmeasureComp <- paste0(dens,"[,c(",toString(posCPindex),")]")
+         intens <- as.character(sdeModel@measure$intensity)
+         dumCP <- setPoisson(intensity = intens, df = CPmeasureComp,
+           dimension = length(posCPindex))
+  
+         # Simulation CP part
+         dummSamp <- yuima@sampling
+         samp <- setSampling(Initial = dummSamp@Initial,
+                             Terminal = unique(dummSamp@Terminal),
+                             n = unique(dummSamp@n))
+         trajCP <- simulate(object = dumCP, sampling = samp,
+            true.parameter = true.parameter)
+  
+  
+         dimJumpCoeff <- length(yuima@model@measure.type)
+         dumjumpCoeff <- matrix(as.character(diag(rep(1,dimJumpCoeff))),dimJumpCoeff,dimJumpCoeff)
+         Dumsolve.variable <- paste0("MyLevyDum",c(1:dimJumpCoeff))
+         dummy.measure.code <- as.character(sdeModel@measure$df$expr)
+         LevyMod <- setMultiModel(drift=rep("0",dimJumpCoeff),
+                                  diffusion = NULL,
+                                  jump.coeff = dumjumpCoeff,
+                                  df = dummy.measure.code,
+                                  measure.type = "code",
+                                  solve.variable = Dumsolve.variable)
+         yuimaLevy <- setYuima(model=LevyMod, sampling = samp)
+         yuimaLevy@model@dimension <- dimJumpCoeff
+  
+         trajcode<- simCode(xinit=rep("0",length=dimJumpCoeff),
+            yuima = yuimaLevy, env=yuimaEnv)
+  
+         countCP <- 0
+         countcode <- 0
+         if(yuima@model@measure.type[1]=="CP"){
+            Incr.levy <- as.matrix(as.numeric(diff(trajCP@data@zoo.data[[1]])))
+            countcode <- countcode+1
+         }else{
+           if(yuima@model@measure.type[1]=="code"){
+              Incr.levy <- as.matrix(as.numeric(diff(trajcode@data@zoo.data[[1]])))
               countCP <- countCP+1
-            }
            }
-          }
+         }
+  
+         if(length(yuima@model@measure.type)>1){
+           for(i in c(2:length(yuima@model@measure.type))){
+             if(yuima@model@measure.type[i]=="CP"){
+               Incr.levy<-cbind(Incr.levy,as.numeric(diff(trajCP@data@zoo.data[[(i-countCP)]])))
+               countcode <- countcode+1
+             }else{
+              if(yuima@model@measure.type[i]=="code"){
+                Incr.levy <- cbind(Incr.levy,as.numeric(diff(trajcode@data@zoo.data[[i]])))
+                countCP <- countCP+1
+              }
+             }
+            }
+         }
+  
+  
+          # yuima.stop("Levy with CP and/or code")
        }
-
-
-        # yuima.stop("Levy with CP and/or code")
      }
-
    }
    if(!is.null(increment.L))
      Incr.levy<-t(increment.L)

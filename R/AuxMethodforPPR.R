@@ -78,7 +78,7 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
 
   yuimaPPR->yuimaPPR
   parLambda->param
-  gfun<-yuimaPPR@gFun@formula
+ # gfun<-yuimaPPR@gFun@formula
 
   gfun<-yuimaPPR@gFun@formula
 
@@ -112,7 +112,7 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
 
   gridTime <- time(yuimaPPR@data@original.data)
 
-  yuimaPPR@Kernel@variable.Integral@var.dx
+ # yuimaPPR@Kernel@variable.Integral@var.dx
   if(any(yuimaPPR@Kernel@variable.Integral@var.dx %in% yuimaPPR@model@solve.variable)){
     my.envd1<-new.env()
     ExistdN<-TRUE
@@ -134,46 +134,55 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   my.envd3 <- new.env()
   namesparam<-names(param)
   resCov<-NULL
+  NoFeedBackIntensity <- TRUE
   if(!(all(namesparam %in% yuimaPPR@PPR@allparamPPR) && length(namesparam)==length(yuimaPPR@PPR@allparamPPR))){
     
     if(length(yuimaPPR@PPR@common)==0){
-      namesCov <-yuimaPPR@PPR@covariates
-      posCov <- length(namesCov)
-      dummydrift <- as.character(yuimaPPR@model@drift[1:posCov])
-      dummydiff0<- NULL
-      for(j in c(1:posCov)){
-        dummydiff0<-c(dummydiff0,
-                      as.character(unlist(yuimaPPR@model@diffusion[[j]])))
-      }
       
-      dummydiff <- matrix(dummydiff0, nrow = posCov, 
-                          ncol = length(dummydiff0)/posCov)
-      dimJump <- length(yuimaPPR@model@jump.coeff[[1]])-length(yuimaPPR@PPR@counting.var)
-      if(dimJump>0){
-        dummyJump0<- NULL
-        for(j in c(1:posCov)){
-          dummyJump0 <- c(dummyJump0,
-                          as.character(unlist(yuimaPPR@model@jump.coeff[[j]][1:dimJump])))
-        }
-        dummyJump <- matrix(dummyJump0, nrow=posCov,ncol=dimJump)
-        dummyModel <- setModel(drift = dummydrift,
-                               diffusion = dummydiff, jump.coeff =dummyJump,
-                               measure = list(df=yuimaPPR@model@measure$df),
-                               measure.type = yuimaPPR@model@measure.type[posCov],
-                               solve.variable = yuimaPPR@PPR@covariates,
-                               state.variable = yuimaPPR@PPR@covariates,
-                               xinit=yuimaPPR@model@xinit[posCov])
-        dummydata<-setData(original.data = yuimaPPR@data@original.data[,1:posCov],delta = yuimaPPR@sampling@delta)
-        dummyMod1 <-setYuima(model = dummyModel,
-                             data=dummydata)
-        dummyMod1@sampling<-yuimaPPR@sampling
-        
-        resCov <- qmleLevy(yuima = dummyMod1, 
-                           start=param[dummyMod1@model@parameter@all],
-                           lower = lower[dummyMod1@model@parameter@all],upper=upper[dummyMod1@model@parameter@all])
-      }else{
-        return(NULL)
+      if(!all(yuimaPPR@model@state.variable %in% yuimaPPR@model@solve.variable)|yuimaPPR@PPR@RegressWithCount){
+        NoFeedBackIntensity <- FALSE
       }
+      if(NoFeedBackIntensity){  
+        namesCov <-yuimaPPR@PPR@covariates
+        posCov <- length(namesCov)
+        dummydrift <- as.character(yuimaPPR@model@drift[1:posCov])
+        dummydiff0<- NULL
+        for(j in c(1:posCov)){
+          dummydiff0<-c(dummydiff0,
+                        as.character(unlist(yuimaPPR@model@diffusion[[j]])))
+        }
+        
+        dummydiff <- matrix(dummydiff0, nrow = posCov, 
+                            ncol = length(dummydiff0)/posCov)
+        dimJump <- length(yuimaPPR@model@jump.coeff[[1]])-length(yuimaPPR@PPR@counting.var)
+        if(dimJump>0){
+          dummyJump0<- NULL
+          for(j in c(1:posCov)){
+            dummyJump0 <- c(dummyJump0,
+                            as.character(unlist(yuimaPPR@model@jump.coeff[[j]][1:dimJump])))
+          }
+          dummyJump <- matrix(dummyJump0, nrow=posCov,ncol=dimJump)
+          dummyModel <- setModel(drift = dummydrift,
+                                 diffusion = dummydiff, jump.coeff =dummyJump,
+                                 measure = list(df=yuimaPPR@model@measure$df),
+                                 measure.type = yuimaPPR@model@measure.type[posCov],
+                                 solve.variable = yuimaPPR@PPR@covariates,
+                                 state.variable = yuimaPPR@PPR@covariates,
+                                 xinit=yuimaPPR@model@xinit[posCov])
+          dummydata<-setData(original.data = yuimaPPR@data@original.data[,1:posCov],delta = yuimaPPR@sampling@delta)
+          dummyMod1 <-setYuima(model = dummyModel,
+                               data=dummydata)
+          dummyMod1@sampling<-yuimaPPR@sampling
+          
+          resCov <- qmleLevy(yuima = dummyMod1, 
+                             start=param[dummyMod1@model@parameter@all],
+                             lower = lower[dummyMod1@model@parameter@all],upper=upper[dummyMod1@model@parameter@all])
+        
+        
+        }
+      }
+    }else{
+      return(NULL)
     }      
   }
 
@@ -439,9 +448,76 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
                   method = method, nobs=as.integer(N.jump), model=my.envd3$YUIMA.PPR)
   if(!is.null(resCov)){
    return(list(PPR=final_res,Covariates=resCov))
-  }else{
-   return(final_res)
   }
+  if(!NoFeedBackIntensity){
+    if(all(yuimaPPR@model@state.variable %in% yuimaPPR@model@solve.variable)){
+      myMod <- yuimaPPR@model
+      myYuima <- setYuima(data = yuimaPPR@data, 
+        model = yuimaPPR@model, sampling = yuimaPPR@sampling)
+      resCov <- qmleLevy(yuima = myYuima,
+        start=param[myMod@parameter@all],upper=upper[myMod@parameter@all],
+        lower=lower[myMod@parameter@all])
+    }else{
+      IntensityData <- Intensity.PPR(final_res@model,
+                                     param=coef(final_res))
+      mylambda <- IntensityData@original.data
+      OrigData <- yuimaPPR@data@original.data
+      NewData0 <- cbind(OrigData,mylambda)
+      colnames(NewData0) <- yuimaPPR@model@state.variable
+      NewData<-setData(zoo(NewData0,
+                           order.by = index(IntensityData@zoo.data[[1]])))
+      
+      lengthVar <- length(yuimaPPR@model@state.variable)
+      lengthOrigVar <- length(yuimaPPR@model@solve.variable)
+      DummyDrift <- as.character(rep(0,lengthVar))
+      DummyDrift[1:lengthOrigVar] <- as.character(yuimaPPR@model@drift) 
+      
+      dummydiff0<- NULL
+      for(j in c(1:lengthOrigVar)){
+        dummydiff0<-c(dummydiff0,
+                      as.character(unlist(yuimaPPR@model@diffusion[[j]])))
+      }
+      
+      dummydiff <- matrix(dummydiff0, nrow = lengthOrigVar, 
+                          ncol = length(dummydiff0)/lengthOrigVar)
+      
+      if(length(yuimaPPR@model@jump.variable)!=0){
+        dummydiff <- rbind(dummydiff,matrix("0",
+                                            nrow = lengthVar-lengthOrigVar,dim(dummydiff)[2]))
+      }
+      
+      dummyJump0 <- NULL
+      for(j in c(1:lengthOrigVar)){
+        dummyJump0 <- c(dummyJump0,
+                        as.character(unlist(yuimaPPR@model@jump.coeff[[j]][])))
+      }
+      dummyJump <- matrix(dummyJump0, nrow=lengthOrigVar,ncol=length(dummyJump0)/lengthOrigVar, byrow = T)
+      
+      if(length(yuimaPPR@model@jump.variable)!=0){
+        dummyJump1<- matrix(as.character(diag(lengthVar)),lengthVar,lengthVar) 
+        dummyJump1[1:lengthOrigVar,1:lengthOrigVar] <- dummyJump
+      }  
+      
+      # aaa<-setModel(drift="1",diffusion = "1")
+      # aaa@jump.variable
+      # yuimaPPR@model@jump.variable
+      meas.type <- rep("code",lengthVar)
+      myMod <- setModel(drift = DummyDrift, diffusion = dummydiff,
+                        jump.coeff = dummyJump1, jump.variable = yuimaPPR@model@jump.variable,
+                        measure = list(df=yuimaPPR@model@measure$df),
+                        measure.type = meas.type,
+                        solve.variable = yuimaPPR@model@state.variable,
+                        state.variable = yuimaPPR@model@state.variable)
+      myYuima <- setYuima(data = NewData, model = myMod)
+      resCov <- qmleLevy(yuima = myYuima,
+                      start=param[myMod@parameter@all],upper=upper[myMod@parameter@all],
+                      lower=lower[myMod@parameter@all])
+    }
+    return(list(PPR=final_res,Covariates=resCov))
+  } 
+  
+   return(final_res)
+  
 }
 
 
