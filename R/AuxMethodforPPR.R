@@ -3,7 +3,10 @@
 is.PPR <- function(yuimaPPR){is(yuimaPPR,"yuima.PPR")}
 
 Internal.LogLikPPR <- function(param,my.envd1=NULL,
-                               my.envd2=NULL,my.envd3=NULL){
+                               my.envd2=NULL,my.envd3=NULL, 
+                               commonPar = FALSE,
+                               auxModel = NULL,
+                               auxPar = NULL){
   param<-unlist(param)
   if(my.envd3$CondIntensityInKern){
     IntLambda<- InternalConstractionIntensityFeedBackIntegrand(param,my.envd1,
@@ -38,6 +41,10 @@ Internal.LogLikPPR <- function(param,my.envd1=NULL,
       oldpar <- my.envd1$oldpar
     }
     ret <- -logLik/sum(cond2,na.rm=TRUE)
+    if(commonPar){
+      #ret<- ret-quasilogl(auxModel,param = param[auxModel@model@parameter@all])/auxModel@sampling@n[1]
+      ret<- -logLik-quasilogl(auxModel,param = param[auxModel@model@parameter@all])
+    }
   }else{
     posAAA <- dim(IntLambda)[2]
     logLik <- 0
@@ -135,6 +142,7 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
   namesparam<-names(param)
   resCov<-NULL
   NoFeedBackIntensity <- TRUE
+  commonPar <- FALSE
   if(!(all(namesparam %in% yuimaPPR@PPR@allparamPPR) && length(namesparam)==length(yuimaPPR@PPR@allparamPPR))){
     
     if(length(yuimaPPR@PPR@common)==0){
@@ -182,7 +190,58 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
         }
       }
     }else{
-      return(NULL)
+      if(!all(yuimaPPR@model@state.variable %in% yuimaPPR@model@solve.variable)|yuimaPPR@PPR@RegressWithCount){
+        NoFeedBackIntensity <- FALSE
+      }
+      if(!all(yuimaPPR@model@state.variable %in% yuimaPPR@model@solve.variable)|yuimaPPR@PPR@RegressWithCount){
+        NoFeedBackIntensity <- FALSE
+      }
+      if(NoFeedBackIntensity){  
+        namesCov <-yuimaPPR@PPR@covariates
+        posCov <- length(namesCov)
+        dummydrift <- as.character(yuimaPPR@model@drift[1:posCov])
+        # dummydiff0<- NULL
+        # for(j in c(1:posCov)){
+        #   dummydiff0<-c(dummydiff0,
+        #                 as.character(unlist(yuimaPPR@model@diffusion[[j]])))
+        # }
+        # 
+        # dummydiff <- matrix(dummydiff0, nrow = posCov, 
+        #                     ncol = length(dummydiff0)/posCov)
+        dimJump <- length(yuimaPPR@model@jump.coeff[[1]])-length(yuimaPPR@PPR@counting.var)
+        if(dimJump>0){
+          dummyJump0<- NULL
+          for(j in c(1:posCov)){
+            dummyJump0 <- c(dummyJump0,
+                            as.character(unlist(yuimaPPR@model@jump.coeff[[j]][1:dimJump])))
+          }
+          dummyJump <- matrix(dummyJump0, nrow=posCov,ncol=dimJump)
+          # dummyModel <- setModel(drift = dummydrift,
+          #                        diffusion = dummydiff, jump.coeff =dummyJump,
+          #                        measure = list(df=yuimaPPR@model@measure$df),
+          #                        measure.type = yuimaPPR@model@measure.type[posCov],
+          #                        solve.variable = yuimaPPR@PPR@covariates,
+          #                        state.variable = yuimaPPR@PPR@covariates,
+          #                        xinit=yuimaPPR@model@xinit[posCov])
+          
+          dummyModel <- setModel(drift = dummydrift, 
+                diffusion = dummyJump,
+                solve.variable = yuimaPPR@PPR@covariates,
+                state.variable = yuimaPPR@PPR@covariates,
+                xinit=yuimaPPR@model@xinit[posCov])
+          dummydata<-setData(original.data = yuimaPPR@data@original.data[,1:posCov],delta = yuimaPPR@sampling@delta)
+          dummyMod1 <-setYuima(model = dummyModel,
+                               data=dummydata)
+          dummyMod1@sampling<-yuimaPPR@sampling
+          commonPar <- TRUE
+          # resCov <- qmleLevy(yuima = dummyMod1, 
+          #                    start=param[dummyMod1@model@parameter@all],
+          #                    lower = lower[dummyMod1@model@parameter@all],upper=upper[dummyMod1@model@parameter@all])
+          
+          
+        }
+      }
+      #return(NULL)
     }      
   }
 
@@ -366,63 +425,162 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
     envir=my.envd3)
 
   out<-NULL
-
+  # quasilogl(dummyMod1,param = param[dummyMod1@model@parameter@all])
+  # commonPar
   if(length(lower)==0 && length(upper)>0 && length(fixed)==0){
-    out <- optim(par=param, fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, upper = upper, 
+                   commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{
+      out <- optim(par=param, fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, upper=upper, ...)
-
+    }
   }
 
   if(length(lower)==0 && length(upper)==0 && length(fixed)>0){
-    out <- optim(par=param, fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, fixed = fixed,  
+                   commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{
+      out <- optim(par=param, fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, fixed = fixed, ...)
-
+    }
   }
 
 
   if(length(lower)>0 && length(upper)==0 && length(fixed)==0){
-    out <- optim(par = param,  fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, lower = lower,
+                   commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{
+      out <- optim(par = param,  fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, lower=lower, ...)
+    }
   }
 
   if(length(lower)>0 && length(upper)>0 && length(fixed)==0){
-    out <- optim(par=param, fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, lower = lower, upper = upper, 
+                   commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{
+      out <- optim(par=param, fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, upper = upper,
                  lower=lower, ...)
+    }
   }
 
 
   if(length(lower)==0 && length(upper)>0 && length(fixed)>0){
-    out <- optim(par=param, fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, upper = upper,
+                   fixed = fixed, 
+                   commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{
+      out <- optim(par=param, fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, upper = upper,
                  fixed = fixed,  ...)
+    }
   }
 
   if(length(lower)>0 && length(upper)==0 && length(fixed)>0){
-    out <- optim(par=param, fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, lower = lower, 
+                   fixed = fixed, 
+                   commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{
+      out <- optim(par=param, fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, lower = lower,
                  fixed = fixed, ...)
-  }
+    }
+
+   }
 
 
   if(length(lower)>0 && length(upper)>0 && length(fixed)>0){
-    out <- optim(par=param, fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, lower = lower, fixed = fixed, upper = upper, 
+                   commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{  
+      out <- optim(par=param, fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, lower = lower, fixed = fixed, upper = upper, ...)
+    }
   }
 
 
   if(is.null(out)){
-    out <- optim(par=param, fn=Internal.LogLikPPR,
+    if(commonPar){
+      out <- optim(par=param, fn=Internal.LogLikPPR,
+                   my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
+                   method = method, commonPar=commonPar,
+                   auxModel = dummyMod1)
+      # return(out)
+    }else{
+    
+      out <- optim(par=param, fn=Internal.LogLikPPR,
                  my.envd1=my.envd1,my.envd2=my.envd2,my.envd3=my.envd3,
                  method = method, ...)
+    }
   }
+    
+  if(commonPar){
+    Hessian <- tryCatch(optimHess(as.list(out$par),
+                                  fn=Internal.LogLikPPR,
+                                  my.envd1=my.envd1,
+                                  my.envd2=my.envd2,
+                                  my.envd3=my.envd3,
+                                  commonPar=commonPar,
+                                  auxModel = dummyMod1),
+                        error=function(){NULL})
+    if(is.null(Hessian)){
+      vcov <- matrix(NA,length(out$par),
+                     length(out$par))
+    }else{
+      vcov <- solve(Hessian)
+    }
+    minuslog <- out$value
+    
+    final_res<-new("yuima.PPR.qmle", call = call, coef = out$par, 
+                   fullcoef = out$par,
+                   vcov = vcov, min = minuslog, details = out, minuslogl = Internal.LogLikPPR,
+                   method = method, nobs=integer(), model=my.envd3$YUIMA.PPR)
+    return(final_res)
+  }
+  
   
    Hessian <- tryCatch(optimHess(as.list(out$par),
                  fn=Internal.LogLikPPR,
