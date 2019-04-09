@@ -763,7 +763,7 @@ aux.simulatPPRWithCount<-function(object, nsim = nsim, seed = seed,
             Noise.Laux[object@PPR@counting.var,i-1] <- dumdN[i==inter_i] 
             dN <- cbind(dN,dumdN)
           }
-          cat("\n ", i, grid[i])
+          # cat("\n ", i, grid[i])
           
           # assign("dL",Noise.Laux,myenv)
           # 
