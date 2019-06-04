@@ -91,7 +91,8 @@ exportClasses("yuima",
 "info.PPR",
 "yuima.PPR",
 "yuima.Hawkes",
-"yuima.PPR.qmle"
+"yuima.PPR.qmle",
+"yuima.snr"
 )
 
 exportMethods(
@@ -207,6 +208,7 @@ export(qmleR)
 export(qmleL)
 export(qmleLevy)
 export(IC)
+export(snr)
 export(DataPPR)
 
 
