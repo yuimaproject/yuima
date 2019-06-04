@@ -190,3 +190,5 @@ setMethod("initialize", "yuima.Integral",
 # diffusion model
 setClass("yuima.multimodel",
          contains="yuima.model")
+
+setClass("yuima.snr", representation(call = "call", coef = "numeric", snr = "numeric", model = "yuima.model"), prototype = list(call = NULL, coef = NULL, snr = NULL, model = NULL))
