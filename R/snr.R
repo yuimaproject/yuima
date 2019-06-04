@@ -1,5 +1,16 @@
 # library(KernSmooth)
 
+
+setMethod("show", "yuima.snr", 
+          function (object){
+            cat("\nCall:\n")
+            print(object@call)
+            cat("\nCoefficients:\n")
+            print(object@coef)
+          }
+)
+
+
 snr<-function(yuima,start,lower,upper,withdrift=FALSE){
 
   if(yuima@model@equation.number == 1){
@@ -87,17 +98,8 @@ snr<-function(yuima,start,lower,upper,withdrift=FALSE){
   
     
     call <- match.call()
-    setClass("yuima.snr", representation(call = "call", coef = "numeric", snr = "numeric", model = "yuima.model"), prototype = list(call = NULL, coef = NULL, snr = NULL, model = NULL))
     final_res <- new("yuima.snr", call = call, coef = qmle@coef[order(mp)], snr = snr, model = yuima@model)
     
-    setMethod("show", "yuima.snr", 
-              function (object){
-                        cat("\nCall:\n")
-                        print(object@call)
-                        cat("\nCoefficients:\n")
-                        print(object@coef)
-                        }
-             )
     
     return(final_res)
   }else{
