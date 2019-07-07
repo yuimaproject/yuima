@@ -79,8 +79,10 @@ JBtest<-function(yuima,start,lower,upper,alpha,skewness=TRUE,kurtosis=TRUE,withd
     if(length(drif.term)==1){
       drif.term <- rep(drif.term, s.size)
     } # vectorization (note. if an expression type object does not include state.variable, the length of the item after "eval" operation is 1.)
-    resi<-residualCpp(inc,drif.term,diff.term,withdrift,h)
-    
+    for(s in 1:(s.size-1)){
+      nova<-sqrt((diff.term)^2) # normalized variance
+      resi[s]<-(1/(nova[s]*sqrt(h)))*(inc[s]-h*withdrift*drif.term[s])
+    }    
     assign(modelstate,pX,envir=tmp.env)
     derv<-eval(derDIFFUSION,envir=tmp.env)
     if(length(derv)==1){
@@ -127,8 +129,10 @@ JBtest<-function(yuima,start,lower,upper,alpha,skewness=TRUE,kurtosis=TRUE,withd
           if(length(drif.term)==1){
             drif.term <- rep(drif.term, s.size-1)
           } # vectorization 
-          resi<-residualCpp(inc,drif.term,diff.term,withdrift,h)
-          ## rebuild Euler-residuals
+          for(s in 1:(s.size-1)){
+            nova<-sqrt((diff.term)^2) # normalized variance
+            resi[s]<-(1/(nova[s]*sqrt(h)))*(inc[s]-h*withdrift*drif.term[s])
+          }          ## rebuild Euler-residuals
           
           derv<-eval(derDIFFUSION,envir=tmp.env)
           if(length(derv)==1){
@@ -231,8 +235,10 @@ JBtest<-function(yuima,start,lower,upper,alpha,skewness=TRUE,kurtosis=TRUE,withd
           if(length(drif.term)==1){
             drif.term <- rep(drif.term, s.size-1)
           } # vectorization 
-          resi<-residualCpp(inc,drif.term,diff.term,withdrift,h)
-          ## rebuild Euler-residuals
+          for(s in 1:(s.size-1)){
+            nova<-sqrt((diff.term)^2) # normalized variance
+            resi[s]<-(1/(nova[s]*sqrt(h)))*(inc[s]-h*withdrift*drif.term[s])
+          }          ## rebuild Euler-residuals
           
           derv<-eval(derDIFFUSION,envir=tmp.env)
           if(length(derv)==1){
@@ -336,8 +342,10 @@ JBtest<-function(yuima,start,lower,upper,alpha,skewness=TRUE,kurtosis=TRUE,withd
           if(length(drif.term)==1){
             drif.term <- rep(drif.term, s.size-1)
           } # vectorization 
-          resi<-residualCpp(inc,drif.term,diff.term,withdrift,h)
-          ## rebuild Euler-residuals
+          for(s in 1:(s.size-1)){
+            nova<-sqrt((diff.term)^2) # normalized variance
+            resi[s]<-(1/(nova[s]*sqrt(h)))*(inc[s]-h*withdrift*drif.term[s])
+          }          ## rebuild Euler-residuals
           
           
           derv<-eval(derDIFFUSION,envir=tmp.env)
