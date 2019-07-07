@@ -209,6 +209,7 @@ export(qmleL)
 export(qmleLevy)
 export(IC)
 export(snr)
+export(JBtest)
 export(DataPPR)
 
 
