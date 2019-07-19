@@ -30,9 +30,6 @@ This function removes large increments which are regarded as jumps based on the 
 \item{Figures}{For visualization, the jump points are presented. In addition, the histgram of the jump removed self-normalized residuals, transition of the estimators and the logarithm of Jarque-Bera statistics are given as figures}
 }
 
-\note{
-
-}
 \references{
 Masuda, H. (2013). Asymptotics for functionals of self-normalized residuals of discretely observed stochastic processes. 
                    Stochastic Processes and their Applications 123 (2013), 2752--2778

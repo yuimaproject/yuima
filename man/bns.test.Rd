@@ -66,7 +66,7 @@ Huang, X. and Tauchen, G. (2005)
 }
 \author{
 %%  ~~who you are~~
-The YUIMA Project Team
+Yuta Koike with YUIMA Project Team
 }
 \note{
 %%  ~~further notes~~

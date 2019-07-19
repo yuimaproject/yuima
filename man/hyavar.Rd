@@ -76,7 +76,7 @@ Hayashi, T. and Yoshida, N. (2011)
 }
 \author{
 %%  ~~who you are~~
-The YUIMA Project Team
+Yuta Koike with YUIMA Project Team
 }
 \note{
 %%  ~~further notes~~

@@ -95,7 +95,7 @@ Huth, N. and Abergel, F. (2014)
   High frequency lead/lag relationships --- Empirical facts,
   \emph{Journal of Empirical Finance}, \bold{26}, 41--58.
 }
-\author{The YUIMA Project Team}
+\author{Yuta Koike with YUIMA Project Team}
 \examples{
 
 ## Set a model

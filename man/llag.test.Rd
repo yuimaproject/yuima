@@ -71,13 +71,14 @@ For each pair of components, this function performs the wild bootstrap procedure
 }
 \references{
 %% ~put references to the literature/web site here ~
-Koike, Y. (2017). 
-Gaussian approximation of maxima of Wiener functionals and its application to high-frequency data. 
+Koike, Y. (2019). 
+Gaussian approximation of maxima of Wiener functionals and its application to high-frequency data, 
+\emph{Annals of Statistics}, \bold{47}, 1663--1687.
 \href{https://arxiv.org/abs/1709.00353}{arXiv:1709.00353}.
 }
 \author{
 %%  ~~who you are~~
-The YUIMA Project Team
+Yuta Koike with YUIMA Project Team
 }
 
 

@@ -89,7 +89,7 @@ Huth, N. and Abergel, F. (2014)
 }
 \author{
 %%  ~~who you are~~
-The YUIMA Project Team
+Yuta Koike with YUIMA Project Team
 }
 %\note{
 %%  ~~further notes~~

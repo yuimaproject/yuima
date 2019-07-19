@@ -62,7 +62,7 @@ importFrom(stats, start)
 importFrom(utils, str)
 importFrom(stats, sd)
 importFrom("stats", cov2cor) # added by YK on Apr. 12, 2018
-
+importFrom("graphics", "abline", "hist", "par", "text") # added by YK on Jul. 19, 2019
 
 exportClasses("yuima",
 "yuima.data",
@@ -171,6 +171,7 @@ export(hyavar) # asymptotic variance estimator for the Hayashi-Yoshida estimator
 export(lmm) # Oct. 10, 2015: local methods of moment estimator
 export(mllag) # Oct. 10, 2015: multiple lead-lag detector
 export(llag.test) # Sep. 9, 2017: testing the absence of lead-lag effects 
+export(cce.factor) # Jul. 19, 2019: high-dimensional covariance estimator
 
 export(get.zoo.data)
 
@@ -254,5 +255,4 @@ S3method(cbind, yuima)
 S3method(plot, yuima.llag) # Oct. 10, 2015
 S3method(plot, yuima.mllag) # Oct. 10, 2015
 useDynLib(yuima)
-
 

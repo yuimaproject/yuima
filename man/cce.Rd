@@ -300,7 +300,7 @@ Zhang, L., Mykland, P. A. and Ait-Sahalia, Y. (2005)
 }
 \author{
 %%  ~~who you are~~
-The YUIMA Project Team
+Yuta Koike with YUIMA Project Team
 }
 \note{
 %%  ~~further notes~~
@@ -315,7 +315,7 @@ The second-order correction will be provided in a future version of the package.
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{setModel}}, \code{\link{setData}}, \code{\link{hyavar}}, \code{\link{lmm}}
+\code{\link{setModel}}, \code{\link{setData}}, \code{\link{hyavar}}, \code{\link{lmm}}, \code{\link{cce.factor}}
 }
 \examples{
 ## Set a model

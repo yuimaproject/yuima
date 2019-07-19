@@ -26,9 +26,6 @@ This function calculates the Gaussian quasi maximum likelihood estimator and ass
 \item{snr}{self-normalized residuals based on the Gaussian quasi maximum likelihood estimator}
 }
 
-\note{
-
-}
 \references{
 Masuda, H. (2013). Asymptotics for functionals of self-normalized residuals of discretely observed stochastic processes. 
                    Stochastic Processes and their Applications 123 (2013), 2752--2778

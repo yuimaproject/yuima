@@ -61,7 +61,7 @@ Barndorff-Nielsen, O. E. , Graversen, S. E. , Jacod, J. , Podolskij M. and Sheph
 }
 \author{
 %%  ~~who you are~~
-The YUIMA Project Team
+Yuta Koike with YUIMA Project Team
 }
 %\note{
 %%  ~~further notes~~

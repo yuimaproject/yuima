@@ -109,7 +109,7 @@ Xiu, D. (2010)
 }
 \author{
 %%  ~~who you are~~
-The YUIMA Project Team
+Yuta Koike with YUIMA Project Team
 }
 %\note{
 %%  ~~further notes~~
