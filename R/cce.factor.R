@@ -36,6 +36,8 @@ cce.factor <- function(yuima, method = "HY", factor = NULL, PCA = FALSE,
       
     }else{
       
+      factor <- "PCA"
+      
       sigma.x <- diag(ed$values[1:nfactor], nfactor)
       inv.sigma.x <- solve(sigma.x)
       beta.hat <- as.matrix(ed$vectors[ ,1:nfactor])
