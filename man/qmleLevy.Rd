@@ -123,5 +123,5 @@ theta2 = runif(1,1,5)) ## set initial values
 qmleLevy(yuima,start=start,lower=lower,upper=upper,joint = FALSE,third=TRUE) 
 }
 
-\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{qmle}% use one of  RShowDoc("KEYWORDS")
+\keyword{Estimation}% __ONLY ONE__ keyword per line

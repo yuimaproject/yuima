@@ -166,7 +166,8 @@ setModel <- function(drift=NULL,
 
       if(dim(jump.coeff)[2]!=1){
         intensity <- NULL
-        if(is.null(names(measure)) || names(measure)=="df"){
+        #if(is.null(names(measure)) || names(measure)=="df"){
+        if(is.null(names(measure)) || all(names(measure)%in%"df")){
           names(measure) <- "df"
         }
 

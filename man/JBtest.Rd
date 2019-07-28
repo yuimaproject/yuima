@@ -15,6 +15,7 @@ JBtest(yuima,start,lower,upper,alpha,skewness=TRUE,kurtosis=TRUE,withdrift=FALSE
   \item{yuima}{a yuima object (diffusion with compound Poisson jumps).}
   \item{lower}{a named list for specifying lower bounds of parameters.}
   \item{upper}{a named list for specifying upper bounds of parameters.}
+  \item{alpha}{Insert Description Here.}
   \item{start}{initial values to be passed to the optimizer.}
   \item{skewness}{use third moment information ? by default, skewness=TRUE}
   \item{kurtosis}{use fourth moment information ? by default, kurtosis=TRUE}
