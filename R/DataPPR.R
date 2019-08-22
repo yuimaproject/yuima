@@ -32,7 +32,7 @@ get.counting.data<-function(yuimaPPR,type="zoo"){
   }  
   
   Data <- zoo(x = Obser,order.by = Time_Arrivals) 
-  plot(Data)
+ # plot(Data)
   if(type=="zoo"){
     Data <- Data
     return(Data)
