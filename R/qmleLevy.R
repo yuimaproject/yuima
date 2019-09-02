@@ -12,10 +12,28 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE)
     yuima.stop("This function is for yuima-class.")
   
   sdeModel<-yuima@model
+  if(length(sdeModel@parameter@measure)!=0){
+    nPar<-length(sdeModel@parameter@measure)
+    for(i in c(1:nPar)){
+      assign(x = sdeModel@parameter@measure[i],
+             value = start[[sdeModel@parameter@measure[i]]])
+    }
+    names1 <- names(start)
+    index <- which(names1 %in% sdeModel@parameter@measure)
+    start <- start[-index]
+    names1 <- names(lower)
+    index <- which(names1 %in% sdeModel@parameter@measure)
+    lower <- lower[-index]
+    names1 <- names(upper)
+    index <- which(names1 %in% sdeModel@parameter@measure)
+    upper <- upper[-index]
+  }
   if(class(sdeModel@measure$df)!="yuima.law"){
     code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
     
     candinoise<-c("rNIG","rvgamma","rnts","rbgamma")
+    
+    
     
     if(is.na(match(code,candinoise))){
       yuima.stop("This function works only for the standardized normal inverse Gaussian process, variance gamma process, bilateral gamma process, and normal tempered stable process now.")
