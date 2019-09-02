@@ -113,13 +113,16 @@ yuima<-setYuima(model = yuima, sampling = sam) ## model
 
 true<-list(theta0 = 1,theta1 = 2,theta2 = 3,lambda=lambda, alpha=alpha, 
 beta=beta,mu=mu, Lambda=Lambda) ## true values
-upper<-list(theta0 = 4, theta1 = 4, theta2 = 5) ## set upper bound
-lower<-list(theta0 = 0.5, theta1 = 1, theta2 = 1) ## set lower bound
+upper<-list(theta0 = 4, theta1 = 4, theta2 = 5, lambda=lambda, alpha=alpha, 
+beta=beta,mu=mu, Lambda=Lambda) ## set upper bound
+lower<-list(theta0 = 0.5, theta1 = 1, theta2 = 1, lambda=lambda, alpha=alpha, 
+beta=beta,mu=mu, Lambda=Lambda) ## set lower bound
 set.seed(123)
 yuima<-simulate(yuima, xinit = c(0,0), true.parameter = true,sampling = sam) ## generate a path
 plot(yuima)
 start<-list(theta0 = runif(1,0.5,4), theta1 = runif(1,1,4), 
-theta2 = runif(1,1,5)) ## set initial values
+theta2 = runif(1,1,5),lambda=lambda, alpha=alpha, 
+beta=beta,mu=mu, Lambda=Lambda) ## set initial values
 qmleLevy(yuima,start=start,lower=lower,upper=upper,joint = FALSE,third=TRUE) 
 }
 
