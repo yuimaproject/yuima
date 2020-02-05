@@ -1026,7 +1026,7 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
   vcov <- matrix(NA, length(coef), length(coef))
   if (length(coef)) {
     rrr <- try(solve(oout$hessian), TRUE)
-    if(class(rrr) != "try-error")
+    if(class(rrr)[1] != "try-error")
       vcov <- rrr
   }
 

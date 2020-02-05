@@ -680,8 +680,13 @@
 		if(r.size == 1){
 			b1 <- matrix(b1,1,block)
 		}
-
+        #   b1 <- matrix(b1, ncol=block) # FIXME: should be a matrix with block-columns but it is a scalar
 		for(t in 1:block){
+            #  print(str(b1))
+            #print(t)
+            #print(block)
+            #print(str(b1[,t]))
+            #print(r.size)
 			b1a[,t] <- matrix(b1[,t],1,r.size) %*%
 				     t(matrix(aMat[,,my.range[t]],k.size,r.size))
 		}
@@ -8627,8 +8632,8 @@
 		d.size <- env$d.size
 		r.size <- env$r.size
 		block <- env$block
-
-		coef1 <- get_F_tilde1$result1[[1]][,block]
+        #  print(block)
+        coef1 <- get_F_tilde1$result1[[1]][,block] # FIXME: this is broken, should have the same dimension as block but has 2
 		coef2 <- get_F_tilde1$result2[[1]][,block]
 		coef3 <- get_F_tilde1$result3[[1]][,block]
 		coef4 <- get_F_tilde1$result4[[1]][,block]
