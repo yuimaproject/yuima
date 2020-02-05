@@ -25,21 +25,21 @@ lasso <- function (yuima, lambda0, start, delta = 1, ...)
     fail <- lapply(lambda0, function(x) as.numeric(NA))
     cat("\nLooking for MLE estimates...\n")
     fit <- try(qmle(yuima, start = start, ...), silent = TRUE)
-    if (class(fit) == "try-error"){
+    if (class(fit)[1] == "try-error"){
       tmp <- list(mle = fail, sd.mle = NA, lasso = fail, sd.lasso = NA)
       class(tmp) <- "yuima.lasso"
       return(tmp)
     }
     theta.mle <- coef(fit)
     SIGMA <- try(sqrt(diag(vcov(fit))), silent = TRUE)
-    if (class(SIGMA) == "try-error"){
+    if (class(SIGMA)[1] == "try-error"){
      tmp <- list(mle = theta.mle, sd.mle = NA, lasso = fail, sd.lasso = NA)
      class(tmp) <- "yuima.lasso"
      return(tmp)
     }
 
     H <- try(solve(vcov(fit)), silent = TRUE)
-    if (class(H) == "try-error"){
+    if (class(H)[1] == "try-error"){
       tmp <- list(mle = theta.mle, sd.mle = SIGMA, lasso = fail, sd.lasso = NA)
       class(tmp) <- "yuima.lasso"
       return(tmp)
@@ -65,14 +65,14 @@ lasso <- function (yuima, lambda0, start, delta = 1, ...)
     fit2 <- try( do.call(optim, args = args), silent = TRUE)
     
     
-    if (class(fit2) == "try-error"){
+    if (class(fit2)[1] == "try-error"){
       tmp <- list(mle = theta.mle, sd.mle = SIGMA, lasso = fail, sd.lasso = NA)
       class(tmp) <- "yuima.lasso"
       return(tmp)
     }
     theta.lasso <- fit2$par
     SIGMA1 <- try(sqrt(diag(solve(fit2$hessian))), silent = TRUE)
-    if (class(SIGMA1) == "try-error"){
+    if (class(SIGMA1)[1] == "try-error"){
       tmp <- list(mle = theta.mle, sd.mle = SIGMA, lasso = theta.lasso,
     sd.lasso = NA)
       class(tmp) <- "yuima.lasso"
