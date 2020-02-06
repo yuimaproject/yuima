@@ -64,16 +64,28 @@ simCP<-function(xinit,yuima,env){
       
       ell <- optimize(f=.CPintensity, interval=c(Initial, Terminal), maximum = TRUE)$objective
       ellMax <- ell * 1.01
-
+      
 
       time <- Initial
       E <- Initial
       
-      while(time < Terminal) {
-          time <- time - 1/ellMax * log(runif(1))
-          if(runif(1) < .CPintensity(time)/ellMax)
-          E <- c(E, time)
-      }
+      # heuristic code to avoid loops
+      nLAMBDA <- ceiling(ellMax*(Terminal-Initial)*1.2)
+      ru1 <- runif(nLAMBDA)
+      ru2 <- runif(nLAMBDA)*ellMax
+      
+      tLAMBDA <- Initial+cumsum( -log(ru1)/ellMax )
+      idxLAMBDA <- which(tLAMBDA<=Terminal)
+      testLAMBDA <- ru2[idxLAMBDA]<.CPintensity(tLAMBDA[idxLAMBDA])
+      E <- c(Initial,tLAMBDA[testLAMBDA])
+      
+      
+      #   while(time < Terminal) {
+      #    ellMax <- ell(time)*1.01
+      #    time <- time - 1/ellMax * log(runif(1))
+      #    if(runif(1) < .CPintensity(time)/ellMax)
+      #    E <- c(E, time)
+      #}
       N_sharp <- length(E)-1
       
       F.env <- new.env(parent=env)

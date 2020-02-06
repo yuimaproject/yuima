@@ -63,3 +63,5 @@
 2019/4/8: modified adaBayes.R
 2019/7/19: added cce.factor.R, cce.factor.Rd
            modified llag.test.Rd, bns.test.Rd, hyavar.R, mpv.Rd, mllag.Rd, llag.Rd, cce.Rd, spectralcov.R, JBtest.Rd, snr.Rd
+2020/2/6: fixed length(class(matrix))>2 issue. Code for simPoi fastened.
+
