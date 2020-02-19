@@ -3,14 +3,35 @@
 ########################################################################
 
 
-qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE)
+qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
+                   Est.Incr = c("NoIncr","Incr","IncrPar"),
+                   aggregation = TRUE)
 {
+  cat("\nStarting QGMLE for SDE ... \n")
+  parameter<-yuima@model@parameter@all
+  orig.mylaw<-yuima@model@measure
+  mylaw<-yuima@model@measure$df
+  
   if(missing(yuima))
     yuima.stop("yuima object is missing.")
   
   if(!is(yuima,"yuima"))
     yuima.stop("This function is for yuima-class.")
   
+  if(length(yuima@model@parameter@jump)>0)
+    paracoef <- yuima@model@parameter@jump
+  
+  if(length(yuima@model@parameter@drift)>0)
+    paracoef <- c(paracoef, yuima@model@parameter@drift)
+  if(Est.Incr == "IncrPar"){
+    start0<-start
+    lower0<-lower
+    upper0<-upper
+    lev.names<-yuima@model@parameter@measure
+  }
+  
+  DRIFT <- yuima@model@drift
+  JUMP <- yuima@model@jump.coeff
   sdeModel<-yuima@model
   if(length(sdeModel@parameter@measure)!=0){
     nPar<-length(sdeModel@parameter@measure)
@@ -269,10 +290,137 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE)
     yuima@model@measure.type <- character(0)
     yuima@model@parameter@jump <- character(0)
     yuima@model@parameter@measure <- character(0)
-    jres<-qmle(yuima,start = start,lower = lower,upper = upper,rcpp = TRUE, joint = TRUE,method = "L-BFGS-B")
-    res<-list(joint = jres@coef)
+    # jres<-qmle(yuima,start = start,lower = lower,upper = upper,rcpp = TRUE, joint = TRUE,method = "L-BFGS-B")
+    # res<-list(joint = jres@coef)
+    res<-qmle(yuima,start = start,lower = lower,upper = upper,rcpp = TRUE, joint = TRUE,
+              method = "L-BFGS-B")
   }
-  res
+  if(Est.Incr == "NoIncr"){
+    return(res)
+    }
+  cat("\nStarting Estimation of Levy Increments ... \n")
+  data <- get.zoo.data(yuima)
+  s.size<-yuima@sampling@n 
+  X<-as.numeric(data[[1]])
+  pX<-X[1:(s.size-1)]
+  inc<-double(s.size-1)
+  inc<-X[2:(s.size)]-pX
+  modeltime<-yuima@model@time.variable
+  modelstate<-yuima@model@solve.variable
+  tmp.env<-new.env()
+  
+  # DRIFT <- yuima@model@drift
+  # JUMP <- yuima@model@jump.coeff
+  
+  if(length(yuima@model@solve.variable)==1){
+    #parameter<-yuima@model@parameter@all
+    if(joint){
+     coeffic<- coef(res) 
+    }else{
+      coeffic<- res[[1]]
+      if(length(res)>1){
+        for(j in c(2:length(res))){
+          coeffic<-c(coeffic,res[[j]])
+        }
+      }
+      
+    }
+    mp<-match(names(coeffic),parameter)
+    esort <- coeffic[order(mp)]
+    for(i in 1:length(coeffic))
+    {
+      assign(parameter[i],esort[[i]],envir=tmp.env)
+    }
+    
+    resi<-double(s.size-1) 
+    assign(modeltime,yuima@sampling@delta,envir=tmp.env)
+    h<-yuima@sampling@delta
+    assign(modelstate,pX,envir=tmp.env)
+    jump.term<-eval(JUMP[[1]],envir=tmp.env)
+    drif.term<-eval(DRIFT,envir=tmp.env)
+    if(length(jump.term)==1){
+      jump.term <- rep(jump.term, s.size)
+    }
+    if(length(drif.term)==1){
+      drif.term <- rep(drif.term, s.size)
+    } # vectorization (note. if an expression type object does not include state.variable, the length of the item after "eval" operation is 1.)
+    for(s in 1:(s.size-1)){
+      nova<-sqrt((jump.term)^2) # normalized variance
+      resi[s]<-(1/(nova[s]))*(inc[s]-h*drif.term[s])
+    }
+    if(aggregation){
+      Ter <- yuima@sampling@Terminal
+      ures <- numeric(floor(Ter))
+      for(l in 1:floor(Ter)){
+        ures[l] <- sum(resi[(floor((l-1)/h)):(floor(l/h)-1)]) 
+      }
+      res.incr<-ures
+    }else{
+      res.incr<-resi
+      }
+    
+  }else{}
+  
+  if(Est.Incr == "Incr"){
+    return(list(res=res,Est.Incr=res.incr))
+  }
+  cat("\nEstimation Levy parameters ... \n")
+  
+  if(class(mylaw)=="yuima.law"){
+    if(aggregation){
+      minusloglik <- function(para){
+        para[length(para)+1]<-1
+        names(para)[length(para)]<-yuima@model@time.variable
+        -sum(dens(mylaw, res.incr, param = para, log = T), 
+           na.rm = T)
+        }
+      }else{
+        minusloglik <- function(para){
+          para[length(para)+1] <- yuima@sampling@delta
+          names(para)[length(para)]<-yuima@model@time.variable
+          -sum(dens(mylaw, res.incr, param = para, log = T), 
+               na.rm = T)
+        }
+      }
+    para <- start0[lev.names]
+    lowerjump <- lower0[lev.names]
+    upperjump <- upper0[lev.names]
+    esti <- optim(fn = minusloglik, lower = lowerjump, upper = upperjump, 
+                  par = para, method = "L-BFGS-B")
+    return(list(res=res,Est.Incr=res.incr, meas=esti$par))
+    }else{
+      dist <- substr(as.character(orig.mylaw$df$expr), 2, 10^3)
+  
+      startjump <- start0[lev.names]
+      lowerjump <- lower0[lev.names]
+      upperjump <- upper0[lev.names]
+  
+      if(length(startjump) == 1){
+        logdens <- function(para){
+          exlogdens <- parse(text = sprintf("log(d%s)", dist))
+          assign(yuima@model@jump.variable, ures, envir = tmp.env)
+          assign(yuima@model@parameter@measure, para, envir = tmp.env)
+          sum(eval(exlogdens, envir = tmp.env))
+        }
+        intervaljump <- c(lowerjump[[1]], upperjump[[1]])
+        esti <- optimize(logdens, interval = intervaljump, maximum = TRUE)
+        return(list(sde=esort, meas=esti$maximum))
+      }else{
+        logdens <- function(para){
+          exlogdens <- parse(text = sprintf("log(d%s)", dist))
+          assign(yuima@model@jump.variable, ures, envir = tmp.env)
+          for(i in c(1:length(yuima@model@parameter@measure)))
+            assign(yuima@model@parameter@measure[i], para[[yuima@model@parameter@measure[i]]], envir = tmp.env)
+  
+          sum(eval(exlogdens, envir = tmp.env))
+         }
+  
+        esti <- optim(fn=logdens, lower = lowerjump, upper = upperjump, par = startjump,
+                      method = "L-BFGS-B", control = list(fnscale = -1))
+        return(list(sde=esort, meas=esti$par))
+      }
+    }
+  
 }
 
 
