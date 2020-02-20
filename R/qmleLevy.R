@@ -11,7 +11,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
   parameter<-yuima@model@parameter@all
   orig.mylaw<-yuima@model@measure
   mylaw<-yuima@model@measure$df
-  
+  numbLev<-length(yuima@model@measure.type)
   if(missing(yuima))
     yuima.stop("yuima object is missing.")
   
@@ -301,36 +301,48 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
   cat("\nStarting Estimation of Levy Increments ... \n")
   data <- get.zoo.data(yuima)
   s.size<-yuima@sampling@n 
-  X<-as.numeric(data[[1]])
-  pX<-X[1:(s.size-1)]
-  inc<-double(s.size-1)
-  inc<-X[2:(s.size)]-pX
+  if(length(data)==1){
+    X<-as.numeric(data[[1]])
+    pX<-X[1:(s.size-1)]
+    inc<-double(s.size-1)
+    inc<-X[2:(s.size)]-pX
+  }else{
+    pX<- simplify2array(lapply(X = data, 
+      FUN = as.numeric))
+    pX<-pX[-nrow(pX),]
+    inc<- simplify2array(lapply(X = data, 
+      FUN = function(X){diff(as.numeric(X))}))
+    
+  }
+  
   modeltime<-yuima@model@time.variable
   modelstate<-yuima@model@solve.variable
   tmp.env<-new.env()
+  
+  if(joint){
+    coeffic<- coef(res) 
+  }else{
+    coeffic<- res[[1]]
+    if(length(res)>1){
+      for(j in c(2:length(res))){
+        coeffic<-c(coeffic,res[[j]])
+      }
+    }
+    
+  }
+  mp<-match(names(coeffic),parameter)
+  esort <- coeffic[order(mp)]
+  for(i in 1:length(coeffic))
+  {
+    assign(parameter[i],esort[[i]],envir=tmp.env)
+  }
   
   # DRIFT <- yuima@model@drift
   # JUMP <- yuima@model@jump.coeff
   
   if(length(yuima@model@solve.variable)==1){
     #parameter<-yuima@model@parameter@all
-    if(joint){
-     coeffic<- coef(res) 
-    }else{
-      coeffic<- res[[1]]
-      if(length(res)>1){
-        for(j in c(2:length(res))){
-          coeffic<-c(coeffic,res[[j]])
-        }
-      }
-      
-    }
-    mp<-match(names(coeffic),parameter)
-    esort <- coeffic[order(mp)]
-    for(i in 1:length(coeffic))
-    {
-      assign(parameter[i],esort[[i]],envir=tmp.env)
-    }
+    
     
     resi<-double(s.size-1) 
     assign(modeltime,yuima@sampling@delta,envir=tmp.env)
@@ -359,7 +371,94 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       res.incr<-resi
       }
     
-  }else{}
+  }else{
+    h<-yuima@sampling@delta
+    
+    Tbig<-dim(inc)[1]
+    assign(modeltime,h,envir=tmp.env)
+    numbofvar<- length(modelstate)
+    for(j in c(1:numbofvar)){
+      assign(modelstate[j],pX[,j],envir=tmp.env)
+    }
+
+    
+    drif.term<-array(0,c(Tbig,numbofvar))
+    for(i in c(1:numbofvar))
+      drif.term [,i]<- eval(DRIFT[i],envir=tmp.env)
+    # Check using variable in the drift
+    
+    # jump.term<-sapply(1:numbofvar,function(i){ 
+    #    sapply(1:numbLev, function(j){
+    #       eval(JUMP[[i]][j],envir=tmp.env)
+    #      },simplify = TRUE)
+    #    },simplify = TRUE)
+    
+    jump.term<-array(0,c(numbofvar,numbLev,Tbig))
+    for(i in c(1:numbofvar)){
+      for(j in c(1:numbLev))
+        jump.term[i,j, ] <-  eval(JUMP[[i]][j],envir=tmp.env)
+    }
+    
+
+   # if(dim(jump.term)[1]==numbofvar){
+   #    if(dim(jump.term)[2]==numbofvar){
+   #      if(det(jump.term)==0){
+   #        Invjump.term<-solve(t(jump.term)%*%jump.term)%*%t(jump.term)
+   #      }else{
+   #        Invjump.term<-solve(jump.term)
+   #      }
+   #    }else{
+   #      Invjump.term<-solve(t(jump.term)%*%jump.term)%*%t(jump.term)
+   #    }
+   #  Invjump.term <- Invjump.term%o%rep(1,Tbig)
+   # }else{
+   #   
+   # }
+   # 
+  
+  DeltaInc<-(inc-drif.term*h)
+  if(dim(jump.term)[1]==numbofvar){
+    if(dim(jump.term)[2]==numbofvar){
+        resi<-t(sapply(i:Tbig,function(i){
+            if(det(jump.term[,,i])==0){
+              step1<-t(jump.term[,,i])%*%jump.term[,,i]
+              if(det(step1)==0){
+                Invjump.term<-diag(rep(1,dim(step1)[1]))
+              }else{
+                Invjump.term<-solve(step1)%*%t(jump.term[,,i])
+              }
+            }else{
+              Invjump.term<-solve(jump.term[,,i])
+            }
+               Invjump.term%*% DeltaInc[i,]
+          }
+          )
+          )
+    }else{
+      resi<-t(sapply(i:Tbig,function(i){
+          step1<-t(jump.term[,,i])%*%jump.term[,,i]
+          if(det(step1)==0){
+            Invjump.term<-diag(rep(1,dim(step1)[1]))
+          }else{
+            Invjump.term<-solve(step1)%*%t(jump.term[,,i])
+          }
+          Invjump.term%*% DeltaInc[i,]
+          }
+        )
+      )
+    }
+  }
+
+    if(aggregation){
+      Ter <- min(floor(yuima@sampling@Terminal))
+      
+      res.incr<-t(sapply(1:Ter,function(i) colSums(resi[(floor((i-1)/h)):(floor(i/h)-1),]) ))
+      
+    }else{
+      res.incr<-resi
+    }
+  }
+  
   
   if(Est.Incr == "Incr"){
     return(list(res=res,Est.Incr=res.incr))
