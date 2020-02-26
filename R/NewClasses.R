@@ -192,3 +192,42 @@ setClass("yuima.multimodel",
          contains="yuima.model")
 
 setClass("yuima.snr", representation(call = "call", coef = "numeric", snr = "numeric", model = "yuima.model"), prototype = list(call = NULL, coef = NULL, snr = NULL, model = NULL))
+
+## yuima.qmle.incr-class
+#setClassUnion("yuima.qmle.incr", members=c("yuima.carma.qmle","cogarch.est.incr"))
+setClass("yuima.qmleLevy.incr",representation(Incr.Lev = "ANY",
+                                              logL.Incr = "ANY",
+                                              minusloglLevy="function",
+                                              Levydetails= "list",
+                                              Data = "ANY"),
+         contains="yuima.qmle")
+
+setMethod("initialize", "yuima.qmleLevy.incr",
+          function(.Object,
+                   Incr.Lev = NULL,
+                   logL.Incr = NULL,
+                   minusloglLevy=function(){NULL},
+                   Levydetails= list(),
+                   Data=NULL,
+                   yuima = new("yuima.qmle")){
+            .Object@Incr.Lev <- Incr.Lev
+            #.Object@param <- param
+            #.Object@Output <- Output
+            .Object@logL.Incr <- logL.Incr
+            .Object@Levydetails<- Levydetails
+            .Object@minusloglLevy <- minusloglLevy 
+            .Object@Data <- Data
+            .Object@model <- yuima@model
+            .Object@call <- yuima@call
+            .Object@coef <- yuima@coef
+            .Object@fullcoef <- yuima@fullcoef
+            .Object@vcov <- yuima@vcov
+            .Object@min <-yuima@min
+            .Object@details<- yuima@details
+            .Object@minuslogl<-yuima@minuslogl
+            .Object@nobs<-yuima@nobs
+            .Object@method<-yuima@method
+            return(.Object)
+          }
+)
+

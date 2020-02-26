@@ -7,6 +7,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
                    Est.Incr = c("NoIncr","Incr","IncrPar"),
                    aggregation = TRUE)
 {
+  call <- match.call()
+  truestart<-start
   cat("\nStarting QGMLE for SDE ... \n")
   parameter<-yuima@model@parameter@all
   orig.mylaw<-yuima@model@measure
@@ -267,8 +269,22 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       
       res <- list(first = fres@coef, second = sres@coef, third = tres@coef)
     }else if((length(ovp) > 0) || !(third)){
-      res <- list(first = fres@coef, second = sres@coef)}
-    else{
+      coef<-c(sres@coef,fres@coef)
+      mycoef<-unlist(truestart)
+      #mycoef1<-mycoef[names(coef)]
+      mycoef2<-mycoef[!names(mycoef)%in%names(coef)]
+      mycoef<-c(coef,mycoef2)
+      vcov0<-matrix(NA,nrow = length(coef),ncol=length(coef))
+      rownames(vcov0)<-names(coef)
+      colnames(vcov0)<-names(coef)
+      min0<- c(fres@min,sres@min)
+      details0<-list(sres@details,fres@details)
+      nobs0<-sres@nobs
+      res<-new("yuima.qmle", call = call, coef = coef, fullcoef = mycoef,
+                     vcov = vcov0, min = min0, details = details0, minuslogl = minusquasilogl,
+                     method = sres@method, nobs=nobs0, model=sdeModel)
+      # res <- list(first = fres@coef, second = sres@coef)}
+    }else{
       yuima.stop("third estimation may be theoretical invalid under the presence of an overlapping parameter.")
     }
   }else{
@@ -319,17 +335,17 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
   modelstate<-yuima@model@solve.variable
   tmp.env<-new.env()
   
-  if(joint){
+  #if(joint){
     coeffic<- coef(res) 
-  }else{
-    coeffic<- res[[1]]
-    if(length(res)>1){
-      for(j in c(2:length(res))){
-        coeffic<-c(coeffic,res[[j]])
-      }
-    }
-    
-  }
+  # }else{
+  #   coeffic<- res[[1]]
+  #   if(length(res)>1){
+  #     for(j in c(2:length(res))){
+  #       coeffic<-c(coeffic,res[[j]])
+  #     }
+  #   }
+  #   
+  #}
   mp<-match(names(coeffic),parameter)
   esort <- coeffic[order(mp)]
   for(i in 1:length(coeffic))
@@ -460,8 +476,28 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
   }
   
   
+  if(aggregation){
+    if(!is.matrix(res.incr)){
+      res.incr<- as.matrix(res.incr)
+    }
+    if(dim(res.incr)[2]==1){
+      colnames(res.incr)<-sdeModel@jump.variable
+    }else{
+      colnames(res.incr)<-paste0(sdeModel@jump.variable,c(1:dim(res.incr)[2]))
+    }
+    Incr.Lev <- zooreg(data=res.incr)
+    Incr.Lev<- setData(original.data = Incr.Lev,)
+  }else{
+    Incr.Lev <- zoo(res.incr,order.by=yuima@sampling@grid[[1]][-1])
+    Incr.Lev <- setData(original.data=Incr.Lev)
+  }
+  
   if(Est.Incr == "Incr"){
-    return(list(res=res,Est.Incr=res.incr))
+    
+      
+    result<- new("yuima.qmleLevy.incr",Incr.Lev=Incr.Lev,
+                 Data = yuima@data,  yuima=res)
+    return(result)
   }
   cat("\nEstimation Levy parameters ... \n")
   
@@ -486,7 +522,21 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     upperjump <- upper0[lev.names]
     esti <- optim(fn = minusloglik, lower = lowerjump, upper = upperjump, 
                   par = para, method = "L-BFGS-B")
-    return(list(res=res,Est.Incr=res.incr, meas=esti$par))
+    #optimHess(par=esti$par, fn=minusloglik)
+    res@coef<-c(res@coef,esti$par)
+    res@fullcoef[names(para)]<-esti$par
+    res@vcov<-cbind(res@vcov,matrix(NA,ncol=length(esti$par),nrow=dim(res@vcov)[1]))
+    colnames(res@vcov)<-names(res@fullcoef)
+    res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
+    rownames(res@vcov)<-names(res@fullcoef)
+    res@min<-c(res@min,esti$value)
+    res@nobs<-c(res@nobs,length(Incr.Lev@zoo.data[[1]]))
+    
+    result<- new("yuima.qmleLevy.incr",Incr.Lev=Incr.Lev,
+                 minusloglLevy = minusloglik,logL.Incr=-esti$value,
+                 Data = yuima@data,  yuima=res, Levydetails=esti)
+    
+    return(result)
     }else{
       dist <- substr(as.character(orig.mylaw$df$expr), 2, 10^3)
   
