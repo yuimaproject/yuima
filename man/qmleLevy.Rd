@@ -12,7 +12,7 @@ Calculate the Gaussian quasi-likelihood and Gaussian quasi-likelihood estimators
 }
 \usage{
 qmleLevy(yuima, start, lower, upper, joint = FALSE, 
-third = FALSE, Est.Incr = c("NoIncr", "Incr", "IncrPar"), 
+third = FALSE, Est.Incr = "NoIncr", 
 aggregation = TRUE)
 }
 \arguments{
@@ -23,7 +23,7 @@ aggregation = TRUE)
   \item{joint}{perform joint estimation or two stage estimation, by default \code{joint=FALSE}. If there exists an overlapping parameter, \code{joint=TRUE} does not work for the theoretical reason}
   \item{third}{perform third estimation by default \code{third=FALSE}. If there exists an overlapping parameter, \code{third=TRUE} does not work for the         
                theoretical reason.}
-  \item{Est.Incr}{the qmleLevy returns an object of \code{mle-clas}, by default \code{Est.Incr="NoIncr"}.}         
+  \item{Est.Incr}{the qmleLevy returns an object of \code{mle-clas}, by default \code{Est.Incr="NoIncr"}, other options as \code{"Inc"} or \code{"IncrPar"}.}         
   \item{aggregation}{If \code{aggregation=TRUE}, the function returns the unit-time Levy increments. If \code{Est.Incr="IncrPar"}, the function estimates Levy parameters using the unit-time Levy increments.}    
 }
 \details{

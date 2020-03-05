@@ -3,10 +3,15 @@
 ########################################################################
 
 
+#qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
+#                   Est.Incr = c("NoIncr","Incr","IncrPar"),
+#                   aggregation = TRUE)
 qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
-                   Est.Incr = c("NoIncr","Incr","IncrPar"),
+                   Est.Incr = "NoIncr",
                    aggregation = TRUE)
 {
+  if(!(Est.Incr %in% c("NoIncr","Incr","IncrPar")))
+  	stop("Argument'Est.Incr' must be one of \"NoIncr\",\"Incr\" or \"IncrPar\"")
   call <- match.call()
   truestart<-start
   cat("\nStarting QGMLE for SDE ... \n")
