@@ -70,6 +70,7 @@ Contacts: Yuma Uehara \email{y-uehara@math.kyushu-u.ac.jp}
 %\seealso{
 %}
 \examples{
+\dontrun{
 ## One-dimensional case 
 dri<-"-theta0*x" ## set drift
 jum<-"theta1/(1+x^2)^(-1/2)" ## set jump
@@ -130,6 +131,7 @@ start<-list(theta0 = runif(1,0.5,4), theta1 = runif(1,1,4),
 theta2 = runif(1,1,5),lambda=lambda, alpha=alpha, 
 beta=beta,mu=mu, Lambda=Lambda) ## set initial values
 qmleLevy(yuima,start=start,lower=lower,upper=upper,joint = FALSE,third=TRUE) 
+}
 }
 
 \keyword{qmle}% use one of  RShowDoc("KEYWORDS")
