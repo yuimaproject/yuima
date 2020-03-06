@@ -62,7 +62,7 @@ stochastic differential equation (Japanese) ., Proc. Inst. Statist. Math., accep
 \author{
 The YUIMA Project Team
 
-Contacts: Yuma Uehara \email{y-uehara@math.kyushu-u.ac.jp}
+Contacts: Yuma Uehara \email{y-uehara@ism.ac.jp}
 }
 
 
