@@ -65,4 +65,5 @@
            modified llag.test.Rd, bns.test.Rd, hyavar.R, mpv.Rd, mllag.Rd, llag.Rd, cce.Rd, spectralcov.R, JBtest.Rd, snr.Rd
 2020/2/6: fixed length(class(matrix))>2 issue. Code for simPoi fastened.
 2020/3/5: should have fixed qmleLevy if() condition and rhck PROTECT problems
+2020/4/25: modified IC.R, IC.Rd, and adaBayes.R
 
