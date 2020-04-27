@@ -243,7 +243,7 @@ S3method(print, yuima.lasso)
 S3method(print, yuima.llag) # Oct. 10, 2015
 S3method(print, yuima.mllag) # Oct. 10, 2015
 S3method(print, yuima.specv) # Oct. 10, 2015
-
+S3method(print, yuima.ic)
 
 S3method(toLatex, yuima)
 S3method(toLatex, yuima.model)
