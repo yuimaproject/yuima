@@ -266,17 +266,18 @@ setMethod("adaBayes", "yuima",
                   }
                   
                   #if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0){
-                    q_n <- dnorm(x_n,x_c,sqrt(vcov))
+                    #q_n <- dnorm(x_n,x_c,sqrt(vcov))
                     p_n <- p(x_n)
-                    q_c <- dnorm(x_c,x_n,sqrt(vcov))
+                    #q_c <- dnorm(x_c,x_n,sqrt(vcov))
                     #u <- runif(1)
                     #a <- (p_n*q_c)/(p_c*q_n)
                     u <- log(runif(1))
-                    a <- p_n-p_c+log(q_c/q_n)
+                    #a <- p_n-p_c+log(q_c/q_n)
+                    a <- p_n-p_c
                     #asd[(i+1),2:3] <- c(p_c, p_n)
                     if(u<a){
                       p_c <- p_n
-                      q_c <- q_n
+                      #q_c <- q_n
                       x_c <- x_n
                     }
                   #}
