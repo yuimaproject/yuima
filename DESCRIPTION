@@ -1,7 +1,7 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project Package for SDEs
-Version: 1.10.0
+Version: 1.10.1
 Depends: R(>= 2.10.0), methods, zoo, stats4, utils, expm, cubature,
         mvtnorm
 Imports: Rcpp (>= 0.12.1), boot (>= 1.3-2), glassoFast
@@ -11,3 +11,10 @@ Description: Simulation and Inference for SDEs and Other Stochastic Processes.
 License: GPL-2
 URL: http://www.yuima-project.com
 LinkingTo: Rcpp, RcppArmadillo
+Repository: R-Forge
+Repository/R-Forge/Project: yuima
+Repository/R-Forge/Revision: 729
+Repository/R-Forge/DateTimeStamp: 2020-03-06 03:42:05
+Date/Publication: 2020-03-06 03:42:05
+NeedsCompilation: yes
+Packaged: 2020-03-06 04:05:08 UTC; rforge
