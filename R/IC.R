@@ -1,67 +1,583 @@
 ## information criteria
 
-IC <- function(yuima, data = NULL, start, lower, upper, joint = FALSE, rcpp = FALSE,...){
-  if(missing(yuima)) stop("yuima object is missing.")
+IC <- function(drif = NULL, diff = NULL, data = NULL, Terminal = 1, add.settings = list(), start, lower, upper, ergodic = TRUE, stepwise = FALSE, weight = FALSE, rcpp = FALSE, ...){ 
   
-  if(!is(yuima,"yuima")) stop("This function is for yuima-class.")
+  Levy <- FALSE
   
-  state.num <- length(yuima@model@state.variable)
-  if(is.null(yuima@data@zoo.data) == TRUE){
-    if(is.matrix(data) == FALSE){
-      n <- length(data)
-      sub.zoo.data <- list(zoo(x = data, order.by = yuima@sampling@grid[[1]]))
-      names(sub.zoo.data)[1] <- "Series 1"
-    }else{
-      sub.zoo.data <- list()
-      if(ncol(data)-state.num != 0){
-        data <- t(data)
+  settings <- list(hurst = 0.5, measure = list(), measure.type = character(), state.variable = "x", jump.variable = "z", time.variable = "t", solve.variable = "x")
+  if(length(add.settings) > 0){
+    match.settings <- match(names(add.settings), names(settings))
+    for(i in 1:length(match.settings)){
+      settings[[match.settings[i]]] <- add.settings[[i]]
+    }
+  }
+  if(ergodic == FALSE){
+    stepwise <- FALSE
+  }
+  
+  if(stepwise == FALSE){
+    # Joint
+    ## Candidate models
+    yuimas <- NULL
+    if(ergodic == TRUE){
+      joint <- TRUE
+      for(i in 1:length(diff)){
+        for(j in 1:length(drif)){
+          mod <- setModel(drift = drif[[j]], diffusion = diff[[i]], hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          if(is.matrix(data) == FALSE){
+            n <- length(data)-1
+            modsamp <- setSampling(Terminal = Terminal, n = n)
+            modyuima <- setYuima(model = mod, sampling = modsamp)
+            sub.zoo.data <- list(zoo(x = data, order.by = modyuima@sampling@grid[[1]]))
+            names(sub.zoo.data)[1] <- "Series 1"
+          }else{
+            n <- nrow(data)-1
+            modsamp <- setSampling(Terminal = Terminal, n = n)
+            modyuima <- setYuima(model = mod, sampling = modsamp)
+            sub.zoo.data <- list()
+            for(j in 1:ncol(data)){
+              sub.zoo.data <- c(sub.zoo.data, list(zoo(x = data[,j], order.by = modyuima@sampling@grid[[1]])))
+              names(sub.zoo.data)[j] <- paste("Series", j)
+            }
+          }
+          modyuima@data@zoo.data <- sub.zoo.data
+          
+          yuimas <- c(yuimas, list(modyuima))
+        }
       }
-      n <- nrow(data)
-      for(i in 1:ncol(data)){
-        sub.zoo.data <- c(sub.zoo.data, list(zoo(x = data[,i], order.by = yuima@sampling@grid[[1]])))
-        names(sub.zoo.data)[i] <- paste("Series", i)
+    }else{
+      joint <- FALSE
+      for(i in 1:length(diff)){
+        if(is.matrix(data) == FALSE){
+          mod <- setModel(drift = "0", diffusion = diff[[i]], hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          n <- length(data)-1
+          modsamp <- setSampling(Terminal = Terminal, n = n)
+          modyuima <- setYuima(model = mod, sampling = modsamp)
+          sub.zoo.data <- list(zoo(x = data, order.by = modyuima@sampling@grid[[1]]))
+          names(sub.zoo.data)[1] <- "Series 1"
+        }else{
+          zerovec <- rep("0", length=ncol(data))
+          mod <- setModel(drift = zerovec, diffusion = diff[[i]], hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          n <- nrow(data)-1
+          modsamp <- setSampling(Terminal = Terminal, n = n)
+          modyuima <- setYuima(model = mod, sampling = modsamp)
+          sub.zoo.data <- list()
+          for(j in 1:ncol(data)){
+            sub.zoo.data <- c(sub.zoo.data, list(zoo(x = data[,j], order.by = modyuima@sampling@grid[[1]])))
+            names(sub.zoo.data)[j] <- paste("Series", j)
+          }
+        }
+        modyuima@data@zoo.data <- sub.zoo.data
+        
+        yuimas <- c(yuimas, list(modyuima))
       }
     }
-    yuima@data@zoo.data <- sub.zoo.data
+    mod.num <- length(yuimas)
+    
+    ## Model comparison
+    Esti <- BIC <- QBIC <- CIC <- NULL
+    for(i in 1:mod.num){
+      yuima <- yuimas[[i]]
+      #alpha <- yuima@model@parameter@drift
+      #beta <- yuima@model@parameter@diffusion
+      
+      para.num.init  <- match(yuima@model@parameter@all, names(start))
+      para.num.low  <- match(yuima@model@parameter@all, names(lower))
+      para.num.upp  <- match(yuima@model@parameter@all, names(upper))
+      para.start <- NULL
+      para.lower <- NULL
+      para.upper <- NULL
+      for(j in 1:length(yuima@model@parameter@all)){
+        para.start <- c(para.start, list(start[[para.num.init[j]]]))
+        para.lower <- c(para.lower, list(lower[[para.num.low[j]]]))
+        para.upper <- c(para.upper, list(upper[[para.num.upp[j]]]))
+      }
+      names(para.start) <- yuima@model@parameter@all
+      names(para.lower) <- yuima@model@parameter@all
+      names(para.upper) <- yuima@model@parameter@all
+      
+      mle <- qmle(yuima, start = para.start, lower = para.lower, upper = para.upper, method = "L-BFGS-B", joint = joint, rcpp = rcpp)
+      hess <- list(mle@details$hessian)
+      hess.diff <- subset(hess[[1]], rownames(hess[[1]])%in%yuima@model@parameter@diffusion, select=yuima@model@parameter@diffusion)
+      hess.drif <- subset(hess[[1]], rownames(hess[[1]])%in%yuima@model@parameter@drift, select=yuima@model@parameter@drift)
+      
+      esti <- list(coef(mle))
+      names(esti[[1]]) <- c(yuima@model@parameter@diffusion, yuima@model@parameter@drift)
+      cic <- summary(mle)@m2logL+2*(length(yuima@model@parameter@drift)+length(yuima@model@parameter@diffusion))
+      bic <- summary(mle)@m2logL+length(yuima@model@parameter@drift)*log(Terminal)+length(yuima@model@parameter@diffusion)*log(n)
+      if(det(hess.diff) > 0 && det(hess.drif) > 0){
+        qbic <- summary(mle)@m2logL+log(det(hess.diff))+log(det(hess.drif))
+      }else{
+        qbic <- summary(mle)@m2logL+length(yuima@model@parameter@drift)*log(Terminal)+length(yuima@model@parameter@diffusion)*log(n)
+      }
+      
+      Esti <- c(Esti, esti)
+      BIC <- c(BIC, bic)
+      QBIC <- c(QBIC, qbic)
+      CIC <- c(CIC, cic)
+    }
+    BIC.opt <- which.min(BIC)
+    QBIC.opt <- which.min(QBIC)
+    CIC.opt <- which.min(CIC)
+    
+    ## Names
+    if(ergodic == TRUE){
+      for(i in 1:length(diff)){
+        for(j in 1:length(drif)){
+          names(Esti)[(length(drif)*(i-1)+j)] <- paste("diffusion_", i, " & drift_", j, sep = "") 
+        }
+      }
+      
+      BIC <- matrix(BIC, length(drif), length(diff))
+      QBIC <- matrix(QBIC, length(drif), length(diff))
+      CIC <- matrix(CIC, length(drif), length(diff))
+      
+      diff.name <- numeric(length(diff))
+      drif.name <- numeric(length(drif))
+      for(i in 1:length(diff)){
+        diff.name[i] <- paste("diffusion", i, sep = "_") 
+      }
+      colnames(BIC) <- colnames(QBIC) <- colnames(CIC) <- diff.name
+      for(i in 1:length(drif)){
+        drif.name[i] <- paste("drift", i, sep = "_")
+      }
+      rownames(BIC) <- rownames(QBIC) <- rownames(CIC) <- drif.name
+    }else{
+      for(i in 1:length(diff)){
+        names(Esti)[i] <- paste("diffusion", i, sep = "_") 
+      }
+      
+      diff.name <- numeric(length(diff))
+      for(i in 1:length(diff)){
+        diff.name[i] <- paste("diffusion", i, sep = "_") 
+      }
+      names(BIC) <- names(QBIC) <- diff.name
+    }
+    
+    ## Model weights
+    if(weight == TRUE){
+      BIC.weight <- exp(-(1/2)*(BIC-BIC[BIC.opt]))/sum(exp(-(1/2)*(BIC-BIC[BIC.opt])))
+      QBIC.weight <- exp(-(1/2)*(QBIC-QBIC[QBIC.opt]))/sum(exp(-(1/2)*(QBIC-QBIC[QBIC.opt])))
+      CIC.weight <- exp(-(1/2)*(CIC-CIC[CIC.opt]))/sum(exp(-(1/2)*(CIC-CIC[CIC.opt])))
+      
+      if(ergodic == TRUE){
+        BIC.weight <- matrix(BIC.weight, length(drif), length(diff))
+        QBIC.weight <- matrix(QBIC.weight, length(drif), length(diff))
+        CIC.weight <- matrix(CIC.weight, length(drif), length(diff))
+        
+        colnames(BIC.weight) <- colnames(QBIC.weight) <- colnames(CIC.weight) <- diff.name
+        rownames(BIC.weight) <- rownames(QBIC.weight) <- rownames(CIC.weight) <- drif.name
+      }else{
+        names(BIC.weight) <- names(QBIC.weight) <- diff.name
+      }
+    }
+    
+    ## Results
+    diff.copy <- diff
+    drif.copy <- drif
+    for(i in 1:length(diff)){
+      names(diff.copy)[i] <- paste("diffusion", i, sep = "_") 
+    }
+    if(ergodic == TRUE){
+      for(i in 1:length(drif)){
+        names(drif.copy)[i] <- paste("drift", i, sep = "_") 
+      }
+      diff.BIC.opt <- BIC.opt%/%length(drif)+1
+      diff.QBIC.opt <- QBIC.opt%/%length(drif)+1
+      diff.CIC.opt <- CIC.opt%/%length(drif)+1
+      drif.BIC.opt <- (BIC.opt+(length(drif)-1))%%length(drif)+1
+      drif.QBIC.opt <- (QBIC.opt+(length(drif)-1))%%length(drif)+1
+      drif.CIC.opt <- (CIC.opt+(length(drif)-1))%%length(drif)+1
+    }else{
+      drif <- NULL
+    }
+    
+    call <- match.call()
+    model.coef <- list(drift = drif.copy, diffusion = diff.copy)
+    if(length(drif) >0){
+      bic.selected.coeff <- list(drift = drif[[drif.BIC.opt]], diffusion = diff[[diff.BIC.opt]])
+      qbic.selected.coeff <- list(drift = drif[[drif.QBIC.opt]], diffusion = diff[[diff.QBIC.opt]])
+      cic.selected.coeff <- list(drift = drif[[drif.CIC.opt]], diffusion = diff[[diff.CIC.opt]])
+    }else{
+      bic.selected.coeff <- list(drift = NULL, diffusion = diff[[BIC.opt]])
+      qbic.selected.coeff <- list(drift = NULL, diffusion = diff[[QBIC.opt]])
+      cic.selected.coeff <- list(drift = NULL, diffusion = NULL)
+      CIC <- NULL
+      CIC.weight <- NULL
+    }
+    ic.selected <- list(BIC = bic.selected.coeff, QBIC = qbic.selected.coeff, CIC = cic.selected.coeff)
+    if(weight == TRUE){
+      ak.weight <- list(BIC = BIC.weight, QBIC = QBIC.weight, CIC = CIC.weight)
+    }else{
+      ak.weight <- NULL
+    }
+    final_res <- list(call = call, model = model.coef, par = Esti, BIC = BIC, QBIC = QBIC, CIC = CIC, weight = ak.weight, selected = ic.selected)
+    
   }else{
-    n <- yuima@sampling@n[1]
+    # Stepwise
+    Esti1 <- BIC1 <- QBIC1 <- NULL
+    Esti2.bic <- Esti2.qbic <- BIC2 <- QBIC2 <- NULL
+    
+    if(Levy == FALSE){
+      # First step
+      yuimas1 <- swbeta <- NULL
+      for(i in 1:length(diff)){
+        ## Candidate models
+        if(is.matrix(data) == FALSE){
+          mod <- setModel(drift = "0", diffusion = diff[[i]], hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          n <- length(data)-1
+          modsamp <- setSampling(Terminal = Terminal, n = n)
+          modyuima <- setYuima(model = mod, sampling = modsamp)
+          sub.zoo.data <- list(zoo(x = data, order.by = modyuima@sampling@grid[[1]]))
+          names(sub.zoo.data)[1] <- "Series 1"
+        }else{
+          zerovec <- rep("0", length=ncol(data))
+          mod <- setModel(drift = zerovec, diffusion = diff[[i]], hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          n <- nrow(data)-1
+          modsamp <- setSampling(Terminal = Terminal, n = n)
+          modyuima <- setYuima(model = mod, sampling = modsamp)
+          sub.zoo.data <- list()
+          for(j in 1:ncol(data)){
+            sub.zoo.data <- c(sub.zoo.data, list(zoo(x = data[,j], order.by = modyuima@sampling@grid[[1]])))
+            names(sub.zoo.data)[j] <- paste("Series", j)
+          }
+        }
+        modyuima@data@zoo.data <- sub.zoo.data
+        yuimas1 <- c(yuimas1, list(modyuima))
+        
+        ## Model comparison
+        yuima <- modyuima
+        swbeta <- c(swbeta, list(yuima@model@parameter@diffusion))
+        
+        para.num.init  <- match(swbeta[[i]], names(start))
+        para.num.low  <- match(swbeta[[i]], names(lower))
+        para.num.upp  <- match(swbeta[[i]], names(upper))
+        para.start <- NULL
+        para.lower <- NULL
+        para.upper <- NULL
+        for(j in 1:length(swbeta[[i]])){
+          para.start <- c(para.start, list(start[[para.num.init[j]]]))
+          para.lower <- c(para.lower, list(lower[[para.num.low[j]]]))
+          para.upper <- c(para.upper, list(upper[[para.num.upp[j]]]))
+        }
+        names(para.start) <- swbeta[[i]]
+        names(para.lower) <- swbeta[[i]]
+        names(para.upper) <- swbeta[[i]]
+        
+        mle <- qmle(yuima, start = para.start, lower = para.lower, upper = para.upper, method = "L-BFGS-B", joint = FALSE, rcpp = rcpp)
+        hess <- mle@details$hessian
+        
+        esti <- list(coef(mle))
+        names(esti[[1]]) <- swbeta[[i]]
+        bic <- summary(mle)@m2logL+length(swbeta[[i]])*log(n)
+        if(det(hess) > 0){
+          qbic <- summary(mle)@m2logL+log(det(hess))
+        }else{
+          qbic <- summary(mle)@m2logL+length(swbeta[[i]])*log(n)
+        }
+        
+        Esti1 <- c(Esti1, esti)
+        BIC1 <- c(BIC1, bic)
+        QBIC1 <- c(QBIC1, qbic)
+      }
+      BIC.opt1 <- which.min(BIC1)
+      QBIC.opt1 <- which.min(QBIC1)
+      
+      ## Names
+      for(i in 1:length(diff)){
+        names(Esti1)[i] <- paste("diffusion", i, sep = "_") 
+        names(BIC1)[i] <- paste("diffusion", i, sep = "_") 
+        names(QBIC1)[i] <- paste("diffusion", i, sep = "_")
+      }
+      
+      ## Model weights
+      if(weight == TRUE){
+        BIC.weight1 <- exp(-(1/2)*(BIC1-BIC1[BIC.opt1]))/sum(exp(-(1/2)*(BIC1-BIC1[BIC.opt1])))
+        QBIC.weight1 <- exp(-(1/2)*(QBIC1-QBIC1[QBIC.opt1]))/sum(exp(-(1/2)*(QBIC1-QBIC1[QBIC.opt1])))
+        for(i in 1:length(diff)){
+          names(BIC.weight1)[i] <- paste("diffusion", i, sep = "_") 
+          names(QBIC.weight1)[i] <- paste("diffusion", i, sep = "_")
+        }
+      }
+      
+      # Second step
+      ## Use the selection results of first step
+      diff.row.bic <- length(yuimas1[[BIC.opt1]]@model@diffusion)
+      Diff.esti.bic <- NULL
+      Esti1.chr.bic <- as.character(Esti1[[BIC.opt1]])
+      Diff.esti.bic <- diff[[BIC.opt1]]
+      for(i in 1:diff.row.bic){
+        if(length(Esti1.chr.bic) == 1){
+          Diff.esti.bic.sub <- gsub(swbeta[[BIC.opt1]][1], Esti1.chr.bic[1], yuimas1[[BIC.opt1]]@model@diffusion[[i]])
+        }else{
+          Diff.esti.bic.sub <- gsub(swbeta[[BIC.opt1]][1], Esti1.chr.bic[1], yuimas1[[BIC.opt1]]@model@diffusion[[i]])
+          for(j in 1:(length(Esti1.chr.bic)-1)){
+            Diff.esti.bic.sub <- gsub(swbeta[[BIC.opt1]][(j+1)], Esti1.chr.bic[(j+1)], Diff.esti.bic.sub)
+          }
+        }
+        if(class(Diff.esti.bic) == "character"){
+          Diff.esti.bic <- Diff.esti.bic.sub
+        }else{
+          Diff.esti.bic[i,] <- Diff.esti.bic.sub
+        }
+      }
+      
+      diff.row.qbic <- length(yuimas1[[QBIC.opt1]]@model@diffusion)
+      Diff.esti.qbic <- NULL
+      Esti1.chr.qbic <- as.character(Esti1[[QBIC.opt1]])
+      Diff.esti.qbic <- diff[[QBIC.opt1]]
+      for(i in 1:diff.row.qbic){
+        if(length(Esti1.chr.qbic) == 1){
+          Diff.esti.qbic.sub <- gsub(swbeta[[QBIC.opt1]][1], Esti1.chr.qbic[1], yuimas1[[QBIC.opt1]]@model@diffusion[[i]])
+        }else{
+          Diff.esti.qbic.sub <- gsub(swbeta[[QBIC.opt1]][1], Esti1.chr.qbic[1], yuimas1[[QBIC.opt1]]@model@diffusion[[i]])
+          for(j in 1:(length(Esti1.chr.qbic)-1)){
+            Diff.esti.qbic.sub <- gsub(swbeta[[QBIC.opt1]][(j+1)], Esti1.chr.qbic[(j+1)], Diff.esti.qbic.sub)
+          }
+        }
+        if(class(Diff.esti.qbic) == "character"){
+          Diff.esti.qbic <- Diff.esti.qbic.sub
+        }else{
+          Diff.esti.qbic[i,] <- Diff.esti.qbic.sub
+        }
+      }
+      
+      yuimas2.bic <- yuimas2.qbic <- swalpha <- NULL
+      for(i in 1:length(drif)){
+        ## Candidate models
+        if(is.matrix(data) == FALSE){
+          mod.bic <- setModel(drift = drif[[i]], diffusion = Diff.esti.bic, hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          mod.qbic <- setModel(drift = drif[[i]], diffusion = Diff.esti.qbic, hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          n <- length(data)-1
+          modsamp <- setSampling(Terminal = Terminal, n = n)
+          modyuima.bic <- setYuima(model = mod.bic, sampling = modsamp)
+          modyuima.qbic <- setYuima(model = mod.qbic, sampling = modsamp)
+          sub.zoo.data.bic <- list(zoo(x = data, order.by = modyuima.bic@sampling@grid[[1]]))
+          sub.zoo.data.qbic <- list(zoo(x = data, order.by = modyuima.qbic@sampling@grid[[1]]))
+          names(sub.zoo.data.bic)[1] <- names(sub.zoo.data.qbic)[1] <- "Series 1"
+        }else{
+          mod.bic <- setModel(drift = drif[[i]], diffusion = Diff.esti.bic, hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          mod.qbic <- setModel(drift = drif[[i]], diffusion = Diff.esti.qbic, hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+          n <- nrow(data)-1
+          modsamp <- setSampling(Terminal = Terminal, n = n)
+          modyuima.bic <- setYuima(model = mod.bic, sampling = modsamp)
+          modyuima.qbic <- setYuima(model = mod.qbic, sampling = modsamp)
+          sub.zoo.data.bic <- sub.zoo.data.qbic <-  list()
+          for(j in 1:ncol(data)){
+            sub.zoo.data.bic <- c(sub.zoo.data.bic, list(zoo(x = data[,j], order.by = modyuima.bic@sampling@grid[[1]])))
+            sub.zoo.data.qbic <- c(sub.zoo.data.qbic, list(zoo(x = data[,j], order.by = modyuima.qbic@sampling@grid[[1]])))
+            names(sub.zoo.data.bic)[j] <- names(sub.zoo.data.qbic)[j] <- paste("Series", j)
+          }
+        }
+        modyuima.bic@data@zoo.data <- sub.zoo.data.bic
+        modyuima.qbic@data@zoo.data <- sub.zoo.data.qbic
+        yuimas2.bic <- c(yuimas2.bic, list(modyuima.bic))
+        yuimas2.qbic <- c(yuimas2.qbic, list(modyuima.qbic))
+        
+        ## Model comparison
+        swalpha <- c(swalpha, list(modyuima.bic@model@parameter@drift))
+        
+        para.number.init  <- match(swalpha[[i]], names(start))
+        para.number.low  <- match(swalpha[[i]], names(lower))
+        para.number.upp  <- match(swalpha[[i]], names(upper))
+        para.start <- NULL
+        para.lower <- NULL
+        para.upper <- NULL
+        for(j in 1:length(swalpha[[i]])){
+          para.start <- c(para.start, list(start[[para.number.init[j]]]))
+          para.lower <- c(para.lower, list(lower[[para.number.low[j]]]))
+          para.upper <- c(para.upper, list(upper[[para.number.upp[j]]]))
+        }
+        names(para.start) <- swalpha[[i]]
+        names(para.lower) <- swalpha[[i]]
+        names(para.upper) <- swalpha[[i]]
+        
+        mle.bic <- qmle(modyuima.bic, start = para.start, lower = para.lower, upper = para.upper, method = "L-BFGS-B", rcpp = rcpp)
+        mle.qbic <- qmle(modyuima.qbic, start = para.start, lower = para.lower, upper = para.upper, method = "L-BFGS-B", rcpp = rcpp)
+        hess2 <- mle.qbic@details$hessian
+        
+        esti.bic <- list(coef(mle.bic))
+        esti.qbic <- list(coef(mle.qbic))
+        names(esti.bic[[1]]) <- names(esti.qbic[[1]]) <- swalpha[[i]]
+        bic <- summary(mle.bic)@m2logL+length(swalpha[[i]])*log(Terminal)
+        if(det(hess2) > 0){
+          qbic <- summary(mle.qbic)@m2logL+log(det(hess2))
+        }else{
+          qbic <- summary(mle.qbic)@m2logL+length(swalpha[[i]])*log(Terminal)
+        }
+        
+        Esti2.bic <- c(Esti2.bic, esti.bic)
+        Esti2.qbic <- c(Esti2.qbic, esti.qbic)
+        BIC2 <- c(BIC2, bic)
+        QBIC2 <- c(QBIC2, qbic)
+      }
+      BIC.opt2 <- which.min(BIC2)
+      QBIC.opt2 <- which.min(QBIC2)
+      
+      ## Names
+      for(i in 1:length(drif)){
+        names(Esti2.bic)[i] <- paste("drift", i, sep = "_")
+        names(Esti2.qbic)[i] <- paste("drift", i, sep = "_")
+        names(BIC2)[i] <- paste("drift", i, sep = "_") 
+        names(QBIC2)[i] <- paste("drift", i, sep = "_")
+      }
+      
+      ## Model weights
+      if(weight == TRUE){
+        BIC.weight.full <- QBIC.weight.full <- matrix(0, length(drif), length(diff))
+        for(i in 1:length(diff)){
+          diff.row <- length(yuimas1[[i]]@model@diffusion)
+          Diff.esti <- NULL
+          Esti1.chr <- as.character(Esti1[[i]])
+          Diff.esti <- diff[[i]]
+          for(j in 1:diff.row){
+            if(length(Esti1.chr) == 1){
+              Diff.esti.sub <- gsub(swbeta[[i]][1], Esti1.chr[1], yuimas1[[i]]@model@diffusion[[j]])
+            }else{
+              Diff.esti.sub <- gsub(swbeta[[i]][1], Esti1.chr[1], yuimas1[[i]]@model@diffusion[[j]])
+              for(k in 1:(length(Esti1.chr)-1)){
+                Diff.esti.sub <- gsub(swbeta[[i]][(k+1)], Esti1.chr[(k+1)], Diff.esti.sub)
+              }
+            }
+            if(class(Diff.esti) == "character"){
+              Diff.esti <- Diff.esti.sub
+            }else{
+              Diff.esti[j,] <- Diff.esti.sub
+            }
+          }
+          
+          BIC2.sub <- QBIC2.sub <- NULL
+          for(j in 1:length(drif)){
+            if(is.matrix(data) == FALSE){
+              mod <- setModel(drift = drif[[j]], diffusion = Diff.esti, hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+              n <- length(data)-1
+              modsamp <- setSampling(Terminal = Terminal, n = n)
+              modyuima <- setYuima(model = mod, sampling = modsamp)
+              sub.zoo.data <- list(zoo(x = data, order.by = modyuima@sampling@grid[[1]]))
+              names(sub.zoo.data)[1] <- "Series 1"
+            }else{
+              mod <- setModel(drift = drif[[j]], diffusion = Diff.esti, hurst = settings[[1]], measure = settings[[2]], measure.type = settings[[3]], state.variable = settings[[4]], jump.variable = settings[[5]], time.variable = settings[[6]], solve.variable = settings[[7]])
+              n <- nrow(data)-1
+              modsamp <- setSampling(Terminal = Terminal, n = n)
+              modyuima <- setYuima(model = mod, sampling = modsamp)
+              sub.zoo.data <-  list()
+              for(k in 1:ncol(data)){
+                sub.zoo.data <- c(sub.zoo.data, list(zoo(x = data[,k], order.by = modyuima@sampling@grid[[1]])))
+                names(sub.zoo.data)[k] <- paste("Series", k)
+              }
+            }
+            modyuima@data@zoo.data <- sub.zoo.data
+            
+            para.number.init  <- match(swalpha[[j]], names(start))
+            para.number.low  <- match(swalpha[[j]], names(lower))
+            para.number.upp  <- match(swalpha[[j]], names(upper))
+            para.start <- NULL
+            para.lower <- NULL
+            para.upper <- NULL
+            for(k in 1:length(swalpha[[j]])){
+              para.start <- c(para.start, list(start[[para.number.init[k]]]))
+              para.lower <- c(para.lower, list(lower[[para.number.low[k]]]))
+              para.upper <- c(para.upper, list(upper[[para.number.upp[k]]]))
+            }
+            names(para.start) <- swalpha[[j]]
+            names(para.lower) <- swalpha[[j]]
+            names(para.upper) <- swalpha[[j]]
+            
+            mle.weight <- qmle(modyuima, start = para.start, lower = para.lower, upper = para.upper, method = "L-BFGS-B", rcpp = rcpp)
+            hess.weight <- mle.weight@details$hessian
+            
+            esti.weight <- list(coef(mle.weight))
+            names(esti.weight[[1]]) <- swalpha[[j]]
+            bic <- summary(mle.weight)@m2logL+length(swalpha[[j]])*log(Terminal)
+            if(det(hess.weight) > 0){
+              qbic <- summary(mle.weight)@m2logL+log(det(hess.weight))
+            }else{
+              qbic <- summary(mle.weight)@m2logL+length(swalpha[[j]])*log(Terminal)
+            }
+            
+            #Esti2.weight <- c(Esti2.weight, esti.weight)
+            BIC2.sub <- c(BIC2.sub, bic)
+            QBIC2.sub <- c(QBIC2.sub, qbic)
+          }
+          
+          BIC2.sub.opt <- which.min(BIC2.sub)
+          QBIC2.sub.opt <- which.min(QBIC2.sub)
+          
+          BIC.weight2 <- exp(-(1/2)*(BIC2.sub-BIC2.sub[BIC2.sub.opt]))/sum(exp(-(1/2)*(BIC2.sub-BIC2.sub[BIC2.sub.opt])))
+          QBIC.weight2 <- exp(-(1/2)*(QBIC2.sub-QBIC2.sub[BIC2.sub.opt]))/sum(exp(-(1/2)*(QBIC2.sub-QBIC2.sub[QBIC2.sub.opt])))
+          
+          BIC.weight.full[,i] <- BIC.weight1[i]*BIC.weight2
+          QBIC.weight.full[,i] <- QBIC.weight1[i]*QBIC.weight2
+        }
+        
+        colname.weight <- numeric(length(diff))
+        rowname.weight <- numeric(length(drif))
+        for(i in 1:length(diff)){
+          colname.weight[i] <- paste("diffusion", i, sep = "_") 
+        }
+        colnames(BIC.weight.full) <- colname.weight
+        colnames(QBIC.weight.full) <- colname.weight
+        for(i in 1:length(drif)){
+          rowname.weight[i] <- paste("drift", i, sep = "_")
+        }
+        rownames(BIC.weight.full) <- rowname.weight
+        rownames(QBIC.weight.full) <- rowname.weight
+      }
+      
+    }
+    
+    ## Results
+    diff.copy <- diff
+    drif.copy <- drif
+    for(i in 1:length(diff)){
+      names(diff.copy)[i] <- paste("diffusion", i, sep = "_") 
+    }
+    for(i in 1:length(drif)){
+      names(drif.copy)[i] <- paste("drift", i, sep = "_") 
+    }
+    BIC <- list(first = BIC1, second = BIC2)
+    QBIC <- list(first = QBIC1, second = QBIC2)
+    CIC <- list(first = NULL, second = NULL)
+    Esti <- list(first = Esti1, second.bic = Esti2.bic, second.qbic = Esti2.qbic)
+    
+    call <- match.call()
+    model.coef <- list(drift = drif.copy, diffusion = diff.copy)
+    bic.selected.coeff <- list(drift = drif[[QBIC.opt2]], diffusion = diff[[QBIC.opt1]])
+    qbic.selected.coeff <- list(drift = drif[[QBIC.opt2]], diffusion = diff[[QBIC.opt1]])
+    cic.selected.coeff <- list(drift = NULL, diffusion = NULL)
+    ic.selected <- list(BIC = bic.selected.coeff, QBIC = qbic.selected.coeff, CIC = cic.selected.coeff)
+    if(weight == TRUE){
+      ak.weight <- list(BIC = BIC.weight.full, QBIC = QBIC.weight.full)
+    }else{
+      ak.weight <- NULL
+    }
+    final_res <- list(call = call, model = model.coef, par = Esti, BIC = BIC, QBIC = QBIC, CIC = CIC, weight = ak.weight, selected = ic.selected)
   }
-  n <- n-1
-  #alpha <- yuima@model@parameter@drift
-  #beta <- yuima@model@parameter@diffusion
-  Terminal <- yuima@sampling@Terminal[1]
   
-  para.num.init  <- match(yuima@model@parameter@all, names(start))
-  para.num.low  <- match(yuima@model@parameter@all, names(lower))
-  para.num.upp  <- match(yuima@model@parameter@all, names(upper))
-  para.start <- NULL
-  para.lower <- NULL
-  para.upper <- NULL
-  for(j in 1:length(yuima@model@parameter@all)){
-    para.start <- c(para.start, list(start[[para.num.init[j]]]))
-    para.lower <- c(para.lower, list(lower[[para.num.low[j]]]))
-    para.upper <- c(para.upper, list(upper[[para.num.upp[j]]]))
-  }
-  names(para.start) <- yuima@model@parameter@all
-  names(para.lower) <- yuima@model@parameter@all
-  names(para.upper) <- yuima@model@parameter@all
+  class(final_res) <- "yuima.ic"
+  return(final_res)
   
-  mle <- qmle(yuima, start = para.start, lower = para.lower, upper = para.upper, method = "L-BFGS-B", joint = joint, rcpp = rcpp)
-  hess <- list(mle@details$hessian)
-  hess.diff <- subset(hess[[1]], rownames(hess[[1]])%in%yuima@model@parameter@diffusion, select=yuima@model@parameter@diffusion)
-  hess.drif <- subset(hess[[1]], rownames(hess[[1]])%in%yuima@model@parameter@drift, select=yuima@model@parameter@drift)
-  
-  esti <- coef(mle)
-  names(esti) <- c(yuima@model@parameter@diffusion, yuima@model@parameter@drift)
-  cic <- summary(mle)@m2logL+2*(length(yuima@model@parameter@drift)+length(yuima@model@parameter@diffusion))
-  bic <- summary(mle)@m2logL+length(yuima@model@parameter@drift)*log(Terminal)+length(yuima@model@parameter@diffusion)*log(n)
-  if(det(hess.diff) > 0 && det(hess.drif) > 0){
-    qbic <- summary(mle)@m2logL+log(det(hess.diff))+log(det(hess.drif))
-  }else{
-    qbic <- summary(mle)@m2logL+length(yuima@model@parameter@drift)*log(Terminal)+length(yuima@model@parameter@diffusion)*log(n)
-  }
-  
-  final.res <- list(par = esti, BIC = bic, QBIC = qbic, CIC = cic)
-  return(final.res)
 }
 
+ print.yuima.ic <- function(x, ...){
+  	cat("\nCall:\n")
+  	print(x$call)
+  	cat("\nInformation criteria:\n")
+  	cat("\nBIC:\n")
+  	print(x$BIC)
+  	cat("\nQBIC:\n")
+  	print(x$QBIC)
+  	if(class(x$CIC) == "matrix"){
+  		if(!is.null(x$CIC)){
+  			cat("\nCIC:\n")
+  			print(x$CIC)
+  	    }
+  	}
+  	if(class(x$CIC) == "list"){
+  		if(!is.null(x$CIC$first)){
+  			cat("\nCIC:\n")
+  			print(x$CIC)
+  		}
+    }
+    invisible(x)
+ }
