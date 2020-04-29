@@ -63,7 +63,7 @@ See `Details'.
 }
   \item{weight}{
 %%     ~~Describe \code{weight} here~~
-logical. If \code{TRUE}. A weighted version is used for \code{regularize = "glasso"} as in Koike (2019).
+logical. If \code{TRUE}, a weighted version is used for \code{regularize = "glasso"} as in Koike (2020).
 }
   \item{nlambda}{
 %%     ~~Describe \code{nlambda} here~~
@@ -145,10 +145,10 @@ Currently, the following four options are available for the regularization metho
 
 \item \code{regularize = "glasso"} (the default). 
 
-This performs the glaphical Lasso. When \code{weight=TRUE} (the default), a weighted version of the graphical Lasso is performed as in Koike (2019). Otherwise, the standard graphical Lasso is performed as in Brownlees et al. (2018). 
+This performs the glaphical Lasso. When \code{weight=TRUE} (the default), a weighted version of the graphical Lasso is performed as in Koike (2020). Otherwise, the standard graphical Lasso is performed as in Brownlees et al. (2018). 
 
 If \code{lambda="aic"} (resp.~\code{lambda="bic"}), the penalty parameter for the graphical Lasso is selected by minimizing the formally defined AIC (resp.~BIC). 
-The minimization is carried out by grid search, where the grid is determined as in Section 5.1 of Koike (2019).
+The minimization is carried out by grid search, where the grid is determined as in Section 5.1 of Koike (2020).
 
 The optimization problem in the graphical Lasso is solved by the GLASSOFAST algorithm of Sustik and Calderhead (2012), which is available from the package \pkg{glassoFast}. 
 
@@ -207,9 +207,9 @@ Hautsch, N., Kyj, L. M. and Oomen, R. C. (2012).
   A blocking and regularization approach to high-dimensional realized covariance estimation,
   \emph{Journal of Applied Econometrics}, \bold{27}, 625--645.
   
-Koike, Y. (2019). 
-De-biased graphical Lasso for high-frequency data. 
-\href{https://arxiv.org/abs/1905.01494}{arXiv:1905.01494}.
+Koike, Y. (2020). 
+  De-biased graphical Lasso for high-frequency data,
+  \emph{Entropy}, \bold{22}, 456. 
 
 Pourahmadi, M. (2011). 
   Covariance estimation: The GLM and regularization perspectives. 

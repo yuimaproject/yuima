@@ -567,13 +567,15 @@ IC <- function(drif = NULL, diff = NULL, data = NULL, Terminal = 1, add.settings
   	print(x$BIC)
   	cat("\nQBIC:\n")
   	print(x$QBIC)
-  	if(class(x$CIC) == "matrix"){
+  	#if(class(x$CIC) == "matrix"){
+  	if(is.matrix(x$CIC)){ # fixed by YK
   		if(!is.null(x$CIC)){
   			cat("\nCIC:\n")
   			print(x$CIC)
   	    }
   	}
-  	if(class(x$CIC) == "list"){
+  	#if(class(x$CIC) == "list"){
+  	if(is.list(class(x$CIC))){ # fixed by YK
   		if(!is.null(x$CIC$first)){
   			cat("\nCIC:\n")
   			print(x$CIC)

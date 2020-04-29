@@ -196,7 +196,7 @@ llag.avar <- function(x, grid, bw, alpha, fisher, ser.diffX, ser.times, vol, cor
 ## main body
 setGeneric( "llag", function(x, from = -Inf, to = Inf, division = FALSE, 
                              verbose = (ci || ccor), grid, psd = TRUE, plot = ci,
-                             ccor = ci, ci = FALSE, alpha = 0.01, fisher = TRUE, bw, tol = 1e-7) standardGeneric("llag") )
+                             ccor = ci, ci = FALSE, alpha = 0.01, fisher = TRUE, bw, tol = 1e-6) standardGeneric("llag") )
 
 ## yuima-method
 setMethod("llag", "yuima", function(x, from, to, division, verbose, grid, psd, plot, 

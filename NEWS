@@ -66,4 +66,8 @@
 2020/2/6: fixed length(class(matrix))>2 issue. Code for simPoi fastened.
 2020/3/5: should have fixed qmleLevy if() condition and rhck PROTECT problems
 2020/4/25: modified IC.R, IC.Rd, and adaBayes.R
-
+2020/4/28: new functions simBmllag and wllag are added
+           the default value of tol of llag is changed to 1e-6
+           the wavethresh package is imported for implementation of wllag
+           fixed length(class(matrix))>2 issue
+           cce.factor.Rd, IC.Rd and llag.Rd are revised

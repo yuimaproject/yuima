@@ -7,7 +7,7 @@
 \usage{
 llag(x, from = -Inf, to = Inf, division = FALSE, verbose = (ci || ccor), 
      grid, psd = TRUE, plot = ci, ccor = ci, ci = FALSE, alpha = 0.01, 
-     fisher = TRUE, bw, tol = 1e-7)
+     fisher = TRUE, bw, tol = 1e-6)
 }
 \arguments{
 

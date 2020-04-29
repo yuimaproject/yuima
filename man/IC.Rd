@@ -10,7 +10,9 @@ Information criteria BIC, Quasi-BIC (QBIC) and CIC for the stochastic differenti
 }
 
 \usage{
-IC(drif = NULL, diff = NULL, data = NULL, Terminal = 1, add.settings = list(), start, lower, upper, ergodic = TRUE, stepwise = FALSE, weight = FALSE, rcpp = FALSE, ...)
+IC(drif = NULL, diff = NULL, data = NULL, Terminal = 1, 
+   add.settings = list(), start, lower, upper, ergodic = TRUE,
+   stepwise = FALSE, weight = FALSE, rcpp = FALSE, ...)
 }
 
 \arguments{
@@ -141,7 +143,8 @@ for(i in 1:(N+1)){
 }
 
 ## Candidate coefficients
-diffusion <- c("exp((theta11*cos(x)+theta12*sin(x)+theta13)/2)", "exp((theta11*cos(x)+theta12*sin(x))/2)", 
+diffusion <- c("exp((theta11*cos(x)+theta12*sin(x)+theta13)/2)", 
+               "exp((theta11*cos(x)+theta12*sin(x))/2)", 
                "exp((theta11*cos(x)+theta13)/2)", "exp((theta12*sin(x)+theta13)/2)")
 drift <- c("theta21*x + theta22", "theta21*x")
 
@@ -158,8 +161,9 @@ ic1 <- IC(drif=drift, diff=diffusion, data=Xt, Terminal=Ter, start=para.init, lo
 ic1
 
 ## Ex.1.2 Stepwise
-ic2 <- IC(drif=drift, diff=diffusion, data=Xt, Terminal=Ter, start=para.init, lower=para.low, 
-          upper=para.upp, stepwise = TRUE, weight = FALSE, rcpp = TRUE)
+ic2 <- IC(drif=drift, diff=diffusion, data=Xt, Terminal=Ter, 
+          start=para.init, lower=para.low, upper=para.upp,
+          stepwise = TRUE, weight = FALSE, rcpp = TRUE)
 ic2
 
 \dontrun{
@@ -204,12 +208,14 @@ para.upp <- list(alpha1 = 0.01, alpha2 = -0.01, beta1 = 5, beta2 = 5, beta3 = 10
 
 ## Ex.2.1 Joint
 ic3 <- IC(drif=drift, diff=diffusion, data=Xt, Terminal=Ter, add.settings=modsettings, 
-          start=para.init, lower=para.low, upper=para.upp, weight=FALSE, rcpp=FALSE)
+          start=para.init, lower=para.low, upper=para.upp, 
+          weight=FALSE, rcpp=FALSE)
 ic3
 
 ## Ex.2.2 Stepwise
 ic4 <- IC(drif=drift, diff=diffusion, data=Xt, Terminal=Ter, add.settings=modsettings, 
-             start=para.init, lower=para.low, upper=para.upp, stepwise = TRUE, weight=FALSE, rcpp=FALSE)
+             start=para.init, lower=para.low, upper=para.upp,
+             stepwise = TRUE, weight=FALSE, rcpp=FALSE)
 ic4
 
 }
