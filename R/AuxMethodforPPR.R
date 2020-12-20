@@ -616,17 +616,29 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
         start=param[myMod@parameter@all],upper=upper[myMod@parameter@all],
         lower=lower[myMod@parameter@all])
     }else{
-      IntensityData <- Intensity.PPR(final_res@model,
-                                     param=coef(final_res))
-      mylambda <- IntensityData@original.data
-      OrigData <- yuimaPPR@data@original.data
-      NewData0 <- cbind(OrigData,mylambda)
-      colnames(NewData0) <- yuimaPPR@model@state.variable
-      NewData<-setData(zoo(NewData0,
-                           order.by = index(IntensityData@zoo.data[[1]])))
       
-      lengthVar <- length(yuimaPPR@model@state.variable)
+      
+      if(all(yuimaPPR@PPR@additional.info %in% yuimaPPR@model@state.variable)){
+        OrigData <- yuimaPPR@data@original.data
+        IntensityData <- Intensity.PPR(final_res@model,
+                                       param=coef(final_res))
+        mylambda <- IntensityData@original.data
+        
+        NewData0 <- cbind(OrigData,mylambda)
+        colnames(NewData0) <- yuimaPPR@model@state.variable
+        NewData<-setData(zoo(NewData0,
+                             order.by = index(IntensityData@zoo.data[[1]])))
+      }else{
+        NewData <- yuimaPPR@data
+      }
+      
       lengthOrigVar <- length(yuimaPPR@model@solve.variable)
+      if(length(yuimaPPR@model@state.variable)>lengthOrigVar){
+        lengthVar <- length(yuimaPPR@model@state.variable)
+      }else{
+        lengthVar<-lengthOrigVar
+      }
+      
       DummyDrift <- as.character(rep(0,lengthVar))
       DummyDrift[1:lengthOrigVar] <- as.character(yuimaPPR@model@drift) 
       
@@ -640,8 +652,10 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
                           ncol = length(dummydiff0)/lengthOrigVar)
       
       if(length(yuimaPPR@model@jump.variable)!=0){
-        dummydiff <- rbind(dummydiff,matrix("0",
+        if(lengthVar-lengthOrigVar>0){
+          dummydiff <- rbind(dummydiff,matrix("0",
                                             nrow = lengthVar-lengthOrigVar,dim(dummydiff)[2]))
+          }
       }
       
       dummyJump0 <- NULL
@@ -664,7 +678,7 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
                         jump.coeff = dummyJump1, jump.variable = yuimaPPR@model@jump.variable,
                         measure = list(df=yuimaPPR@model@measure$df),
                         measure.type = meas.type,
-                        solve.variable = yuimaPPR@model@state.variable,
+                        solve.variable = yuimaPPR@model@solve.variable,
                         state.variable = yuimaPPR@model@state.variable)
       myYuima <- setYuima(data = NewData, model = myMod)
       resCov <- qmleLevy(yuima = myYuima,

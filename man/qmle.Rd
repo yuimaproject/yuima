@@ -91,11 +91,11 @@ Ogihara, T., & Yoshida, N. (2011). Quasi-likelihood analysis for the stochastic 
 
 ## COGARCH
 
-Iacus S. M., Mercuri L. and Rroji E.(2015) Discrete time approximation of a COGARCH (p, q) model and its estimation. \href{http://arxiv.org/abs/1511.00253}{http://arxiv.org/abs/1511.00253}
+Iacus S. M., Mercuri L. and Rroji E.(2015) Discrete time approximation of a COGARCH (p, q) model and its estimation. \href{https://arxiv.org/abs/1511.00253}{https://arxiv.org/abs/1511.00253}
 
 ## CARMA
 
-Iacus S. M., Mercuri L. (2015) Implementation of Levy CARMA model in Yuima package. Comp. Stat. (30) 1111-1141. \href{http://link.springer.com/article/10.1007/s00180-015-0569-7}{http://link.springer.com/article/10.1007/s00180-015-0569-7}
+Iacus S. M., Mercuri L. (2015) Implementation of Levy CARMA model in Yuima package. Comp. Stat. (30) 1111-1141. \href{https://link.springer.com/article/10.1007/s00180-015-0569-7}{https://link.springer.com/article/10.1007/s00180-015-0569-7}
 }
 
 \author{The YUIMA Project Team}
