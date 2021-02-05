@@ -2,17 +2,30 @@
 
 
 setGeneric("adaBayes",
-           function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
+           function(yuima, start,prior,lower,upper, method="mcmc",iteration=NULL,mcmc,rate=1.0,
+                    rcpp=TRUE,algorithm="randomwalk",center=NULL,sd=NULL,rho=NULL,path=FALSE
+                  )
              standardGeneric("adaBayes")
 )
-setMethod("adaBayes", "yuima",
-          function(yuima, start,prior,lower,upper, method="mcmc",mcmc=1000,rate=1.0,rcpp=TRUE,algorithm="randomwalk")
+# 
+# adabayes<- setClass("adabayes",contains = "mle",
+#                     slots = c(mcmc="list", accept_rate="list",coef = "numeirc",
+#                                          call="call",vcov="matrix",fullcoef="numeric",model="yuima.model"))
+adabayes<- setClass("adabayes",
+                    #contains = "mle",
+                    slots = c(mcmc="list", accept_rate="list",coef = "numeric",call="call",vcov="matrix",fullcoef="numeric"))
+
+setMethod("adaBayes", 
+          "yuima",
+          function(yuima, start,prior,lower,upper, method="mcmc",iteration=NULL,mcmc,rate=1.0,rcpp=TRUE,
+                   algorithm="randomwalk",center=NULL,sd=NULL,rho=NULL,path=FALSE
+                   )
           {
             
             
             
-            
-            
+            if(length(iteration)>0){mcmc=iteration}
+            mean=unlist(center)
             joint <- FALSE
             fixed <- numeric(0)
             print <- FALSE
@@ -46,6 +59,7 @@ setMethod("adaBayes", "yuima",
             jump.par <- yuima@model@parameter@jump
             measure.par <- yuima@model@parameter@measure
             common.par <- yuima@model@parameter@common
+
             
             ## BEGIN Prior construction
             if(!missing(prior)){
@@ -79,19 +93,26 @@ setMethod("adaBayes", "yuima",
                 }
                 
               }
+              
+              #20200518kaino
+              names(priorLower)<-names(pdlist)
+              names(priorUpper)<-names(pdlist)
+              
               if(missing(lower) || missing(upper)){
                 lower <- priorLower
                 upper <- priorUpper
               }
               else{
-                if(sum(unlist(lower)<priorLower) + sum(unlist(upper)>priorUpper) > 0){
+                #20200518kaino
+                #if(sum(unlist(lower)<priorLower) + sum(unlist(upper)>priorUpper) > 0){
+                if(sum(unlist(lower)<priorLower[names(lower)]) + sum(unlist(upper)>priorUpper[names(upper)]) > 0){
                   yuima.stop("lower&upper of prior are out of parameter space.")
                 }
               }
               
-              
-              names(lower) <- names(pdlist)
-              names(upper) <- names(pdlist)
+              #20200518
+              #names(lower) <- names(pdlist)
+              #names(upper) <- names(pdlist)
               
               
               
@@ -120,39 +141,50 @@ setMethod("adaBayes", "yuima",
               yuima.warn("Drift and diffusion parameters must be different. Doing
                          joint estimation, asymptotic theory may not hold true.")
             }
-            
-            
+
+
             if(length(jump.par)+length(measure.par)>0)
               yuima.stop("Cannot estimate the jump models, yet")
             
             
-            fullcoef <- NULL
+            fulcoef <- NULL
             
             if(length(diff.par)>0)
-              fullcoef <- diff.par
+              fulcoef <- diff.par
             
             if(length(drift.par)>0)
-              fullcoef <- c(fullcoef, drift.par)
+              fulcoef <- c(fulcoef, drift.par)
             
-            npar <- length(fullcoef)
+            if(length(yuima@model@parameter@common)>0){
+              fulcoef<-unique(fulcoef)
+            }
+            
             
             fixed.par <- names(fixed)
             
-            if (any(!(fixed.par %in% fullcoef))) 
+            if (any(!(fixed.par %in% fulcoef))) 
               yuima.stop("Some named arguments in 'fixed' are not arguments to the supplied yuima model")
             
             nm <- names(start)
-            oo <- match(nm, fullcoef)
+            npar <- length(nm)
+
+            oo <- match(nm, fulcoef)
             if(any(is.na(oo))) 
               yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
             start <- start[order(oo)]
             if(!missing(prior)){
-              pdlist <- pdlist[order(oo)]
+              #20200525kaino
+              #pdlist <- pdlist[order(oo)]
+              pdlist <- pdlist[names(start)]
             }
             nm <- names(start)
             
             idx.diff <- match(diff.par, nm)
-            idx.drift <- match(drift.par, nm)
+            idx.drift <- match(drift.par,nm)
+            if(length(common.par)>0){
+              idx.common=match(common.par,nm)
+              idx.drift=setdiff(idx.drift,idx.common)
+            }
             idx.fixed <- match(fixed.par, nm)
             tmplower <- as.list( rep( -Inf, length(nm)))
             names(tmplower) <- nm	
@@ -178,6 +210,11 @@ setMethod("adaBayes", "yuima",
             
             
             d.size <- yuima@model@equation.number
+            #20200601kaino
+            if (is.CARMA(yuima)){
+              # 24/12
+              d.size <-1
+            }
             n <- length(yuima)[1]
             
             G <- rate
@@ -193,6 +230,20 @@ setMethod("adaBayes", "yuima",
             assign("X",  as.matrix(onezoo(yuima)[1:n_0,]), envir=env)
             assign("deltaX",  matrix(0, n_0 - 1, d.size), envir=env)
             assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir=env)
+            #20200601kaino
+            if (is.CARMA(yuima)){
+              #24/12 If we consider a carma model,
+              # the observations are only the first column of env$X
+              #     assign("X",  as.matrix(onezoo(yuima)), envir=env)
+              #     env$X<-as.matrix(env$X[,1])
+              #     assign("deltaX",  matrix(0, n-1, d.size)[,1], envir=env)
+              env$X<-as.matrix(env$X[,1])
+              env$deltaX<-as.matrix(env$deltaX[,1])
+              assign("time.obs",length(env$X),envir=env)
+              assign("p", yuima@model@info@p, envir=env)
+              assign("q", yuima@model@info@q, envir=env)
+              assign("V_inf0", matrix(diag(rep(1,env$p)),env$p,env$p), envir=env)
+            }
             
             assign("Cn.r", rep(1,n_0-1), envir=env)
             
@@ -211,12 +262,99 @@ setMethod("adaBayes", "yuima",
               }
               qq <- max(pp,2/G) 
             }
-
+            
             C.temper.diff <- n_0^(2/(qq*G)-1) #this is used in pg.
             C.temper.drift <- (n_0*env$h)^(2/(qq*G)-1) #this is used in pg.
             
             mle <- qmle(yuima, "start"=start, "lower"=lower,"upper"=upper, "method"="L-BFGS-B",rcpp=rcpp)
             start <- as.list(mle@coef)
+
+            sigma.diff=NULL
+            sigma.drift=NULL
+            
+            if(length(sd)<npar){
+              sigma=mle@vcov;
+            }
+              # if(length(diff.par)>0){
+              #   sigma.diff=diag(1,length(diff.par))
+              #   for(i in 1:length(diff.par)){
+              #     sigma.diff[i,i]=sd[[diff.par[i]]]
+              #   }
+              # }
+              # 
+              # if(length(drift.par)>0){
+              #   sigma.drift=diag(1,length(drift.par))
+              #   for(i in 1:length(drift.par)){
+              #     sigma.drift[i,i]=sd[[drift.par[i]]]
+              #   }
+              # }
+            #}
+            
+            
+            # mu.diff=NULL
+            # mu.drift=NULL
+            # 
+            # 
+            # if(length(mean)<npar){
+            #   mu.diff=NULL
+            #   mu.drift=NULL}
+            #else{
+            #   if(length(diff.par)>0){
+            #   for(i in 1:length(diff.par)){
+            #     mu.diff[i]=mean[[diff.par[i]]]
+            #   }
+            #   }
+            #   
+            #   if(length(drift.par)>0){
+            #   for(i in 1:length(drift.par)){
+            #     mu.drift[i]=mean[[drift.par[i]]]
+            #   }
+            #   }
+            # }
+            
+            ####mpcn make proposal
+            sqn<-function(x,LL){
+              vv=x%*%LL
+              zz=sum(vv*vv)
+              if(zz<0.0000001){
+                zz=0.0000001
+              }
+              return(zz)
+            }
+            
+            # mpro<-function(mu,sample,low,up,rho,LL,L){
+            #   d=length(mu);
+            #   tmp=mu+sqrt(rho)*(sample-mu);
+            #   tmp = mu+sqrt(rho)*(sample-mu);
+            #   dt=(sample-mu)%*%LL%*%(sample-mu)
+            #   tmp2 = 2.0/dt;
+            #   while(1){
+            #     prop = tmp+rnorm(d)*L*sqrt((1.0-rho)/rgamma(1,0.5*d,tmp2));
+            #     if((sum(low>prop)+sum(up<prop))==0) break;
+            #   }
+            #   return(prop)
+            # }
+
+            make<-function(mu,sample,low,up,rho,LL,L){
+              
+              d=length(mu);
+              tmp=mu+sqrt(rho)*(sample-mu);
+              dt=sqn(sample-mu,LL);
+              tmp2 = 2.0/dt;
+    
+              prop = tmp+rnorm(d)%*%L*sqrt((1.0-rho)/rgamma(1,0.5*d,scale=tmp2));
+              
+              # for(i in 1:100){
+              #   prop = tmp+rnorm(d)*sqrt((1.0-rho)/rgamma(1,0.5*d,tmp2));
+              #   if((sum(low>prop)+sum(up<prop))==0){break;}
+              #   flg=flg+1;
+              # }
+              # if(flg>100){print("error")}else{
+              #   return(prop)
+              # }
+              return(prop)
+            }
+            
             
             integ <- function(idx.fixed=NULL,f=f,start=start,par=NULL,hessian=FALSE,upper,lower){
               if(length(idx.fixed)==0){
@@ -227,21 +365,45 @@ setMethod("adaBayes", "yuima",
               return(intf[-1]/intf[1])
             }
             mcinteg <- function(idx.fixed=NULL,f=f,p,start=start,par=NULL,hessian=FALSE,upper,lower,mean,vcov,mcmc){
-              if(length(idx.fixed)==0){
-                intf <- mcIntegrate(f,p,lowerLimit=lower,upperLimit=upper,mean,vcov,mcmc)
+              #vcov=vcov[nm,nm];#Song add
+              if(setequal(unlist(drift.par),unlist(diff.par))&(length(mean)>length(diff.par))){mean=mean[1:length(diff.par)]}
+              if(length(idx.fixed)==0){#only have drift or diffusion part
+                intf <- mcintegrate(f,p,lowerLimit=lower,upperLimit=upper,mean,vcov,mcmc)
               }else{
-                intf <- mcIntegrate(f,p,lowerLimit=lower[-idx.fixed],upperLimit=upper[-idx.fixed],mean[-idx.fixed],vcov[-idx.fixed,-idx.fixed],mcmc)
+                intf <- mcintegrate(f,p,lowerLimit=lower[-idx.fixed],upperLimit=upper[-idx.fixed],mean[-idx.fixed],vcov[-idx.fixed,-idx.fixed],mcmc)
               }
               return(intf)
             }
             
-            mcIntegrate <- function(f,p, lowerLimit, upperLimit,mean,vcov,mcmc){
+            
+            mcintegrate <- function(f,p, lowerLimit, upperLimit,mean,vcov,mcmc){
               
+              acc=0
               if(algorithm=="randomwalk"){
                 x_c <- mean
-                p_c <- p(mean)
-                val <- f(x_c)
+                if(path){
+                  X <- matrix(0,mcmc,length(mean))
+                  acc=0
+                }
+              
+                nm=length(mean)
+                if(length(vcov)!=(nm^2)){
+                  vcov=diag(1,nm,nm)*vcov[1:nm,1:nm]
+                }
                 
+                sigma=NULL
+                if(length(sd)>0&length(sd)==npar){
+                    sigma=diag(sd,npar,npar);
+                    if(length(idx.fixed)>0){
+                      vcov=sigma[-idx.fixed,-idx.fixed]
+                    }else{
+                      vcov=sigma;
+                    }
+                  }
+                
+                p_c <- p(x_c)
+                val <- f(x_c)
+                if(path) X[1,] <- x_c
                 # if(length(mean)>1){
                 #   x <- rmvnorm(mcmc-1,mean,vcov)
                 #   q <- dmvnorm(x,mean,vcov)
@@ -253,68 +415,123 @@ setMethod("adaBayes", "yuima",
                 # }
                 #
                 for(i in 1:(mcmc-1)){
-                	  if(length(mean)>1){
-                	  	while(1){
-                  	    x_n <- rmvnorm(1,x_c,sqrt(vcov))
-                  	    if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0) break
-                  	    }
+                  if(length(mean)>1){
+                    
+                      x_n <- rmvnorm(1,x_c,vcov)
+                      #if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0) break
                   }else{
-                  	while(1){
-                  	    x_n <- rnorm(1,x_c,sqrt(vcov))
-                  	    if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0) break
-                  	    }
+                      x_n <- rnorm(1,x_c,sqrt(vcov))
+                      #if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0) break
                   }
                   
-                  #if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0){
-                    #q_n <- dnorm(x_n,x_c,sqrt(vcov))
+                  if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0){
                     p_n <- p(x_n)
-                    #q_c <- dnorm(x_c,x_n,sqrt(vcov))
-                    #u <- runif(1)
-                    #a <- (p_n*q_c)/(p_c*q_n)
                     u <- log(runif(1))
-                    #a <- p_n-p_c+log(q_c/q_n)
                     a <- p_n-p_c
-                    #asd[(i+1),2:3] <- c(p_c, p_n)
                     if(u<a){
                       p_c <- p_n
-                      #q_c <- q_n
+                      # q_c <- q_n
                       x_c <- x_n
+                      acc=acc+1
                     }
+                  }
+                  
+                  if(path) X[i+1,] <- x_c
                   #}
                   val <- val+f(x_c)
                 }
-                return(unlist(val/mcmc))
+                if(path){
+                  return(list(val=unlist(val/mcmc),X=X,acc=acc/mcmc))
+                }else{
+                  return(list(val=unlist(val/mcmc)))
+                } 
               }
               else if(tolower(algorithm)=="mpcn"){ #MpCN
+                if(path) X <- matrix(0,mcmc,length(mean))
+                if((sum(idx.diff==idx.fixed)==0)){
+                  if(length(center)>0){
+                    if(length(idx.fixed)>0){
+                      mean =unlist(center[-idx.fixed])
+                    }else{
+                      mean =unlist(center) ##drift or diffusion parameter only
+                    }
+                  }
+                }
+                
+                # if((sum(idx.diff==idx.fixed)>0)){
+                #   if(length(center)>0){
+                #     mean =unlist(center[-idx.fixed])
+                #   }
+                # }
                 x_n <- mean
                 val <- mean
-                logLik_old <- p(x_n)+0.5*length(mean)*log(sqnorm(x_n-mean))
+                
+                L=diag(1,length(mean));LL=L;
+                nm=length(mean)
+                LL=vcov;
+                if(length(vcov)!=(nm^2)){
+                  LL=diag(1,nm,nm)
+                }
+                if(length(sd)>0&length(sd)==npar){
+                  sigma=diag(sd,npar,npar);
+                  if(length(idx.fixed)>0){
+                    LL=sigma[-idx.fixed,-idx.fixed]
+                  }else{
+                    LL=sigma;
+                  }
+                }
+                
+                
+                # if(length(pre_conditionnal)==1){
+                #   LL=t(chol(solve(vcov)));L=chol(vcov);
+                # }
+                if(length(rho)==0){rho=0.8}
+                
+                logLik_old <- p(x_n)+0.5*length(mean)*log(sqn(x_n-mean,LL))
+                if(path) X[1,] <- x_n
+                
                 
                 for(i in 1:(mcmc-1)){
                   #browser()
-                  prop <- makeprop(mean,x_n,unlist(lowerLimit),unlist(upperLimit))
-                  logLik_new <- p(prop)+0.5*length(mean)*log(sqnorm(prop-mean))
+                  prop <- make(mean,x_n,unlist(lowerLimit),unlist(upperLimit),rho,LL,L)
+                  if((sum(prop<lowerLimit)+sum(prop>upperLimit))==0){
+                  logLik_new <- p(prop)+0.5*length(mean)*log(sqn(prop-mean,LL))
                   u <- log(runif(1))
                   if( logLik_new-logLik_old > u){
                     x_n <- prop
                     logLik_old <- logLik_new
+                    acc=acc+1
                   }
+                  }
+                  if(path) X[i+1,] <- x_n
                   val <- val+f(x_n)
                 }
-                return(unlist(val/mcmc))
+                #return(unlist(val/mcmc))
+                if(path){
+                  return(list(val=unlist(val/mcmc),X=X,acc=acc/mcmc))
+                }else{
+                  return(list(val=unlist(val/mcmc)))
+                }
               }
             }
             
             #print(mle@coef)
-            
-            
             flagNotPosDif <- 0
-            for(i in 1:npar){
-              if(mle@vcov[i,i] <= 0) flagNotPosDif <- 1 #Check mle@vcov is positive difinite matrix
-            }
-            if(flagNotPosDif == 1){
-              mle@vcov <- diag(c(rep(1 / n_0,length(diff.par)),rep(1 / (n_0 * env$h),length(drift.par)))) # Redifine mle@vcov
-            }
+            
+              for(i in 1:npar){
+                if(mle@vcov[i,i] <= 0) flagNotPosDif <- 1 #Check mle@vcov is positive difinite matrix
+              }
+              if(flagNotPosDif == 1){
+                mle@vcov <- diag(c(rep(1 / n_0,length(diff.par)),rep(1 / (n_0 * env$h),length(npar)-length(diff.par)))) # Redifine mle@vcov
+              }
+            
+              # cov.diff=mle@vcov[1:length(diff.par),1:length(diff.par)]
+              # cov.drift=mle@vcov[(length(diff.par)+1):(length(diff.par)+length(drift.par)),(length(diff.par)+1):(length(diff.par)+length(drift.par))]
+              # if(missing(cov){
+              # }else{
+              # cov.diff=cov[[1]]
+              # cov.drift=cov[[2]]
+            
             
             
             tmp <- minusquasilogl(yuima=yuima, param=mle@coef, print=print, env,rcpp=rcpp)
@@ -342,12 +559,17 @@ setMethod("adaBayes", "yuima",
                 mycoef <- as.list(p)
                 names(mycoef) <- nm
               }
+              
+              # mycoef <- as.list(p)
+              # names(mycoef) <- nm
               #return(exp(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env)+tmp)*pd(param=mycoef))
               #return(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef)))#log
               if(sum(idx.diff==idx.fixed)>0){
-                return(C.temper.diff*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
-              }else{
+                #return(C.temper.diff*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
                 return(C.temper.drift*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
+              }else{
+                #return(C.temper.drift*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
+                return(C.temper.diff*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
               }
             }
             
@@ -359,6 +581,9 @@ setMethod("adaBayes", "yuima",
             #		 mycoef[fixed.par] <- fixed
             #		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
             #	 }
+            
+            X.diff <- NULL
+            X.drift <- NULL
             
             oout <- NULL
             HESS <- matrix(0, length(nm), length(nm))
@@ -380,6 +605,7 @@ setMethod("adaBayes", "yuima",
               #			} ### endif( length(start)>1 )
               #		} else {  ### first diffusion, then drift
               theta1 <- NULL
+              acc.diff<-NULL
               
               old.fixed <- fixed 
               old.start <- start
@@ -402,19 +628,27 @@ setMethod("adaBayes", "yuima",
                 if(length(unlist(new.start))>1){
                   #			 oout <- do.call(optim, args=mydots)
                   if(method=="mcmc"){
-                    oout <- list(par=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    #oout <- list(par=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    mci=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc)
+                    X.diff=mci$X
+                    acc.diff=mci$acc
+                    oout <- list(par=mci$val)
                   }else{
                     oout <- list(par=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower,start=start))
                   }
                 } else {
                   #			 opt1 <- do.call(optimize, args=mydots)
                   if(method=="mcmc"){
-                    opt1 <- list(minimum=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    #opt1 <- list(minimum=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    mci=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc)
+                    if(path) X.diff=mci$X
+                    acc.diff=mci$acc
+                    opt1 <- list(minimum=mci$val)
                   }else{
                     opt1 <- list(minimum=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower))
                   }
                   theta1 <- opt1$minimum
-                  names(theta1) <- diff.par
+                  #names(theta1) <- diff.par
                   #			 oout <- list(par = theta1, value = opt1$objective) 
                   oout <- list(par=theta1,value=0)
                 }
@@ -424,8 +658,9 @@ setMethod("adaBayes", "yuima",
               } ## endif(length(idx.diff)>0)
               
               theta2 <- NULL
+              acc.drift<-NULL
               
-              if(length(idx.drift)>0){
+              if(length(idx.drift)>0 & setequal(unlist(drift.par),unlist(diff.par))==FALSE){
                 ## DRIFT estimation with first state diffusion estimates
                 fixed <- old.fixed
                 start <- old.start
@@ -443,25 +678,35 @@ setMethod("adaBayes", "yuima",
                 if(length(unlist(new.start))>1){
                   #			  oout1 <- do.call(optim, args=mydots)
                   if(method=="mcmc"){
-                    oout1 <- list(par=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    #oout1 <- list(par=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    mci=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc)
+                    if(path) X.drift=mci$X
+                    acc.drift=mci$acc
+                    #20200601kaino
+                    #oout1 <- list(minimum=mci$val)
+                    oout1 <- list(par=mci$val)
                   }else{
                     oout1 <- list(par=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower))
                   }
                 } else {
                   #				opt1 <- do.call(optimize, args=mydots)
                   if(method=="mcmc"){
-                    opt1 <- list(minimum=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    #opt1 <- list(minimum=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc))
+                    mci=mcinteg(idx.fixed=idx.fixed,f=idf,p=pf,upper=upper,lower=lower,mean=mle@coef,vcov=mle@vcov,mcmc=mcmc)
+                    X.drift=mci$X
+                    acc.drift=mci$acc
+                    opt1 <- list(minimum=mci$val)
                   }else{
                     opt1 <- list(minimum=integ(idx.fixed=idx.fixed,f=f,upper=upper,lower=lower))
                   }
                   theta2 <- opt1$minimum
-                  names(theta2) <- drift.par
+                  names(theta2) <-nm[-idx.fixed]
                   oout1 <- list(par = theta2, value = as.numeric(opt1$objective)) 	
                 }
                 theta2 <- oout1$par
               } ## endif(length(idx.drift)>0)
-              oout1 <- list(par=  c(theta1, theta2))
-              names(oout1$par) <- c(diff.par,drift.par)
+              oout1 <- list(par=c(theta1, theta2))
+              names(oout1$par) <-nm # c(diff.par,drift.par)
               oout <- oout1
               
               #		} ### endif JointOptim
@@ -470,6 +715,12 @@ setMethod("adaBayes", "yuima",
             }
             
             
+            
+            # if(path){
+            #   return(list(coef=oout$par,X.diff=X.diff,X.drift=X.drift,accept_rate=accept_rate))
+            # }else{
+            #   return(list(coef=oout$par))
+            # }
             fDrift <- function(p) {
               mycoef <- as.list(p)
               names(mycoef) <- drift.par
@@ -487,8 +738,11 @@ setMethod("adaBayes", "yuima",
             coef <- oout$par
             control=list()
             par <- coef
-            names(par) <- c(diff.par, drift.par)
-            nm <- c(diff.par, drift.par)
+            names(par) <- nm
+            #names(par) <- c(diff.par, drift.par)
+            #nm <- c(diff.par, drift.par)
+            
+            
             
             #	 print(par)
             #	 print(coef)
@@ -541,20 +795,65 @@ setMethod("adaBayes", "yuima",
             
             oout$hessian <- HESS
             
-            vcov <- if (length(coef)) 
-              solve(oout$hessian)
-            else matrix(numeric(0L), 0L, 0L)
+            # vcov <- if (length(coef)) 
+            #   solve(oout$hessian)
+            # else matrix(numeric(0L), 0L, 0L)
             
             mycoef <- as.list(coef)
             names(mycoef) <- nm
             mycoef[fixed.par] <- fixed
             
             #min <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
+            # 
             
-            new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
-                #       vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-                vcov = vcov,  details = oout, 
-                method = method)
+            # new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
+            #     
+            #     #       vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
+            #     vcov = vcov,  details = oout, 
+            #     method = method)
+            
+            mcmc_sample<-cbind(X.diff,X.drift)
+            
+            mcmc<-list()
+            
+            lf=length(diff.par)
+            vcov=matrix(0,npar,npar)
+            if(path){
+              if(lf>1){
+                vcov[1:lf,1:lf]=cov(X.diff)
+              }else if(lf==1){
+                vcov[1:lf,1:lf]=var(X.diff)
+              }
+              
+              if((npar-lf)>1){
+                vcov[(lf+1):npar,(lf+1):npar]=cov(X.drift)
+              }else if((npar-lf)==1){
+                vcov[(lf+1):npar,(lf+1):npar]=var(X.drift)
+              }
             }
+            
+            
+            
+            accept_rate<-list()
+            if(path){
+              for(i in 1:npar){
+                mcmc[[i]]=as.mcmc(mcmc_sample[,i])
+              }
+              #para_drift=yuima@model@parameter@drift[yuima@model@parameter@drift!=yuima@model@parameter@common]
+              names(mcmc) <-nm;# c(yuima@model@parameter@diffusion,para_drift)
+              accept_rate=list(acc.drift,acc.diff)
+              names(accept_rate)<-c("accepte.rate.drift","accepte.rate.diffusion")
+            }else{
+              mcmc=list("NULL")
+              accept_rate=list("NULL")
+            }
+            
+            fulcoef = unlist(mycoef);
+   
+           new("adabayes",mcmc=mcmc, accept_rate=accept_rate,coef=fulcoef,call=call,vcov=vcov,fullcoef=fulcoef)
+          }
 )
+
+setGeneric("coef")
+setMethod("coef", "adabayes", function(object) object@fullcoef )
 
