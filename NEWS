@@ -71,3 +71,4 @@
            the wavethresh package is imported for implementation of wllag
            fixed length(class(matrix))>2 issue
            cce.factor.Rd, IC.Rd and llag.Rd are revised
+2021/2/5: modified adaBayes.R and adaBayes.Rd
