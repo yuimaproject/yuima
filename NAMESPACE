@@ -9,6 +9,7 @@ import("expm")
 import("mvtnorm")
 import("cubature")
 
+import("coda")
 importFrom(utils, toLatex)
 
 importFrom("graphics", "lines")
@@ -64,6 +65,8 @@ importFrom(stats, sd)
 importFrom("stats", cov2cor) # added by YK on Apr. 12, 2018
 importFrom("graphics", "abline", "hist", "par", "text") # added by YK on Jul. 19, 2019
 importFrom("stats", "mvfft") # added by YK on Apr. 15, 2020
+importFrom(coda, as.mcmc)
+importFrom("stats", "cov", "var")
 
 exportClasses("yuima",
 "yuima.data",
