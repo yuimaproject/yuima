@@ -123,7 +123,7 @@ The function \code{IC} uses the function \code{\link{qmle}} with \code{method="L
 %\seealso{
 %}
 \examples{
-
+\dontrun{
 ### Ex.1 
 set.seed(123)
 
@@ -166,7 +166,7 @@ ic2 <- IC(drif=drift, diff=diffusion, data=Xt, Terminal=Ter,
           stepwise = TRUE, weight = FALSE, rcpp = TRUE)
 ic2
 
-\dontrun{
+
 ### Ex.2 (multidimansion case) 
 set.seed(123)
 
