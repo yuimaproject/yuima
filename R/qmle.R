@@ -121,7 +121,7 @@ is.CARMA <- function(obj){
   return(FALSE)
 }
 
-qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
+qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
                  lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL,rcpp=FALSE, ...){
   if(Est.Incr=="Carma.Inc"){
     Est.Incr<-"Incr"
@@ -705,19 +705,18 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
         mydots$threshold <- NULL #SMI 2/9/14
 
         if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
+          mydots$method<-method     ##song
           oout <- do.call(optim, args=mydots)
         } else {
           mydots$f <- mydots$fn
           mydots$fn <- NULL
           mydots$par <- NULL
           mydots$hessian <- NULL
-          mydots$method <- NULL
           mydots$interval <- as.numeric(c(unlist(lower[diff.par]),unlist(upper[diff.par])))
-
-
           mydots$lower <- NULL
           mydots$upper <- NULL
-          opt1 <- do.call(optimize, args=mydots)
+          mydots$method<- NULL
+          opt1 <- do.call(optimize, args=mydots)  
           theta1 <- opt1$minimum
           names(theta1) <- diff.par
           oout <- list(par = theta1, value = opt1$objective)
@@ -764,7 +763,6 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
 
 
 
-
         if(length(mydots$par)>1 | any(is.infinite(c(mydots$upper,mydots$lower)))){
           if(is.CARMA(yuima)){
             if(NoNeg.Noise==TRUE){
@@ -789,19 +787,20 @@ qmle <- function(yuima, start, method="BFGS", fixed = list(), print=FALSE,
             }
           }  # END if(is.CARMA)
 
-
+          mydots$method <- method #song
 
           oout1 <- do.call(optim, args=mydots)
 
 
-          #		  oout1 <- optim(mydots$par,f,method = "L-BFGS-B" , lower = mydots$lower, upper = mydots$upper)
+          #	oout1 <- optim(mydots$par,f,method = "L-BFGS-B" , lower = mydots$lower, upper = mydots$upper)
         } else {
           mydots$f <- mydots$fn
           mydots$fn <- NULL
           mydots$par <- NULL
           mydots$hessian <- NULL
-          mydots$method <- NULL
+          mydots$method<-NULL
           mydots$interval <- as.numeric(c(lower[drift.par],upper[drift.par]))
+
           opt1 <- do.call(optimize, args=mydots)
           theta2 <- opt1$minimum
           names(theta2) <- drift.par
