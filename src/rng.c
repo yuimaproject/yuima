@@ -3,22 +3,22 @@
 #include <time.h>
 #include <math.h>
 #include "R.h"
-#include "Mt.h"
+
 
 
 void rpts(int *x, double *alpha, double *a, double *b, double *rn);
 void rGIG(int *x, double *lambda, double *chi, double *psi, double *rn);
 double qdens(double m, double *lambda, double beta);
 double rps(double *alpha, double *a, double *b);
-double rexp();
 
 
 
 void rGIG(int *x, double *lambda, double *chi, double *psi, double *rn)
 {
+    GetRNGstate();
+  
     double beta = sqrt((*chi)*(*psi));
     int i = 0;
-    init_genrand((unsigned)time(NULL));
     /*Rejection method for non T-1/2-concave part*/
     if(0.0<=*lambda<1.0 && 0.0<beta<=2.0/3.0*sqrt(1.0-*lambda)){
         double m = beta/((1.0-*lambda)+sqrt(pow(1.0-*lambda,2.0)+pow(beta,2.0)));
@@ -49,8 +49,8 @@ void rGIG(int *x, double *lambda, double *chi, double *psi, double *rn)
             double h = 1.0;
             double X = 10.0;
             while(U*h > qdens(X,lambda,beta)){
-                U = genrand_real3();
-                V = A*genrand_real3();
+                U = unif_rand();
+                V = A*unif_rand();
                 if(V <= A1){
                     X = x0*V/A1;
                     h = k1;
@@ -84,8 +84,8 @@ void rGIG(int *x, double *lambda, double *chi, double *psi, double *rn)
             double X = 10.0;
             double U = 0.0;
             while(pow(V,2.0) > qdens(X,lambda,beta)){
-                U = uplus*genrand_real3();
-                V = vplus*genrand_real3();
+                U = uplus*unif_rand();
+                V = vplus*unif_rand();
                 X = U/V;
             }
             rn[i] = X*sqrt(*chi/(*psi));
@@ -109,32 +109,40 @@ void rGIG(int *x, double *lambda, double *chi, double *psi, double *rn)
             double V = 1.0;
             double X = 0.0;
             while(pow(V,2.0) > qdens(X,lambda,beta)){
-                double U = uminus+(uplus-uminus)*genrand_real3();
-                V = vplus*genrand_real3();
+                double U = uminus+(uplus-uminus)*unif_rand();
+                V = vplus*unif_rand();
                 X = U/V+m;
             }
             rn[i] = X*sqrt(*chi/(*psi));
             i++;
         }
     }
+    PutRNGstate();
 }
 
 
 
 void rpts(int *x, double *alpha, double *a, double *b, double *rn)
-{
+{   
+    GetRNGstate();
+  
     int i=0;
     double y;
-    init_genrand((unsigned)time(NULL));
+    double x1,y1,z1,uni;
     while(i<*x){
-        y=rps(alpha,a,b); /* here input variables are pointa type*/
-        if(genrand_real3()<=exp(-(*b)*y))
+        uni=-M_PI/2.0+M_PI*unif_rand();
+        x1=pow((*a)*tgamma(1.0-*alpha)*cos(M_PI*(*alpha)/(2.0))/(*alpha),1.0/(*alpha));
+        y1=sin((*alpha)*uni+M_PI*(*alpha)/2.0)/pow(cos(uni)*cos(M_PI*(*alpha)/2.0),1.0/(*alpha));
+        z1=pow(cos((1.0-*alpha)*uni-M_PI*(*alpha)/2.0)/exp_rand(),(1.0-*alpha)/(*alpha));
+        y=x1*y1*z1; /* here input variables are pointa type*/
+        if(unif_rand()<=exp(-(*b)*y))
         {
             rn[i]=y;
             i++;
         }
         
             }
+    PutRNGstate();
 }
 
 double qdens(double m, double *lambda, double beta)
@@ -143,20 +151,6 @@ double qdens(double m, double *lambda, double beta)
     return pow(m,*lambda-1.0)*exp(-beta/2.0*(m+1.0/m));
 }
 
-double rps(double *alpha, double *a, double *b)
-{
-    double x1,y1,z1,uni;
-    uni=-M_PI/2.0+M_PI*genrand_real3();
-    x1=pow((*a)*tgamma(1.0-*alpha)*cos(M_PI*(*alpha)/(2.0))/(*alpha),1.0/(*alpha));
-    y1=sin((*alpha)*uni+M_PI*(*alpha)/2.0)/pow(cos(uni)*cos(M_PI*(*alpha)/2.0),1.0/(*alpha));
-    z1=pow(cos((1.0-*alpha)*uni-M_PI*(*alpha)/2.0)/rexp(),(1.0-*alpha)/(*alpha));
-    
-    return x1*y1*z1;
-}
 
-double rexp()
-{
-    return -log(genrand_real3());
-}
 
 
