@@ -73,3 +73,4 @@
            cce.factor.Rd, IC.Rd and llag.Rd are revised
 2021/2/5: modified adaBayes.R and adaBayes.Rd
 2021/2/26: modified qmle.R and qmle.Rd
+2021/3/13: fixed a bug in qmle when joint = TRUE and the parameter space is one-dimensional

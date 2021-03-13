@@ -664,8 +664,13 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
         HaveDriftHess <- TRUE
         HaveDiffHess <- TRUE
       } else { ### one dimensional optim
-        opt1 <- optimize(f, ...) ## an interval should be provided
+        # YK Mar. 13, 2021: bug fixed
+        #opt1 <- optimize(f, ...) ## an interval should be provided
+        #oout <- list(par = opt1$minimum, value = opt1$objective)
+        opt1 <- optimize(f, lower = lower[[names(new.start)]],
+                         upper = upper[[names(new.start)]], ...)
         oout <- list(par = opt1$minimum, value = opt1$objective)
+        names(oout$par) <- names(new.start)
       } ### endif( length(start)>1 )
       theta1 <- oout$par[diff.par]
       theta2 <- oout$par[drift.par]
