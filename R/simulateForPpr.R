@@ -146,7 +146,7 @@ constHazIntPr <- function(g.Fun , Kern.Fun, covariates, counting.var,statevar=NU
       dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
         
       my.countOld <- paste0(covariates[i] ,"[",Kern.Fun@variable.Integral@upper.var,"]")
-      my.countNew <- paste0("tail(", covariates[i] , " n=1L ) ")
+      my.countNew <- paste0("tail(", covariates[i] , ", n=1L ) ")
       dum.Ker <- gsub(my.countOld, my.countNew, x = dum.Ker, fixed=TRUE)
         
       my.countOld <- paste0(covariates[i] ,"[",Kern.Fun@variable.Integral@var.time,"]")

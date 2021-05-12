@@ -678,7 +678,8 @@ quasiLogLik.PPR <- function(yuimaPPR, parLambda=list(), method=method, fixed = l
                         jump.coeff = dummyJump1, jump.variable = yuimaPPR@model@jump.variable,
                         measure = list(df=yuimaPPR@model@measure$df),
                         measure.type = meas.type,
-                        solve.variable = yuimaPPR@model@solve.variable,
+                        solve.variable = yuimaPPR@model@state.variable,
+                        #solve.variable = yuimaPPR@model@solve.variable,
                         state.variable = yuimaPPR@model@state.variable)
       myYuima <- setYuima(data = NewData, model = myMod)
       resCov <- qmleLevy(yuima = myYuima,
