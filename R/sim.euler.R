@@ -270,8 +270,10 @@ euler<-function(xinit,yuima,dW,env){
       #   print(str(dummyList))
       #print(str(idx.dummy))
       lgth.meas<-length(yuima@model@parameter@measure)
-      if(lgth.meas>1){
-        for(i in c(2:lgth.meas)){
+      #if(lgth.meas>1){
+      if(lgth.meas>0){ # YK Aug 11, 2021
+        #for(i in c(2:lgth.meas)){
+        for(i in c(1:lgth.meas)){ # YK Aug 11, 2021
           idx.dummy<-yuima@model@parameter@measure[i]
           #print(i)
           #print(yuima@model@parameter@measure[i])
