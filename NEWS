@@ -76,3 +76,4 @@
 2021/3/13: fixed a bug in qmle when joint = TRUE and the parameter space is one-dimensional
 2021/3/15: fixed a bug in qmle when yuima@model@parameter@measure is character(0) and yuima@model@measure.type is "CP"
 2021/8/16: fixed a bug in simulate when the jump intensity is not a parameter
+2021/9/24: fixed a bug regarding the "fixed" argument in qmle

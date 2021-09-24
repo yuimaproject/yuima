@@ -18,7 +18,7 @@ drift.term <- function(yuima, theta, env){
   n <- dim(env$X)[1]
   
   drift <- matrix(0,n,d.size)
-  tmp.env <- new.env()
+  tmp.env <- new.env(parent = env) ##Kurisaki 4/4/2021
   assign(yuima@model@time.variable, env$time, envir=tmp.env)
   
   
@@ -36,7 +36,6 @@ drift.term <- function(yuima, theta, env){
   return(drift)
 }
 
-
 diffusion.term <- function(yuima, theta, env){
   r.size <- yuima@model@noise.number
   d.size <- yuima@model@equation.number
@@ -44,7 +43,7 @@ diffusion.term <- function(yuima, theta, env){
   DIFFUSION <- yuima@model@diffusion
   #	n <- length(yuima)[1]
   n <- dim(env$X)[1]
-  tmp.env <- new.env()
+  tmp.env <- new.env(parent = env) ##Kurisaki 4/4/2021
   assign(yuima@model@time.variable, env$time, envir=tmp.env)
   diff <- array(0, dim=c(d.size, r.size, n))
   for(i in 1:length(theta)){
@@ -60,9 +59,9 @@ diffusion.term <- function(yuima, theta, env){
       diff[d, r, ] <- eval(DIFFUSION[[d]][r], envir=tmp.env)
     }
   }
+  
   return(diff)
 }
-
 
 ## Koike's code
 ##::extract jump term from yuima
@@ -73,7 +72,7 @@ measure.term <- function(yuima, theta, env){
   modelstate <- yuima@model@state.variable
   n <- dim(env$X)[1]
   
-  tmp.env <- new.env()
+  tmp.env <- new.env(parent = env) # 4/17/2021 Kito
   assign(yuima@model@time.variable, env$time, envir =tmp.env)
   JUMP <- yuima@model@jump.coeff
   measure <- array(0, dim=c(d.size, r.size, n))
@@ -121,7 +120,7 @@ is.CARMA <- function(obj){
   return(FALSE)
 }
 
-qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
+qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, envir=globalenv(), ##Kurisaki 4/4/2021
                  lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL,rcpp=FALSE, ...){
   if(Est.Incr=="Carma.Inc"){
     Est.Incr<-"Incr"
@@ -203,6 +202,30 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
   #     return(null)
   #   }
   #
+  
+  ### 7/8/2021 Kito
+  if(length(fixed) > 0 && !is.Poisson(yuima) && !is.CARMA(yuima) && !is.COGARCH(yuima)) {
+    new.yuima.list <- changeFixedParametersToConstant(yuima, fixed)
+    new.yuima <- new.yuima.list$new.yuima
+    qmle.env <- new.yuima.list$env
+    # new params
+    new.start = start[!is.element(names(start), names(fixed))]
+    new.lower = lower[!is.element(names(lower), names(fixed))]
+    new.upper = upper[!is.element(names(upper), names(fixed))]
+    
+    #Kurisaki 5/23/2021
+    res <- qmle(new.yuima, start = new.start, method = method, fixed = list(), print = print, envir = qmle.env, 
+                lower = new.lower, upper = new.upper, joint = joint, Est.Incr = Est.Incr, aggregation = aggregation, threshold = threshold, rcpp = rcpp, ...)
+    
+    res@call <- match.call()
+    res@model <- yuima@model
+    fixed.res <- fixed
+    mode(fixed.res) <- "numeric"
+    res@fullcoef <- c(res@fullcoef,fixed.res)
+    res@fixed <- fixed.res
+    return(res)
+  }
+  
   
   yuima.nobs <- as.integer(max(unlist(lapply(get.zoo.data(yuima),length))-1,na.rm=TRUE))
   
@@ -470,7 +493,7 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
   }
   n <- length(yuima)[1]
   
-  env <- new.env()
+  env <- new.env(parent = envir) ##Kurisaki 4/4/2021
   
   assign("X",  as.matrix(onezoo(yuima)), envir=env)
   assign("deltaX",  matrix(0, n-1, d.size), envir=env)
@@ -527,10 +550,10 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
     }
     idx.intensity <- numeric(0)
     if(length(measure.par) > 0){
-    for(i in 1:length(measure.par)){
-      if(sum(grepl(measure.par[i],yuima@model@measure$intensity)))
-        idx.intensity <- append(idx.intensity,i)
-    }
+      for(i in 1:length(measure.par)){
+        if(sum(grepl(measure.par[i],yuima@model@measure$intensity)))
+          idx.intensity <- append(idx.intensity,i)
+      }
     }
     
     assign("idx.intensity", idx.intensity, envir=env)
@@ -710,6 +733,11 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
         mydots$joint <- NULL # LM 08/03/16
         mydots$aggregation <- NULL # LM 08/03/16
         mydots$threshold <- NULL #SMI 2/9/14
+        mydots$envir <- NULL ##Kurisaki 4/4/2021
+        mydots$Est.Incr <- NULL ##Kurisaki 4/10/2021
+        mydots$print <- NULL ##Kito 4/17/2021
+        mydots$aggregation <- NULL ##Kito 4/17/2021
+        mydots$rcpp <- NULL ##Kito 4/17/2021
         
         if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
           mydots$method<-method     ##song
@@ -723,6 +751,11 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
           mydots$lower <- NULL
           mydots$upper <- NULL
           mydots$method<- NULL
+          mydots$envir <- NULL ##Kurisaki 4/4/2021
+          mydots$Est.Incr <- NULL ##Kurisaki 4/8/2021
+          mydots$print <- NULL ##Kito 4/17/2021
+          mydots$aggregation <- NULL ##Kito 4/17/2021
+          mydots$rcpp <- NULL ##Kito 4/17/2021
           opt1 <- do.call(optimize, args=mydots)  
           theta1 <- opt1$minimum
           names(theta1) <- diff.par
@@ -767,7 +800,11 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
         mydots$lower <- unlist( lower[ nm[idx.drift] ])
         mydots$joint <- NULL # LM 08/03/16
         mydots$aggregation <- NULL # LM 08/03/16# LM 08/03/16
-        
+        mydots$envir <- NULL ##Kurisaki 4/4/2021
+        mydots$Est.Incr <- NULL ##Kurisaki 4/8/2021
+        mydots$print <- NULL ##Kito 4/17/2021
+        mydots$aggregation <- NULL ##Kito 4/17/2021
+        mydots$rcpp <- NULL ##Kito 4/17/2021
         
         
         if(length(mydots$par)>1 | any(is.infinite(c(mydots$upper,mydots$lower)))){
@@ -807,6 +844,11 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
           mydots$hessian <- NULL
           mydots$method<-NULL
           mydots$interval <- as.numeric(c(lower[drift.par],upper[drift.par]))
+          mydots$envir <- NULL ##Kurisaki 4/4/2021
+          mydots$Est.Incr <- NULL ##Kurisaki 4/8/2021
+          mydots$print <- NULL ##Kito 4/17/2021
+          mydots$aggregation <- NULL ##Kito 4/17/2021
+          mydots$rcpp <- NULL ##Kito 4/17/2021
           
           opt1 <- do.call(optimize, args=mydots)
           theta2 <- opt1$minimum
@@ -901,6 +943,11 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE,
     mydots$fn <- as.name("fpsi")
     mydots$start <- NULL
     mydots$threshold <- NULL #SMI 2/9/14
+    mydots$envir <- NULL ##Kurisaki 4/4/2021
+    mydots$Est.Incr <- NULL ##Kurisaki 4/8/2021
+    mydots$print <- NULL ##Kito 4/17/2021
+    mydots$aggregation <- NULL ##Kito 4/17/2021
+    mydots$rcpp <- NULL ##Kito 4/17/2021
     
     mydots$par <- unlist(new.start)
     mydots$hessian <- TRUE
@@ -1951,18 +1998,19 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     ####data <- yuima@data@original.data
     data <- matrix(0,length(yuima@data@zoo.data[[1]]),d.size)
     for(i in 1:d.size) data[,i] <- as.numeric(yuima@data@zoo.data[[i]])
+    env$data <- data  ##Kurisaki 5/29/2021
     
     thetadim <- length(yuima@model@parameter@all)
     
     noise_number <- yuima@model@noise.number
     
-    assign(yuima@model@time.variable,env$time[-length(env$time)])
-    for(i in 1:d.size) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
-    for(i in 1:thetadim) assign(names(param)[i], param[[i]])
+    assign(yuima@model@time.variable,env$time[-length(env$time)],envir = env) ##Kurisaki 5/29/2021
+    for(i in 1:d.size) assign(yuima@model@state.variable[i], data[-length(data[,1]),i],envir = env) ##Kurisaki 5/29/2021
+    for(i in 1:thetadim) assign(names(param)[i], param[[i]],envir = env) ##Kurisaki 5/29/2021
     
     d_b <- NULL
     for(i in 1:d.size){
-      if(length(eval(drift_name[[i]]))==(length(data[,1])-1)){
+      if(length(eval(drift_name[[i]],envir = env))==(length(data[,1])-1)){ ##Kurisaki 5/29/2021
         d_b[[i]] <- drift_name[[i]] #this part of model includes "x"(state.variable)
       }
       else{
@@ -1977,7 +2025,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     v_a<-matrix(list(NULL),d.size,noise_number)
     for(i in 1:d.size){
       for(j in 1:noise_number){
-        if(length(eval(diffusion_name[[i]][[j]]))==(length(data[,1])-1)){
+        if(length(eval(diffusion_name[[i]][[j]],envir = env))==(length(data[,1])-1)){ ##Kurisaki 5/29/2021
           v_a[[i,j]] <- diffusion_name[[i]][[j]] #this part of model includes "x"(state.variable)
         }
         else{
@@ -1994,9 +2042,9 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     dx_set <- as.matrix((data-rbind(numeric(d.size),as.matrix(data[-length(data[,1]),])))[-1,])
     drift_set <- diffusion_set <- NULL
     #for(i in 1:thetadim) assign(names(param)[i], param[[i]])
-    for(i in 1:d.size) drift_set <- cbind(drift_set,eval(d_b[[i]]))
+    for(i in 1:d.size) drift_set <- cbind(drift_set,eval(d_b[[i]],envir = env)) ##Kurisaki 5/29/2021
     for(i in 1:noise_number){
-      for(j in 1:d.size) diffusion_set <- cbind(diffusion_set,eval(v_a[[j,i]]))
+      for(j in 1:d.size) diffusion_set <- cbind(diffusion_set,eval(v_a[[j,i]],envir = env)) ##Kurisaki 5/29/2021
     }
     QL <- (likndim(dx_set,drift_set,diffusion_set,env$h)*(-0.5) + (n-1)*(-0.5*d.size * log( (2*pi*env$h) )))
   }
