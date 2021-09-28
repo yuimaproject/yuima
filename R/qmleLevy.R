@@ -10,6 +10,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
                    Est.Incr = "NoIncr",
                    aggregation = TRUE)
 {
+  myjumpname <- yuima@model@jump.variable
+  mymeasureparam <- yuima@model@parameter@measure
   if(!(Est.Incr %in% c("NoIncr","Incr","IncrPar")))
   	stop("Argument'Est.Incr' must be one of \"NoIncr\",\"Incr\" or \"IncrPar\"")
   call <- match.call()
@@ -365,7 +367,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     #parameter<-yuima@model@parameter@all
     
     
-    resi<-double(s.size-1) 
+    #resi<-double(s.size-1) 
     assign(modeltime,yuima@sampling@delta,envir=tmp.env)
     h<-yuima@sampling@delta
     assign(modelstate,pX,envir=tmp.env)
@@ -377,10 +379,13 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     if(length(drif.term)==1){
       drif.term <- rep(drif.term, s.size)
     } # vectorization (note. if an expression type object does not include state.variable, the length of the item after "eval" operation is 1.)
-    for(s in 1:(s.size-1)){
-      nova<-sqrt((jump.term)^2) # normalized variance
-      resi[s]<-(1/(nova[s]))*(inc[s]-h*drif.term[s])
-    }
+    
+    # for(s in 1:(s.size-1)){
+    #   nova<-sqrt((jump.term)^2) # normalized variance
+    #   resi[s]<-(1/(nova[s]))*(inc[s]-h*drif.term[s])
+    # }
+    nova<-sqrt((jump.term)^2)
+    resi<-(1/(nova[1:(s.size-1)]))*(inc[1:(s.size-1)]-h*drif.term[1:(s.size-1)])
     if(aggregation){
       Ter <- yuima@sampling@Terminal
       ures <- numeric(floor(Ter))
@@ -491,7 +496,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       colnames(res.incr)<-paste0(sdeModel@jump.variable,c(1:dim(res.incr)[2]))
     }
     Incr.Lev <- zooreg(data=res.incr)
-    Incr.Lev<- setData(original.data = Incr.Lev,)
+    Incr.Lev<- setData(original.data = Incr.Lev)
   }else{
     Incr.Lev <- zoo(res.incr,order.by=yuima@sampling@grid[[1]][-1])
     Incr.Lev <- setData(original.data=Incr.Lev)
@@ -552,8 +557,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       if(length(startjump) == 1){
         logdens <- function(para){
           exlogdens <- parse(text = sprintf("log(d%s)", dist))
-          assign(yuima@model@jump.variable, ures, envir = tmp.env)
-          assign(yuima@model@parameter@measure, para, envir = tmp.env)
+          assign(myjumpname, ures, envir = tmp.env)
+          assign(mymeasureparam, para, envir = tmp.env)
           sum(eval(exlogdens, envir = tmp.env))
         }
         intervaljump <- c(lowerjump[[1]], upperjump[[1]])
