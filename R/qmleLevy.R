@@ -10,6 +10,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
                    Est.Incr = "NoIncr",
                    aggregation = TRUE)
 {
+  oldyuima<-yuima #line1
   myjumpname <- yuima@model@jump.variable
   mymeasureparam <- yuima@model@parameter@measure
   if(!(Est.Incr %in% c("NoIncr","Incr","IncrPar")))
@@ -180,6 +181,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     diffupper <- upper[1:length(yuima@model@parameter@diffusion)]
     difflower <- lower[1:length(yuima@model@parameter@diffusion)]
     fres <- qmle(yuima=yuima,start=diffstart,lower=difflower,upper=diffupper,rcpp = TRUE,joint = FALSE,method = "L-BFGS-B")
+    DiffHessian<- fres@details$hessian #182 
     
     DIPAR <- yuima@model@parameter@diffusion
     DIFFUSION <- yuima@model@diffusion
@@ -236,6 +238,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     yuima@model@parameter@diffusion <- character(0)
     
     sres<-qmle(yuima=yuima,start=dristart,lower=drilower,upper=driupper,rcpp = TRUE,method = "L-BFGS-B")
+    DriftHessian <- sres@details$hessian #239
     
     if((length(ovp) == 0) && (third)){
       yuima@model@diffusion <- DIFFUSION
@@ -291,6 +294,12 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
                      vcov = vcov0, min = min0, details = details0, minuslogl = minusquasilogl,
                      method = sres@method, nobs=nobs0, model=sdeModel)
       # res <- list(first = fres@coef, second = sres@coef)}
+      if(length(oldyuima@data@zoo.data)==1){
+        myGamhat <- matrix(0,length(coef),length(coef))
+        myGamhat[1:dim(DiffHessian)[1],1:dim(DiffHessian)[2]]<-DiffHessian
+        myGamhat[dim(DiffHessian)[1]+1:dim(DriftHessian)[1],dim(DiffHessian)[1]+1:dim(DriftHessian)[2]]<-DriftHessian#293
+        myGamhat<-myGamhat/oldyuima@sampling@Terminal
+      }
     }else{
       yuima.stop("third estimation may be theoretical invalid under the presence of an overlapping parameter.")
     }
@@ -386,6 +395,11 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     # }
     nova<-sqrt((jump.term)^2)
     resi<-(1/(nova[1:(s.size-1)]))*(inc[1:(s.size-1)]-h*drif.term[1:(s.size-1)])
+    if(length(oldyuima@data@zoo.data)==1){
+      coefSigdiff<- 1/h*sum(resi^4)  #389 resi
+      coefDriftSig <- 1/h*sum(resi^3)
+    }
+    
     if(aggregation){
       Ter <- yuima@sampling@Terminal
       ures <- numeric(floor(Ter))
@@ -500,6 +514,64 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
   }else{
     Incr.Lev <- zoo(res.incr,order.by=yuima@sampling@grid[[1]][-1])
     Incr.Lev <- setData(original.data=Incr.Lev)
+  }
+  
+  if(length(oldyuima@data@zoo.data)==1){
+    mydiff<-oldyuima@model@jump.coeff[[1]]
+    mydiffDer <-deriv(mydiff,oldyuima@model@parameter@jump)
+    myenvdiff<- new.env()
+    if(length(oldyuima@model@parameter@jump)>=1){
+      for(i in c(1:length(oldyuima@model@parameter@jump))){
+        assign(value=coef[oldyuima@model@parameter@jump[i]],x=oldyuima@model@parameter@jump[i],envir=myenvdiff)
+      }
+    }
+    EvalPartDiff <- Vectorize(FUN= function(myenvdiff,mydiffDer, data){
+      assign(x=oldyuima@model@solve.variable, value=data,envir = myenvdiff)
+      return(attr(eval(mydiffDer, envir=myenvdiff),"gradient"))},vectorize.args = "data") 
+    
+    DiffJumpCoeff<-EvalPartDiff(myenvdiff,mydiffDer, data=pX)
+    if(!is.matrix(DiffJumpCoeff)){
+      sigmadiffhat<- as.matrix(sum(DiffJumpCoeff^2/jump.term[1:(oldyuima@sampling@n-1)]^2)/(oldyuima@sampling@n))*coefSigdiff
+      DiffJumpCoeff<- t(DiffJumpCoeff)
+    }else{
+      sigmadiffhat<- matrix(0,dim(DiffJumpCoeff)[1],dim(DiffJumpCoeff)[1])
+      for(t in c(1:dim(DiffJumpCoeff)[2])){
+        sigmadiffhat <-sigmadiffhat+as.matrix(DiffJumpCoeff[,t])%*%DiffJumpCoeff[,t]/jump.term[t]^2
+      }
+      sigmadiffhat<-  sigmadiffhat/(oldyuima@sampling@n)*coefSigdiff
+    }
+    
+    mydrift<-oldyuima@model@drift[[1]]
+    mydriftDer <-deriv(mydrift,oldyuima@model@parameter@drift)
+    
+    myenvdrift<- new.env()
+    if(length(oldyuima@model@parameter@drift)>=1){
+      for(i in c(1:length(oldyuima@model@parameter@drift))){
+        assign(value=coef[oldyuima@model@parameter@drift[i]],x=oldyuima@model@parameter@drift[i],envir=myenvdrift)
+      }
+    }
+    
+    DriftDerCoeff<-EvalPartDiff(myenvdrift,mydriftDer, data=pX)
+    if(!is.matrix(DriftDerCoeff)){
+      sigmadrifthat<- as.matrix(sum(DriftDerCoeff^2/jump.term[1:(oldyuima@sampling@n-1)]^2)/(oldyuima@sampling@n))*coefDriftSig
+      DriftDerCoeff <- t(DriftDerCoeff)
+    }else{
+      sigmadrifthat<- matrix(0,dim(DriftDerCoeff)[1],dim(DriftDerCoeff)[1])
+      for(t in c(1:dim(DriftDerCoeff)[2])){
+        sigmadrifthat <-sigmadrifthat+as.matrix(DriftDerCoeff[,t])%*%DriftDerCoeff[,t]/jump.term[t]^2
+      }
+      sigmadrifthat<- sigmadrifthat/(oldyuima@sampling@n)
+    }
+    sigmadriftdiff <- matrix(0, dim(sigmadrifthat)[2],dim(sigmadiffhat)[1])
+    for(t in c(1:dim(DriftDerCoeff)[2]))
+      sigmadriftdiff<-sigmadriftdiff+DriftDerCoeff[,t]%*%t(DiffJumpCoeff[,t])
+    
+    sigmadriftdiff<-sigmadriftdiff/oldyuima@sampling@n
+    
+    MatSigmaHat <- rbind(cbind(sigmadiffhat,t(sigmadriftdiff)),cbind(sigmadriftdiff,sigmadrifthat))
+    
+    res@coef<-res@coef[c(oldyuima@model@parameter@jump,oldyuima@model@parameter@drift)]
+    res@vcov<-solve(t(myGamhat)%*%solve(MatSigmaHat)%*%myGamhat*oldyuima@sampling@Terminal)
   }
   
   if(Est.Incr == "Incr"){
