@@ -604,12 +604,92 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     upperjump <- upper0[lev.names]
     esti <- optim(fn = minusloglik, lower = lowerjump, upper = upperjump, 
                   par = para, method = "L-BFGS-B")
-    #optimHess(par=esti$par, fn=minusloglik)
+
+    HessianEta <- optimHess(par=esti$par, fn=minusloglik)
     res@coef<-c(res@coef,esti$par)
     res@fullcoef[names(para)]<-esti$par
-    res@vcov<-cbind(res@vcov,matrix(NA,ncol=length(esti$par),nrow=dim(res@vcov)[1]))
+    if(length(oldyuima@data@zoo.data)==1 & is(oldyuima@model@measure$df, "yuima.law")){
+      if(!aggregation){
+        Ter <- yuima@sampling@Terminal
+        ures <- numeric(floor(Ter))
+        for(l in 1:floor(Ter)){
+          ures[l] <- sum(resi[(floor((l-1)/h)):(floor(l/h)-1)]) 
+        } 
+      }
+      mypar<-res@coef[oldyuima@model@parameter@measure]
+      mypar[oldyuima@model@measure$df@time.var]<-1
+      fdataeta<-dens(oldyuima@model@measure$df,x=ures,mypar)# f(eps, eta)
+      del <- 10^-3
+      fdatadeltaeta<- dens(oldyuima@model@measure$df,x=ures+del,mypar) # f(eps + delta, eta)
+      dummy <- t(rep(1,length(mypar[oldyuima@model@measure$df@param.measure])))
+      myeta<- as.matrix(mypar[oldyuima@model@measure$df@param.measure])%*%dummy
+      myetapert <- myeta+del*diag(rep(1,dim(myeta)[1])) 
+      fdataetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
+        par<-myetapert[,X]
+        par[oldyuima@model@measure$df@time.var]<-1
+        dens(oldyuima@model@measure$df,x=ures,par)
+      }
+      )# f(eps, eta+delta)
+      fdatadeltaetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
+        par<-myetapert[,X]
+        par[oldyuima@model@measure$df@time.var]<-1
+        dens(oldyuima@model@measure$df,x=ures+del,par)
+      }
+      ) # f(eps +deta, eta+delta) 
+      term1<-1/(fdataeta)
+      term2 <- fdatadeltaeta*term1%*%dummy
+      
+      term2 <- fdatadeltaetadelta-term2*fdataetadelta
+      mixpartial<-t((as.matrix(term1)%*%dummy)/del^2*term2/oldyuima@sampling@Terminal)
+      
+      
+      # construction of b_i 
+      # DiffJumpCoeff, DriftDerCoeff, jump.term length(resi)
+      # step1 <- t(DiffJumpCoeff)%*%DiffJumpCoeff
+      DerMeta <- 1/del*(fdataetadelta - as.matrix(fdataeta)%*%rep(1,dim(fdataetadelta)[2]))*(as.matrix(term1)%*%rep(1,dim(fdataetadelta)[2]))
+      SigmaEta <- t(DerMeta)%*%DerMeta/oldyuima@sampling@Terminal
+      
+      SigmaEtaAlpha<- 1/oldyuima@sampling@n*DriftDerCoeff%*%(t(DiffJumpCoeff)/(as.matrix(jump.term[-length(jump.term)]^2)%*%rep(1,dim(DiffJumpCoeff)[1])) )
+      SigmaEtaAlpha <- SigmaEtaAlpha*sum(resi^3)/oldyuima@sampling@delta
+      
+      b_i <- matrix(0,floor(Ter),length(c(oldyuima@model@parameter@drift, oldyuima@model@parameter@jump)))
+      Coef1 <- matrix(0,floor(Ter),length( oldyuima@model@parameter@jump))
+      Coef2 <- matrix(0,floor(Ter),length( oldyuima@model@parameter@drift))
+      
+      for(l in 1:floor(Ter)){
+        pos <- (floor((l-1)/h)):(floor(l/h)-1)
+        if(length(oldyuima@model@parameter@jump)==1){
+          b_i[l,1:length(oldyuima@model@parameter@jump)] <- sum(-DiffJumpCoeff[,pos]*resi[pos]/jump.term[pos])
+          Coef1[l,]<-sum(DiffJumpCoeff[,pos]/jump.term[pos]*(resi[pos]^2-h))
+        }else{
+          interm <- as.matrix(resi[pos]/jump.term[pos])
+          b_i[l,1:length(oldyuima@model@parameter@jump)] <-  -t(DiffJumpCoeff[,pos]%*%interm)
+          interm2 <- as.matrix((resi[pos]^2-h)/jump.term[pos])
+          Coef1[l,] <-DiffJumpCoeff[,pos]%*%interm2
+        }
+        if(length(oldyuima@model@parameter@drift)==1){
+          b_i[l,1:length(oldyuima@model@parameter@drift)+length(oldyuima@model@parameter@jump)] <- -sum(h* DriftDerCoeff[,pos]%*%jump.term[pos])
+          Coef2[l,]<-sum(DriftDerCoeff[,pos]/jump.term[pos]*(resi[pos]))
+        }else{
+          b_i[l,1:length(oldyuima@model@parameter@drift)+length(oldyuima@model@parameter@jump)] <--h* DriftDerCoeff[,pos]%*%jump.term[pos]
+          interm3 <- as.matrix((resi[pos])/jump.term[pos])
+          Coef2[l,] <-DriftDerCoeff[,pos]%*%interm3
+        }
+      }
+      MatrUnder <- mixpartial%*%b_i
+      I_n <- cbind(rbind(myGamhat,MatrUnder),rbind(matrix(0, dim(myGamhat)[1],dim(HessianEta)[2]),HessianEta/oldyuima@sampling@Terminal))
+      SigmaGammaEta <- t(DerMeta)%*%Coef1/Ter
+      SigmaAlphaEta <- t(DerMeta)%*%Coef2/Ter
+      # dim(fdataetadelta), length(fdataeta),  length(term1)
+      dum <- cbind(SigmaGammaEta , SigmaAlphaEta)
+      MatSigmaHat1<- rbind(cbind(MatSigmaHat,t(dum)),cbind(dum,SigmaEta)) 
+      InvIn<- solve(I_n)
+      res@vcov <-InvIn%*%MatSigmaHat1%*%t(InvIn)/Ter
+    }else{
+      res@vcov<-cbind(res@vcov,matrix(NA,ncol=length(esti$par),nrow=dim(res@vcov)[1]))
+    }
     colnames(res@vcov)<-names(res@fullcoef)
-    res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
+    #res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
     rownames(res@vcov)<-names(res@fullcoef)
     res@min<-c(res@min,esti$value)
     res@nobs<-c(res@nobs,length(Incr.Lev@zoo.data[[1]]))
