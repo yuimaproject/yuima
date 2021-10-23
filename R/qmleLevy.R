@@ -709,29 +709,141 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       lowerjump <- lower0[lev.names]
       upperjump <- upper0[lev.names]
   
-      if(length(startjump) == 1){
+      if(length(startjump) == -1){
         logdens <- function(para){
           exlogdens <- parse(text = sprintf("log(d%s)", dist))
           assign(myjumpname, ures, envir = tmp.env)
           assign(mymeasureparam, para, envir = tmp.env)
           sum(eval(exlogdens, envir = tmp.env))
         }
+        dens <-function(para){
+          exdens <- parse(text = sprintf("d%s", dist))
+          assign(myjumpname, ures, envir = tmp.env)
+          assign(mymeasureparam, para, envir = tmp.env)
+          eval(exdens, envir = tmp.env)
+        }
         intervaljump <- c(lowerjump[[1]], upperjump[[1]])
         esti <- optimize(logdens, interval = intervaljump, maximum = TRUE)
         return(list(sde=esort, meas=esti$maximum))
       }else{
+        
         logdens <- function(para){
           exlogdens <- parse(text = sprintf("log(d%s)", dist))
-          assign(yuima@model@jump.variable, ures, envir = tmp.env)
-          for(i in c(1:length(yuima@model@parameter@measure)))
-            assign(yuima@model@parameter@measure[i], para[[yuima@model@parameter@measure[i]]], envir = tmp.env)
+          assign(oldyuima@model@jump.variable, ures, envir = tmp.env)
+          for(i in c(1:length(oldyuima@model@parameter@measure)))
+            assign(oldyuima@model@parameter@measure[i], para[[oldyuima@model@parameter@measure[i]]], envir = tmp.env)
   
-          sum(eval(exlogdens, envir = tmp.env))
-         }
+          -sum(eval(exlogdens, envir = tmp.env),na.rm = T)
+        }
+        
+        dens <-function(par,x){
+          exdens <- parse(text = sprintf("d%s", dist))
+          assign(myjumpname, x, envir = tmp.env)
+          assign(mymeasureparam, par, envir = tmp.env)
+          eval(exdens, envir = tmp.env)
+        }
   
         esti <- optim(fn=logdens, lower = lowerjump, upper = upperjump, par = startjump,
-                      method = "L-BFGS-B", control = list(fnscale = -1))
-        return(list(sde=esort, meas=esti$par))
+                      method = "L-BFGS-B")
+        
+        HessianEta <- optimHess(par=esti$par, fn=logdens)
+        res@coef<-c(res@coef,esti$par)
+        res@fullcoef[lev.names]<-esti$par
+        if(length(oldyuima@data@zoo.data)==1){
+          if(!aggregation){
+            Ter <- yuima@sampling@Terminal
+            ures <- numeric(floor(Ter))
+            for(l in 1:floor(Ter)){
+              ures[l] <- sum(resi[(floor((l-1)/h)):(floor(l/h)-1)]) 
+            } 
+          }
+          mypar<-res@coef[oldyuima@model@parameter@measure]
+          #mypar[oldyuima@model@measure$df@time.var]<-1
+          fdataeta<-dens(par=mypar,x=ures)# f(eps, eta)
+          del <- 10^-3
+          fdatadeltaeta<- dens(par=mypar,x=ures+del) # f(eps + delta, eta)
+          dummy <- t(rep(1,length(mypar[lev.names])))
+          myeta<- as.matrix(mypar[lev.names])%*%dummy
+          myetapert <- myeta+del*diag(rep(1,dim(myeta)[1])) 
+          fdataetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
+            par<-myetapert[,X]
+            #par[oldyuima@model@measure$df@time.var]<-1
+            dens(par=par,x=ures)
+          }
+          )# f(eps, eta+delta)
+          fdatadeltaetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
+            par<-myetapert[,X]
+            #par[oldyuima@model@measure$df@time.var]<-1
+            dens(par=par,x=ures+del)
+          }
+          ) # f(eps +deta, eta+delta) 
+          term1<-1/(fdataeta)
+          term2 <- fdatadeltaeta*term1%*%dummy
+          
+          term2 <- fdatadeltaetadelta-term2*fdataetadelta
+          mixpartial<-t((as.matrix(term1)%*%dummy)/del^2*term2/oldyuima@sampling@Terminal)
+          
+          
+          # construction of b_i 
+          # DiffJumpCoeff, DriftDerCoeff, jump.term length(resi)
+          # step1 <- t(DiffJumpCoeff)%*%DiffJumpCoeff
+          DerMeta <- 1/del*(fdataetadelta - as.matrix(fdataeta)%*%rep(1,dim(fdataetadelta)[2]))*(as.matrix(term1)%*%rep(1,dim(fdataetadelta)[2]))
+          SigmaEta <- t(DerMeta)%*%DerMeta/oldyuima@sampling@Terminal
+          
+          #SigmaEtaAlpha<- 1/oldyuima@sampling@n*DriftDerCoeff%*%(t(DiffJumpCoeff)/(as.matrix(jump.term[-length(jump.term)]^2)%*%rep(1,dim(DiffJumpCoeff)[1])) )
+          SigmaEtaAlpha<- 1/oldyuima@sampling@n*DriftDerCoeff%*%(t(DiffJumpCoeff)/(as.matrix(jump.term^2)%*%rep(1,dim(DiffJumpCoeff)[1])) )
+          SigmaEtaAlpha <- SigmaEtaAlpha*sum(resi^3)/oldyuima@sampling@delta
+          
+          b_i <- matrix(0,floor(Ter),length(c(oldyuima@model@parameter@drift, oldyuima@model@parameter@jump)))
+          Coef1 <- matrix(0,floor(Ter),length( oldyuima@model@parameter@jump))
+          Coef2 <- matrix(0,floor(Ter),length( oldyuima@model@parameter@drift))
+          
+          for(l in 1:floor(Ter)){
+            pos <- (floor((l-1)/h)):(floor(l/h)-1)
+            if(length(oldyuima@model@parameter@jump)==1){
+              b_i[l,1:length(oldyuima@model@parameter@jump)] <- sum(-DiffJumpCoeff[,pos]*resi[pos]/jump.term[pos])
+              Coef1[l,]<-sum(DiffJumpCoeff[,pos]/jump.term[pos]*(resi[pos]^2-h))
+            }else{
+              interm <- as.matrix(resi[pos]/jump.term[pos])
+              b_i[l,1:length(oldyuima@model@parameter@jump)] <-  -t(DiffJumpCoeff[,pos]%*%interm)
+              interm2 <- as.matrix((resi[pos]^2-h)/jump.term[pos])
+              Coef1[l,] <-DiffJumpCoeff[,pos]%*%interm2
+            }
+            if(length(oldyuima@model@parameter@drift)==1){
+              b_i[l,1:length(oldyuima@model@parameter@drift)+length(oldyuima@model@parameter@jump)] <- -sum(h* DriftDerCoeff[,pos]%*%jump.term[pos])
+              Coef2[l,]<-sum(DriftDerCoeff[,pos]/jump.term[pos]*(resi[pos]))
+            }else{
+              b_i[l,1:length(oldyuima@model@parameter@drift)+length(oldyuima@model@parameter@jump)] <--h* DriftDerCoeff[,pos]%*%jump.term[pos]
+              interm3 <- as.matrix((resi[pos])/jump.term[pos])
+              Coef2[l,] <-DriftDerCoeff[,pos]%*%interm3
+            }
+          }
+          MatrUnder <- mixpartial%*%b_i
+          I_n <- cbind(rbind(myGamhat,MatrUnder),rbind(matrix(0, dim(myGamhat)[1],dim(HessianEta)[2]),HessianEta/oldyuima@sampling@Terminal))
+          SigmaGammaEta <- t(DerMeta)%*%Coef1/Ter
+          SigmaAlphaEta <- t(DerMeta)%*%Coef2/Ter
+          # dim(fdataetadelta), length(fdataeta),  length(term1)
+          dum <- cbind(SigmaGammaEta , SigmaAlphaEta)
+          MatSigmaHat1<- rbind(cbind(MatSigmaHat,t(dum)),cbind(dum,SigmaEta)) 
+          InvIn<- solve(I_n)
+          res@vcov <-InvIn%*%MatSigmaHat1%*%t(InvIn)/Ter
+        }else{
+          res@vcov<-cbind(res@vcov,matrix(NA,ncol=length(esti$par),nrow=dim(res@vcov)[1]))
+        }
+        colnames(res@vcov)<-names(res@fullcoef)
+        #res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
+        rownames(res@vcov)<-names(res@fullcoef)
+        res@min<-c(res@min,esti$value)
+        res@nobs<-c(res@nobs,length(Incr.Lev@zoo.data[[1]]))
+        
+        result<- new("yuima.qmleLevy.incr",Incr.Lev=Incr.Lev,
+                     minusloglLevy = logdens,logL.Incr=-esti$value,
+                     Data = yuima@data,  yuima=res, Levydetails=esti)
+        
+        return(result)
+        
+        
+        #return(list(sde=esort, meas=esti$par))
       }
     }
   
