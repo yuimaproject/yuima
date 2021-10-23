@@ -383,10 +383,10 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     jump.term<-eval(JUMP[[1]],envir=tmp.env)
     drif.term<-eval(DRIFT,envir=tmp.env)
     if(length(jump.term)==1){
-      jump.term <- rep(jump.term, s.size)
+      jump.term <- rep(jump.term, s.size-1)
     }
     if(length(drif.term)==1){
-      drif.term <- rep(drif.term, s.size)
+      drif.term <- rep(drif.term, s.size-1)
     } # vectorization (note. if an expression type object does not include state.variable, the length of the item after "eval" operation is 1.)
     
     # for(s in 1:(s.size-1)){
@@ -553,7 +553,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     
     DriftDerCoeff<-EvalPartDiff(myenvdrift,mydriftDer, data=pX)
     if(!is.matrix(DriftDerCoeff)){
-      sigmadrifthat<- as.matrix(sum(DriftDerCoeff^2/jump.term[1:(oldyuima@sampling@n-1)]^2)/(oldyuima@sampling@n))*coefDriftSig
+     # sigmadrifthat<- as.matrix(sum(DriftDerCoeff^2/jump.term[1:(oldyuima@sampling@n-1)]^2)/(oldyuima@sampling@n))*coefDriftSig
+      sigmadrifthat<- as.matrix(sum(DriftDerCoeff^2/jump.term[1:(oldyuima@sampling@n-1)]^2)/(oldyuima@sampling@n))
       DriftDerCoeff <- t(DriftDerCoeff)
     }else{
       sigmadrifthat<- matrix(0,dim(DriftDerCoeff)[1],dim(DriftDerCoeff)[1])
@@ -566,7 +567,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     for(t in c(1:dim(DriftDerCoeff)[2]))
       sigmadriftdiff<-sigmadriftdiff+DriftDerCoeff[,t]%*%t(DiffJumpCoeff[,t])
     
-    sigmadriftdiff<-sigmadriftdiff/oldyuima@sampling@n
+    #sigmadriftdiff<-sigmadriftdiff/oldyuima@sampling@n
+    sigmadriftdiff<-sigmadriftdiff/oldyuima@sampling@n*coefDriftSig
     
     MatSigmaHat <- rbind(cbind(sigmadiffhat,t(sigmadriftdiff)),cbind(sigmadriftdiff,sigmadrifthat))
     
@@ -649,7 +651,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       DerMeta <- 1/del*(fdataetadelta - as.matrix(fdataeta)%*%rep(1,dim(fdataetadelta)[2]))*(as.matrix(term1)%*%rep(1,dim(fdataetadelta)[2]))
       SigmaEta <- t(DerMeta)%*%DerMeta/oldyuima@sampling@Terminal
       
-      SigmaEtaAlpha<- 1/oldyuima@sampling@n*DriftDerCoeff%*%(t(DiffJumpCoeff)/(as.matrix(jump.term[-length(jump.term)]^2)%*%rep(1,dim(DiffJumpCoeff)[1])) )
+      #SigmaEtaAlpha<- 1/oldyuima@sampling@n*DriftDerCoeff%*%(t(DiffJumpCoeff)/(as.matrix(jump.term[-length(jump.term)]^2)%*%rep(1,dim(DiffJumpCoeff)[1])) )
+      SigmaEtaAlpha<- 1/oldyuima@sampling@n*DriftDerCoeff%*%(t(DiffJumpCoeff)/(as.matrix(jump.term^2)%*%rep(1,dim(DiffJumpCoeff)[1])) )
       SigmaEtaAlpha <- SigmaEtaAlpha*sum(resi^3)/oldyuima@sampling@delta
       
       b_i <- matrix(0,floor(Ter),length(c(oldyuima@model@parameter@drift, oldyuima@model@parameter@jump)))
