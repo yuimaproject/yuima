@@ -198,9 +198,9 @@ lmm <- function(x, block = 20, freq = 50, freq.p = 10, K = 4, interval = c(0, 1)
     inv.Ik <- 1/rowSums(Ijk)
     
     if(psd){
-      cmat <- sum(Ijk*inv.Ik*summand)/block
-    }else{
       cmat <- abs(sum(Ijk*inv.Ik*summand)/block)
+    }else{
+      cmat <- sum(Ijk*inv.Ik*summand)/block
     }
     
     result <- list(covmat = as.matrix(cmat), vcov = as.matrix(2 * mean(inv.Ik)/block), Sigma.p = Sigma.p)
