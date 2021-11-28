@@ -78,3 +78,5 @@
 2021/8/16: fixed a bug in simulate when the jump intensity is not a parameter
 2021/9/24: fixed a bug regarding the "fixed" argument in qmle
 2021/11/23: fixed a bug regarding the "psd" argument in lmm
+2021/11/28: added ntv.R, pz.test.R, lm.jumptest.R, ntv.Rd, pz.test.Rd, lm.jumptest.Rd
+            modified mpv.Rd, bns.test.Rd

@@ -44,7 +44,7 @@ For the \code{i}-th component, the test statistic is equal to the \code{i}-th co
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
-A list with the same length as the \code{zoo.data} of \code{yuima}. Each components of the list has class \dQuote{\code{htest}} and contains the following components:
+A list with the same length as the \code{zoo.data} of \code{yuima}. Each component of the list has class \dQuote{\code{htest}} and contains the following components:
 \item{statistic}{the value of the test statistic of the corresponding component of the \code{zoo.data} of \code{yuima}.}
 \item{p.value}{an approximate p-value for the test of the corresponding component.}
 \item{method}{the character string \dQuote{\code{Barndorff-Nielsen and Shephard jump test}}.}
@@ -77,10 +77,9 @@ Theoretically, this test may be invalid if sampling is irregular.
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{mpv}}
+\code{\link{lm.jumptest}}, \code{\link{mpv}}, \code{\link{minrv.test}}, \code{\link{medrv.test}}, \code{\link{pz.test}}
 }
 \examples{
-
 set.seed(123)
 
 # One-dimensional case

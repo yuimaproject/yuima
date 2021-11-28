@@ -179,6 +179,7 @@ export(cce.factor) # Jul. 19, 2019: high-dimensional covariance estimator
 export(simBmllag) # added by YK on Apr. 15, 2020
 export(simBmllag.coef) # added by YK on Apr. 15, 2020
 export(wllag) # added by YK on Apr. 15, 2020
+export(minrv, medrv, minrv.test, medrv.test, lm.jumptest, pz.test) # added by YK on Nov. 28, 2021
 
 export(get.zoo.data)
 
