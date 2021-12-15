@@ -80,3 +80,6 @@
 2021/11/23: fixed a bug regarding the "psd" argument in lmm
 2021/11/28: added ntv.R, pz.test.R, lm.jumptest.R, ntv.Rd, pz.test.Rd, lm.jumptest.Rd
             modified mpv.Rd, bns.test.Rd
+2021/12/15: added ae.R, ae.cpp, ae.Rd, aeCharacteristic.Rd, aeDensity.Rd, aeExpectation.Rd, aeKurtosis.Rd, aeMarginal.Rd
+            aeMean.Rd, aeMoment.Rd, aeSd.Rd, aeSkewness.Rd, yuima.ae-class.Rd, updated NAMESPACE, updated yuima_init.c,
+			updated DESCRIPTION to add package calculus in Imports

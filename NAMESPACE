@@ -68,6 +68,16 @@ importFrom("stats", "mvfft") # added by YK on Apr. 15, 2020
 importFrom(coda, as.mcmc)
 importFrom("stats", "cov", "var")
 
+# added by EG on Dec. 15, 2021
+importFrom(calculus,"%dot%")
+importFrom(calculus,"%gradient%")
+importFrom(calculus,"%inner%")
+importFrom(calculus,"%mx%")
+importFrom(calculus,"%outer%")
+importFrom(calculus,"%prod%")
+importFrom(calculus,"%sum%")
+
+
 exportClasses("yuima",
 "yuima.data",
 "yuima.law",
@@ -96,7 +106,8 @@ exportClasses("yuima",
 "yuima.PPR",
 "yuima.Hawkes",
 "yuima.PPR.qmle",
-"yuima.snr"
+"yuima.snr",
+"yuima.ae"  # added by EG on Dec. 15, 2021
 )
 
 exportMethods(
@@ -230,6 +241,18 @@ export(gmm) # Estimation COGARCH(P,Q) using Method Of Moments
 export(cogarchNoise)
 export(Diagnostic.Cogarch)
 export(Diagnostic.Carma)
+
+# Asymptotic expansion (added by EG on Dec. 15, 2021)
+export(ae)
+export(aeCharacteristic)
+export(aeDensity)
+export(aeExpectation)
+export(aeKurtosis)
+export(aeMarginal)
+export(aeMean)
+export(aeMoment)
+export(aeSd)
+export(aeSkewness)
 
 # Methods
 export(rand)# random number generator of a Levy process specified by user
