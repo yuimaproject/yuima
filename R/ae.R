@@ -387,20 +387,20 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
     
   } else {
     
-    # test <- parse(text = diffusion)
-    # 
-    # env  <- AE$par
-    # env[[AE$eps.var]] <- 0
-    # for(z in AE$z) 
-    #   env[[z]] <- runif(n = 100, min = -999, max = 999)
-    # 
-    # is.ok <- sapply(test, function(expr){
-    #   all(eval(expr, env)==0)  
-    # })
-    # 
-    # if(!all(is.ok)){
-    #   stop('diffusion must vanish when evaluated at epsilon = 0')
-    # }
+    test <- parse(text = diffusion)
+
+    env  <- AE$par
+    env[[AE$eps.var]] <- 0
+    for(z in AE$z)
+      env[[z]] <- runif(n = 100, min = -999, max = 999)
+
+    is.ok <- suppressWarnings(sapply(test, function(expr){
+      all(eval(expr, env)==0, na.rm = TRUE)
+    }))
+    
+    if(!all(is.ok)){
+      stop('diffusion must vanish when evaluated at epsilon = 0')
+    }
     
   }
   
