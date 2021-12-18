@@ -102,7 +102,6 @@ setMethod("initialize", "yuima.ae", function(.Object, order, var, u.var, eps.var
 setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1, order = NULL, ...){
   
   n <- length(x@var)
-  par(mfrow = c(n,1))
   
   for(z in x@var){
     margin <- aeMarginal(ae = x, var = z)
@@ -116,8 +115,6 @@ setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1
     dens <- do.call('aeDensity', c(grid, list(ae = margin, eps = eps, order = order)))
     plot(x = grid[[1]], y = dens, type = 'l', xlab = z, ylab = 'Density', ...)
   }
-  
-  par(mfrow=c(1,1))
   
 })
 
@@ -290,8 +287,8 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
       paste0(AE$u,"^",nu, collapse = "*") %prod% array(calculus::wrap(c))
     })
     
-    if(is.null(dim(E))) E <- paste(E, collapse = ' + ')
-    else E <- apply(E, 1, function(x) paste(x, collapse = ' + ')) 
+    if(is.null(dim(E))) E <- calculus:::cpp_collapse(E, ' + ')
+    else E <- apply(E, 1, function(x) calculus:::cpp_collapse(x, ' + ')) 
     
     E <- array(E, dim = rep(AE$d, length(K)))
     
@@ -304,8 +301,8 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
     martingale <- sprintf('exp(%s)', (calculus::wrap(1i*AE$Mu) %inner% AE$u) %sum% (-0.5 * AE$Sigma) %inner% (AE$u %outer% AE$u))
     
     if(m>0){
-      psi <- paste(paste0(AE$eps.var, "^", (1:m)), calculus::wrap(AE$P.m[1:m]), sep = " * ", collapse = " + ")
-      psi <- paste0(1, " + ", psi)
+      psi <- calculus:::cpp_collapse(paste0(AE$eps.var, "^", (1:m)) %prod% calculus::wrap(AE$P.m[1:m]), " + ")
+      psi <- 1 %sum% psi
     }
     else {
       psi <- 1
@@ -416,11 +413,11 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
   # parse v only once
   expr <- array(parse(text = AE$V), dim = dim(AE$V))
   
-  # for j up to twice the expnasion order...
+  # for j up to twice the expansion order...
   for(j in 1:(2*AE$m)) {
     
     # differentiate expression 
-    expr   <- calculus::derivative(expr, var = AE$z.bar, deparse = FALSE)
+    expr <- calculus::derivative(expr, var = AE$z.bar, deparse = FALSE)
     
     # convert to char
     tmp <- calculus::e2c(expr)
@@ -643,7 +640,8 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
   names(xinit) <- lhs
   
   # Solve
-  AE$Ez.T <- calculus::ode(f = rhs, var = xinit, times = sampling@grid[[1]], params = AE$par, timevar = model@model@time.variable, drop = TRUE, method = solver)
+  Ez.T <- calculus::ode(f = rhs, var = xinit, times = sampling@grid[[1]], params = AE$par, timevar = model@model@time.variable, drop = TRUE, method = solver)
+  AE$Ez.T <- c(as.list(Ez.T), AE$Ez.T)
   
   if(verbose) {
     cat(sprintf(' (%s sec)\n', difftime(Sys.time(), time, units = "secs")[[1]]))
@@ -780,17 +778,17 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
       K.set <- calculus::partitions(n = m, length = l, perm = TRUE)
       
       psi.m.l <- unlist(lapply(K.set, function(K){
-        sprintf("(%s) * (%s)", (1i)^l, calculus::wrap(TVE(K = K)) %inner% AE$ul[[l]])
+        calculus::wrap((1i)^l) %prod% calculus::wrap((calculus::wrap(TVE(K = K)) %inner% AE$ul[[l]]))
       }))
       
-      expr <- sprintf('1/%s * (%s)', factorial(l), paste(psi.m.l, collapse = ' + '))
-      AE$psi[[m]][[l]] <-  calculus::taylor(expr, var = AE$u, order = m+2*l)$f
+      expr <- (1/factorial(l)) %prod% calculus::wrap(calculus:::cpp_collapse(psi.m.l, ' + '))
+      AE$psi[[m]][[l]] <- calculus::taylor(expr, var = AE$u, order = m+2*l)$f
       
     }
     
   }
   
-  AE$P.m = sapply(AE$psi, function(p.m.l) paste(p.m.l, collapse = " + "))
+  AE$P.m = sapply(AE$psi, function(p.m.l) calculus:::cpp_collapse(unlist(p.m.l), " + "))
   AE$c.gamma <- lapply(1:AE$m, function(m) {
     p <- calculus::taylor(AE$P.m[m], var = AE$u, order = 3*m)
     coef <- Re(p$terms$coef/(1i)^p$terms$degree)
