@@ -39,6 +39,7 @@ An object of \code{\link{yuima.model-class}} where the \code{model} slot is of c
 \author{The YUIMA Project Team}
 
 \examples{
+\dontrun{
 Terminal <- 10
 samp <- setSampling(T=Terminal,n=1000)
 
@@ -79,7 +80,7 @@ y5 <- simulate(mod5, true.par=list(lambda=lambda,beta=beta,mu=0, sigma=2),sampli
 plot(y5)
 f <- function(t)  beta*(1+sin(lambda*t))
 curve(f, 0, Terminal, col="red")
-
+}
 }
 \keyword{ts}
 

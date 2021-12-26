@@ -27,6 +27,7 @@ lasso(yuima, lambda0, start, delta=1, ...)
 }
 \author{The YUIMA Project Team}
 \examples{
+\dontrun{
 ##multidimension case
 diff.matrix <- matrix(c("theta1.1","theta1.2", "1", "1"), 2, 2)
 
@@ -57,6 +58,7 @@ round(est$mle,3)
 
 # LASSO
 round(est$lasso,3) 
+}
 }
  
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -93,11 +93,11 @@ The calculation and model selection are performed by joint procedure or stepwise
 
 Akaike, H. (1973). Information theory and an extension of the maximum likelihood principle. In Second International Symposium on Information Theory (Tsahkadsor, 1971), 267-281. \href{https://link.springer.com/chapter/10.1007/978-1-4612-1694-0_15}{https://link.springer.com/chapter/10.1007/978-1-4612-1694-0_15}
 
-Schwarz, G. (1978). Estimating the dimension of a model. The Annals of Statistics, 6(2), 461-464. \href{http://projecteuclid.org/euclid.aos/1176344136}{http://projecteuclid.org/euclid.aos/1176344136}
+Schwarz, G. (1978). Estimating the dimension of a model. The Annals of Statistics, 6(2), 461-464. \doi{10.1214/aos/1176344136}
 
 ## BIC, Quasi-BIC
 
-Eguchi, S. and Masuda, H. (2018). Schwarz type model comparison for LAQ models. Bernoulli, 24(3), 2278-2327. \href{https://projecteuclid.org/euclid.bj/1517540475}{https://projecteuclid.org/euclid.bj/1517540475}.
+Eguchi, S. and Masuda, H. (2018). Schwarz type model comparison for LAQ models. Bernoulli, 24(3), 2278-2327. \doi{10.3150/17-BEJ928}.
 
 ## CIC
 

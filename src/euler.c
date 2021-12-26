@@ -47,6 +47,11 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
     PROTECT(t0 = AS_NUMERIC(t0));
     REAL(tpar)[0] = REAL(t0)[0]; /* initial time */
     
+    PROTECT(b0 = allocVector(REALSXP, d));
+    PROTECT(sigma0 = allocVector(REALSXP, d*r));
+    
+    PROTECT(xpar = allocVector(REALSXP, 1));
+     
     for (i = 0; i < n; i++) {
         
         /* assign the current variables */
@@ -55,13 +60,13 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         //defineVar(installChar(tvar), tpar, env); 
         
         for (j = 0; j < d; j++) {
-            PROTECT(xpar = allocVector(REALSXP, 1));
+            /* PROTECT(xpar = allocVector(REALSXP, 1));*/
             REAL(xpar)[0] = rX[j + i * d];
             //defineVar(installChar(STRING_ELT(modelstate, j)), duplicate(xpar), env);
             //PROTECT(xvar = STRING_ELT(modelstate, j));
             //defineVar(installChar(xvar), duplicate(xpar), env);
             defineVar(installChar(STRING_ELT(modelstate, j)), xpar, env);
-            UNPROTECT(1);
+/*            UNPROTECT(1); */
         }
         
         /*defineVar(install("env"), env, rho);*/
@@ -73,10 +78,10 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         /* PROTECT(b0 = AS_NUMERIC(eval(drift, rho)));
         PROTECT(sigma0 = AS_NUMERIC(eval(diffusion, rho)));
         */
-        PROTECT(b0 = allocVector(REALSXP, d));
+        /* PROTECT(b0 = allocVector(REALSXP, d));  */
         b0 = AS_NUMERIC(eval(drift, rho));
-        PROTECT(sigma0 = allocVector(REALSXP, d*r));
-        sigma0 = AS_NUMERIC(eval(diffusion, rho));
+        /* PROTECT(sigma0 = allocVector(REALSXP, d*r)); */
+        sigma0 = AS_NUMERIC(eval(diffusion, rho)); 
         
         b = REAL(b0);
         sigma = REAL(sigma0);
@@ -94,9 +99,10 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         
         REAL(tpar)[0] += rdt[i];
         
-        UNPROTECT(2);
+        
     }
-    
+    UNPROTECT(1); /* xpar */
+    UNPROTECT(2); /* b0, sigma0 */ 
     UNPROTECT(6);
     return(X);
 }
