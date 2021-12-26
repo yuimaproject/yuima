@@ -41,6 +41,7 @@ Contacts: Yuma Uehara \email{y-uehara@ism.ac.jp}
 %\seealso{
 %}
 \examples{
+\dontrun{
 # Test code (1. diffusion case)
 yuima.mod <- setModel(drift="-theta*x",diffusion="theta1/sqrt(1+x^2)")
 n <- 10000
@@ -77,4 +78,5 @@ lower=list(theta=1,theta1=0.3)
 upper=list(theta=5,theta1=3)
 res <- snr(yuima,start,lower,upper)
 str(res)
+}
 }

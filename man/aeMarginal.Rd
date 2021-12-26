@@ -18,7 +18,7 @@ An object of \code{\link{yuima.ae-class}}
 Asymptotic Expansion - Marginals
 }
 \examples{
-
+\dontrun{
 # multidimensional model
 gbm <- setModel(drift = c('mu*x1','mu*x2'), 
                 diffusion = matrix(c('sigma1*x1',0,0,'sigma2*x2'), nrow = 2), 
@@ -48,4 +48,5 @@ exact <- dlnorm(x = x2, meanlog = log(xinit[2])+(par$mu-0.5*par$sigma2^2), sdlog
 plot(x2, exact, type = 'p', ylab = "Density")
 lines(x2, aeDensity(x2 = x2, ae = margin2, order = 3), col = 2)
 
+}
 }
