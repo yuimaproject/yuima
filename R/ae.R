@@ -287,8 +287,8 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
       paste0(AE$u,"^",nu, collapse = "*") %prod% array(calculus::wrap(c))
     })
     
-    if(is.null(dim(E))) E <- calculus:::cpp_collapse(E, ' + ')
-    else E <- apply(E, 1, function(x) calculus:::cpp_collapse(x, ' + ')) 
+    if(is.null(dim(E))) E <- cpp_collapse(E, ' + ')
+    else E <- apply(E, 1, function(x) cpp_collapse(x, ' + ')) 
     
     E <- array(E, dim = rep(AE$d, length(K)))
     
@@ -301,7 +301,7 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
     martingale <- sprintf('exp(%s)', (calculus::wrap(1i*AE$Mu) %inner% AE$u) %sum% (-0.5 * AE$Sigma) %inner% (AE$u %outer% AE$u))
     
     if(m>0){
-      psi <- calculus:::cpp_collapse(paste0(AE$eps.var, "^", (1:m)) %prod% calculus::wrap(AE$P.m[1:m]), " + ")
+      psi <- cpp_collapse(paste0(AE$eps.var, "^", (1:m)) %prod% calculus::wrap(AE$P.m[1:m]), " + ")
       psi <- 1 %sum% psi
     }
     else {
@@ -781,14 +781,14 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
         calculus::wrap((1i)^l) %prod% calculus::wrap((calculus::wrap(TVE(K = K)) %inner% AE$ul[[l]]))
       }))
       
-      expr <- (1/factorial(l)) %prod% calculus::wrap(calculus:::cpp_collapse(psi.m.l, ' + '))
+      expr <- (1/factorial(l)) %prod% calculus::wrap(cpp_collapse(psi.m.l, ' + '))
       AE$psi[[m]][[l]] <- calculus::taylor(expr, var = AE$u, order = m+2*l)$f
       
     }
     
   }
   
-  AE$P.m = sapply(AE$psi, function(p.m.l) calculus:::cpp_collapse(unlist(p.m.l), " + "))
+  AE$P.m = sapply(AE$psi, function(p.m.l) cpp_collapse(unlist(p.m.l), " + "))
   AE$c.gamma <- lapply(1:AE$m, function(m) {
     p <- calculus::taylor(AE$P.m[m], var = AE$u, order = 3*m)
     coef <- Re(p$terms$coef/(1i)^p$terms$degree)
