@@ -590,14 +590,14 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       minusloglik <- function(para){
         para[length(para)+1]<-1
         names(para)[length(para)]<-yuima@model@time.variable
-        -sum(dens(mylaw, res.incr, param = para, log = T), 
+        -sum(dens(object=mylaw, x=res.incr, param = para, log = TRUE), 
            na.rm = T)
         }
       }else{
         minusloglik <- function(para){
           para[length(para)+1] <- yuima@sampling@delta
           names(para)[length(para)]<-yuima@model@time.variable
-          -sum(dens(mylaw, res.incr, param = para, log = T), 
+          -sum(dens(object=mylaw, x=res.incr, param = para, log = TRUE), 
                na.rm = T)
         }
       }
@@ -620,22 +620,22 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       }
       mypar<-res@coef[oldyuima@model@parameter@measure]
       mypar[oldyuima@model@measure$df@time.var]<-1
-      fdataeta<-dens(oldyuima@model@measure$df,x=ures,mypar)# f(eps, eta)
+      fdataeta<-dens(object=oldyuima@model@measure$df,x=ures,param=mypar)# f(eps, eta)
       del <- 10^-3
-      fdatadeltaeta<- dens(oldyuima@model@measure$df,x=ures+del,mypar) # f(eps + delta, eta)
+      fdatadeltaeta<- dens(object=oldyuima@model@measure$df,x=ures+del,param=mypar) # f(eps + delta, eta)
       dummy <- t(rep(1,length(mypar[oldyuima@model@measure$df@param.measure])))
       myeta<- as.matrix(mypar[oldyuima@model@measure$df@param.measure])%*%dummy
       myetapert <- myeta+del*diag(rep(1,dim(myeta)[1])) 
       fdataetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
         par<-myetapert[,X]
         par[oldyuima@model@measure$df@time.var]<-1
-        dens(oldyuima@model@measure$df,x=ures,par)
+        dens(object=oldyuima@model@measure$df,x=ures,param=par)
       }
       )# f(eps, eta+delta)
       fdatadeltaetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
         par<-myetapert[,X]
         par[oldyuima@model@measure$df@time.var]<-1
-        dens(oldyuima@model@measure$df,x=ures+del,par)
+        dens(object=oldyuima@model@measure$df,x=ures+del,param=par)
       }
       ) # f(eps +deta, eta+delta) 
       term1<-1/(fdataeta)
@@ -690,6 +690,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       res@vcov <-InvIn%*%MatSigmaHat1%*%t(InvIn)/Ter
     }else{
       res@vcov<-cbind(res@vcov,matrix(NA,ncol=length(esti$par),nrow=dim(res@vcov)[1]))
+      res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
     }
     colnames(res@vcov)<-names(res@fullcoef)
     #res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
@@ -716,7 +717,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
           assign(mymeasureparam, para, envir = tmp.env)
           sum(eval(exlogdens, envir = tmp.env))
         }
-        dens <-function(para){
+        mydens <-function(para){
           exdens <- parse(text = sprintf("d%s", dist))
           assign(myjumpname, ures, envir = tmp.env)
           assign(mymeasureparam, para, envir = tmp.env)
@@ -736,7 +737,7 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
           -sum(eval(exlogdens, envir = tmp.env),na.rm = T)
         }
         
-        dens <-function(par,x){
+        mydens1 <-function(par,x){
           exdens <- parse(text = sprintf("d%s", dist))
           assign(myjumpname, x, envir = tmp.env)
           assign(mymeasureparam, par, envir = tmp.env)
@@ -759,22 +760,22 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
           }
           mypar<-res@coef[oldyuima@model@parameter@measure]
           #mypar[oldyuima@model@measure$df@time.var]<-1
-          fdataeta<-dens(par=mypar,x=ures)# f(eps, eta)
+          fdataeta<-mydens1(par=mypar,x=ures)# f(eps, eta)
           del <- 10^-3
-          fdatadeltaeta<- dens(par=mypar,x=ures+del) # f(eps + delta, eta)
+          fdatadeltaeta<- mydens1(par=mypar,x=ures+del) # f(eps + delta, eta)
           dummy <- t(rep(1,length(mypar[lev.names])))
           myeta<- as.matrix(mypar[lev.names])%*%dummy
           myetapert <- myeta+del*diag(rep(1,dim(myeta)[1])) 
           fdataetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
             par<-myetapert[,X]
             #par[oldyuima@model@measure$df@time.var]<-1
-            dens(par=par,x=ures)
+            mydens1(par=par,x=ures)
           }
           )# f(eps, eta+delta)
           fdatadeltaetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
             par<-myetapert[,X]
             #par[oldyuima@model@measure$df@time.var]<-1
-            dens(par=par,x=ures+del)
+            mydens1(par=par,x=ures+del)
           }
           ) # f(eps +deta, eta+delta) 
           term1<-1/(fdataeta)
