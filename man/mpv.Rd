@@ -74,7 +74,7 @@ Yuta Koike with YUIMA Project Team
 \code{\link{setData}}, \code{\link{cce}}, \code{\link{minrv}}, \code{\link{medrv}}
 }
 \examples{
-
+\dontrun{
 set.seed(123)
 
 # One-dimensional case
@@ -110,7 +110,7 @@ plot(yuima)
 mpv(yuima,list(c(1,1),1,rep(2/3,3))) # true varue is c(1/3,1/2,1/3)
 
 }
-
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ts}

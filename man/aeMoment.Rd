@@ -22,7 +22,7 @@ numeric.
 Asymptotic Expansion - Moments
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -45,5 +45,5 @@ aeMoment(ae = approx, m = 2, order = 2)
 
 # second moment, expansion order 1
 aeMoment(ae = approx, m = 2, order = 1)
-
+}
 }

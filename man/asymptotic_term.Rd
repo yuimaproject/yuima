@@ -25,6 +25,7 @@ Calculate the first and second term of asymptotic expansion of the expected valu
 we need to fix this routine.
 }
 \examples{
+\dontrun{
 # to the Black-Scholes economy:
 # dXt^e = Xt^e * dt + e * Xt^e * dWt
 diff.matrix <- "x*e"
@@ -86,7 +87,7 @@ sum(asymp$d0 + e * asymp$d1)
 ## asymp <- asymptotic_term(yuima, block=10, rho,g)
 ## sum(asymp$d0 + e * asymp$d1)
 
-
+}
 }
 
 

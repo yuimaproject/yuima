@@ -83,6 +83,7 @@ Podolskij and Ziggel (2010) also introduce a pre-averaged version of the test to
 \code{\link{bns.test}}, \code{\link{lm.jumptest}}, \code{\link{minrv.test}}, \code{\link{medrv.test}}
 }
 \examples{
+\dontrun{
 set.seed(123)
 
 # One-dimensional case
@@ -121,6 +122,7 @@ yuima <- simulate(object = mod, sampling = samp)
 plot(yuima)
 
 pz.test(yuima) # test is performed component-wise
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):

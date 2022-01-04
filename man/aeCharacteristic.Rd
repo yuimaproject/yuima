@@ -22,7 +22,7 @@ Characteristic function evaluated on the given grid.
 Asymptotic Expansion - Characteristic Function
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -51,5 +51,5 @@ psi <- aeCharacteristic(env, ae = approx, order = 4)
 # 4) list
 lst <- list(u1 = seq(0, 1, by = 0.1))
 psi <- aeCharacteristic(lst, ae = approx, order = 4)
-
+}
 }

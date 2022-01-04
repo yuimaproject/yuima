@@ -20,7 +20,7 @@ numeric.
 Asymptotic Expansion - Skewness
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -37,5 +37,5 @@ aeSkewness(ae = approx)
 
 # expansion order 1
 aeSkewness(ae = approx, order = 1)
-
+}
 }

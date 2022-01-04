@@ -22,7 +22,7 @@ Probability density function evaluated on the given grid.
 Asymptotic Expansion - Density
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -56,5 +56,5 @@ exact <- dlnorm(x = x, meanlog = log(xinit)+(par$mu-0.5*par$sigma^2)*1, sdlog = 
 
 # compare
 plot(x = exact, y = density, xlab = "Exact", ylab = "Approximated")
-
+}
 }

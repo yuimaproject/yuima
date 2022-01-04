@@ -91,7 +91,7 @@ The calculation and model selection are performed by joint procedure or stepwise
 
 ## AIC, BIC
 
-Akaike, H. (1973). Information theory and an extension of the maximum likelihood principle. In Second International Symposium on Information Theory (Tsahkadsor, 1971), 267-281. \href{https://link.springer.com/chapter/10.1007/978-1-4612-1694-0_15}{https://link.springer.com/chapter/10.1007/978-1-4612-1694-0_15}
+Akaike, H. (1973). Information theory and an extension of the maximum likelihood principle. In Second International Symposium on Information Theory (Tsahkadsor, 1971), 267-281. \doi{10.1007/978-1-4612-1694-0_15}
 
 Schwarz, G. (1978). Estimating the dimension of a model. The Annals of Statistics, 6(2), 461-464. \doi{10.1214/aos/1176344136}
 
@@ -101,7 +101,7 @@ Eguchi, S. and Masuda, H. (2018). Schwarz type model comparison for LAQ models. 
 
 ## CIC
 
-Uchida, M. (2010). Contrast-based information criterion for ergodic diffusion processes from discrete observations. Annals of the Institute of Statistical Mathematics, 62(1), 161-187. \href{https://link.springer.com/article/10.1007/s10463-009-0245-1}{https://link.springer.com/article/10.1007/s10463-009-0245-1}
+Uchida, M. (2010). Contrast-based information criterion for ergodic diffusion processes from discrete observations. Annals of the Institute of Statistical Mathematics, 62(1), 161-187. \doi{10.1007/s10463-009-0245-1}
 
 ## Model weight
 

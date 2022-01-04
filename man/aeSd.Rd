@@ -20,7 +20,7 @@ numeric.
 Asymptotic Expansion - Standard Deviation
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -37,5 +37,5 @@ aeSd(ae = approx)
 
 # expansion order 1
 aeSd(ae = approx, order = 1)
-
+}
 }

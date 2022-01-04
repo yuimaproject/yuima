@@ -20,7 +20,7 @@ numeric.
 Asymptotic Expansion - Mean
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -37,5 +37,5 @@ aeMean(ae = approx)
 
 # expansion order 1
 aeMean(ae = approx, order = 1)
-
+}
 }

@@ -73,8 +73,7 @@ For each pair of components, this function performs the wild bootstrap procedure
 %% ~put references to the literature/web site here ~
 Koike, Y. (2019). 
 Gaussian approximation of maxima of Wiener functionals and its application to high-frequency data, 
-\emph{Annals of Statistics}, \bold{47}, 1663--1687.
-\href{https://arxiv.org/abs/1709.00353}{arXiv:1709.00353}.
+\emph{Annals of Statistics}, \bold{47}, 1663--1687. \doi{10.1214/18-AOS1731}.
 }
 \author{
 %%  ~~who you are~~
@@ -89,6 +88,7 @@ Yuta Koike with YUIMA Project Team
 \code{\link{cce}}, \code{\link{hyavar}}, \code{\link{mllag}}, \code{\link{llag}}
 }
 \examples{
+\dontrun{
 # The following example is taken from mllag
 
 ## Set a model
@@ -134,6 +134,7 @@ llag.test(psample, grid = G, R = 999)
 
 ## Since the lead-lag parameter for the pair(x1, x3) is not contained in G,
 ## the null hypothesis is not rejected for this pair
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

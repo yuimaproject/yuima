@@ -20,7 +20,7 @@ numeric.
 Asymptotic Expansion - Kurtosis
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -37,5 +37,5 @@ aeKurtosis(ae = approx)
 
 # expansion order 1
 aeKurtosis(ae = approx, order = 1)
-
+}
 }

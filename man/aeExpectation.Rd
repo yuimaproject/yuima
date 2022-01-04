@@ -26,7 +26,7 @@ return value of \code{\link[cubature]{cubintegrate}}. The expectation of the fun
 Compute the expected value of functionals.
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -43,5 +43,5 @@ aeExpectation(f = 'x', bounds = list(x = c(0,1000)), ae = approx)
 
 # compare with the mean computed by differentiation of the characteristic function
 aeMean(approx)
-
+}
 }

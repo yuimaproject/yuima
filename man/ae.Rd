@@ -44,7 +44,7 @@ If \code{sampling} is not provided, then \code{model} must be an object of \code
 if \code{eps.var} does not appear in the model specification, then it is internally added in front of the diffusion matrix to apply the asymptotic expansion scheme.
 }
 \examples{
-
+\dontrun{
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -66,7 +66,7 @@ lines(x, aeDensity(x = x, ae = approx, order = 1), col = 2)
 lines(x, aeDensity(x = x, ae = approx, order = 2), col = 3)
 lines(x, aeDensity(x = x, ae = approx, order = 3), col = 4)
 lines(x, aeDensity(x = x, ae = approx, order = 4), col = 5)
-
+}
 }
 \author{
 Emanuele Guidotti <emanuele.guidotti@unine.ch>
