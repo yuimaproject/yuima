@@ -47,8 +47,10 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
     PROTECT(t0 = AS_NUMERIC(t0));
     REAL(tpar)[0] = REAL(t0)[0]; /* initial time */
     
-    PROTECT(b0 = allocVector(REALSXP, d));
-    PROTECT(sigma0 = allocVector(REALSXP, d*r));
+    //PROTECT(b0 = allocVector(REALSXP, d));
+    //PROTECT(sigma0 = allocVector(REALSXP, d*r));
+    PROTECT(b0 = allocVector(VECSXP, 1));
+    PROTECT(sigma0 = allocVector(VECSXP, 1));
     
     PROTECT(xpar = allocVector(REALSXP, 1));
      
@@ -79,12 +81,18 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         PROTECT(sigma0 = AS_NUMERIC(eval(diffusion, rho)));
         */
         /* PROTECT(b0 = allocVector(REALSXP, d));  */
-        b0 = AS_NUMERIC(eval(drift, rho));
+        //b0 = AS_NUMERIC(eval(drift, rho));
+        //b0 = PROTECT(AS_NUMERIC(eval(drift, rho)));
         /* PROTECT(sigma0 = allocVector(REALSXP, d*r)); */
-        sigma0 = AS_NUMERIC(eval(diffusion, rho)); 
+        //sigma0 = AS_NUMERIC(eval(diffusion, rho)); 
+        //sigma0 = PROTECT(AS_NUMERIC(eval(diffusion, rho))); 
+        SET_VECTOR_ELT(b0, 0, eval(drift, rho));
+        SET_VECTOR_ELT(sigma0, 0, eval(diffusion, rho));
         
-        b = REAL(b0);
-        sigma = REAL(sigma0);
+        //b = REAL(b0);
+        //sigma = REAL(sigma0);
+        b = REAL(VECTOR_ELT(b0, 0));
+        sigma = REAL(VECTOR_ELT(sigma0, 0));
         
         for (j = 0; j < d; j++) {
             rX[j + (i + 1) * d] = rX[j + i * d] + b[j] * rdt[i];
@@ -98,8 +106,8 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         /*rX[i + 1] = rX[i] + *REAL(eval(drift, rho)) * REAL(dt)[i] + *REAL(eval(diffusion, rho)) * REAL(dW)[i];*/
         
         REAL(tpar)[0] += rdt[i];
-        
-        
+       
+       
     }
     UNPROTECT(1); /* xpar */
     UNPROTECT(2); /* b0, sigma0 */ 
