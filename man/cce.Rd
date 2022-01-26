@@ -318,6 +318,7 @@ The second-order correction will be provided in a future version of the package.
 \code{\link{setModel}}, \code{\link{setData}}, \code{\link{hyavar}}, \code{\link{lmm}}, \code{\link{cce.factor}}
 }
 \examples{
+\dontrun{
 ## Set a model
 diff.coef.1 <- function(t, x1 = 0, x2 = 0) sqrt(1+t)
 diff.coef.2 <- function(t, x1 = 0, x2 = 0) sqrt(1+t^2)
@@ -477,7 +478,7 @@ cce(noisy.psample,method="RK")$covmat
 
 ## Nonparametric QMLE: consistent
 cce(noisy.psample,method="QMLE")$covmat
-
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -231,6 +231,7 @@ Yuta Koike with YUIMA project Team
 \code{\link{cce}}, \code{\link{lmm}}, \code{\link{glassoFast}}
 }
 \examples{
+\dontrun{
 set.seed(123)
 
 ## Simulating a factor process (Heston model)
@@ -313,6 +314,7 @@ norm(est$premat.y - pmat, type = "2")
 # One can interactively select the number of factors
 # after implementing PCA (the scree plot is depicted)
 # Try: est <- cce.factor(yuima2, PCA = TRUE)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

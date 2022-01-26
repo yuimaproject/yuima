@@ -90,6 +90,7 @@ Construction of kernel-type estimators for off-diagonal components is implemente
 \code{\link{setData}}, \code{\link{cce}}
 }
 \examples{
+\dontrun{
 ## Set a model
 diff.coef.1 <- function(t, x1 = 0, x2 = 0) sqrt(1+t)
 diff.coef.2 <- function(t, x1 = 0, x2 = 0) sqrt(1+t^2)
@@ -178,7 +179,7 @@ z <- atanh(cor.est) # the Fisher z transformation of the estimated correlation
 se.z <- se.cor/(1 - cor.est^2) # standard error for z (calculated by the delta method)
 ## 95\% confidence interval for correlation via the Fisher z transformation
 c(lower = tanh(z + qnorm(0.025) * se.z), upper = tanh(z + qnorm(0.975) * se.z)) 
-
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

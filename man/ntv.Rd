@@ -86,6 +86,7 @@ Yuta Koike with YUIMA Project Team
 \code{\link{mpv}}, \code{\link{cce}}, \code{\link{bns.test}}, \code{\link{lm.jumptest}}, \code{\link{pz.test}}
 }
 \examples{
+\dontrun{
 set.seed(123)
 
 # One-dimensional case
@@ -139,6 +140,7 @@ medrv(yuima) # medRV (true value = c(1, 1))
 ## Jump test
 minrv.test(yuima) # test is performed component-wise
 medrv.test(yuima) # test is performed component-wise
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):

@@ -1,25 +1,30 @@
 2012/10/05: add mpv.R, bns.test.R, mpv.Rd, bns.test.Rd
 2012/12/13: add noisy.sampling.R, noisy.sampling.Rd
-            modify bns.test.R, cce.R, llag.R, mpv.R, bns.test.Rd, cce.Rd, llag.Rd, mpv.Rd
+            modify bns.test.R, cce.R, llag.R, mpv.R, bns.test.Rd, cce.Rd, 
+            llag.Rd, mpv.Rd
 2012/12/19: modify cce.R
 2012/12/19: modify cce.R, noisy.sampling.R
 2012/12/22: modify cce.R
 2013/02/06: modify rng.R
 2013/02/11: modify cce.R
-2013/04/13: modify asymptotic_term_second.R, asymptotic_term_third.R, asymptotic_term_third_function.R, cce.R, llag.R
+2013/04/13: modify asymptotic_term_second.R, asymptotic_term_third.R,
+            asymptotic_term_third_function.R, cce.R, llag.R
 2013/04/13: modify qmle.R
 2013/04/14: modify qmle.R
 2013/04/14: modify adaBayes.R
 2013/04/14: modify bns.test.Rd, mpv.Rd
 2013/10/28: add cce_functions.c
-            modify cce.R, llag.R, sim.euler.R, bns.test.Rd, cce.Rd, llag.Rd, mpv.Rd, noisy.sampling.Rd
+            modify cce.R, llag.R, sim.euler.R, bns.test.Rd, cce.Rd, 
+            llag.Rd, mpv.Rd, noisy.sampling.Rd
 2013/10/28: modify llag.R
 2013/10/30: modify cce.R, cce_functions.c
 2013/11/21: modify llag.R
 2013/11/22: modify cce.R, cce_functions.c
 2014/04/28: modified qmle, added carma, modified lasso
-2014/05/04: modified show method, setYuima sets the sampling from the data if sampling is missing
-2014/07/07: modified llag.R, llag.Rd, cce_functions.c; estimated cross-correlation functions are converted to values in [-1,1]
+2014/05/04: modified show method, setYuima sets the sampling from the data 
+            if sampling is missing
+2014/07/07: modified llag.R, llag.Rd, cce_functions.c; estimated 
+            cross-correlation functions are converted to values in [-1,1]
 2014/07/31: fixed setSampling and print methods
 2014/09/08: fixed a bug in cce_functions.c
 2014/09/23: added Compound Poisson simulator
@@ -33,54 +38,60 @@
             fixed a bug in llag.R
             modified cce.Rd, cce_functions.c
 2015/05/14: fixed a bug in cce_functions.c
-2015/09/01: fixed a bug in cce_functions.c
-                  add some contents to the examples of cce
-2015/10/10: modified llag.R, cce.Rd, llag.Rd, mpv.Rd, noisy.sampling.Rd, cce_functions.c
-                  added mllag.R, mllag.Rd (multiple lead-lag detector);
-                          spectralcov.R, spectralcov.Rd (spectral covariance estimator)
+2015/09/01: fixed a bug in cce_functions.c; add some contents to the examples of cce
+2015/10/10: modified llag.R, cce.Rd, llag.Rd, mpv.Rd, noisy.sampling.Rd, 
+            cce_functions.c; added mllag.R, mllag.Rd (multiple lead-lag detector);
+            spectralcov.R, spectralcov.Rd (spectral covariance estimator)
 2016/01/14: modified rng.R, rng.Rd, adaBayes.Rd, qmle.Rd, setModel.Rd, spectralcov.Rd
 2016/05/26: added rpts and rnts in rng.R and the corresponding c language file
 2016/07/08: fixed some bugs in llag.R and cce_functions.c
-2016/10/04: modified setMultiModel.R, sim.euler.R and yuima.model.R to generate nts and pts process
-2016/12/16: added rGIG, rGH, dGIG and dGH in rng.R and the corresponding c language file YU
+2016/10/04: modified setMultiModel.R, sim.euler.R and yuima.model.R to generate 
+            nts and pts process
+2016/12/16: added rGIG, rGH, dGIG and dGH in rng.R and the corresponding c language 
+            file YU
 2017/01/25: modified sim.euler.R and added euler.c to implement the Euler-Maruyama scheme by the C code (only the diffusion case)
-2017/02/23: modified sim.euler.R and removed euler.c due to a memory corruption
-                  fix a bug in sim.euler.R
+2017/02/23: modified sim.euler.R and removed euler.c due to a memory 
+            corruption, fixed a bug in sim.euler.R
 2017/03/27: added IC.R and qmleLevy.R
-2017/04/12: fix a bug in sim.euler.R
-                  (re-)added euler.c 
+2017/04/12: fix a bug in sim.euler.R, (re-)added euler.c 
 2017/04/27: modified qmleLevy.R, qmleLevy.Rd, IC.Rd
 2017/09/09: boot package is imported
             added llag.test.R, llag.test.Rd
-            modified llag.R, bns.test.Rd, llag.Rd, mllag.Rd, hyavar.Rd, cce.Rd, cce_functions.c
+            modified llag.R, bns.test.Rd, llag.Rd, mllag.Rd, hyavar.Rd, 
+            cce.Rd, cce_functions.c
 2018/01/16: a bug in computation of asymptotic variances in llag is fixed
             the default value of tol of llag is changed to 1e-7
             modified llag.R, llag.Rd, cce_functions.c 
 2018/04/12: a bug in cce is fixed
 2018/10/30: modified IC.R, IC.Rd
-2018/12/4: a bug in euler.c is fixed
-           modified cce.R, hyavar.R, llag.R, sim.euler.R
-2019/4/8: modified adaBayes.R
-2019/7/19: added cce.factor.R, cce.factor.Rd
-           modified llag.test.Rd, bns.test.Rd, hyavar.R, mpv.Rd, mllag.Rd, llag.Rd, cce.Rd, spectralcov.R, JBtest.Rd, snr.Rd
-2020/2/6: fixed length(class(matrix))>2 issue. Code for simPoi fastened.
-2020/3/5: should have fixed qmleLevy if() condition and rhck PROTECT problems
-2020/4/25: modified IC.R, IC.Rd, and adaBayes.R
-2020/4/28: new functions simBmllag and wllag are added
-           the default value of tol of llag is changed to 1e-6
-           the wavethresh package is imported for implementation of wllag
-           fixed length(class(matrix))>2 issue
-           cce.factor.Rd, IC.Rd and llag.Rd are revised
-2021/2/5: modified adaBayes.R and adaBayes.Rd
-2021/2/26: modified qmle.R and qmle.Rd
-2021/3/13: fixed a bug in qmle when joint = TRUE and the parameter space is one-dimensional
-2021/3/15: fixed a bug in qmle when yuima@model@parameter@measure is character(0) and yuima@model@measure.type is "CP"
-2021/8/16: fixed a bug in simulate when the jump intensity is not a parameter
-2021/9/24: fixed a bug regarding the "fixed" argument in qmle
+2018/12/04: a bug in euler.c is fixed
+            modified cce.R, hyavar.R, llag.R, sim.euler.R
+2019/04/08: modified adaBayes.R
+2019/07/19: added cce.factor.R, cce.factor.Rd
+            modified llag.test.Rd, bns.test.Rd, hyavar.R, mpv.Rd, mllag.Rd, 
+            llag.Rd, cce.Rd, spectralcov.R, JBtest.Rd, snr.Rd
+2020/02/06: fixed length(class(matrix))>2 issue. Code for simPoi fastened.
+2020/03/05: should have fixed qmleLevy if() condition and rhck PROTECT problems
+2020/04/25: modified IC.R, IC.Rd, and adaBayes.R
+2020/04/28: new functions simBmllag and wllag are added
+            the default value of tol of llag is changed to 1e-6
+            the wavethresh package is imported for implementation of wllag
+            fixed length(class(matrix))>2 issue
+            cce.factor.Rd, IC.Rd and llag.Rd are revised
+2021/02/05: modified adaBayes.R and adaBayes.Rd
+2021/02/26: modified qmle.R and qmle.Rd
+2021/03/13: fixed a bug in qmle when joint = TRUE and the parameter 
+            space is one-dimensional
+2021/03/15: fixed a bug in qmle when yuima@model@parameter@measure is character(0) 
+            and yuima@model@measure.type is "CP"
+2021/08/16: fixed a bug in simulate when the jump intensity is not a parameter
+2021/09/24: fixed a bug regarding the "fixed" argument in qmle
 2021/11/23: fixed a bug regarding the "psd" argument in lmm
 2021/11/28: added ntv.R, pz.test.R, lm.jumptest.R, ntv.Rd, pz.test.Rd, lm.jumptest.Rd
             modified mpv.Rd, bns.test.Rd
-2021/12/15: added ae.R, ae.cpp, ae.Rd, aeCharacteristic.Rd, aeDensity.Rd, aeExpectation.Rd, aeKurtosis.Rd, aeMarginal.Rd
-            aeMean.Rd, aeMoment.Rd, aeSd.Rd, aeSkewness.Rd, yuima.ae-class.Rd, updated NAMESPACE, updated yuima_init.c,
-			updated DESCRIPTION to add package calculus in Imports
-2021/1/25: fixed a protection issue in euler.c
+2021/12/15: added ae.R, ae.cpp, ae.Rd, aeCharacteristic.Rd, aeDensity.Rd,
+            aeExpectation.Rd, aeKurtosis.Rd, aeMarginal.Rd  
+            aeMean.Rd, aeMoment.Rd, aeSd.Rd, aeSkewness.Rd, 
+            yuima.ae-class.Rd, updated NAMESPACE,  updated yuima_init.c,
+	    updated DESCRIPTION to add package calculus in Imports
+2021/01/25: fixed a protection issue in euler.c

@@ -26,6 +26,7 @@ phi.test(yuima, H0, H1, phi, print=FALSE,...)
 }
 \author{The YUIMA Project Team}
 \examples{
+\dontrun{
 model<- setModel(drift="t1*(t2-x)",diffusion="t3")
 T<-10
 n<-1000
@@ -44,7 +45,7 @@ phi.test(X, H0=h0, phi=phi1, start=h0, lower=list(t1=0.1, t2=0.1, t3=0.1),
 phi.test(X, H0=h1, phi=phi1, start=h0, lower=list(t1=0.1, t2=0.1, t3=0.1), 
   upper=list(t1=2,t2=2,t3=2),method="L-BFGS-B")
 }
- 
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ts}
