@@ -29,7 +29,7 @@ a positive integer. Scale-by scale lead-lag parameters are estimated up to the l
 }
   \item{N}{
 %%     ~~Describe \code{N} here~~
-The number of vanishing moments of Daubechies' compactly supported wavelets, passed to \code{\link{PsiJ}}. This should be an integer between 1 and 10. 
+The number of vanishing moments of Daubechies' compactly supported wavelets. This should be an integer between 1 and 10. 
 }
 \item{tau}{
 %%     ~~Describe \code{dgrid} here~~
@@ -109,7 +109,7 @@ The objective functions themselves do NOT consitently estimate the corresponding
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{simBmllag}}, \code{\link{PsiJ}}, \code{\link{llag}}
+\code{\link{simBmllag}}, \code{\link{llag}}
 }
 \examples{
 ## An example from a simulation setting of Hayashi and Koike (2018b)

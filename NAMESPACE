@@ -65,6 +65,7 @@ importFrom(stats, sd)
 importFrom("stats", cov2cor) # added by YK on Apr. 12, 2018
 importFrom("graphics", "abline", "hist", "par", "text") # added by YK on Jul. 19, 2019
 importFrom("stats", "mvfft") # added by YK on Apr. 15, 2020
+importFrom("stats", "convolve") # added by YK on Jan. 28, 2022
 importFrom(coda, as.mcmc)
 importFrom("stats", "cov", "var")
 

@@ -94,4 +94,5 @@
             aeMean.Rd, aeMoment.Rd, aeSd.Rd, aeSkewness.Rd, 
             yuima.ae-class.Rd, updated NAMESPACE,  updated yuima_init.c,
 	    updated DESCRIPTION to add package calculus in Imports
-2021/01/25: fixed a protection issue in euler.c
+2022/01/25: fixed a protection issue in euler.c
+2022/01/28: modified wllag.R and unimported the wavethresh package
