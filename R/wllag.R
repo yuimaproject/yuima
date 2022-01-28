@@ -1,7 +1,7 @@
 # Scale-by-scale lead-lag estimation by wavelets
 
 ## function to compute Daubechies' extremal phase wavelet filter
-## The function is based on implementation of wavethresh package
+## The function is based on implementation of the wavethresh package
 daubechies.wavelet <- function(N){
   
   switch (N,
