@@ -705,21 +705,337 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
       Tn<-yuima@sampling@Terminal
       HessianEta_divTn <- HessianEta/Tn
       if(!aggregation){
-         yuima.stop("da fare")
+        Ter <- min(floor(yuima@sampling@Terminal))
+        ures<-t(sapply(1:Ter,function(i) colSums(resi[(floor((i-1)/h)):(floor(i/h)-1),]) ))
+        #yuima.stop("da fare")
+        vcovLevy1 <- function(myres,   HessianEta_divTn,  Gammahat0, ures, sq=TRUE){
+          #myres <- res.VG2
+          DeltaX <- apply(myres@Data@original.data,2,diff)
+          myData<- myres@Data@original.data
+          CmatExpr<- myres@model@jump.coeff
+          ncolC <-length(myres@model@jump.coeff[[1]])
+          param <- myres@coef[myres@model@parameter@jump]
+          aexpr<- myres@model@drift
+          namedrift<-myres@model@parameter@drift
+          pardrif <- myres@coef[namedrift]
+          avect_exp<-myres@model@drift
+          
+          Jac_Drift <- function(aexpr,namedrift,nobs=length(aexpr)){
+            lapply(X=c(1:nobs),FUN=function(X,namedrift,aexpr){
+              return(deriv(aexpr[X],namedrift))
+            },namedrift=namedrift,aexpr=aexpr)
+          }
+          
+          Jac_DriftExp <- Jac_Drift(aexpr=avect_exp,namedrift)  
+          
+          FUNDum<-function(foo,myenv) sapply(foo, function(x,env) eval(x,envir = env), env= myenv)
+          
+          h<-diff(time(myres@Data@zoo.data[[1]]))[1]
+          
+          dummyf1n<- function(DeltaX, Cmat, h){
+            C2<-t(Cmat)%*%Cmat
+            dec <- chol(C2) # Eventualy Add a tryCatch
+            tmp <- t(DeltaX)%*%solve(C2)%*%DeltaX
+            logretval <- -h*sum(log(diag(dec)))  - 0.5 * as.numeric(tmp)
+            return(logretval)
+          }
+          dummyInc<- function(DeltaX,Cmat, avect,h,sq=TRUE){
+            if(sq){
+              Incr <- solve(Cmat)%*%(DeltaX-avect*h)
+            }else{
+              C2<-t(Cmat)%*%Cmat
+              Incr <- solve(C2)%*%Cmat%*%(DeltaX-avect*h)
+            }
+            return(Incr)
+          }
+          
+          dummyf2n<- function(DeltaX, avect, Cmat, h){
+            C2 <- t(Cmat)%*%Cmat
+            Incr <- DeltaX-h*avect
+            tmp <- t(Incr)%*%solve(C2)%*%Incr
+            logretval <-   - 0.5/h * as.numeric(tmp)
+            return(logretval)
+          }
+          dumGrad_f2n<-function(DeltaX, avect, Jac_a,Cmat, h){
+            C2 <- t(Cmat)%*%Cmat
+            Incr <- DeltaX-h*avect
+            Grad<-t(Jac_a)%*%solve(C2)%*%Incr
+            return(Grad)
+          }
+          
+          f1n_j<-function(x, myObsDelta, CmatExpr,h, myData, myres){
+            names(myData)<-myres@model@solve.variable
+            newenvJumpCoef <- list2env(as.list(c(x,myData)))
+            Cmat<-sapply(X=CmatExpr, FUN=FUNDum, myenv=newenvJumpCoef )
+            return(dummyf1n(DeltaX=myObsDelta, Cmat=Cmat, h=h))
+          }
+          
+          Incr_Func <- function(x, myObsDelta, CmatExpr,avect_exp, h, myData, myres, sq=TRUE){
+            names(myData)<-myres@model@solve.variable
+            newenv <- list2env(as.list(c(x,myData)))
+            Cmat<-sapply(X=CmatExpr, FUN=FUNDum, myenv=newenv )
+            dd<-length(avect_exp)
+            avect<-numeric(length=dd)
+            for(j in c(1:dd)){
+              avect[j]<-eval(avect_exp[j],envir=newenv)
+            }
+            return(dummyInc(DeltaX= myObsDelta,Cmat, avect,h,sq=sq))
+          }
+          
+          
+          f2n_j <- function(x, parDiff, myObsDelta, CmatExpr, avect_exp, h, myData, myres){
+            names(myData)<-myres@model@solve.variable
+            newenvJumpCoef <- list2env(as.list(c(parDiff,myData)))
+            Cmat<-sapply(X=CmatExpr, FUN=FUNDum, myenv=newenvJumpCoef)
+            newenvDriftCoef <- list2env(as.list(c(x,myData)))
+            dd<-length(avect_exp)
+            avect<-numeric(length=dd)
+            for(j in c(1:dd)){
+              avect[j]<-eval(avect_exp[j],envir=newenvDriftCoef)
+            }
+            return(dummyf2n(DeltaX=myObsDelta, avect=avect, Cmat=Cmat, h=h))
+          }
+          
+          Gradf2n_j <-function(x, parDiff, myObsDelta, CmatExpr, 
+                               avect_exp, Jac_DriftExp, h, myData, myres){
+            names(myData)<-myres@model@solve.variable
+            newenvJumpCoef <- list2env(as.list(c(parDiff,myData)))
+            Cmat<-sapply(X=CmatExpr, FUN=FUNDum, myenv=newenvJumpCoef)
+            newenvDriftCoef <- list2env(as.list(c(x,myData)))
+            dd<-length(avect_exp)
+            avect<-numeric(length=dd)
+            Jac_a<- matrix(0,dd,length(x))
+            for(j in c(1:dd)){
+              avect[j]<-eval(avect_exp[j],envir=newenvDriftCoef)
+              Jac_a[j,]<-attr(eval(Jac_DriftExp[[j]],envir=newenvDriftCoef),"gradient")
+            }
+            return(dumGrad_f2n(DeltaX=myObsDelta, avect=avect, Jac_a=Jac_a, Cmat=Cmat, h=h))
+          }
+          
+          # f1n_j(x=param, myObsDelta=DeltaX[1,], CmatExpr=CmatExpr, h=h)
+          #i=1
+          # debug(dummyInc)
+          # Incr_Func(x=c(param,pardrif), myObsDelta=DeltaX[i,], CmatExpr,avect_exp, h, myData=myData[i,], myres, sq=TRUE)
+          # f1n_j(x=param, myObsDelta=DeltaX[i,], CmatExpr=CmatExpr, h=h,  myData=myData[i,], myres=myres)
+          # f2n_j(x, parDiff=param, myObsDelta=DeltaX[i,], CmatExpr=CmatExpr, avect_exp=avect_exp, 
+          #       h=h, myData=myData[i,], myres=myres)
+          # Gradf2n_j(x, parDiff=param, myObsDelta=DeltaX[i,], CmatExpr, 
+          #     avect_exp, Jac_DriftExp, h, myData[i,], myres)
+          del <- 10^-3
+          dummy <- t(rep(1,length(param)))
+          myeta<- as.matrix(param)%*%dummy
+          dummyG <- t(rep(1,length(c(param,pardrif))))
+          globalmyeta <- as.matrix(c(param,pardrif))%*%dummyG
+          Incr <- del*diag(rep(1,dim(myeta)[1]))
+          GlobIncr <- del*diag(rep(1,dim(globalmyeta)[1]))
+          Sigma_gamma <- matrix(0 ,length(param),length(param))
+          Sigma_alpha <- matrix(0 ,length(pardrif),length(pardrif))
+          Sigma_algam <- matrix(0 ,length(pardrif),length(param))
+          histDeltaf1n_j_delta <-matrix(0 , dim(DeltaX)[1],length(param))
+          histDeltaf2n_j_delta <- matrix(0 , dim(DeltaX)[1],length(pardrif))
+          histb_incr <- array(0, c(dim(DeltaX)[2],dim(DeltaX)[1],length(c(param,pardrif))))
+          for(i in c(1:dim(DeltaX)[1])){
+            Deltaf1n_j_delta<-sapply(X=1:dim(myeta)[1],
+                                     FUN = function(X,myObsDelta, CmatExpr, h, myData, myres,del){
+                                       par1<-myeta[,X]+Incr[,X]
+                                       #par[oldyuima@model@measure$df@time.var]<-1
+                                       f1<-f1n_j(x=par1, myObsDelta, CmatExpr, h, myData, myres)
+                                       par2<-myeta[,X]-Incr[,X]
+                                       f2<-f1n_j(x=par2, myObsDelta, CmatExpr, h, myData, myres)
+                                       return((f1-f2)/(2*del))
+                                     },
+                                     myObsDelta=DeltaX[i,], CmatExpr=CmatExpr, h=h, myData=myData[i,],
+                                     myres=myres, del=del)
+            
+            DeltaInc <- sapply(X=1:dim(GlobIncr)[1],
+                               FUN = function(X, myObsDelta, CmatExpr,avect_exp, h, 
+                                              myData, myres, del, sq){
+                                 par1<-globalmyeta[,X]+GlobIncr[,X]
+                                 
+                                 # f1<-f1n_j(x=par1, myObsDelta, CmatExpr, h, myData, myres)
+                                 f1<-Incr_Func(x=par1, myObsDelta, CmatExpr,avect_exp, h, myData, myres, sq)
+                                 par2<-globalmyeta[,X]-GlobIncr[,X]
+                                 f2<-Incr_Func(x=par2, myObsDelta, CmatExpr,avect_exp, h, myData, myres, sq)
+                                 #f2<-f1n_j(x=par2, myObsDelta, CmatExpr, h, myData, myres)
+                                 return((f1-f2)/(2*del))
+                               },
+                               myObsDelta=DeltaX[i,], CmatExpr,avect_exp, h, myData=myData[i,], myres, del=del,sq=sq
+            )
+            
+            histDeltaf1n_j_delta[i, ]<-Deltaf1n_j_delta
+            
+            histb_incr[ , i, ] <- DeltaInc
+            Sigma_gamma <- Sigma_gamma + as.matrix(Deltaf1n_j_delta)%*%t(Deltaf1n_j_delta)
+            
+            Deltaf2n_j_delta<- Gradf2n_j(x=pardrif, parDiff=param, myObsDelta=DeltaX[i,], CmatExpr, 
+                                         avect_exp, Jac_DriftExp, h, myData[i,], myres)
+            histDeltaf2n_j_delta[i,]<-Deltaf2n_j_delta
+            
+            Sigma_alpha <- Sigma_alpha + Deltaf2n_j_delta%*%t(Deltaf2n_j_delta)
+            Sigma_algam <- Sigma_algam + Deltaf2n_j_delta%*%t(Deltaf1n_j_delta)
+            #cat("\n",i)
+          }
+          Tn<-tail(time(myres@Data@original.data),1L)
+          Sigma_gamma0<-Sigma_gamma/Tn
+          Sigma_alpha0 <- Sigma_alpha/Tn     
+          Sigma_algam0 <- Sigma_algam/Tn
+          Sigma0 <- cbind(rbind(Sigma_gamma0,Sigma_algam0),rbind(t(Sigma_algam0),Sigma_alpha0))
+          
+          myLogDens <- function(x, myObsDelta, CmatExpr,h,myData, myres, pos){
+            return(f1n_j(x, myObsDelta[pos, ], CmatExpr,h,myData=myData[pos,], myres=myres))
+          }
+          
+          myLogDens2<- function(x, parDiff, myObsDelta, CmatExpr, avect_exp, h, myData, myres, pos){
+            return(f2n_j(x, parDiff, myObsDelta[pos, ], CmatExpr, avect_exp, h, myData[pos,], myres))
+            #return(f1n_j(x, myObsDelta[pos, ], CmatExpr,h,myData=myData[pos,], myres=myres))
+          }
+          
+          
+          VectLogDens<-Vectorize(FUN=myLogDens,vectorize.args = "pos")
+          #VectLogDens2<-Vectorize(FUN=myLogDens2,vectorize.args = "pos")
+          
+          mylogLik<- function(par,DeltaX,CmatExpr, myData, myres, h, Tn, nobs=dim(DeltaX)[1]){
+            term<-VectLogDens(x=par, 
+                              myObsDelta=DeltaX, CmatExpr=CmatExpr,h=h, myData=myData, myres=myres,pos=c(1:nobs))
+            return(sum(term)/Tn)
+          }
+          
+          mylogLik2<- function(par, parDiff, myObsDelta, CmatExpr, avect_exp, h, Tn, myData, myres, nobs=dim(DeltaX)[1]){
+            # term<-VectLogDens2(x=par, parDiff, myObsDelta, CmatExpr, avect_exp, h, myData, myres,
+            #                    pos=c(1:nobs))
+            term<-0
+            for(j in  c(1:nobs)){
+              term<-term+f2n_j(x=par, parDiff, myObsDelta[j, ], CmatExpr, avect_exp, h, myData[j,], myres)
+            }
+            return(term/Tn)
+          }
+          
+          GradlogLik2<-function(par, parDiff, myObsDelta, CmatExpr, avect_exp, h, Tn, myData, myres, nobs=dim(DeltaX)[1]){
+            term<-matrix(0, length(par),1)
+            for(j in  c(1:nobs)){ 
+              term <- term + Gradf2n_j(x=par, parDiff, myObsDelta=myObsDelta[j, ], CmatExpr, 
+                                       avect_exp, Jac_DriftExp, h, myData=myData[j,], myres)
+            }
+            return(as.numeric(term)/Tn)
+          }
+          
+          # Gammahat <- optimHess(par=param,fn=mylogLik,
+          #                       DeltaX=DeltaX,CmatExpr=CmatExpr,
+          #                       h=h, Tn=Tn, nobs=dim(DeltaX)[1], 
+          #                       myData=myData, myres=myres)
+          
+          # GammaAlfahat <- optimHess(par=pardrif,fn=mylogLik2,gr=GradlogLik2,
+          #                           parDiff=param, myObsDelta=DeltaX, 
+          #                           CmatExpr=CmatExpr, avect_exp=avect_exp, h=h,
+          #                           Tn=Tn, nobs=dim(DeltaX)[1], myData=myData, myres=myres)
+          # 
+          # Gammahat0 <- cbind(rbind(Gammahat,matrix(0,dim(GammaAlfahat)[1],dim(Gammahat)[2])),
+          #                    rbind(matrix(0,dim(Gammahat)[2],dim(GammaAlfahat)[1]),GammaAlfahat))
+          
+          uhistDeltaf1n_j<- matrix(0,floor(Tn),length(param))
+          uhistDeltaf2n_j<- matrix(0,floor(Tn),length(pardrif))
+          aaa<-length(c(param,pardrif))
+          uhistb_incr <- array(0, c(dim(DeltaX)[2],floor(Tn),aaa))
+          for(l in 1:floor(Tn)){
+            #ures[l] <- sum(resi[(floor((l-1)/h)):(floor(l/h)-1)]) 
+            uhistDeltaf1n_j[l, ] <- colSums(histDeltaf1n_j_delta[(floor((l-1)/h)):(floor(l/h)-1),])
+            uhistDeltaf2n_j[l, ] <- colSums(histDeltaf2n_j_delta[(floor((l-1)/h)):(floor(l/h)-1),])
+            for(i in c(1:aaa)){
+              dumIn <- histb_incr[,(floor((l-1)/h)):(floor(l/h)-1),i]
+              uhistb_incr[,l,i]<- rowSums(dumIn)
+            }
+          }
+          
+          nMeaspar<-myres@model@parameter@measure
+          mypar_meas0 <- myres@coef[nMeaspar]#res@coef[oldyuima@model@parameter@measure]
+          mypar_meas <- c(mypar_meas0,1)
+          # ures<-myres@Incr.Lev@original.data
+          names(mypar_meas)<-c(nMeaspar,myres@model@measure$df@time.var)
+          fdataeta<-dens(object=myres@model@measure$df,x=ures,param=mypar_meas)# f(eps, eta)
+          del <- 10^-3
+          dummy <- t(rep(1,length(mypar_meas[myres@model@measure$df@param.measure])))
+          myeta<- as.matrix(mypar_meas[myres@model@measure$df@param.measure])%*%dummy
+          myetapert <- myeta+del*diag(rep(1,dim(myeta)[1])) 
+          fdataetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
+            par<-myetapert[,X]
+            par[myres@model@measure$df@time.var]<-1
+            dens(object=myres@model@measure$df,x=ures,param=par)
+          }
+          )# f(eps, eta+delta)
+          
+          term1<-1/(fdataeta)
+          
+          dummyvecdel<-numeric(length=dim(ures)[2]) 
+          fdatadeltaeta<- matrix(0,floor(Tn),dim(ures)[2])
+          mixpartial <-array(0,c(length(nMeaspar),floor(Tn),dim(ures)[2]))
+          for(j in c(1:dim(ures)[2])){
+            dummyvecdel[j]<-del
+            fdatadeltaeta[,j]<- dens(object=myres@model@measure$df,x=ures+rep(1,dim(ures)[1])%*%t(dummyvecdel),param=mypar_meas)
+            
+            fdatadeltaetadelta<-sapply(X=1:dim(myeta)[1],FUN = function(X){
+              par<-myetapert[,X]
+              par[myres@model@measure$df@time.var]<-1
+              dens(object=myres@model@measure$df,x=ures+rep(1,dim(ures)[1])%*%t(dummyvecdel),param=par)
+            }
+            ) # f(eps +deta, eta+delta)
+            dummyvecdel<-numeric(length=dim(ures)[2])
+            term2 <- fdatadeltaeta[,j]*term1%*%dummy
+            term2 <- fdatadeltaetadelta-term2*fdataetadelta
+            mixpartial[,,j]<-t((as.matrix(term1)%*%dummy)/del^2*term2/Tn)
+          }
+          
+          DerMeta <- 1/del*(fdataetadelta - as.matrix(fdataeta)%*%rep(1,dim(fdataetadelta)[2]))*(as.matrix(term1)%*%rep(1,dim(fdataetadelta)[2]))
+          SigmaEta <- t(DerMeta)%*%DerMeta/Tn
+          
+          minusloglik <- function(para){
+            para[length(para)+1]<-1
+            names(para)[length(para)]<-myres@model@time.variable
+            -sum(dens(object=myres@model@measure$df, x=ures, param = para, log = TRUE), 
+                 na.rm = T)/Tn
+          }
+          #  HessianEta_divTn <- optimHess(par=mypar_meas0, fn=minusloglik)
+          
+          Gammaeta_theta <- matrix(0,length(mypar_meas0), aaa)
+          for(t in c(1:floor(Tn))){
+            Gammaeta_theta<-Gammaeta_theta+mixpartial[,t,]%*%uhistb_incr[,t,]
+          }
+          GammaEta_Theta<- -1/Tn*Gammaeta_theta
+          
+          Sigma_eta_theta<-t(DerMeta)%*%cbind(uhistDeltaf1n_j,uhistDeltaf2n_j)/Tn
+          
+          Sigma <- cbind(rbind(Sigma0,Sigma_eta_theta),rbind(t(Sigma_eta_theta),SigmaEta))
+          
+          GammaHAT<-cbind(rbind(Gammahat0, GammaEta_Theta), rbind(t(GammaEta_Theta), HessianEta_divTn))
+          InvGammaHAT <- solve(GammaHAT)
+          vcov <- InvGammaHAT %*% Sigma %*% InvGammaHAT/Tn
+          
+          myres@vcov<- vcov
+          return(myres)
+        }
       }
       
-      res@vcov<-cbind(res@vcov,matrix(NA,ncol=length(esti$par),nrow=dim(res@vcov)[1]))
-      res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
-      colnames(res@vcov)<-names(res@fullcoef)
-      #res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
-      rownames(res@vcov)<-names(res@fullcoef)
-      res@min<-c(res@min,esti$value)
-      res@nobs<-c(res@nobs,length(Incr.Lev@zoo.data[[1]]))
+        res@vcov<-cbind(res@vcov,matrix(NA,ncol=length(esti$par),nrow=dim(res@vcov)[1]))
+        res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
+        colnames(res@vcov)<-names(res@fullcoef)
+        #res@vcov<-rbind(res@vcov,matrix(NA,nrow=length(esti$par),ncol=dim(res@vcov)[2]))
+        rownames(res@vcov)<-names(res@fullcoef)
+        res@min<-c(res@min,esti$value)
+        res@nobs<-c(res@nobs,length(Incr.Lev@zoo.data[[1]]))
       
-      result<- new("yuima.qmleLevy.incr",Incr.Lev=Incr.Lev,
-                   minusloglLevy = minusloglik,logL.Incr=-esti$value,
-                   Data = yuima@data,  yuima=res, Levydetails=esti)
-      vcovLevy <- function(myres,   HessianEta_divTn,  Gammahat0, sq=TRUE){
+        result<- new("yuima.qmleLevy.incr",Incr.Lev=Incr.Lev,
+                     minusloglLevy = minusloglik,logL.Incr=-esti$value,
+                     Data = yuima@data,  yuima=res, Levydetails=esti)
+        
+        if(length(result@model@jump.coeff)==length(result@model@jump.coeff[[1]])){
+          sq<-TRUE
+        }else{
+          sq<-FALSE
+        }
+        if(!aggregation){
+          result <- vcovLevy1(myres = result,   HessianEta_divTn = HessianEta_divTn,
+                Gammahat0 = myGamhat, ures = ures, sq=TRUE)
+        }else{
+          vcovLevy <- function(myres,   HessianEta_divTn,  Gammahat0, sq=TRUE){
         #myres <- res.VG2
         DeltaX <- apply(myres@Data@original.data,2,diff)
         myData<- myres@Data@original.data
@@ -1022,10 +1338,12 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
         
         myres@vcov<- vcov
         return(myres)
-      }
+          }
+          result <- vcovLevy(result,HessianEta_divTn,myGamhat,sq=sq)
+        }
+        
       
-      sq<-TRUE
-      result <- vcovLevy(result,HessianEta_divTn,myGamhat,sq=sq)
+        #result <- vcovLevy(result,HessianEta_divTn,myGamhat,sq=sq)
       # colnames(result@vcov)<-names(res@fullcoef)
       # rownames(result@vcov)<-names(res@fullcoef)
     }
