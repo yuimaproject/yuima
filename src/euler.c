@@ -64,10 +64,10 @@ SEXP euler(SEXP x0, SEXP t0, SEXP R, SEXP dt, SEXP dW, SEXP modeltime, SEXP mode
         for (j = 0; j < d; j++) {
             /* PROTECT(xpar = allocVector(REALSXP, 1));*/
             REAL(xpar)[0] = rX[j + i * d];
-            //defineVar(installChar(STRING_ELT(modelstate, j)), duplicate(xpar), env);
+            defineVar(installChar(STRING_ELT(modelstate, j)), duplicate(xpar), env);
             //PROTECT(xvar = STRING_ELT(modelstate, j));
             //defineVar(installChar(xvar), duplicate(xpar), env);
-            defineVar(installChar(STRING_ELT(modelstate, j)), xpar, env);
+            //defineVar(installChar(STRING_ELT(modelstate, j)), xpar, env);
 /*            UNPROTECT(1); */
         }
         
