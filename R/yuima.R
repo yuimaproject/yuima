@@ -346,9 +346,11 @@ function(object){
       is.fracdiff <- FALSE
      }
     }
-    if( class(mod) == "yuima.carma")
+    #if( class(mod) == "yuima.carma")
+    if( inherits(mod, "yuima.carma")) # YK, Mar. 22, 2022
      is.carma <- TRUE
-    if( class(mod) == "yuima.cogarch"){
+    #if( class(mod) == "yuima.cogarch"){
+    if( inherits(mod, "yuima.cogarch")){ # YK, Mar. 22, 2022
       is.cogarch <- TRUE
       is.wienerdiff <- FALSE
       is.fracdiff <- FALSE

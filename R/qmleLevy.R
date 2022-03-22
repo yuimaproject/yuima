@@ -59,7 +59,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
     index <- which(names1 %in% sdeModel@parameter@measure)
     upper <- upper[-index]
   }
-  if(class(sdeModel@measure$df)!="yuima.law"){
+  #if(class(sdeModel@measure$df)!="yuima.law"){
+  if(!inherits(sdeModel@measure$df, "yuima.law")){ # fixed by YK
     code <- suppressWarnings(sub("^(.+?)\\(.+", "\\1", sdeModel@measure$df$expr, perl=TRUE))
     
     candinoise<-c("rNIG","rvgamma","rnts","rbgamma")
@@ -784,7 +785,8 @@ qmleLevy<-function(yuima,start,lower,upper,joint = FALSE,third = FALSE,
   }
   cat("\nEstimation Levy parameters ... \n")
   
-  if(class(mylaw)=="yuima.law"){
+  #if(class(mylaw)=="yuima.law"){
+  if(inherits(mylaw, "yuima.law")){ # YK, Mar. 22, 2022
     if(aggregation){
       minusloglik <- function(para){
         para[length(para)+1]<-1

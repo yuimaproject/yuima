@@ -35,9 +35,11 @@ onezoo <- function(ydata) {
   }
 
   if(!is.null(dim(dats))){
-    if(class(ydata)=="yuima")
+    #if(class(ydata)=="yuima")
+    if(inherits(ydata, "yuima")) # YK, Mar. 22, 2022
      colnames(dats) <- colnames(ydata@data@original.data)
-    if(class(ydata)=="yuima.data")
+    #if(class(ydata)=="yuima.data")
+    if(inherits(ydata, "yuima.data")) # YK, Mar. 22, 2022
       colnames(dats) <- colnames(ydata@original.data)
 
 

@@ -256,7 +256,8 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
     }
     
     if(yuima@model@measure.type=="code"){
-      if(class(yuima@model@measure$df)=="yuima.law"){
+      #if(class(yuima@model@measure$df)=="yuima.law"){
+      if(inherits(yuima@model@measure$df, "yuima.law")){ # YK, Mar. 22, 2022
         measurefunc <- "yuima.law"
       }
       else{
@@ -543,7 +544,8 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
     
     #  "yuima.law" LM 13/05/2018
     
-    if(class(yuima@model@measure$df)=="yuima.law"){
+    #if(class(yuima@model@measure$df)=="yuima.law"){
+    if(inherits(yuima@model@measure$df, "yuima.law")){ # YK, Mar. 22, 2022
       args <- yuima@model@parameter@measure
     }else{
       args <- unlist(strsplit(suppressWarnings(sub("^.+?\\((.+)\\)", "\\1",yuima@model@measure$df$expr,perl=TRUE)), ","))
@@ -1373,7 +1375,8 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
       }
       if(yuima@model@measure.type=="code"){
         #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rvgamma"
-        if(class(model@measure$df)=="yuima.law"){
+        #if(class(model@measure$df)=="yuima.law"){
+        if(inherits(model@measure$df, "yuima.law")){ # YK, Mar. 22, 2022
           valuemeasure <- "yuima.law"
           NaIdx<-NULL
         }else{

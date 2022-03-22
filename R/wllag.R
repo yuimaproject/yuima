@@ -230,7 +230,7 @@ wllag <- function(x, y, J = 8, N = 10, #family = "DaubExPhase",
     #wcov <- try(convolve(tmp, acw[[j]], conj = FALSE, type = "filter")[(Mj + 1):(length(grid) + Mj)],
     #            silent = TRUE)
     
-    if(class(wcov) == "try-error"){
+    if(inherits(wcov, "try-error")){
       
       theta[j] <- NA
       crosscor[[j]] <- NA

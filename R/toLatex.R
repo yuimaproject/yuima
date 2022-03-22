@@ -2,16 +2,21 @@
 toLatex.yuima <- function (object, ...) 
 {
     mod <- NULL
-    if (class(object) == "yuima.model") 
+    #if (class(object) == "yuima.model")
+    if (inherits(object, "yuima.model")) # fixed by YK
 	mod <- object
-    if (class(object) == "yuima.carma") 
+    #if (class(object) == "yuima.carma") 
+    if (inherits(object, "yuima.carma")) # fixed by YK
   mod <- object
-	if (class(object) == "yuima.cogarch") 
+	#if (class(object) == "yuima.cogarch") 
+    if (inherits(object, "yuima.cogarch")) # fixed by YK 
 	  mod <- object
-    if (class(object) == "yuima") 
+    #if (class(object) == "yuima") 
+    if (inherits(object, "yuima")) # fixed by YK 
 	mod <- object@model
     #if(class(mod) =="yuima.carma" && length(mod@info@lin.par)==0 )
-      if((class(mod) =="yuima.carma") || (class(mod) =="yuima.cogarch")  )
+      #if((class(mod) =="yuima.carma") || (class(mod) =="yuima.cogarch")  )
+    if(inherits(mod, "yuima.carma") || inherits(mod, "yuima.cogarch")) # fixed by YK
       { 
 #         yuima.warn("")
         
@@ -33,7 +38,8 @@ toLatex.yuima <- function (object, ...)
         if (!length(mod@jump.variable)==0){noise.var <- mod@jump.variable}
         dr <- paste("\\left\\{\\begin{array}{l} \n")
         main.con <- info@ma.par
-        if(class(mod)=="yuima.carma"){
+        #if(class(mod)=="yuima.carma"){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           if(length(info@loc.par)==0 && !length(info@scale.par)==0){
             main.con<-paste(info@scale.par,"* \\ ", info@ma.par)
           }
@@ -46,16 +52,19 @@ toLatex.yuima <- function (object, ...)
             main.con<-paste(info@loc.par,"+ \\ ",info@scale.par,"* \\ ", info@ma.par)
           }
         }else{
-          if(class(mod)=="yuima.cogarch"){
+          #if(class(mod)=="yuima.cogarch"){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
             main.con<-paste(info@loc.par,"+ \\ ", info@ma.par)  
           }
         }
-        if((class(mod) =="yuima.carma")){
+        #if((class(mod) =="yuima.carma")){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           dr <- paste(dr, info@Carma.var,
                       "\\left(", sprintf("%s", mod@time.variable),"\\right) = ",main.con, "'" , 
                      info@Latent.var,"\\left(", sprintf("%s", mod@time.variable),"\\right) \\\\ \n")
         }else{
-          if((class(mod) =="yuima.cogarch")){
+          #if((class(mod) =="yuima.cogarch")){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
             dr <- paste(dr, sprintf("d%s", info@Cogarch.var),
                         "\\left(", sprintf("%s", mod@time.variable),"\\right) = \\ sqrt{",info@V.var, 
                         "\\left(", sprintf("%s", mod@time.variable),"\\right)} \\ ",
@@ -67,10 +76,12 @@ toLatex.yuima <- function (object, ...)
           }
         }
         
-        if((class(mod) =="yuima.carma")){
+        #if((class(mod) =="yuima.carma")){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           noise.latent.var <- noise.var
         }else{
-          if((class(mod) =="yuima.cogarch")){
+          #if((class(mod) =="yuima.cogarch")){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
             noise.latent.var <- paste0("\\left[",noise.var,",",noise.var,"\\right]^{q}")
           }
             
@@ -96,10 +107,12 @@ toLatex.yuima <- function (object, ...)
         # Vector Latent Variable.
         
         body <- c(body, paste("$$"))
-        if(class(mod)=="yuima.carma"){
+        #if(class(mod)=="yuima.carma"){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           latent.lab0<-paste(info@Latent.var,0:(info@p-1),sep="_")
         }else{
-          if(class(mod)=="yuima.cogarch"){
+          #if(class(mod)=="yuima.cogarch"){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
               latent.lab0<-paste(info@Latent.var,1:info@q,sep="_")
           }
         }
@@ -133,15 +146,18 @@ toLatex.yuima <- function (object, ...)
         #b.nozeros <-c(0:info@q)
         
       #  ma.lab0<-paste(paste(info@ma.par,0:(info@q),sep="_"),collapse=", \\ ")
-        if(class(mod)=="yuima.carma"){
+        #if(class(mod)=="yuima.carma"){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           ma.lab0<-paste(info@ma.par,0:(info@q),sep="_")
         }else{
-          if(class(mod)=="yuima.cogarch"){
+          #if(class(mod)=="yuima.cogarch"){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
             ma.lab0<-paste(info@ma.par,1:(info@p),sep="_")
           }
         }
         #if(length(ma.lab0)==1){ma.lab1<-ma.lab0}
-        if(class(mod)=="yuima.carma"){
+        #if(class(mod)=="yuima.carma"){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           if(info@q>=0 && info@q<=1){
             ma.lab1<-paste(ma.lab0,collapse=", \\ ")}
         #if(length(ma.lab0)==2){
@@ -157,7 +173,8 @@ toLatex.yuima <- function (object, ...)
                               " \\ , \\ ",tail(ma.lab0,n=1))
           }
         }else{
-          if(class(mod)=="yuima.cogarch"){
+          #if(class(mod)=="yuima.cogarch"){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
             if(info@p>=0 && info@p<=2){
               ma.lab1<-paste(ma.lab0,collapse=", \\ ")
             }
@@ -168,10 +185,12 @@ toLatex.yuima <- function (object, ...)
             }
           }  
         }
-        if(class(mod)=="yuima.carma"){  
+        #if(class(mod)=="yuima.carma"){  
+        if(inherits(mod, "yuima.carma")){ # fixed by YK  
           numb.zero<-(info@p-(info@q+1))
         }else{
-          if(class(mod)=="yuima.cogarch"){
+          #if(class(mod)=="yuima.cogarch"){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
             numb.zero<-(info@q-info@p)
           }
         }
@@ -204,7 +223,8 @@ toLatex.yuima <- function (object, ...)
         
         if (!length(mod@jump.variable)==0){
           noise.coef <- mod@jump.coeff
-          if(class(mod)=="yuima.carma"){
+          #if(class(mod)=="yuima.carma"){
+          if(inherits(mod, "yuima.carma")){ # fixed by YK
             vect.e0 <- substr(tail(noise.coef,n=1), 18, nchar(tail(noise.coef,n=1)) -2)
           }else{
             vect.e0 <- substr(tail(noise.coef,n=1), 18, nchar(tail(noise.coef,n=1)) -2)
@@ -230,13 +250,15 @@ toLatex.yuima <- function (object, ...)
   #           }
           }  
         }
-        if(class(mod)=="yuima.carma"){
+        #if(class(mod)=="yuima.carma"){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           if (info@p==1){vect.e <- vect.e0}
           if (info@p==2){vect.e <- paste("0, \\ ",vect.e0)}
           if (info@p==3){vect.e <- paste("0, \\ 0, \\ ",vect.e0)}
           if (info@p>3){vect.e <- paste("0, \\ \\ldots \\ , \\ 0, \\  ",vect.e0)}
         }else{
-          if(class(mod)=="yuima.cogarch"){
+          #if(class(mod)=="yuima.cogarch"){
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK
             if (info@q==1){vect.e <- vect.e0}
             if (info@q==2){vect.e <- paste("0, \\ ",vect.e0)}
             if (info@q==3){vect.e <- paste("0, \\ 0, \\ ",vect.e0)}
@@ -257,17 +279,20 @@ toLatex.yuima <- function (object, ...)
         # Matrix A        
         body <- c(body, paste("$$"))
 
-        if(class(mod)=="yuima.cogarch"){
+        #if(class(mod)=="yuima.cogarch"){
+        if(inherits(mod, "yuima.cogarch")){ # fixed by YK
           Up.A<-NULL
         }
         
-        if(class(mod)=="yuima.carma"){
+        #if(class(mod)=="yuima.carma"){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
           if(info@p==1){
             cent.col<-"c"
             last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@p:1,sep="_"),collapse=" &")
           }
         }else{
-          if(class(mod)=="yuima.cogarch"){ 
+          #if(class(mod)=="yuima.cogarch"){ 
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK 
             if(info@q==1){
               cent.col<-"c"
               last.A<-paste(paste(paste("",info@ar.par,sep=" -"),info@q:1,sep="_"),collapse=" &")
@@ -275,7 +300,8 @@ toLatex.yuima <- function (object, ...)
           }
         }
        
-        if(class(mod)=="yuima.carma"){
+        #if(class(mod)=="yuima.carma"){
+        if(inherits(mod, "yuima.carma")){ # fixed by YK
             if(info@p==2){
               cent.col<-"cc"
               Up.A <-" 0 & 1 \\\\ \n"
@@ -297,7 +323,8 @@ toLatex.yuima <- function (object, ...)
             
             }
         }else{
-          if(class(mod)=="yuima.cogarch"){ 
+          #if(class(mod)=="yuima.cogarch"){ 
+          if(inherits(mod, "yuima.cogarch")){ # fixed by YK 
               if(info@q==2){
                 cent.col<-"cc"
                 Up.A <-" 0 & 1 \\\\ \n"

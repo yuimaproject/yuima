@@ -751,7 +751,8 @@ Intensity.PPR <- function(yuimaPPR,param){
     result<-InternalConstractionIntensity2(param,my.envd1,
                                            my.envd2,my.envd3)
   }
-  if(class(result)=="matrix"){
+  #if(class(result)=="matrix"){
+  if(inherits(result, "matrix")){ # YK, Mar. 22, 2022
     my.matr <- t(result)
     colnames(my.matr) <-paste0("lambda",c(1:yuimaPPR@Kernel@Integrand@dimIntegrand[1]))
     Int2<-zoo(my.matr,order.by = gridTime)

@@ -315,7 +315,8 @@ IC <- function(drif = NULL, diff = NULL, data = NULL, Terminal = 1, add.settings
             Diff.esti.bic.sub <- gsub(swbeta[[BIC.opt1]][(j+1)], Esti1.chr.bic[(j+1)], Diff.esti.bic.sub)
           }
         }
-        if(class(Diff.esti.bic) == "character"){
+        #if(class(Diff.esti.bic) == "character"){
+        if(inherits(Diff.esti.bic, "character")){ # YK, Mar. 22, 2022
           Diff.esti.bic <- Diff.esti.bic.sub
         }else{
           Diff.esti.bic[i,] <- Diff.esti.bic.sub
@@ -335,7 +336,8 @@ IC <- function(drif = NULL, diff = NULL, data = NULL, Terminal = 1, add.settings
             Diff.esti.qbic.sub <- gsub(swbeta[[QBIC.opt1]][(j+1)], Esti1.chr.qbic[(j+1)], Diff.esti.qbic.sub)
           }
         }
-        if(class(Diff.esti.qbic) == "character"){
+        #if(class(Diff.esti.qbic) == "character"){
+        if(inherits(Diff.esti.qbic, "character")){ # YK, Mar. 22, 2022
           Diff.esti.qbic <- Diff.esti.qbic.sub
         }else{
           Diff.esti.qbic[i,] <- Diff.esti.qbic.sub
@@ -439,7 +441,8 @@ IC <- function(drif = NULL, diff = NULL, data = NULL, Terminal = 1, add.settings
                 Diff.esti.sub <- gsub(swbeta[[i]][(k+1)], Esti1.chr[(k+1)], Diff.esti.sub)
               }
             }
-            if(class(Diff.esti) == "character"){
+            #if(class(Diff.esti) == "character"){
+            if(inherits(Diff.esti, "character")){ # YK, Mar. 22, 2022
               Diff.esti <- Diff.esti.sub
             }else{
               Diff.esti[j,] <- Diff.esti.sub
