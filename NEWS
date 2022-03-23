@@ -98,3 +98,4 @@
 2022/01/28: modified wllag.R and unimported the wavethresh package
 2022/03/03: fixed a bug in euler.c
 2022/03/22: fixed if-class issues 
+2022/03/23: fixed man issues
