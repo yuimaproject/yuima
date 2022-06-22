@@ -266,6 +266,9 @@ export(char)
 export(qgv)
 export(mmfrac)
 
+export(simCIR)
+export(fitCIR)
+
 #export(cbind.yuima)
 #export(rbind.yuima)
 S3method(print, phitest)
