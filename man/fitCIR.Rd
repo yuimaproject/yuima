@@ -24,7 +24,8 @@ containing the realization of \eqn{(t_0,X_{t_0}), \dots,(t_n,X_{t_n})} with \eqn
 }
 
 \value{
-  A list with four entries. The first three entries each contain a vector in the following order: The result of the preliminary estimator, Newton-Raphson method and the method of scoring. The last entry contains the model,	an object of \code{\link{yuima.model-class}}.
+  A list with three entries each contain a vector in the following order: The result of the preliminary estimator, Newton-Raphson method and the method of scoring.
+ % A list with four entries. The first three entries each contain a vector in the following order: The result of the preliminary estimator, Newton-Raphson method and the method of scoring. The last entry contains the model,	an object of \code{\link{yuima.model-class}}.
   
   If the sampling points are not equidistant the function will return \code{'Please use equidistant sampling points'.}
 
