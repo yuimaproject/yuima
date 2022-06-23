@@ -100,3 +100,4 @@
 2022/03/22: fixed if-class issues 
 2022/03/23: fixed man issues
 2022/06/22: added simCIR and fitCIR
+2022/06/23: modified simCIR and fitCIR.Rd
