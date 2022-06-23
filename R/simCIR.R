@@ -8,9 +8,9 @@ simCIR <- function (time.points, n, h, alpha, beta, gamma, equi.dist=FALSE ) {
   if ( time.points[1] != 0 ) { time.points <- c(0, time.points) }
   
   # define auxiliary variables, following notation of Malham and Wiese
-  nu <- 4 * beta * alpha / ( beta * gamma ^ 4)  # degrees of freedom
+  nu <- 4 * alpha /  gamma   # degrees of freedom
   eta_vec <- 4 * beta * exp(-beta * diff(time.points) ) /   # auxiliary vector for the computation of the
-              (gamma ^ 4 * (1 - exp(-beta * diff(time.points) )) ) # non-centrality parameter in each step
+              (gamma  * (1 - exp(-beta * diff(time.points) )) ) # non-centrality parameter in each step
   
   # sample X_0 from stationary distribution
   X <- rgamma(1, scale = gamma / (2 * beta), shape = 2 * alpha / gamma)
@@ -25,3 +25,4 @@ simCIR <- function (time.points, n, h, alpha, beta, gamma, equi.dist=FALSE ) {
   # return data
   return(rbind(t = time.points, X = X)) # first row: time points, second row: CIR at time point
 }
+
