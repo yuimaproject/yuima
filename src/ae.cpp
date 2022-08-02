@@ -5,7 +5,7 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 bool is_zero (std::string const &x){
-  return((x=="0") | (x=="(0)") | (x=="{0}") | (x=="(0+0i)") | (x==""));
+  return((x=="0") || (x=="(0)") || (x=="{0}") || (x=="(0+0i)") || (x==""));
 }
 
 
