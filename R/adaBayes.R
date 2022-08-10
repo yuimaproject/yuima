@@ -7,7 +7,7 @@ setGeneric("adaBayes",
                   )
              standardGeneric("adaBayes")
 )
-# 
+#
 # adabayes<- setClass("adabayes",contains = "mle",
 #                     slots = c(mcmc="list", accept_rate="list",coef = "numeirc",
 #                                          call="call",vcov="matrix",fullcoef="numeric",model="yuima.model"))
@@ -15,31 +15,31 @@ adabayes<- setClass("adabayes",
                     #contains = "mle",
                     slots = c(mcmc="list", accept_rate="list",coef = "numeric",call="call",vcov="matrix",fullcoef="numeric"))
 
-setMethod("adaBayes", 
+setMethod("adaBayes",
           "yuima",
           function(yuima, start,prior,lower,upper, method="mcmc",iteration=NULL,mcmc,rate=1.0,rcpp=TRUE,
                    algorithm="randomwalk",center=NULL,sd=NULL,rho=NULL,path=FALSE
                    )
           {
-            
-            
-            
+
+
+
             if(length(iteration)>0){mcmc=iteration}
             mean=unlist(center)
             joint <- FALSE
             fixed <- numeric(0)
             print <- FALSE
-            
+
             call <- match.call()
-            
+
             if( missing(yuima))
               yuima.stop("yuima object is missing.")
-            
+
             ## param handling
-            
+
             ## FIXME: maybe we should choose initial values at random within lower/upper
-            ##        at present, qmle stops	
-            
+            ##        at present, qmle stops
+
             if(missing(lower) || missing(upper)){
               if(missing(prior)){
                 lower = numeric(0)
@@ -53,14 +53,14 @@ setMethod("adaBayes",
               }
               # yuima.stop("lower or upper is missing.")
             }
-            
+
             diff.par <- yuima@model@parameter@diffusion
             drift.par <- yuima@model@parameter@drift
             jump.par <- yuima@model@parameter@jump
             measure.par <- yuima@model@parameter@measure
             common.par <- yuima@model@parameter@common
 
-            
+
             ## BEGIN Prior construction
             if(!missing(prior)){
               priorLower = numeric(0)
@@ -88,16 +88,16 @@ setMethod("adaBayes",
                   )
                   priorLower = append(priorLower,eval(parse("text"=qf))(0.00))
                   priorUpper = append(priorUpper,eval(parse("text"=qf))(1.00))
-                  
-                  
+
+
                 }
-                
+
               }
-              
+
               #20200518kaino
               names(priorLower)<-names(pdlist)
               names(priorUpper)<-names(pdlist)
-              
+
               if(missing(lower) || missing(upper)){
                 lower <- priorLower
                 upper <- priorUpper
@@ -109,13 +109,13 @@ setMethod("adaBayes",
                   yuima.stop("lower&upper of prior are out of parameter space.")
                 }
               }
-              
+
               #20200518
               #names(lower) <- names(pdlist)
               #names(upper) <- names(pdlist)
-              
-              
-              
+
+
+
               pd <- function(param){
                 value <- 1
                 for(i in 1:length(pdlist)){
@@ -127,14 +127,14 @@ setMethod("adaBayes",
               pd <- function(param) return(1)
             }
             ## END Prior construction
-            
+
             if(!is.list(lower)){
               lower <- as.list(lower)
             }
             if(!is.list(upper)){
               upper <- as.list(upper)
             }
-            
+
             JointOptim <- joint
             if(length(common.par)>0){
               JointOptim <- TRUE
@@ -145,31 +145,31 @@ setMethod("adaBayes",
 
             if(length(jump.par)+length(measure.par)>0)
               yuima.stop("Cannot estimate the jump models, yet")
-            
-            
+
+
             fulcoef <- NULL
-            
+
             if(length(diff.par)>0)
               fulcoef <- diff.par
-            
+
             if(length(drift.par)>0)
               fulcoef <- c(fulcoef, drift.par)
-            
+
             if(length(yuima@model@parameter@common)>0){
               fulcoef<-unique(fulcoef)
             }
-            
-            
+
+
             fixed.par <- names(fixed)
-            
-            if (any(!(fixed.par %in% fulcoef))) 
+
+            if (any(!(fixed.par %in% fulcoef)))
               yuima.stop("Some named arguments in 'fixed' are not arguments to the supplied yuima model")
-            
+
             nm <- names(start)
             npar <- length(nm)
 
             oo <- match(nm, fulcoef)
-            if(any(is.na(oo))) 
+            if(any(is.na(oo)))
               yuima.stop("some named arguments in 'start' are not arguments to the supplied yuima model")
             start <- start[order(oo)]
             if(!missing(prior)){
@@ -178,7 +178,7 @@ setMethod("adaBayes",
               pdlist <- pdlist[names(start)]
             }
             nm <- names(start)
-            
+
             idx.diff <- match(diff.par, nm)
             idx.drift <- match(drift.par,nm)
             if(length(common.par)>0){
@@ -187,28 +187,28 @@ setMethod("adaBayes",
             }
             idx.fixed <- match(fixed.par, nm)
             tmplower <- as.list( rep( -Inf, length(nm)))
-            names(tmplower) <- nm	
+            names(tmplower) <- nm
             if(!missing(lower)){
               idx <- match(names(lower), names(tmplower))
               if(any(is.na(idx)))
                 yuima.stop("names in 'lower' do not match names fo parameters")
-              tmplower[ idx ] <- lower	
+              tmplower[ idx ] <- lower
             }
             lower <- tmplower
-            
+
             tmpupper <- as.list( rep( Inf, length(nm)))
-            names(tmpupper) <- nm	
+            names(tmpupper) <- nm
             if(!missing(upper)){
               idx <- match(names(upper), names(tmpupper))
               if(any(is.na(idx)))
                 yuima.stop("names in 'lower' do not match names fo parameters")
-              tmpupper[ idx ] <- upper	
+              tmpupper[ idx ] <- upper
             }
             upper <- tmpupper
-            
-            
-            
-            
+
+
+
+
             d.size <- yuima@model@equation.number
             #20200601kaino
             if (is.CARMA(yuima)){
@@ -216,14 +216,14 @@ setMethod("adaBayes",
               d.size <-1
             }
             n <- length(yuima)[1]
-            
+
             G <- rate
             if(G<=0 || G>1){
               yuima.stop("rate G should be 0 < G <= 1")
             }
             n_0 <- floor(n^G)
             if(n_0 < 2) n_0 <- 2
-            
+
             #######data is reduced to n_0 before qmle(16/11/2016)
             env <- new.env()
             #assign("X",  yuima@data@original.data[1:n_0,], envir=env)
@@ -244,15 +244,15 @@ setMethod("adaBayes",
               assign("q", yuima@model@info@q, envir=env)
               assign("V_inf0", matrix(diag(rep(1,env$p)),env$p,env$p), envir=env)
             }
-            
+
             assign("Cn.r", rep(1,n_0-1), envir=env)
-            
+
             for(t in 1:(n_0-1))
               env$deltaX[t,] <- env$X[t+1,] - env$X[t,]
-            
+
             assign("h", deltat(yuima@data@zoo.data[[1]]), envir=env)
-            
-            pp<-0 
+
+            pp<-0
             if(env$h >= 1){
               qq <- 2/G
             }else{
@@ -260,18 +260,18 @@ setMethod("adaBayes",
                 if(n*env$h^pp < 0.1) break
                 pp <- pp + 1
               }
-              qq <- max(pp,2/G) 
+              qq <- max(pp,2/G)
             }
-            
+
             C.temper.diff <- n_0^(2/(qq*G)-1) #this is used in pg.
             C.temper.drift <- (n_0*env$h)^(2/(qq*G)-1) #this is used in pg.
-            
+
             mle <- qmle(yuima, "start"=start, "lower"=lower,"upper"=upper, "method"="L-BFGS-B",rcpp=rcpp)
             start <- as.list(mle@coef)
 
             sigma.diff=NULL
             sigma.drift=NULL
-            
+
             if(length(sd)<npar){
               sigma=mle@vcov;
             }
@@ -281,7 +281,7 @@ setMethod("adaBayes",
               #     sigma.diff[i,i]=sd[[diff.par[i]]]
               #   }
               # }
-              # 
+              #
               # if(length(drift.par)>0){
               #   sigma.drift=diag(1,length(drift.par))
               #   for(i in 1:length(drift.par)){
@@ -289,12 +289,12 @@ setMethod("adaBayes",
               #   }
               # }
             #}
-            
-            
+
+
             # mu.diff=NULL
             # mu.drift=NULL
-            # 
-            # 
+            #
+            #
             # if(length(mean)<npar){
             #   mu.diff=NULL
             #   mu.drift=NULL}
@@ -304,14 +304,14 @@ setMethod("adaBayes",
             #     mu.diff[i]=mean[[diff.par[i]]]
             #   }
             #   }
-            #   
+            #
             #   if(length(drift.par)>0){
             #   for(i in 1:length(drift.par)){
             #     mu.drift[i]=mean[[drift.par[i]]]
             #   }
             #   }
             # }
-            
+
             ####mpcn make proposal
             sqn<-function(x,LL){
               vv=x%*%LL
@@ -321,7 +321,7 @@ setMethod("adaBayes",
               }
               return(zz)
             }
-            
+
             # mpro<-function(mu,sample,low,up,rho,LL,L){
             #   d=length(mu);
             #   tmp=mu+sqrt(rho)*(sample-mu);
@@ -336,14 +336,14 @@ setMethod("adaBayes",
             # }
 
             make<-function(mu,sample,low,up,rho,LL,L){
-              
+
               d=length(mu);
               tmp=mu+sqrt(rho)*(sample-mu);
               dt=sqn(sample-mu,LL);
               tmp2 = 2.0/dt;
-    
+
               prop = tmp+rnorm(d)%*%L*sqrt((1.0-rho)/rgamma(1,0.5*d,scale=tmp2));
-              
+
               # for(i in 1:100){
               #   prop = tmp+rnorm(d)*sqrt((1.0-rho)/rgamma(1,0.5*d,tmp2));
               #   if((sum(low>prop)+sum(up<prop))==0){break;}
@@ -354,8 +354,8 @@ setMethod("adaBayes",
               # }
               return(prop)
             }
-            
-            
+
+
             integ <- function(idx.fixed=NULL,f=f,start=start,par=NULL,hessian=FALSE,upper,lower){
               if(length(idx.fixed)==0){
                 intf <- hcubature(f,lowerLimit=unlist(lower),upperLimit=unlist(upper),fDim=(length(upper)+1))$integral
@@ -374,10 +374,10 @@ setMethod("adaBayes",
               }
               return(intf)
             }
-            
-            
+
+
             mcintegrate <- function(f,p, lowerLimit, upperLimit,mean,vcov,mcmc){
-              
+
               acc=0
               if(algorithm=="randomwalk"){
                 x_c <- mean
@@ -385,12 +385,12 @@ setMethod("adaBayes",
                   X <- matrix(0,mcmc,length(mean))
                   acc=0
                 }
-              
+
                 nm=length(mean)
                 if(length(vcov)!=(nm^2)){
                   vcov=diag(1,nm,nm)*vcov[1:nm,1:nm]
                 }
-                
+
                 sigma=NULL
                 if(length(sd)>0&length(sd)==npar){
                     sigma=diag(sd,npar,npar);
@@ -400,30 +400,30 @@ setMethod("adaBayes",
                       vcov=sigma;
                     }
                   }
-                
+
                 p_c <- p(x_c)
                 val <- f(x_c)
                 if(path) X[1,] <- x_c
                 # if(length(mean)>1){
                 #   x <- rmvnorm(mcmc-1,mean,vcov)
                 #   q <- dmvnorm(x,mean,vcov)
-                #   q_c <- dmvnorm(mean,mean,vcov) 
+                #   q_c <- dmvnorm(mean,mean,vcov)
                 # }else{
                 #   x <- rnorm(mcmc-1,mean,sqrt(vcov))
                 #   q <- dnorm(x,mean,sqrt(vcov))
-                #   q_c <- dnorm(mean,mean,sqrt(vcov)) 
+                #   q_c <- dnorm(mean,mean,sqrt(vcov))
                 # }
                 #
                 for(i in 1:(mcmc-1)){
                   if(length(mean)>1){
-                    
+
                       x_n <- rmvnorm(1,x_c,vcov)
                       #if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0) break
                   }else{
                       x_n <- rnorm(1,x_c,sqrt(vcov))
                       #if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0) break
                   }
-                  
+
                   if(sum(x_n<lowerLimit)==0 & sum(x_n>upperLimit)==0){
                     p_n <- p(x_n)
                     u <- log(runif(1))
@@ -435,7 +435,7 @@ setMethod("adaBayes",
                       acc=acc+1
                     }
                   }
-                  
+
                   if(path) X[i+1,] <- x_c
                   #}
                   val <- val+f(x_c)
@@ -444,7 +444,7 @@ setMethod("adaBayes",
                   return(list(val=unlist(val/mcmc),X=X,acc=acc/mcmc))
                 }else{
                   return(list(val=unlist(val/mcmc)))
-                } 
+                }
               }
               else if(tolower(algorithm)=="mpcn"){ #MpCN
                 if(path) X <- matrix(0,mcmc,length(mean))
@@ -457,7 +457,7 @@ setMethod("adaBayes",
                     }
                   }
                 }
-                
+
                 # if((sum(idx.diff==idx.fixed)>0)){
                 #   if(length(center)>0){
                 #     mean =unlist(center[-idx.fixed])
@@ -465,7 +465,7 @@ setMethod("adaBayes",
                 # }
                 x_n <- mean
                 val <- mean
-                
+
                 L=diag(1,length(mean));LL=L;
                 nm=length(mean)
                 LL=vcov;
@@ -480,19 +480,18 @@ setMethod("adaBayes",
                     LL=sigma;
                   }
                 }
-                
-                
+
+
                 # if(length(pre_conditionnal)==1){
                 #   LL=t(chol(solve(vcov)));L=chol(vcov);
                 # }
                 if(length(rho)==0){rho=0.8}
-                
+
                 logLik_old <- p(x_n)+0.5*length(mean)*log(sqn(x_n-mean,LL))
                 if(path) X[1,] <- x_n
-                
-                
+
+
                 for(i in 1:(mcmc-1)){
-                  #browser()
                   prop <- make(mean,x_n,unlist(lowerLimit),unlist(upperLimit),rho,LL,L)
                   if((sum(prop<lowerLimit)+sum(prop>upperLimit))==0){
                   logLik_new <- p(prop)+0.5*length(mean)*log(sqn(prop-mean,LL))
@@ -514,28 +513,28 @@ setMethod("adaBayes",
                 }
               }
             }
-            
+
             #print(mle@coef)
             flagNotPosDif <- 0
-            
+
               for(i in 1:npar){
                 if(mle@vcov[i,i] <= 0) flagNotPosDif <- 1 #Check mle@vcov is positive difinite matrix
               }
               if(flagNotPosDif == 1){
-                mle@vcov <- diag(c(rep(1 / n_0,length(diff.par)),rep(1 / (n_0 * env$h),length(npar)-length(diff.par)))) # Redifine mle@vcov
+                mle@vcov <- diag(c(rep(1 / n_0,length(diff.par)),rep(1 / (n_0 * env$h), npar-length(diff.par)))) # Redifine mle@vcov
               }
-            
+
               # cov.diff=mle@vcov[1:length(diff.par),1:length(diff.par)]
               # cov.drift=mle@vcov[(length(diff.par)+1):(length(diff.par)+length(drift.par)),(length(diff.par)+1):(length(diff.par)+length(drift.par))]
               # if(missing(cov){
               # }else{
               # cov.diff=cov[[1]]
               # cov.drift=cov[[2]]
-            
-            
-            
+
+
+
             tmp <- minusquasilogl(yuima=yuima, param=mle@coef, print=print, env,rcpp=rcpp)
-            
+
             g <- function(p,fixed,idx.fixed){
               mycoef <- mle@coef
               #mycoef <- as.list(p)
@@ -548,7 +547,7 @@ setMethod("adaBayes",
               }
               return(c(1,p)*exp(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp)*pd(param=mycoef))
             }
-            
+
             pg <- function(p,fixed,idx.fixed){
               mycoef <- start
               #mycoef <- as.list(p)
@@ -559,7 +558,7 @@ setMethod("adaBayes",
                 mycoef <- as.list(p)
                 names(mycoef) <- nm
               }
-              
+
               # mycoef <- as.list(p)
               # names(mycoef) <- nm
               #return(exp(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env)+tmp)*pd(param=mycoef))
@@ -572,19 +571,19 @@ setMethod("adaBayes",
                 return(C.temper.diff*(-minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)+tmp+log(pd(param=mycoef))))#log
               }
             }
-            
+
             idf <- function(p){return(p)}
-            
+
             #	 fj <- function(p) {
             #		 mycoef <- as.list(p)
             #		 names(mycoef) <- nm
             #		 mycoef[fixed.par] <- fixed
             #		 minusquasilogl(yuima=yuima, param=mycoef, print=print, env)
             #	 }
-            
+
             X.diff <- NULL
             X.drift <- NULL
-            
+
             oout <- NULL
             HESS <- matrix(0, length(nm), length(nm))
             colnames(HESS) <- nm
@@ -606,23 +605,23 @@ setMethod("adaBayes",
               #		} else {  ### first diffusion, then drift
               theta1 <- NULL
               acc.diff<-NULL
-              
-              old.fixed <- fixed 
+
+              old.fixed <- fixed
               old.start <- start
-              
+
               if(length(idx.diff)>0){
                 ## DIFFUSION ESTIMATIOn first
                 old.fixed <- fixed
                 old.start <- start
                 new.start <- start[idx.diff] # considering only initial guess for diffusion
                 new.fixed <- fixed
-                if(length(idx.drift)>0)	
+                if(length(idx.drift)>0)
                   new.fixed[nm[idx.drift]] <- start[idx.drift]
                 fixed <- new.fixed
                 fixed.par <- names(fixed)
                 idx.fixed <- match(fixed.par, nm)
                 names(new.start) <- nm[idx.diff]
-                
+
                 f <- function(p){return(g(p,fixed,idx.fixed))}
                 pf <- function(p){return(pg(p,fixed,idx.fixed))}
                 if(length(unlist(new.start))>1){
@@ -649,17 +648,17 @@ setMethod("adaBayes",
                   }
                   theta1 <- opt1$minimum
                   #names(theta1) <- diff.par
-                  #			 oout <- list(par = theta1, value = opt1$objective) 
+                  #			 oout <- list(par = theta1, value = opt1$objective)
                   oout <- list(par=theta1,value=0)
                 }
                 theta1 <- oout$par
                 #names(theta1) <- nm[idx.diff]
                 names(theta1) <- diff.par
               } ## endif(length(idx.diff)>0)
-              
+
               theta2 <- NULL
               acc.drift<-NULL
-              
+
               if(length(idx.drift)>0 & setequal(unlist(drift.par),unlist(diff.par))==FALSE){
                 ## DRIFT estimation with first state diffusion estimates
                 fixed <- old.fixed
@@ -671,10 +670,10 @@ setMethod("adaBayes",
                 fixed.par <- names(fixed)
                 idx.fixed <- match(fixed.par, nm)
                 names(new.start) <- nm[idx.drift]
-                
+
                 f <- function(p){return(g(p,fixed,idx.fixed))}
                 pf <- function(p){return(pg(p,fixed,idx.fixed))}
-                
+
                 if(length(unlist(new.start))>1){
                   #			  oout1 <- do.call(optim, args=mydots)
                   if(method=="mcmc"){
@@ -701,21 +700,21 @@ setMethod("adaBayes",
                   }
                   theta2 <- opt1$minimum
                   names(theta2) <-nm[-idx.fixed]
-                  oout1 <- list(par = theta2, value = as.numeric(opt1$objective)) 	
+                  oout1 <- list(par = theta2, value = as.numeric(opt1$objective))
                 }
                 theta2 <- oout1$par
               } ## endif(length(idx.drift)>0)
               oout1 <- list(par=c(theta1, theta2))
               names(oout1$par) <-nm # c(diff.par,drift.par)
               oout <- oout1
-              
+
               #		} ### endif JointOptim
             } else {
               list(par = numeric(0L), value = f(start))
             }
-            
-            
-            
+
+
+
             # if(path){
             #   return(list(coef=oout$par,X.diff=X.diff,X.drift=X.drift,accept_rate=accept_rate))
             # }else{
@@ -727,95 +726,95 @@ setMethod("adaBayes",
               mycoef[diff.par] <- coef[diff.par]
               minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
             }
-            
+
             fDiff <- function(p) {
               mycoef <- as.list(p)
               names(mycoef) <- diff.par
               mycoef[drift.par] <- coef[drift.par]
               minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
             }
-            
+
             coef <- oout$par
             control=list()
             par <- coef
             names(par) <- nm
             #names(par) <- c(diff.par, drift.par)
             #nm <- c(diff.par, drift.par)
-            
-            
-            
+
+
+
             #	 print(par)
             #	 print(coef)
-            conDrift <- list(trace = 5, fnscale = 1, 
-                             parscale = rep.int(5, length(drift.par)), 
-                             ndeps = rep.int(0.001, length(drift.par)), maxit = 100L, 
-                             abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
-                             beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
+            conDrift <- list(trace = 5, fnscale = 1,
+                             parscale = rep.int(5, length(drift.par)),
+                             ndeps = rep.int(0.001, length(drift.par)), maxit = 100L,
+                             abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1,
+                             beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5,
                              factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
-            conDiff <- list(trace = 5, fnscale = 1, 
-                            parscale = rep.int(5, length(diff.par)), 
-                            ndeps = rep.int(0.001, length(diff.par)), maxit = 100L, 
-                            abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1, 
-                            beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5, 
+            conDiff <- list(trace = 5, fnscale = 1,
+                            parscale = rep.int(5, length(diff.par)),
+                            ndeps = rep.int(0.001, length(diff.par)), maxit = 100L,
+                            abstol = -Inf, reltol = sqrt(.Machine$double.eps), alpha = 1,
+                            beta = 0.5, gamma = 2, REPORT = 10, type = 1, lmm = 5,
                             factr = 1e+07, pgtol = 0, tmax = 10, temp = 10)
-            
+
             #	 nmsC <- names(con)
-            #	 if (method == "Nelder-Mead") 
+            #	 if (method == "Nelder-Mead")
             #	 con$maxit <- 500
             #	 if (method == "SANN") {
             #		 con$maxit <- 10000
             #		 con$REPORT <- 100
             #	 }
             #	 con[(namc <- names(control))] <- control
-            #	 if (length(noNms <- namc[!namc %in% nmsC])) 
+            #	 if (length(noNms <- namc[!namc %in% nmsC]))
             #	 warning("unknown names in control: ", paste(noNms, collapse = ", "))
-            #	 if (con$trace < 0) 
+            #	 if (con$trace < 0)
             #	 warning("read the documentation for 'trace' more carefully")
-            #	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) == 
-            #			  0) 
+            #	 else if (method == "SANN" && con$trace && as.integer(con$REPORT) ==
+            #			  0)
             #	 stop("'trace != 0' needs 'REPORT >= 1'")
-            #	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol", 
-            #													"abstol"), namc)))) 
+            #	 if (method == "L-BFGS-B" && any(!is.na(match(c("reltol",
+            #													"abstol"), namc))))
             #	 warning("method L-BFGS-B uses 'factr' (and 'pgtol') instead of 'reltol' and 'abstol'")
             #	 npar <- length(par)
-            #	 if (npar == 1 && method == "Nelder-Mead") 
+            #	 if (npar == 1 && method == "Nelder-Mead")
             #	 warning("one-diml optimization by Nelder-Mead is unreliable: use optimize")
-            #	 
+            #
             if(!HaveDriftHess & (length(drift.par)>0)){
               #hess2 <- .Internal(optimhess(coef[drift.par], fDrift, NULL, conDrift))
               hess2 <- optimHess(coef[drift.par], fDrift, NULL, control=conDrift)
-              HESS[drift.par,drift.par] <- hess2	 
+              HESS[drift.par,drift.par] <- hess2
             }
-            
+
             if(!HaveDiffHess  & (length(diff.par)>0)){
               #hess1 <- .Internal(optimhess(coef[diff.par], fDiff, NULL, conDiff))
               hess1 <- optimHess(coef[diff.par], fDiff, NULL, control=conDiff)
-              HESS[diff.par,diff.par] <- hess1	 
+              HESS[diff.par,diff.par] <- hess1
             }
-            
+
             oout$hessian <- HESS
-            
-            # vcov <- if (length(coef)) 
+
+            # vcov <- if (length(coef))
             #   solve(oout$hessian)
             # else matrix(numeric(0L), 0L, 0L)
-            
+
             mycoef <- as.list(coef)
             names(mycoef) <- nm
             mycoef[fixed.par] <- fixed
-            
+
             #min <- minusquasilogl(yuima=yuima, param=mycoef, print=print, env,rcpp=rcpp)
-            # 
-            
-            # new("mle", call = call, coef = coef, fullcoef = unlist(mycoef), 
-            #     
-            #     #       vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl, 
-            #     vcov = vcov,  details = oout, 
+            #
+
+            # new("mle", call = call, coef = coef, fullcoef = unlist(mycoef),
+            #
+            #     #       vcov = vcov, min = min, details = oout, minuslogl = minusquasilogl,
+            #     vcov = vcov,  details = oout,
             #     method = method)
-            
+
             mcmc_sample<-cbind(X.diff,X.drift)
-            
+
             mcmc<-list()
-            
+
             lf=length(diff.par)
             vcov=matrix(0,npar,npar)
             if(path){
@@ -824,16 +823,16 @@ setMethod("adaBayes",
               }else if(lf==1){
                 vcov[1:lf,1:lf]=var(X.diff)
               }
-              
+
               if((npar-lf)>1){
                 vcov[(lf+1):npar,(lf+1):npar]=cov(X.drift)
               }else if((npar-lf)==1){
                 vcov[(lf+1):npar,(lf+1):npar]=var(X.drift)
               }
             }
-            
-            
-            
+
+
+
             accept_rate<-list()
             if(path){
               for(i in 1:npar){
@@ -847,9 +846,9 @@ setMethod("adaBayes",
               mcmc=list("NULL")
               accept_rate=list("NULL")
             }
-            
+
             fulcoef = unlist(mycoef);
-   
+
            new("adabayes",mcmc=mcmc, accept_rate=accept_rate,coef=fulcoef,call=call,vcov=vcov,fullcoef=fulcoef)
           }
 )
