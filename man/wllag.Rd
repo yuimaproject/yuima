@@ -86,7 +86,7 @@ Hayashi, T. and Koike, Y. (2018a).
   
 Hayashi, T. and Koike, Y. (2018b). 
 Multi-scale analysis of lead-lag relationships in high-frequency financial markets. 
-\href{https://arxiv.org/abs/1708.03992}{arXiv:1708.03992}.
+\doi{10.48550/arXiv.1708.03992}.
 
 Hoffmann, M., Rosenbaum, M. and Yoshida, N. (2013)
   Estimation of the lead-lag parameter from non-synchronous data, 

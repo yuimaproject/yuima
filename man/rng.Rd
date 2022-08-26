@@ -136,7 +136,7 @@ H??rmann, W., & Leydold, J. (2014). Generating generalized inverse Gaussian rand
 \doi{10.1111/1467-9469.00045}
 
 Jorgensen, B. (2012). Statistical properties of the generalized inverse Gaussian distribution (Vol. 9). Springer Science & Business Media.
-\href{https://link.springer.com/la/book/9780387906652}{https://link.springer.com/la/book/9780387906652}
+\href{https://link.springer.com/book/10.1007/978-1-4612-5698-4}{https://link.springer.com/book/10.1007/978-1-4612-5698-4}
 
 Michael, J. R., Schucany, W. R., & Haas, R. W. (1976). Generating random variates using transformations with multiple roots. The American Statistician, 30(2), 88-90.
 \doi{10.1080/00031305.1976.10479147}

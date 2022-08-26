@@ -51,7 +51,7 @@ data <- simCIR(alpha=3,beta=1,gamma=1, n=5000, h=0.05, equi.dist=TRUE)
 results <- fitCIR(data)
 }
 
-\keyword{CIR diffusion, high-frequency sampling}
+\keyword{data}
 
 
 

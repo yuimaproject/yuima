@@ -8,7 +8,8 @@ mmfrac <- function(yuima,...){
 		yuima.stop("yuima object is missing.")
 	}
     
-    if(class(yuima)!="yuima"){
+    #if(class(yuima)!="yuima"){
+    if(!inherits(yuima,"yuima")){
         yuima.stop("an object of class yuima is needed.")
     }
     

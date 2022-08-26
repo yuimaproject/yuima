@@ -49,6 +49,7 @@ Contacts: Yuma Uehara \email{y-uehara@ism.ac.jp}
 %\seealso{
 %}
 \examples{
+\dontrun{
 set.seed(123)
 mod <- setModel(drift="10-3*x",
                 diffusion="theta*(2+x^2)/(1+x^2)",
@@ -65,4 +66,5 @@ yuima <- simulate(yuima, xinit=1,true.parameter=list(theta=sqrt(2)), sampling = 
 
 JBtest(yuima,start=list(theta=0.5),upper=c(theta=100)
 ,lower=c(theta=0),alpha=0.01)
+}
 }
