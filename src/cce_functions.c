@@ -516,7 +516,8 @@ void hyavar(double *xtime, double *ytime, int *xlength, int *ylength,
     int I, mu0, w0, i, L, m;
     double dSigma11, dSigma12, dSigma22;
     int mu[*N], w[*N], q[*N], r[*N];
-    double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N], dS2[*N], dxdy[*N];
+    double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N];
+//    double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N], dS2[*N], dxdy[*N];
     
     Sigma11[0] = 0; Sigma12[0] = 0; Sigma22[0] = 0;
     
@@ -620,11 +621,11 @@ void hyavar(double *xtime, double *ytime, int *xlength, int *ylength,
             H12[i] = pow(xtime[q[i]] - rtimes[i], 2);
         }
         
-        dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
+        //dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
         Sigma12[i] += (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
         H3[i] = (xtime[mu[i]] - xtime[q[i] - 1]) * (ytime[w[i]] - ytime[r[i] - 1]);
         rtimes[i + 1] = fmin(xtime[mu[i]], ytime[w[i]]);
-        dS2[i] = pow(rtimes[i + 1] - rtimes[i], 2);
+        //dS2[i] = pow(rtimes[i + 1] - rtimes[i], 2);
         
         Sigma11[i + 1] = Sigma11[i];
         Sigma22[i + 1] = Sigma22[i];
@@ -634,7 +635,7 @@ void hyavar(double *xtime, double *ytime, int *xlength, int *ylength,
     
     mu[i] = q[i];
     w[i] = r[i];
-    dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
+    //dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
     
     L = 0;
     
@@ -666,7 +667,8 @@ void hycrossavar(double *grid, double *xtime, double *ytime, int *gridL, int *xl
     int I, mu0, w0, i, L, m, j, k;
     double dSigma11, dSigma12, dSigma22, avar1, avar2, avar3, avar4;
     int mu[*N], w[*N], q[*N], r[*N];
-    double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N], dS2[*N], dxdy[*N], tmptime[*ylength];
+    double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N], tmptime[*ylength];
+//    double rtimes[*N], Sigma11[*N], Sigma12[*N], Sigma22[*N], H1[*N], H2[*N], H12[*N], H3[*N], dS2[*N], dxdy[*N], tmptime[*ylength];
     
     for(i = 0; i < *xlength; i++){
       xtime[i] = round(xtime[i]);
@@ -780,11 +782,11 @@ void hycrossavar(double *grid, double *xtime, double *ytime, int *gridL, int *xl
                 H12[i] = pow(xtime[q[i]] - rtimes[i], 2);
             }
             
-            dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
+            //dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
             Sigma12[i] += (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
             H3[i] = (xtime[mu[i]] - xtime[q[i] - 1]) * (tmptime[w[i]] - tmptime[r[i] - 1]);
             rtimes[i + 1] = fmin(xtime[mu[i]], tmptime[w[i]]);
-            dS2[i] = pow(rtimes[i + 1] - rtimes[i], 2);
+            //dS2[i] = pow(rtimes[i + 1] - rtimes[i], 2);
             
             Sigma11[i + 1] = Sigma11[i];
             Sigma22[i + 1] = Sigma22[i];
@@ -794,7 +796,7 @@ void hycrossavar(double *grid, double *xtime, double *ytime, int *gridL, int *xl
         
         mu[i] = q[i];
         w[i] = r[i];
-        dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
+        //dxdy[i] = (x[mu[i]] - x[q[i] - 1]) * (y[w[i]] - y[r[i] - 1]);
         
         L = 0;
         avar1 = 0; avar2 = 0; avar3 = 0; avar4 = 0;

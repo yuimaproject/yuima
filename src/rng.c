@@ -20,7 +20,8 @@ void rGIG(int *x, double *lambda, double *chi, double *psi, double *rn)
     double beta = sqrt((*chi)*(*psi));
     int i = 0;
     /*Rejection method for non T-1/2-concave part*/
-    if(0.0<=*lambda<1.0 && 0.0<beta<=2.0/3.0*sqrt(1.0-*lambda)){
+  // if(0.0<=*lambda<1.0 && 0.0<beta<=2.0/3.0*sqrt(1.0-*lambda)){  //warning: comparisons like ‘X<=Y<=Z’ do not have their mathematical meaning [-Wparentheses]
+    if((*lambda>=0.0) && (*lambda<1.0) && (beta> 0.0) && (beta<=2.0/3.0*sqrt(1.0-*lambda)) ){
         double m = beta/((1.0-*lambda)+sqrt(pow(1.0-*lambda,2.0)+pow(beta,2.0)));
         double x0 = beta/(1.0-*lambda);
         double xstar = fmax(x0,2.0/beta);
@@ -74,7 +75,8 @@ void rGIG(int *x, double *lambda, double *chi, double *psi, double *rn)
             rn[i] = X*sqrt(*chi/(*psi));
             i++;
         } /*Ratio-of-Uniforms without mode shift*/
-    }else if(0.0<=*lambda<=1.0 && fmin(1.0/2.0,2.0/3.0*sqrt(1.0-*lambda))<=beta<=1.0){
+//    }else if(0.0<=*lambda<=1.0 && fmin(1.0/2.0,2.0/3.0*sqrt(1.0-*lambda))<=beta<=1.0){ //warning: comparisons like ‘X<=Y<=Z’ do not have their mathematical meaning [-Wparentheses]
+    } else if((*lambda>=0.0) && (*lambda<=1.0) && (beta>=fmin(1.0/2.0,2.0/3.0*sqrt(1.0-*lambda))) && (beta<=1.0)){
         double m = beta/((1.0-*lambda)+sqrt(pow(1.0-*lambda,2.0)+pow(beta,2.0)));
         double xplus = ((1.0+*lambda)+sqrt(pow(1.0+*lambda,2.0)+pow(beta,2.0)))/beta;
         double vplus = sqrt(qdens(m,lambda,beta));
