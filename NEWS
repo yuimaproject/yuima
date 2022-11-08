@@ -117,4 +117,5 @@ v. 1.15.15 2022/09/08
 * fixed -Wunused-but-set-variable in cce_functions.c
 * fixed "comparisons like 'X<=Y<=Z' do not have their 
   mathematical meaning [-Wparentheses]" in rng.c
-           
+
+2022/11/08: fixed man/rng.Rd
