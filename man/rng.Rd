@@ -41,18 +41,18 @@ rnts(x,alpha,a,b,beta,mu,Lambda)
   \item{x}{Number of R.Ns to be geneated.}
   \item{a}{parameter}
   \item{b}{parameter}
-  \item{delta}{parameter}
-  \item{gamma}{parameter}
-  \item{mu}{parameter}
-  \item{Lambda}{parameter}
-  \item{alpha}{parameter}
-  \item{lambda}{parameter}
-  \item{sigma}{parameter}
-  \item{beta}{parameter}
-  \item{delta.plus}{parameter}
-  \item{gamma.plus}{parameter}
-  \item{delta.minus}{parameter}
-  \item{gamma.minus}{parameter}
+  \item{delta}{parameter written as \eqn{\delta} below}
+  \item{gamma}{parameter written as \eqn{\gamma} below}
+  \item{mu}{parameter written as \eqn{\mu} below}
+  \item{Lambda}{parameter written as \eqn{\Lambda} below}
+  \item{alpha}{parameter written as \eqn{\alpha} below}
+  \item{lambda}{parameter written as \eqn{\lambda} below}
+  \item{sigma}{parameter written as \eqn{\sigma} below}
+  \item{beta}{parameter written as \eqn{\beta} below}
+  \item{delta.plus}{parameter written as \eqn{\delta_+} below}
+  \item{gamma.plus}{parameter written as \eqn{\gamma_+} below}
+  \item{delta.minus}{parameter written as \eqn{\delta_-} below}
+  \item{gamma.minus}{parameter written as \eqn{\gamma_-} below}
 
   % \item{IG (inverse Gaussian)}{delta and gamma are positive valued parameter.}
   % \item{NIG (normal inverse Gaussian)}{alpha and delta are nonnegative number, beta and mu are vector and Lambda is matrix.}
@@ -67,63 +67,63 @@ rnts(x,alpha,a,b,beta,mu,Lambda)
 \code{GIG} (generalized inverse Gaussian): 
 The density function of GIG distribution is expressed as:
 
-\eqn{f(x)= 1/2*(gamma/delta)^lambda*1/bK_lambda(gamma*delta)*x^(lambda-1)*exp(-1/2*(delta^2/x+gamma^2*x))}
+\eqn{f(x)= 1/2*(\gamma/\delta)^\lambda*1/bK_lambda(\gamma*\delta)*x^(\lambda-1)*exp(-1/2*(\delta^2/x+\gamma^2*x))}
 
-where \eqn{bK_lambda()} is the modified Bessel function of the third kind with order lambda.
-The parameters lambda, delta and gamma vary within the following regions:
+where \eqn{bK_\lambda()} is the modified Bessel function of the third kind with order lambda.
+The parameters \eqn{\lambda, \delta} and \eqn{\gamma} vary within the following regions:
 
-\eqn{delta>=0, gamma>0 if lambda>0},
+\eqn{\delta>=0, \gamma>0 if \lambda>0},
 
-\eqn{delta>0, gamma>0 if lambda=0},
+\eqn{\delta>0, \gamma>0 if \lambda=0},
 
-\eqn{delta>0, gamma>=0 if lambda<0}.
+\eqn{\delta>0, \gamma>=0 if \lambda<0}.
 
 The corresponding Levy measure is given in Eberlein, E., & Hammerstein, E. A. V. (2004) (it contains IG).
 
-\code{GH} (generalized hyperbolic): Generalized hyperbolic distribution is defined by the normal mean-variance mixture of generalized inverse Gaussian distribution. The parameters alpha, beta, delta, mu express heaviness of tails, degree of asymmetry, scale and location, respectively. Here the parameter Lambda is supposed to be symmetric and positive definite with \eqn{det(Lambda)=1} and the parameters vary within the following region:
+\code{GH} (generalized hyperbolic): Generalized hyperbolic distribution is defined by the normal mean-variance mixture of generalized inverse Gaussian distribution. The parameters \eqn{\alpha, \beta, \delta, \mu} express heaviness of tails, degree of asymmetry, scale and location, respectively. Here the parameter \eqn{\Lambda} is supposed to be symmetric and positive definite with \eqn{det(\Lambda)=1} and the parameters vary within the following region:
 
-\eqn{delta>=0, alpha>0, alpha^2>beta^T Lambda beta if lambda>0},
+\eqn{\delta>=0, \alpha>0, \alpha^2>\beta^T \Lambda \beta if \lambda>0},
 
-\eqn{delta>0, alpha>0, alpha^2>beta^T Lambda beta if lambda=0},
+\eqn{\delta>0, \alpha>0, \alpha^2>\beta^T \Lambda \beta if \lambda=0},
 
-\eqn{delta>0, alpha>=0, alpha^2>=beta^T Lambda beta if lambda<0}.
+\eqn{\delta>0, \alpha>=0, \alpha^2>=\beta^T \Lambda \beta if \lambda<0}.
 
 The corresponding Levy measure is given in Eberlein, E., & Hammerstein, E. A. V. (2004) (it contains NIG and vgamma).
 
 
-\code{IG} (inverse Gaussian (the element of GIG)): Delta and gamma are positive (the case of \eqn{gamma=0} corresponds to the positive half stable, provided by the "rstable").
+\code{IG} (inverse Gaussian (the element of GIG)): \eqn{\Delta} and \eqn{\gamma} are positive (the case of \eqn{\gamma=0} corresponds to the positive half stable, provided by the "rstable").
 
-\code{NIG} (normal inverse Gaussian (the element of GH)): Normal inverse Gaussian distribution is defined by the normal mean-variance mixuture of inverse Gaussian distribution. The parameters alpha, beta, delta and mu express the heaviness of tails, degree of asymmetry, scale and location, respectively. They satisfy the following conditions:
-Lambda is symmetric and positive definite with \eqn{det(Lambda)=1; delta>0; alpha>0 with alpha^2-beta^T Lambda beta >0}.
+\code{NIG} (normal inverse Gaussian (the element of GH)): Normal inverse Gaussian distribution is defined by the normal mean-variance mixuture of inverse Gaussian distribution. The parameters \eqn{\alpha, \beta, \delta and \mu} express the heaviness of tails, degree of asymmetry, scale and location, respectively. They satisfy the following conditions:
+\eqn{\Lambda} is symmetric and positive definite with \eqn{det(\Lambda)=1; \delta>0; \alpha>0 with \alpha^2-\beta^T \Lambda \beta >0}.
 
 \code{vgamma} (variance gamma (the element of GH)): Variance gamma distribution is defined by the normal mean-variance mixture of gamma distribution. The parameters satisfy the following conditions:
-Lambda is symmetric and positive definite with \eqn{det(Lambda)=1; lambda>0; alpha>0 with alpha^2-beta^T Lambda beta >0}. Especially in the case of \eqn{beta=0} it is variance gamma distribution.
+Lambda is symmetric and positive definite with \eqn{det(\Lambda)=1; \lambda>0; \alpha>0 with \alpha^2-\beta^T \Lambda \beta >0}. Especially in the case of \eqn{\beta=0} it is variance gamma distribution.
 
-\code{bgamma} (bilateral gamma): Bilateral gamma distribution is defined by the difference of independent gamma distributions Gamma(delta.plus,gamma.plus) and Gamma(delta.minus,gamma.minus). Its Levy density \eqn{f(z)} is given by: 
-\eqn{f(z)=delta.plus/z*exp(-gamma.plus*z)*ind(z>0)+delta.minus/|z|*exp(-gamma.minus*|z|)*ind(z<0)}, where the function \eqn{ind()} denotes an indicator function.
+\code{bgamma} (bilateral gamma): Bilateral gamma distribution is defined by the difference of independent gamma distributions \eqn{Gamma(\delta_+,\gamma_+) and Gamma(\delta_-,\gamma_-)}. Its Levy density \eqn{f(z)} is given by: 
+\eqn{f(z)=\delta_+/z*exp(-\gamma_+*z)*ind(z>0)+\delta_-/|z|*exp(-\gamma_-*|z|)*ind(z<0)}, where the function \eqn{ind()} denotes an indicator function.
 
-\code{stable} (stable): Parameters alpha, beta, sigma and gamma express stability, degree of skewness, scale and location, respectively. They satisfy the following condition: \eqn{0<alpha<=2; -1<=beta<=1; scale>0; gamma is a real number}.
+\code{stable} (stable): Parameters \eqn{\alpha, \beta, \sigma and \gamma} express stability, degree of skewness, scale and location, respectively. They satisfy the following condition: \eqn{0<\alpha<=2; -1<=\beta<=1; \sigma>0; \gamma is a real number}.
 
-\code{pts} (positive tempered stable): Positive tempered stable distribution is defined by the tilting of positive stable distribution. The parameters alpha, a and b express stability, scale and degree of tilting, respectively. They satisfy the following condition: \eqn{0<alpha<1; a>0; b>0}. Its Levy density \eqn{f(z)} is given by: \eqn{f(z)=az^(-1-alpha)exp(-bz)}.
+\code{pts} (positive tempered stable): Positive tempered stable distribution is defined by the tilting of positive stable distribution. The parameters \eqn{\alpha, a and b} express stability, scale and degree of tilting, respectively. They satisfy the following condition: \eqn{0<\alpha<1; a>0; b>0}. Its Levy density \eqn{f(z)} is given by: \eqn{f(z)=az^(-1-\alpha)exp(-bz)}.
 
-\code{nts} (normal tempered stable): Normal tempered stable distribution is defined by the normal mean-variance mixture of positive tempered stable distribution. The parameters alpha, a, b, beta, mu and Lambda express stability, scale, degree of tilting, degree of asymemtry, location and degree of mixture, respectively. They satisfy the following condition: Lambda is symmetric and positive definite with \eqn{det(Lambda)=1; 0<alpha<1; a>0; b>0}. 
+\code{nts} (normal tempered stable): Normal tempered stable distribution is defined by the normal mean-variance mixture of positive tempered stable distribution. The parameters \eqn{\alpha, a, b, \beta, \mu and \Lambda} express stability, scale, degree of tilting, degree of asymmemtry, location and degree of mixture, respectively. They satisfy the following condition: Lambda is symmetric and positive definite with \eqn{det(\Lambda)=1; 0<\alpha<1; a>0; b>0}. 
 In one-dimensional case, its Levy density \eqn{f(z)} is given by: 
-\eqn{f(z)=2a/(2pi)^(1/2)*exp(beta*z)*(z^2/(2b+beta^2))^(-alpha/2-1/4)*bK_(alpha+1/2)(z^2(2b+beta^2)^(1/2))}.
+\eqn{f(z)=2a/(2\pi)^(1/2)*\exp(\beta*z)*(z^2/(2b+\beta^2))^(-\alpha/2-1/4)*bK_(\alpha+1/2)(z^2(2b+\beta^2)^(1/2))}.
 
 }
 
 \value{
 \item{rXXX}{Collection of of random numbers or vectors}
-\item{dXXX}{Density dunction}
+\item{dXXX}{Density function}
 }
 
 \author{The YUIMA Project Team
 
-Contacts: Hiroki Masuda \email{hiroki@math.kyushu-u.ac.jp} and Yuma Uehara \email{y-uehara@ism.ac.jp}
+Contacts: Hiroki Masuda \email{hmasuda@ms.u-tokyo.ac.jp} and Yuma Uehara \email{y-uehara@kansai-u.ac.jp}
 }
 \note{
   Some density-plot functions are still missing: as for the non-Gaussian stable densities, one can use, e.g., stabledist package.
-  The rejection-acceptance method is used for generating pts and nts. It should be noted that its acceptance rate decreases at exponential order as a and b become larger: specifically, the rate is given by \eqn{exp( a*gamma(-alpha)*b^(alpha) )}
+  The rejection-acceptance method is used for generating pts and nts. It should be noted that its acceptance rate decreases at exponential order as \eqn{a and b} become larger: specifically, the rate is given by \eqn{exp(a*\Gamma(-\alpha)*b^(\alpha))}
 }
 
 \references{
@@ -132,7 +132,7 @@ Contacts: Hiroki Masuda \email{hiroki@math.kyushu-u.ac.jp} and Yuma Uehara \emai
 
 Chhikara, R. (1988). The Inverse Gaussian Distribution: Theory: Methodology, and Applications (Vol. 95). CRC Press.
 
-H??rmann, W., & Leydold, J. (2014). Generating generalized inverse Gaussian random variates. Statistics and Computing, 24(4), 547-557.
+Hormann, W., & Leydold, J. (2014). Generating generalized inverse Gaussian random variates. Statistics and Computing, 24(4), 547-557.
 \doi{10.1111/1467-9469.00045}
 
 Jorgensen, B. (2012). Statistical properties of the generalized inverse Gaussian distribution (Vol. 9). Springer Science & Business Media.
@@ -149,7 +149,7 @@ Barndorff-Nielsen, O. (1977). Exponentially decreasing distributions for the log
 Barndorff-Nielsen, O. E. (1997). Processes of normal inverse Gaussian type. Finance and stochastics, 2(1), 41-68.
 \doi{10.1007/s007800050032}
 
-Eberlein, E. (2001). Application of generalized hyperbolic \enc{L??vy}{Levy} motions to finance. In \enc{L??vy}{Levy} processes (pp. 319-336). \enc{Birkh??user}{Birkhauser} Boston.
+Eberlein, E. (2001). Application of generalized hyperbolic \enc{Levy}{Levy} motions to finance. In \enc{Levy}{Levy} processes (pp. 319-336). \enc{Birkhauser}{Birkhauser} Boston.
 \doi{10.1007/978-1-4612-0197-7_14}
 
 Eberlein, E., & Hammerstein, E. A. V. (2004). Generalized hyperbolic and inverse Gaussian distributions: limiting cases and approximation of processes. In Seminar on stochastic analysis, random fields and applications IV (pp. 221-264). Birkh??user Basel.
@@ -160,10 +160,10 @@ Madan, D. B., Carr, P. P., & Chang, E. C. (1998). The variance gamma process and
 
 ## rbgamma, dbgamma
 
-\enc{K??chler}{Kuchler}, U., & Tappe, S. (2008). Bilateral Gamma distributions and processes in financial mathematics. Stochastic Processes and their Applications, 118(2), 261-283.
+\enc{Kuchler}{Kuchler}, U., & Tappe, S. (2008). Bilateral Gamma distributions and processes in financial mathematics. Stochastic Processes and their Applications, 118(2), 261-283.
 \doi{10.1016/j.spa.2007.04.006}
 
-\enc{K??chler}{Kuchler}, U., & Tappe, S. (2008). On the shapes of bilateral Gamma densities. Statistics & Probability Letters, 78(15), 2478-2484.
+\enc{Kuchler}{Kuchler}, U., & Tappe, S. (2008). On the shapes of bilateral Gamma densities. Statistics & Probability Letters, 78(15), 2478-2484.
 \doi{10.1016/j.spa.2007.04.006}
 
 ## rstable
@@ -171,10 +171,10 @@ Madan, D. B., Carr, P. P., & Chang, E. C. (1998). The variance gamma process and
 Chambers, John M., Colin L. Mallows, and B. W. Stuck.  (1976) A method for simulating stable random variables, Journal of the american statistical association, 71(354), 340-344.
 \doi{10.1080/01621459.1976.10480344}
 
-Weron, \enc{Rafa??}{Rafal}. (1996) On the Chambers-Mallows-Stuck method for simulating skewed stable random variables, Statistics & probability letters, 28.2, 165-171.
+Weron, \enc{Rafal}{Rafal}. (1996) On the Chambers-Mallows-Stuck method for simulating skewed stable random variables, Statistics & probability letters, 28.2, 165-171.
 \doi{10.1016/0167-7152(95)00113-1}
 
-Weron, \enc{Rafa??}{Rafal}. (2010) Correction to:" On the Chambers-Mallows-Stuck Method for Simulating Skewed Stable Random Variables", No. 20761, University Library of Munich, Germany.
+Weron, \enc{Rafal}{Rafal}. (2010) Correction to:" On the Chambers-Mallows-Stuck Method for Simulating Skewed Stable Random Variables", No. 20761, University Library of Munich, Germany.
 \href{https://ideas.repec.org/p/pra/mprapa/20761.html}{https://ideas.repec.org/p/pra/mprapa/20761.html}
 
 ## rpts
