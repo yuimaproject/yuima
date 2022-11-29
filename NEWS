@@ -119,3 +119,4 @@ v. 1.15.15 2022/09/08
   mathematical meaning [-Wparentheses]" in rng.c
 
 2022/11/08: fixed man/rng.Rd
+2022/11/29: fixed IC.R and IC.Rd
