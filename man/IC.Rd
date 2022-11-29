@@ -11,7 +11,7 @@ Information criteria BIC, Quasi-BIC (QBIC) and CIC for the stochastic differenti
 }
 
 \usage{
-IC(drif = NULL, diff = NULL, data = NULL, Terminal = 1, 
+IC(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Terminal = 1, 
    add.settings = list(), start, lower, upper, ergodic = TRUE,
    stepwise = FALSE, weight = FALSE, rcpp = FALSE, ...)
 }
@@ -22,6 +22,9 @@ IC(drif = NULL, diff = NULL, data = NULL, Terminal = 1,
   }
   \item{diff}{
   a character vector that each element presents the candidate diffusion coefficient.
+  }
+  \item{jump.coeff}{
+  a character vector that each element presents the candidate scale coefficient.
   }
   \item{data}{
   the data to be used.
@@ -70,8 +73,8 @@ The calculation and model selection are performed by joint procedure or stepwise
   \item{QBIC}{
   values of QBIC for all candidates.
   }
-  \item{CIC}{
-  values of CIC for all candidates.
+  \item{AIC}{
+  values of AIC-type information criterion for all candidates.
   }
   \item{model}{
   information of all candidate models.
@@ -112,7 +115,7 @@ Burnham, K. P. and Anderson, D. R. (2002). Model Selection and Multimodel Infere
 \author{
 The YUIMA Project Team
 
-Contacts: Shoichi Eguchi \email{eguchi@sigmath.es.osaka-u.ac.jp}
+Contacts: Shoichi Eguchi \email{shoichi.eguchi@oit.ac.jp}
 }
 
 \note{
