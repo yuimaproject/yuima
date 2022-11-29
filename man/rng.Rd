@@ -67,46 +67,46 @@ rnts(x,alpha,a,b,beta,mu,Lambda)
 \code{GIG} (generalized inverse Gaussian): 
 The density function of GIG distribution is expressed as:
 
-\eqn{f(x)= 1/2*(\gamma/\delta)^\lambda*1/bK_lambda(\gamma*\delta)*x^(\lambda-1)*exp(-1/2*(\delta^2/x+\gamma^2*x))}
+\eqn{f(x)= 1/2*(\gamma/\delta)^\lambda*1/bK_\lambda(\gamma*\delta)*x^(\lambda-1)*exp(-1/2*(\delta^2/x+\gamma^2*x))}
 
 where \eqn{bK_\lambda()} is the modified Bessel function of the third kind with order lambda.
 The parameters \eqn{\lambda, \delta} and \eqn{\gamma} vary within the following regions:
 
-\eqn{\delta>=0, \gamma>0 if \lambda>0},
+\eqn{\delta>=0, \gamma>0} if \eqn{\lambda>0},
 
-\eqn{\delta>0, \gamma>0 if \lambda=0},
+\eqn{\delta>0, \gamma>0} if \eqn{\lambda=0},
 
-\eqn{\delta>0, \gamma>=0 if \lambda<0}.
+\eqn{\delta>0, \gamma>=0} if \eqn{\lambda<0}.
 
 The corresponding Levy measure is given in Eberlein, E., & Hammerstein, E. A. V. (2004) (it contains IG).
 
 \code{GH} (generalized hyperbolic): Generalized hyperbolic distribution is defined by the normal mean-variance mixture of generalized inverse Gaussian distribution. The parameters \eqn{\alpha, \beta, \delta, \mu} express heaviness of tails, degree of asymmetry, scale and location, respectively. Here the parameter \eqn{\Lambda} is supposed to be symmetric and positive definite with \eqn{det(\Lambda)=1} and the parameters vary within the following region:
 
-\eqn{\delta>=0, \alpha>0, \alpha^2>\beta^T \Lambda \beta if \lambda>0},
+\eqn{\delta>=0, \alpha>0, \alpha^2>\beta^T \Lambda \beta} if \eqn{\lambda>0},
 
-\eqn{\delta>0, \alpha>0, \alpha^2>\beta^T \Lambda \beta if \lambda=0},
+\eqn{\delta>0, \alpha>0, \alpha^2>\beta^T \Lambda \beta} if \eqn{\lambda=0},
 
-\eqn{\delta>0, \alpha>=0, \alpha^2>=\beta^T \Lambda \beta if \lambda<0}.
+\eqn{\delta>0, \alpha>=0, \alpha^2>=\beta^T \Lambda \beta} if \eqn{\lambda<0}.
 
 The corresponding Levy measure is given in Eberlein, E., & Hammerstein, E. A. V. (2004) (it contains NIG and vgamma).
 
 
 \code{IG} (inverse Gaussian (the element of GIG)): \eqn{\Delta} and \eqn{\gamma} are positive (the case of \eqn{\gamma=0} corresponds to the positive half stable, provided by the "rstable").
 
-\code{NIG} (normal inverse Gaussian (the element of GH)): Normal inverse Gaussian distribution is defined by the normal mean-variance mixuture of inverse Gaussian distribution. The parameters \eqn{\alpha, \beta, \delta and \mu} express the heaviness of tails, degree of asymmetry, scale and location, respectively. They satisfy the following conditions:
-\eqn{\Lambda} is symmetric and positive definite with \eqn{det(\Lambda)=1; \delta>0; \alpha>0 with \alpha^2-\beta^T \Lambda \beta >0}.
+\code{NIG} (normal inverse Gaussian (the element of GH)): Normal inverse Gaussian distribution is defined by the normal mean-variance mixuture of inverse Gaussian distribution. The parameters \eqn{\alpha, \beta, \delta} and \eqn{\mu} express the heaviness of tails, degree of asymmetry, scale and location, respectively. They satisfy the following conditions:
+\eqn{\Lambda} is symmetric and positive definite with \eqn{det(\Lambda)=1; \delta>0; \alpha>0} with \eqn{\alpha^2-\beta^T \Lambda \beta >0}.
 
 \code{vgamma} (variance gamma (the element of GH)): Variance gamma distribution is defined by the normal mean-variance mixture of gamma distribution. The parameters satisfy the following conditions:
-Lambda is symmetric and positive definite with \eqn{det(\Lambda)=1; \lambda>0; \alpha>0 with \alpha^2-\beta^T \Lambda \beta >0}. Especially in the case of \eqn{\beta=0} it is variance gamma distribution.
+Lambda is symmetric and positive definite with \eqn{det(\Lambda)=1; \lambda>0; \alpha>0} with \eqn{\alpha^2-\beta^T \Lambda \beta >0}. Especially in the case of \eqn{\beta=0} it is variance gamma distribution.
 
 \code{bgamma} (bilateral gamma): Bilateral gamma distribution is defined by the difference of independent gamma distributions \eqn{Gamma(\delta_+,\gamma_+) and Gamma(\delta_-,\gamma_-)}. Its Levy density \eqn{f(z)} is given by: 
 \eqn{f(z)=\delta_+/z*exp(-\gamma_+*z)*ind(z>0)+\delta_-/|z|*exp(-\gamma_-*|z|)*ind(z<0)}, where the function \eqn{ind()} denotes an indicator function.
 
-\code{stable} (stable): Parameters \eqn{\alpha, \beta, \sigma and \gamma} express stability, degree of skewness, scale and location, respectively. They satisfy the following condition: \eqn{0<\alpha<=2; -1<=\beta<=1; \sigma>0; \gamma is a real number}.
+\code{stable} (stable): Parameters \eqn{\alpha, \beta, \sigma} and \eqn{\gamma} express stability, degree of skewness, scale and location, respectively. They satisfy the following condition: \eqn{0<\alpha<=2; -1<=\beta<=1; \sigma>0; \gamma} is a real number.
 
-\code{pts} (positive tempered stable): Positive tempered stable distribution is defined by the tilting of positive stable distribution. The parameters \eqn{\alpha, a and b} express stability, scale and degree of tilting, respectively. They satisfy the following condition: \eqn{0<\alpha<1; a>0; b>0}. Its Levy density \eqn{f(z)} is given by: \eqn{f(z)=az^(-1-\alpha)exp(-bz)}.
+\code{pts} (positive tempered stable): Positive tempered stable distribution is defined by the tilting of positive stable distribution. The parameters \eqn{\alpha, a} and \eqn{b} express stability, scale and degree of tilting, respectively. They satisfy the following condition: \eqn{0<\alpha<1; a>0; b>0}. Its Levy density \eqn{f(z)} is given by: \eqn{f(z)=az^(-1-\alpha)exp(-bz)}.
 
-\code{nts} (normal tempered stable): Normal tempered stable distribution is defined by the normal mean-variance mixture of positive tempered stable distribution. The parameters \eqn{\alpha, a, b, \beta, \mu and \Lambda} express stability, scale, degree of tilting, degree of asymmemtry, location and degree of mixture, respectively. They satisfy the following condition: Lambda is symmetric and positive definite with \eqn{det(\Lambda)=1; 0<\alpha<1; a>0; b>0}. 
+\code{nts} (normal tempered stable): Normal tempered stable distribution is defined by the normal mean-variance mixture of positive tempered stable distribution. The parameters \eqn{\alpha, a, b, \beta, \mu} and \eqn{\Lambda} express stability, scale, degree of tilting, degree of asymmemtry, location and degree of mixture, respectively. They satisfy the following condition: Lambda is symmetric and positive definite with \eqn{det(\Lambda)=1; 0<\alpha<1; a>0; b>0}. 
 In one-dimensional case, its Levy density \eqn{f(z)} is given by: 
 \eqn{f(z)=2a/(2\pi)^(1/2)*\exp(\beta*z)*(z^2/(2b+\beta^2))^(-\alpha/2-1/4)*bK_(\alpha+1/2)(z^2(2b+\beta^2)^(1/2))}.
 
@@ -123,7 +123,7 @@ Contacts: Hiroki Masuda \email{hmasuda@ms.u-tokyo.ac.jp} and Yuma Uehara \email{
 }
 \note{
   Some density-plot functions are still missing: as for the non-Gaussian stable densities, one can use, e.g., stabledist package.
-  The rejection-acceptance method is used for generating pts and nts. It should be noted that its acceptance rate decreases at exponential order as \eqn{a and b} become larger: specifically, the rate is given by \eqn{exp(a*\Gamma(-\alpha)*b^(\alpha))}
+  The rejection-acceptance method is used for generating pts and nts. It should be noted that its acceptance rate decreases at exponential order as \eqn{a} and \eqn{b} become larger: specifically, the rate is given by \eqn{exp(a*\Gamma(-\alpha)*b^(\alpha))}
 }
 
 \references{
