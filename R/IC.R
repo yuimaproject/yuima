@@ -370,10 +370,11 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
           Diff.esti.bic.sub <- gsub(swbeta[[BIC.opt1]][(j+1)], Esti1.chr.bic[(j+1)], Diff.esti.bic.sub)
         }
       }
-      if(class(Diff.esti.bic) == "character"){
-        Diff.esti.bic <- Diff.esti.bic.sub
-      }else{
-        Diff.esti.bic[i,] <- Diff.esti.bic.sub
+    #  if(class(Diff.esti.bic) == "character"){
+      if(inherits(Diff.esti.bic, "character")){
+          Diff.esti.bic <- Diff.esti.bic.sub
+      } else {
+          Diff.esti.bic[i,] <- Diff.esti.bic.sub
       }
     }
     
@@ -390,9 +391,10 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
           Diff.esti.qbic.sub <- gsub(swbeta[[QBIC.opt1]][(j+1)], Esti1.chr.qbic[(j+1)], Diff.esti.qbic.sub)
         }
       }
-      if(class(Diff.esti.qbic) == "character"){
+      #if(class(Diff.esti.qbic) == "character"){
+      if(inherits(Diff.esti.qbic,"character")){
         Diff.esti.qbic <- Diff.esti.qbic.sub
-      }else{
+      } else {
         Diff.esti.qbic[i,] <- Diff.esti.qbic.sub
       }
     }
@@ -410,9 +412,10 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
           Diff.esti.aic.sub <- gsub(swbeta[[AIC.opt1]][(j+1)], Esti1.chr.aic[(j+1)], Diff.esti.aic.sub)
         }
       }
-      if(class(Diff.esti.aic) == "character"){
+      #if(class(Diff.esti.aic) == "character"){
+      if(inherits(Diff.esti.aic, "character")){
         Diff.esti.aic <- Diff.esti.aic.sub
-      }else{
+      } else {
         Diff.esti.aic[i,] <- Diff.esti.aic.sub
       }
     }
@@ -529,9 +532,10 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
               Diff.esti.sub <- gsub(swbeta[[i]][(k+1)], Esti1.chr[(k+1)], Diff.esti.sub)
             }
           }
-          if(class(Diff.esti) == "character"){
+          #if(class(Diff.esti) == "character"){
+          if(inherits(Diff.esti, "character")){
             Diff.esti <- Diff.esti.sub
-          }else{
+          } else {
             Diff.esti[j,] <- Diff.esti.sub
           }
         }
