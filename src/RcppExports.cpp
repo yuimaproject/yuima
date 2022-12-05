@@ -151,17 +151,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_to_str
-std::string cpp_to_str(int const& i);
-RcppExport SEXP _yuima_cpp_to_str(SEXP iSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int const& >::type i(iSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_to_str(i));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_label
 std::string cpp_label(std::vector<int> I);
 RcppExport SEXP _yuima_cpp_label(SEXP ISEXP) {

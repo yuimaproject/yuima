@@ -35,7 +35,6 @@ extern SEXP _yuima_cpp_label(SEXP);
 extern SEXP _yuima_cpp_outer(SEXP, SEXP);
 extern SEXP _yuima_cpp_paste(SEXP, SEXP, SEXP);
 extern SEXP _yuima_cpp_split(SEXP, SEXP);
-extern SEXP _yuima_cpp_to_str(SEXP);
 extern SEXP _yuima_detcpp(SEXP);
 extern SEXP _yuima_evalKernelCpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_evalKernelCpp2(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -84,7 +83,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_yuima_cpp_outer",                  (DL_FUNC) &_yuima_cpp_outer,                   2},
     {"_yuima_cpp_paste",                  (DL_FUNC) &_yuima_cpp_paste,                   3},
     {"_yuima_cpp_split",                  (DL_FUNC) &_yuima_cpp_split,                   2},
-    {"_yuima_cpp_to_str",                 (DL_FUNC) &_yuima_cpp_to_str,                  1},
     {"_yuima_detcpp",                     (DL_FUNC) &_yuima_detcpp,                      1},
     {"_yuima_evalKernelCpp",              (DL_FUNC) &_yuima_evalKernelCpp,              10},
     {"_yuima_evalKernelCpp2",             (DL_FUNC) &_yuima_evalKernelCpp2,             13},
