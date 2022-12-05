@@ -143,18 +143,20 @@ std::vector<std::string> cpp_ito_outer(std::vector<std::string> const &x, std::v
 // [[Rcpp::export]]
 std::string cpp_to_str(int const &i){
   char tmp[10];
-  sprintf(tmp, "%d", i);
+//  sprintf(tmp, "%d", i);
   return(std::string(tmp));
 }
 
 // [[Rcpp::export]]
 std::string cpp_label(std::vector<int> I){
   
-  std::string s = cpp_to_str(I[0]);
+//  std::string s = cpp_to_str(I[0]);
+  std::string s = std::to_string(I[0]);
   
   int n = I.size();
   if(n>1) for(int i=1; i<n; i++) {
-    s += "," + cpp_to_str(I[i]);
+//    s += "," + cpp_to_str(I[i]);
+    s += "," + std::to_string(I[i]);
   }
   
   return(s);
@@ -363,9 +365,12 @@ List cpp_ito(List const &K_set, List const &dZ, List const &Z_K, int d, int r){
           
           // simplify rhs  
           str = "";
+          //std::to_string
           for ( it2 = it1->second.begin(); it2 != it1->second.end(); it2++ ) {
-            if(str=="") str = cpp_to_str(it2->second) + " * " + it2->first;
-            else str += "+" + cpp_to_str(it2->second) + " * " + it2->first;
+            if(str=="") str = std::to_string(it2->second) + " * " + it2->first;
+            else str += "+" + std::to_string(it2->second) + " * " + it2->first;
+//            if(str=="") str = cpp_to_str(it2->second) + " * " + it2->first;
+//            else str += "+" + cpp_to_str(it2->second) + " * " + it2->first;
           }
           if(rhs[i]=="") rhs[i] = "(" + str + ") * " + it1->first;
           else rhs[i] += " + (" + str + ") * " + it1->first;
