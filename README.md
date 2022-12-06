@@ -1,3 +1,5 @@
+[![](https://cranlogs.r-pkg.org/badges/grand-total/yuima?color=blue)](https://cran.r-project.org/package=yuima) [![](https://img.shields.io/badge/doi-10.18637%2Fjss.v057.i04-orange)](https://doi.org/10.18637/jss.v057.i04)
+
 # The YUIMA Project
 
 The YUIMA Software performs various central statistical analyses such as quasi maximum likelihood estimation, adaptive Bayes estimation, structural change point analysis, hypotheses testing, asynchronous covariance estimation, lead-lag estimation, LASSO model selection, and so on. It also supports stochastic numerical analysis by fast computation of the expected value of functionals of stochastic processes through automatic asymptotic expansion by means of the Malliavin calculus. All models can be multidimensional, multiparametric or non parametric.
