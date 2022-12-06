@@ -16,13 +16,7 @@ When you add Rcpp or other C code, please always do, within R-devel Console:
 tools::package_native_routine_registration_skeleton('yuima',,,FALSE)
 ```
 
-take the output and update the file:
-
-```bash
-yuima/src/yuima_init.c
-```
-
-with the above output.
+take the output and update the file [`src/yuima_init.c`](https://github.com/yuimaproject/yuima/blob/main/src/yuima_init.c) with the above output.
 
 ### Help
 

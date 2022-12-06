@@ -13,8 +13,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      - uses: r-lib/actions/setup-r@master
-      - uses: r-lib/actions/setup-pandoc@master
+      - uses: r-lib/actions/setup-r@main
+      - uses: r-lib/actions/setup-pandoc@main
       - name: Query dependencies
         run: |
           install.packages('remotes')
