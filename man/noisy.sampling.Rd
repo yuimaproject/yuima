@@ -116,7 +116,7 @@ psample<- poisson.random.sampling(yuima, rate = c(1/3,1/6), n = 2340)
 plot(psample)
 
 # Set a matrix as the variance of noise
-Omega <- 0.01*diffusion %*% t(diffusion)
+Omega <- 0.01*diffusion \%*\% t(diffusion)
 
 ## Contaminate the observation data by centered normal distributed noise
 ## with the variance matrix equal to 1\% of the diffusion
@@ -147,7 +147,7 @@ intensity <- 5
 j.num <- rpois(1,intensity) # Set a number of jumps
 j.idx <- unique(ceiling(2340*runif(j.num))) # Set time indices of jumps
 jump <- matrix(0,2,2341)
-jump[,j.idx+1] <- sqrt(0.25/intensity)*diffusion %*% matrix(rnorm(length(j.idx)),2,length(j.idx))
+jump[,j.idx+1] <- sqrt(0.25/intensity)*diffusion \%*\% matrix(rnorm(length(j.idx)),2,length(j.idx))
 grid <- seq(0,1,by=1/2340)
 CPprocess <- list(zoo(cumsum(jump[1,]),grid),zoo(cumsum(jump[2,]),grid))
 
