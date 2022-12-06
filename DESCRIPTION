@@ -1,7 +1,7 @@
 Package: yuima
 Type: Package
 Title: The YUIMA Project Package for SDEs
-Version: 1.15.18
+Version: 1.15.19
 Depends: R(>= 2.10.0), methods, zoo, stats4, utils, expm, cubature,
         mvtnorm
 Imports: Rcpp (>= 0.12.1), boot (>= 1.3-2), glassoFast, coda, calculus
@@ -11,5 +11,6 @@ Maintainer: Stefano M. Iacus <siacus@iq.harvard.edu>
 Description: Simulation and Inference for SDEs and Other Stochastic Processes.
 License: GPL-2
 URL: https://yuimaproject.com
+BugReports: https://github.com/yuimaproject/yuima/issues
 LinkingTo: Rcpp, RcppArmadillo
 NeedsCompilation: yes
