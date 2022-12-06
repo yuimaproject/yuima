@@ -1,0 +1,32 @@
+on:
+  push: 
+    branches: main
+
+name: build
+
+jobs:
+  build:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Credentials
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-pandoc@master
+      - name: Query dependencies
+        run: |
+          install.packages('remotes')
+          install.packages('pkgdown')
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+      - name: Install package
+        run: R CMD INSTALL .
+      - name: Check package
+        run: |
+          R CMD build .
+          R CMD check --no-build-vignettes --no-manual --as-cran *tar.gz
+      - name: Deploy package
+        run: pkgdown::deploy_to_branch(new_process = FALSE)
+        shell: Rscript {0}
