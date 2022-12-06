@@ -41,10 +41,6 @@ cpp_ito_outer <- function(x, y) {
     .Call('_yuima_cpp_ito_outer', PACKAGE = 'yuima', x, y)
 }
 
-cpp_to_str <- function(i) {
-    .Call('_yuima_cpp_to_str', PACKAGE = 'yuima', i)
-}
-
 cpp_label <- function(I) {
     .Call('_yuima_cpp_label', PACKAGE = 'yuima', I)
 }

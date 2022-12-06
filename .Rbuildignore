@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^docs$
+^pkgdown$
+.Rhistory
+.RData
+.Ruserdata
+^LICENSE$
+^doc$
+^Meta$
