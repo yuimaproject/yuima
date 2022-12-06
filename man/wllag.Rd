@@ -141,8 +141,8 @@ out <- wllag(x, y, tau = tau, tol = tau, in.tau = TRUE, verbose = TRUE)
 out
 
 # Plot of the HRY cross-correlation function
-plot(out$ccor.hry, xlab = expression(theta), 
-     ylab = expression(U(theta))) 
+plot(out$ccor.hry, xlab = expression(theta), ylab = expression(U(theta))) 
+dev.off()
 
 # Plot of the objective functions
 op <- par(mfrow = c(4,2))
