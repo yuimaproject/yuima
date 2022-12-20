@@ -163,7 +163,7 @@ std::vector<std::string> cpp_ito_product(std::vector<int> const &idx, List const
   p = p-1;
   q = q-1;
   
-  std::vector<std::string> tmp;
+  std::vector<std::string> tmp = std::vector<std::string> ();
   std::vector<std::string> dZ_p;
   std::vector<std::string> dZ_q;
   std::vector<int> I;

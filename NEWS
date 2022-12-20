@@ -125,8 +125,10 @@ v. 1.15.15 2022/09/08
 * fixed IC.R and IC.Rd
 
 v. 1.15.18 2022/11/05
-* remove sprintf from ae.c
+* removed sprintf from ae.cpp
 * protected object in euler.c
 * changed if(class()) with inherits() in IC.R
 
+v. 1.15.20 2022/12/19
+* fixed  -Wuninitialized in ae.cpp
 
