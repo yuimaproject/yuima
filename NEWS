@@ -132,3 +132,5 @@ v. 1.15.18 2022/11/05
 v. 1.15.20 2022/12/19
 * fixed  -Wuninitialized in ae.cpp
 
+v. 1.15.22 2022/12/20
+* fixed wrong URL on README.md
