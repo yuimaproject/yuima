@@ -31,7 +31,7 @@ library(tools)
 ?package_native_routine_registration_skeleton
 ```
 
-[This page](http://stackoverflow.com/questions/42313373/r-cmd-check-note-found-no-calls-to-r-registerroutines-r-usedynamicsymbols) is also of interest.
+[This page](https://stackoverflow.com/questions/42313373/r-cmd-check-note-found-no-calls-to-r-registerroutines-r-usedynamicsymbols) is also of interest.
 
 ## Acknowledgments
 
