@@ -23,7 +23,7 @@ aux.setPPR <-function(yuima, counting.var="N", gFun, Kernel,
   yuimadum@time.variable <- var.dt
 
   HawkesType <- FALSE
-  if(counting.var %in% var.dx){
+  if(all(counting.var %in% var.dx)){
     HawkesType <- TRUE
   }
   if(!HawkesType){
@@ -61,13 +61,13 @@ aux.setPPR <-function(yuima, counting.var="N", gFun, Kernel,
   #     model = yuima, SelfEx = HawkesType))
   yuima1 <- setYuima(model =yuima)
   type <- yuima@measure.type
-  if(type == "code"){
+  if(all(type == "code")){
     if(!(is(yuima@measure$df,"yuima.law")))
       measure <- list(df = as.character(yuima@measure$df$expr))
   }else{
     measure <- yuima@measure
     }
-  if(type == "CP"){
+  if(all(type == "CP")){
     if(!(is(yuima@measure$df,"yuima.law")))
       measure <- list(intensity = as.character(yuima@measure$intensity),
                     df= as.character(yuima@measure$df$expr))
