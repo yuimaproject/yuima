@@ -87,6 +87,8 @@ exportClasses("yuima",
 "yuima.model",
 "model.parameter",
 "yuima.carma",
+"yuima.carmaHawkes",
+"carmaHawkes.info",
 "carma.info",
 "yuima.carma.qmle",
 "yuima.poisson",
@@ -157,6 +159,7 @@ export(setData)
 export(setSampling)
 export(setCharacteristic)
 export(setCarma)
+export(setCarmaHawkes)
 export(setPoisson)
 export(setPPR)
 export(setHawkes)
