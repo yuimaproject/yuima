@@ -88,6 +88,9 @@
     <loc>/reference/carma.info-class.html</loc>
   </url>
   <url>
+    <loc>/reference/carmaHawkes.info-class.html</loc>
+  </url>
+  <url>
     <loc>/reference/cce.factor.html</loc>
   </url>
   <url>
@@ -187,6 +190,9 @@
     <loc>/reference/setCarma.html</loc>
   </url>
   <url>
+    <loc>/reference/setCarmaHawkes.html</loc>
+  </url>
+  <url>
     <loc>/reference/setCharacteristic.html</loc>
   </url>
   <url>
@@ -281,6 +287,9 @@
   </url>
   <url>
     <loc>/reference/yuima.carma.qmle-class.html</loc>
+  </url>
+  <url>
+    <loc>/reference/yuima.carmaHawkes-class.html</loc>
   </url>
   <url>
     <loc>/reference/yuima.characteristic-class.html</loc>
