@@ -312,3 +312,85 @@ aux.simulateCarmaHawkes<- function(object, true.parameter){
   object@model@solve.variable <- object@model@info@Counting.Process # Check Again
   return(object)
 }
+
+Int_LikelihoodCarmaHawkes <- function(x,p,q,JumpTime,T_k,
+                                        numbOfJump,
+                                        t0 = 0, Id = diag(p),
+                                        X0 = matrix(0,p),
+                                        display = FALSE){
+  mu<-x[1]
+  a<-x[1:p+1]
+  b<-x[1:(q+1)+p+1]
+  A <- Atilde(a,rep(0,p))
+  InvA <- solve(A)
+  bbold1 <- bbold(b,p)
+  ebold1 <- myebold(p)
+  res0<-mu*(T_k-t0)
+  dum <- t(bbold1)%*%InvA
+  res1 <- dum%*%(expm(A*(T_k-t0))-Id)%*%X0
+  lambda<-numeric(length=numbOfJump)
+  S<-Id*0 #S_Kfunction(Id, T_k=JumpTime[1], JumpTime[1], A, Id) hawkes
+  #S<-S_Kfunction(Id, T_k=JumpTime[1], JumpTime[1], A, Id)
+  # interstep <- expm(A*(JumpTime[1]-t0))%*%X0+S%*%ebold1
+  lambda[1]<-mu# + as.numeric(t(bbold1)%*%interstep)
+  for(i in c(2:numbOfJump)){
+    S<-S_Kfunction(S, T_k=JumpTime[i], JumpTime[i-1], A, Id)
+    interstep <- expm(A*(JumpTime[i]-t0))%*%X0+S%*%ebold1
+    lambda[i]<-mu+as.numeric(t(bbold1)%*%interstep)
+  }
+  
+  if(any(is.infinite(lambda))){
+    res <--10^6
+  }else{
+    if(any(is.nan(lambda))){
+      res <--10^6
+    }else{
+      if(all(lambda>0)){
+        res1 <- res1+dum%*%S%*%ebold1-numbOfJump*dum%*%ebold1
+        res <--res0-as.numeric(res1)+sum(log(lambda[-1]))
+        if(display){cat("\n", c(res,x))}
+      }else{
+        res<--10^6
+      }
+    }  
+    
+  }
+  return(-res/numbOfJump)
+}
+
+
+EstimCarmaHawkes <- function(yuima, start, est.method = "qmle", method = "BFGS",
+        lower = NULL, upper = NULL, lags = NULL, display = FALSE){
+  model <- yuima@model
+  names.par <- c(model@info@base.Int, model@info@ar.par, model@info@ma.par) 
+  cond0 <- all(names(start) %in% names.par) #& all(names.par %in% names(start))
+  if(!cond0){
+    yuima.stop(paste("names in start are ", 
+                     paste(names(start), collapse = ", "), " while param names in the model are ", 
+                     paste(names.par, collapse = ", "), collapse =""))
+  }
+  true.par <- start[names.par]
+  p <- model@info@p
+  q <- model@info@q
+  t0 <- yuima@sampling@Initial[1]
+  if(est.method=="qmle"){
+    JumpTime <- time(yuima@data@original.data)
+    T_k <- tail(JumpTime,1L)
+    #t0 <- JumpTime[1]
+    if(is.null(lower) & is.null(upper)){
+        res <- optim(par=true.par,fn = Int_LikelihoodCarmaHawkes,
+                 p = p,q=q, JumpTime = JumpTime,
+                 T_k= T_k,
+                 numbOfJump=tail(as.numeric(yuima@data@original.data),1L),
+                 t0=t0,Id=diag(1,p,p), display = display,
+                 method = method)
+    }else{
+      yuima.stop("constraints will be available as soon as possible.")
+    }
+    res$value <- res$value*T_k
+  }else{
+    yuima.warn("We estimate the Carma(p,q)-Hawkes using the empirical autocorrelation function")
+    yuima.stop("This method is not available yet!!! It will be implemented as soon as possible")
+  }
+  return(res)
+}
