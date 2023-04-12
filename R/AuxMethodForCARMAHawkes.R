@@ -1,3 +1,10 @@
+is.CarmaHawkes<-function(obj){
+  if(is(obj,"yuima"))
+    return(is(obj@model, "yuima.carmaHawkes"))
+  if(is(obj,"yuima.model"))
+    return(is(obj, "yuima.carmaHawkes"))
+  return(FALSE)
+}
 # CARMA Hawkes Utilities
 Atilde<-function(a,b){
   # a <- [a_1,...a_p]

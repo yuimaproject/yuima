@@ -257,6 +257,32 @@ setMethod("initialize", "yuima",
 # setter
 setYuima <-
   function(data=NULL, model=NULL, sampling=NULL, characteristic=NULL, functional=NULL){
+    if(is.CarmaHawkes(model) && !is.null(data)){
+      if(is(data,"zoo")){
+        data <- setData(original.data = data, t0 = index(data)[1])
+      }
+      if(is.null(sampling)){
+        zooData <- get.zoo.data(data)[[1]]
+        originalgrid <- index(zooData)
+        samp <- setSampling(Initial=originalgrid[1], Terminal = tail(originalgrid,1L), n = as.integer((tail(originalgrid,1L)-originalgrid[1])/mean(diff(originalgrid))))
+        gridData <- na.approx(zooData, xout=samp@grid[[1]])
+        model@solve.variable<-model@info@Counting.Process
+        data@zoo.data[[1]] <- gridData
+        res <- new("yuima",data=NULL, model=model, sampling=NULL, characteristic=characteristic,functional=functional)
+        res@data <- data
+        res@sampling <- samp
+      }else{
+        zooData <- get.zoo.data(data)
+        samp <- sampling
+        gridData <- na.approx(zooData, xout=samp@grid[[1]])
+        model@solve.variable<-model@info@Counting.Process
+        data@zoo.data[[1]] <- gridData
+        res <- new("yuima",data=NULL, model=model, sampling=NULL, characteristic=characteristic,functional=functional)
+        res@data <- data
+        res@sampling <- samp
+      }
+      return(res)
+    }
     if(is.CARMA(model)&& !is.null(data)){
       if(dim(data@original.data)[2]==1){
         dum.matr<-matrix(0,length(data@original.data),
