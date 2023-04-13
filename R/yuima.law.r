@@ -288,7 +288,7 @@ FromCF2yuima_law <- function(myfun, time.names = "t", var_char = "u",
   mystring <- paste(mystring, paste0(" low <- ", low) ,sep="\n")
   mystring <- paste(mystring, paste0(" N_grid <- ", N_grid) ,sep="\n")
   mystring <- paste(mystring, paste0(" param <- c(", paste0(lawpar, collapse=" ,"), ")") ,sep="\n")
-  mystring <- paste(mystring, paste0(" mynames <- c('", paste0(mynames, collapse="' ,"), "')") ,sep="\n")
+  mystring <- paste(mystring, paste0(" mynames <- c('", paste0(mynames, collapse="' ,'"), "')") ,sep="\n")
   mystring <- paste(mystring, paste0(" time.var <- c(", paste0(nametime, collapse=" ,"), ")") ,sep="\n")
   mystring <- paste(mystring, paste0(" time.names <- c('", paste0(nametime, collapse="' ,"), "')") ,sep="\n")
   mystring <- paste(mystring, paste0(" method <- c('", paste0(method, collapse="' ,"), "')") ,sep="\n")
