@@ -9,6 +9,7 @@ import("stats4")
 import("expm")
 import("mvtnorm")
 import("cubature")
+importFrom("statmod","gauss.quad")
 
 import("coda")
 importFrom(utils, toLatex)
@@ -16,6 +17,7 @@ importFrom(utils, toLatex)
 importFrom("graphics", "lines")
 importFrom("stats", "qchisq")
 importFrom("utils", "relist")
+importFrom("stats", "spline")
 
 importFrom(boot, boot) # added by YK on Sep. 9, 2017 
 #08/07/2016
@@ -109,7 +111,9 @@ exportClasses("yuima",
 "info.PPR",
 "yuima.PPR",
 "yuima.Hawkes",
+"yuima.th",
 "yuima.PPR.qmle",
+"yuima.LevyRM",
 "yuima.snr",
 "yuima.ae"  # added by EG on Dec. 15, 2021
 )
@@ -172,7 +176,7 @@ export(setMap)
 #export(setMultiModel)
 export(setIntegral)
 export(FromCF2yuima_law)
-
+export(setLaw_th)
 export(dim)
 export(length)
 #export(start)
@@ -181,6 +185,8 @@ export(plot)
 #export(end)
 
 export(simulate) # simulates couple of processes
+export(setLRM)
+export(estimation_RLM)
 export(subsampling)
 export(cce)
 export(llag)

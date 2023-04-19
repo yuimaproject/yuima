@@ -69,6 +69,13 @@ setMethod("simulate", "yuima",
                    Initial = 0, Terminal = 1, n = 100, delta,
                    grid = as.numeric(NULL), random = FALSE, sdelta=as.numeric(NULL),
                    sgrid=as.numeric(NULL), interpolation="none"){
+            if(is(object,"yuima.LevyRM")){
+              res <- aux.simulateLevyRM(object = object, 
+                nsim = nsim, seed = seed, xinit = xinit, true.parameter = true.parameter, space.discretized = space.discretized, 
+                increment.W = increment.W, increment.L = increment.L, method = method, hurst = hurst, methodfGn = methodfGn,
+                sampling = sampling, subsampling = subsampling)
+              return(res)
+            }
             if(is(object@model,"yuima.carmaHawkes")){
               res <- aux.simulateCarmaHawkes(object, true.parameter)
               return(res)
