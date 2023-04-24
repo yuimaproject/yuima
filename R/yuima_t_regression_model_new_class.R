@@ -274,6 +274,13 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
   Vcov <- matrix(0 , dim(Vcov1)[1]+1,dim(Vcov1)[2]+1)
   Vcov[1:dim(Vcov1)[1],1:dim(Vcov1)[1]]<- Vcov1
   Vcov[dim(Vcov1)[1]+1,dim(Vcov1)[1]+1]<- Vcov2
-  
-  return(list(est=est,vcov=Vcov))
+  call <- match.call()
+  colnames(Vcov)<-names(est)
+  rownames(Vcov)<-names(est)
+  min <- c(fres$value,sres$value)
+  final_res <- new("yuima.qmle", call = call, coef = est, fullcoef = est,
+                 vcov = Vcov, min = min, details = list(), minuslogl = function(){NULL},
+                 method = "L-BFGS-B", nobs=as.integer(NofW), model=model@model)
+  #return(list(est=est,vcov=Vcov))
+  return(final_res)
 }
