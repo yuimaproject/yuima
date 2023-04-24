@@ -186,6 +186,7 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
   if(is.null(n_obs1)){
     n_obs1 <- floor((dim(mydata@original.data)[1]-1)/diff(range(index(mydata@original.data))))
   }
+  Term <- tail(index(data@zoo.data[[1]]),1L)
   NofW <- n_obs1*Term # the number of the whole data
   m <- n_obs1*PT # the number of the data for the estimation of mu and sigma
   labY <- model@LevyRM
@@ -234,18 +235,45 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
   for(i in 1:Term){
     ures[i] <- esig^(-1)*(duY[i] - duX[i,]%*%emu ) 
   }
-  hres <- numeric(m)
-  for(i in 1:m){
-    hres[i] <- esig^(-1)/h*(dY[i] - dX[i,]%*%emu) 
-  }
+  # hres <- numeric(m)
+  # for(i in 1:m){
+  #   hres[i] <- esig^(-1)/h*(dY[i] - dX[i,]%*%emu) 
+  # }
   # minus (scaled) student-t likelihood function (unit time)
   stl <- function(nu){
     sum(-log(gamma((nu + 1)/2)) + log(gamma(nu/2)) + (nu + 1)/2*log(1 + (ures)^2))
     #-sum(log(dt(ures, nu)))
   }
-  sres <- optimize(stl, c(0.01, 10))
-  #sres<-optim(1,fn=stl)#,method="Brent",upper=100,lower=0.01)
-  enu <- sres$minimum
+  #sres <- optimize(stl, c(0.01, 10))
+  sres<-optim(1,fn=stl,method="Brent",upper=20,lower=0.00001)
+  enu <- sres$par
   names(enu)<-"nu"
-  return(c(emu, esig, enu))
+  est<-c(emu, esig, enu)
+  dFPos <- length(model@paramRM)
+  # 
+  scalepos <- length(model@paramRM)-1
+  mycoef_a <- est[model@paramRM[-c(scalepos,dFPos)]]
+  X_data <- data@original.data[,model@regressors]
+  
+  VarX_data<-apply(X_data,2,"diff")
+  #Nn <- dim(VarX_data)[1]
+  Sn <- as.matrix(VarX_data[1,])%*%t(as.matrix(VarX_data[1,]))
+  #m <- n_obs1*PT
+  for(i in c(2:m)){
+    Sn <- Sn+as.matrix(VarX_data[i,])%*%t(as.matrix(VarX_data[i,]))
+  }
+  Sn <- 1/(h*m)*Sn
+  esig <- est[model@paramRM[scalepos]]
+  GAM_a <- matrix(0, dim(Sn)[1]+1,dim(Sn)[2]+1)
+  GAM_a[1:dim(Sn)[1],1:dim(Sn)[1]]<-Sn/(2*esig^2)
+  GAM_a[dim(Sn)[1]+1,dim(Sn)[2]+1] <- 1/(2*esig^2)
+  Vcov1 <- 1/m*solve(GAM_a)
+  enu <- est[model@paramRM[dFPos]]
+  GAM_nu <- 1/4*(trigamma(enu/2)-trigamma((enu+1)/2))
+  Vcov2 <- 1/Term*solve(enu)
+  Vcov <- matrix(0 , dim(Vcov1)[1]+1,dim(Vcov1)[2]+1)
+  Vcov[1:dim(Vcov1)[1],1:dim(Vcov1)[1]]<- Vcov1
+  Vcov[dim(Vcov1)[1]+1,dim(Vcov1)[1]+1]<- Vcov2
+  
+  return(list(est=est,vcov=Vcov))
 }
