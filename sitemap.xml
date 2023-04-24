@@ -109,6 +109,9 @@
     <loc>/reference/cogarchNoise.html</loc>
   </url>
   <url>
+    <loc>/reference/estimation_RLM.html</loc>
+  </url>
+  <url>
     <loc>/reference/fitCIR.html</loc>
   </url>
   <url>
@@ -217,7 +220,13 @@
     <loc>/reference/setIntegral.html</loc>
   </url>
   <url>
+    <loc>/reference/setLRM.html</loc>
+  </url>
+  <url>
     <loc>/reference/setLaw.html</loc>
+  </url>
+  <url>
+    <loc>/reference/setLaw_th.html</loc>
   </url>
   <url>
     <loc>/reference/setMap.html</loc>
@@ -277,6 +286,9 @@
     <loc>/reference/yuima.Hawkes.html</loc>
   </url>
   <url>
+    <loc>/reference/yuima.LevyRM-class.html</loc>
+  </url>
+  <url>
     <loc>/reference/yuima.Map-class.html</loc>
   </url>
   <url>
@@ -326,5 +338,8 @@
   </url>
   <url>
     <loc>/reference/yuima.snr-class.html</loc>
+  </url>
+  <url>
+    <loc>/reference/yuima.th-class.html</loc>
   </url>
 </urlset>
