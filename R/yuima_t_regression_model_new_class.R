@@ -270,7 +270,7 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
   Vcov1 <- 1/m*solve(GAM_a)
   enu <- est[model@paramRM[dFPos]]
   GAM_nu <- 1/4*(trigamma(enu/2)-trigamma((enu+1)/2))
-  Vcov2 <- 1/Term*solve(enu)
+  Vcov2 <- 1/Term*solve(GAM_nu)
   Vcov <- matrix(0 , dim(Vcov1)[1]+1,dim(Vcov1)[2]+1)
   Vcov[1:dim(Vcov1)[1],1:dim(Vcov1)[1]]<- Vcov1
   Vcov[dim(Vcov1)[1]+1,dim(Vcov1)[1]+1]<- Vcov2
