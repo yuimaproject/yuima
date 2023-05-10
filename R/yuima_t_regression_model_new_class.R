@@ -202,11 +202,20 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
   h<-1/n_obs1
   day <- n_obs1
   Term <- floor((dim(mydata@original.data)[1]-1)*h)
-  mcql <- function(par, model, h, m){
-    mu <- par[model@paramRM[1:length(model@regressors)]]
-    sigma <- par[model@paramRM[length(model@regressors)+1]]
-    #sum(log(sigma) + log(1 + (dY[1:m] - mu1*dX1[1:m] - mu2*dX2[1:m])^2/(h*sigma)^2))
-    sum(log(sigma) + log(1 + (dY[1:m] - dX[1:m,]%*%mu)^2/(h*sigma)^2))
+  if(length(regrlab)==1){
+    mcql <- function(par, model, h, m){
+      mu <- par[model@paramRM[1:length(model@regressors)]]
+      sigma <- par[model@paramRM[length(model@regressors)+1]]
+      #sum(log(sigma) + log(1 + (dY[1:m] - mu1*dX1[1:m] - mu2*dX2[1:m])^2/(h*sigma)^2))
+      sum(log(sigma) + log(1 + (dY[1:m] - dX[1:m]*mu)^2/(h*sigma)^2))
+    }
+  }else{
+    mcql <- function(par, model, h, m){
+      mu <- par[model@paramRM[1:length(model@regressors)]]
+      sigma <- par[model@paramRM[length(model@regressors)+1]]
+      #sum(log(sigma) + log(1 + (dY[1:m] - mu1*dX1[1:m] - mu2*dX2[1:m])^2/(h*sigma)^2))
+      sum(log(sigma) + log(1 + (dY[1:m] - dX[1:m,]%*%mu)^2/(h*sigma)^2))
+    }
   }
   # estimation of mu and sigma (partial data)
   fres <- optim(par = unlist(start), fn = mcql, lower = lower, upper = upper, 
@@ -254,8 +263,11 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
   scalepos <- length(model@paramRM)-1
   mycoef_a <- est[model@paramRM[-c(scalepos,dFPos)]]
   X_data <- data@original.data[,model@regressors]
-  
-  VarX_data<-apply(X_data,2,"diff")
+  if(length(model@regressors)==1){
+    VarX_data<- as.matrix(diff(X_data))
+  }else{
+    VarX_data<-apply(X_data,2,"diff")
+  }
   #Nn <- dim(VarX_data)[1]
   Sn <- as.matrix(VarX_data[1,])%*%t(as.matrix(VarX_data[1,]))
   #m <- n_obs1*PT
