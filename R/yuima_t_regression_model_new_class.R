@@ -254,7 +254,7 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
     #-sum(log(dt(ures, nu)))
   }
   #sres <- optimize(stl, c(0.01, 10))
-  sres<-optim(1,fn=stl,method="Brent",upper=20,lower=0.00001)
+  sres<-optim(1,fn=stl,method="Brent",upper=100,lower=0.00001)
   enu <- sres$par
   names(enu)<-"nu"
   est<-c(emu, esig, enu)
@@ -274,7 +274,7 @@ estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL
   for(i in c(2:m)){
     Sn <- Sn+as.matrix(VarX_data[i,])%*%t(as.matrix(VarX_data[i,]))
   }
-  Sn <- 1/(h*m)*Sn
+  Sn <- 1/(h^2*m)*Sn
   esig <- est[model@paramRM[scalepos]]
   GAM_a <- matrix(0, dim(Sn)[1]+1,dim(Sn)[2]+1)
   GAM_a[1:dim(Sn)[1],1:dim(Sn)[1]]<-Sn/(2*esig^2)
