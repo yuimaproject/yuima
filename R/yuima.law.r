@@ -218,7 +218,10 @@ InternalDensity <- function(x, param, mynames, time.names, time.var,
   invFFT<-data.frame(i = i, u = u, characteristic_function = phi, 
                      x = x, density = Re(density))
   
-  dens <- na.approx(zoo(x=invFFT$density, order.by= invFFT$x), xout=x_old)
+  #dens <- na.approx(zoo(x=invFFT$density, order.by= invFFT$x), xout=x_old)
+  na <- is.na(invFFT$density)
+  dens <- approx(x=invFFT$x[!na], y=invFFT$density[!na], xout=x_old)$y
+  
   return(dens)
 }
 
@@ -240,7 +243,7 @@ InternalRnd <- function(n, param, mynames, time.names,
   cdf0 <- cdf[cdf>0 & cdf<1]
   x_new0 <- x_new[cdf>0 & cdf<1]
   rndUn0 <- runif(n, min = min(cdf0), max(cdf0))
-  res <- approx(y=x_new0, x = cdf0, xout=rndUn0)
+  res <- approx(y=x_new0, x = cdf0, xout=rndUn0, ties = mean, rule =2)
   if(length(res$y)==n){
     return(as.numeric(res$y))
   }else{
