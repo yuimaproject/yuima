@@ -209,7 +209,8 @@ InternalDensity <- function(x, param, mynames, time.names, time.var,
   
   assign("u",u,myenv)
   #dummyphy <- eval(parse(text=myfun))
-  phi <- as.numeric(eval(parse(text=myfun), envir =myenv))
+  #phi <- as.numeric(eval(parse(text=myfun), envir =myenv))
+  phi <- eval(parse(text=myfun), envir =myenv)
   #plot(u,phi, type="l")
   
   X <- exp(-(0 + (0+1i)) * i * dt * alim) * phi
@@ -221,7 +222,7 @@ InternalDensity <- function(x, param, mynames, time.names, time.var,
   #dens <- na.approx(zoo(x=invFFT$density, order.by= invFFT$x), xout=x_old)
   na <- is.na(invFFT$density)
   dens <- approx(x=invFFT$x[!na], y=invFFT$density[!na], xout=x_old)$y
-   
+  
   return(dens)
 }
 
