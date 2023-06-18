@@ -14,7 +14,7 @@ llag(x, from = -Inf, to = Inf, division = FALSE, verbose = (ci || ccor),
 
 \item{x}{an object of  \code{\link{yuima-class}} or \code{\link{yuima.data-class}}.}
 
-\item{verbose}{whether \code{llag} returns matrices or not. The default is \code{FALSE}.}
+\item{verbose}{logical. If \code{FALSE}, \code{llag} returns lead-lag time estimates only. The default is \code{FALSE}.}
 
 \item{from}{a numeric vector each of whose component(s) indicates the lower end of a finite grid on which the contrast function is evaluated, if \code{grid} is missing.}
 
