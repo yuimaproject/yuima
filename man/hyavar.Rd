@@ -40,7 +40,7 @@ For diagonal components, they are estimated by the realized quarticity multiplie
 For off-diagonal components, they are estimated by the naive kernel approach descrived in Section 8.2 of Hayashi and Yoshida (2011). Note that the asymptotic covariance between a diagonal component and another component, which is necessary to evaluate the asymptotic variances of correlation estimates, is not provided in Hayashi and Yoshida (2011), but it can be derived in a similar manner to that paper.
 \cr
 \cr
-If \code{nonneg} is \code{TRUE}, negative values of the asymptotic variances of correlations are avoided in the following way. The computed asymptotic varaince-covariance matrix of the vector \eqn{(HYii,HYij,HYjj)} is converted to its spectral absolute value. Here, \eqn{HYij} denotes the Hayashi-Yohida estimator for the \eqn{(i,j)}-th component.
+If \code{nonneg} is \code{TRUE}, negative values of the asymptotic variances of correlations are avoided in the following way. The computed asymptotic varaince-covariance matrix of the vector \eqn{(HY_{ii},HY_{ij},HY_{jj})} is converted to its spectral absolute value. Here, \eqn{HY_{ij}} denotes the Hayashi-Yohida estimator for the \eqn{(i,j)}-th component.
 \cr
 \cr
 The function also returns the covariance and correlation matrices calculated by the Hayashi-Yoshida estimator (using \code{\link{cce}}).
