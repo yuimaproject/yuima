@@ -186,7 +186,7 @@ export(plot)
 
 export(simulate) # simulates couple of processes
 export(setLRM)
-export(estimation_RLM)
+export(estimation_LRM)
 export(subsampling)
 export(cce)
 export(llag)

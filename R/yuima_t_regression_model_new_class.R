@@ -181,7 +181,7 @@ aux.simulateLevyRM <- function(object, nsim=1, seed=NULL, xinit, true.parameter,
 #)
 
 
-estimation_RLM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL){
+estimation_LRM <- function(start, model, data, upper, lower, PT=500, n_obs1=NULL){
   mydata <- data
   if(is.null(n_obs1)){
     n_obs1 <- floor((dim(mydata@original.data)[1]-1)/diff(range(index(mydata@original.data))))
