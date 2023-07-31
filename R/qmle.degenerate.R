@@ -1,6 +1,4 @@
 
-library(calculus)
-
 ## utilities
 
 # function to evaluate a vector of expressions
@@ -368,8 +366,8 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   dX <- as.matrix(dZ[ ,idx.x])
   dY <- as.matrix(dZ[ ,-idx.x])
   
-  A <- e2c(yuima@model@drift[idx.x])
-  H <- e2c(yuima@model@drift[-idx.x])
+  A <- calculus::e2c(yuima@model@drift[idx.x])
+  H <- calculus::e2c(yuima@model@drift[-idx.x])
   
   #B <- as.character(unlist(yuima@model@diffusion[idx.x]))
   #B <- matrix(B, nrow = length(idx.x), byrow = TRUE)
@@ -406,7 +404,7 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
                 cbind(Sinv21, Sinv22))
   
   detSinv <- calculus::mxdet(Sinv)
-  logdetS <- paste0("-log", wrap(detSinv))
+  logdetS <- paste0("-log", calculus::wrap(detSinv))
   
   Dj <- c(h^(-1/2) %prod% ("deltaX" %sum% ((-h) %prod% A)),
           h^(-3/2) %prod% ("deltaY" %sum% ((-h) %prod% G)))
