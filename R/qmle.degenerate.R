@@ -515,6 +515,7 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   
   oout <- do.call(optim, args=mydots)
   theta3 <- oout$par
+  names(theta3) <- par
   
   coef <- c(theta1.hat, theta2.hat, theta3)
   
