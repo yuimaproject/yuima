@@ -77,6 +77,10 @@ setMethod("simulate", "yuima",
               return(res)
             }
             if(is(object@model,"yuima.carmaHawkes")){
+              if(method == "Thinning"){
+                res  <- aux.simulateCarmaHawkes_thin(object, true.parameter)
+                return(res)
+              }
               res <- aux.simulateCarmaHawkes(object, true.parameter)
               return(res)
             }

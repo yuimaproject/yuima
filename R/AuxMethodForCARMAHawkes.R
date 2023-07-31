@@ -320,6 +320,101 @@ aux.simulateCarmaHawkes<- function(object, true.parameter){
   return(object)
 }
 
+SimThinAlg <- function(x,FinalT, p, q){
+  mu0<-x[1]
+  a0<-x[1:p+1]
+  b0<-x[1:(q+1)+p+1]
+  b0 <- bbold(b0,p)
+  A <- Atilde(a0, numeric(length =p))
+  eigenvalues <- sort(eigen(A)$values,decreasing = TRUE)
+  dumexp <- 1:p-1
+  S <- kronecker(t(eigenvalues),as.matrix(dumexp),"^")
+  #S_new%*%diag(eigenvalues)%*%solve(S_new)
+  # 
+  coef<-as.matrix(sqrt(sum(abs(t(b0)%*%S)^2))*sqrt(sum(abs(solve(S)%*%myebold(p))^2)))
+  expcoef <- as.matrix(-max(Re(eigenvalues)))
+  # Initialize
+  JumpTime <- NA
+  s <- 0
+  n <- 0
+  U<-runif(1)
+  JumpTime[1] <- -log(U)/mu0
+  S_k <- diag(1,p,p)
+  Id <- diag(1,p,p)
+  S_k_H <- diag(1)
+  Id_H <- diag(1)
+  s <- s+ JumpTime[1]
+  T_old <- 0
+  T_k <-  JumpTime[1]
+  S_k <-S_KfunctionSim(S_k, T_k, T_old, A, Id)
+  S_k_H <-S_KfunctionSim(S_k_H, T_k, T_old, -expcoef, Id_H)
+  bbold1 <- bbold(b0,p)
+  ebold1 <- myebold(p)
+  n<-1
+  #i=0
+  while(s<FinalT){
+    U<-runif(1)
+    # S_old <-S_Kfunction(S_k, T_k, T_old, A, Id)
+    lambda_k_bar <- as.numeric(mu0+exp(-expcoef*(s-T_k))*coef*S_k_H)
+    omega <- -log(U)/lambda_k_bar
+    s <- s+omega
+    D <- runif(1)
+    lambda_k <- mu0+ as.numeric(t(bbold1)%*%expm(A*(s-T_k))%*%S_k%*%ebold1)
+    if(lambda_k_bar*D<lambda_k){
+      n<-n+1
+      T_old <- T_k
+      T_k <- s
+      JumpTime <- c(JumpTime, T_k)
+      S_k <-S_KfunctionSim(S_k, T_k, T_old, A, Id)
+      S_k_H <-S_KfunctionSim(S_k_H, T_k, T_old, -expcoef, Id_H)
+    }
+    #i<-i+1
+    # cat("\n",i)
+  }
+  if(T_k <=FinalT){
+    res <- zoo(0:n,order.by = c(0,JumpTime))
+  }else{
+    JumpTime <- JumpTime[-n]
+    res <- zoo(1:n-1, order.by =c(0,JumpTime))
+  }
+  return(res)
+}
+
+
+aux.simulateCarmaHawkes_thin<- function(object, true.parameter){
+  model <- object@model
+  p <- length(model@info@ar.par)
+  q <- length(model@info@ma.par)
+  if(!model@info@XinExpr){
+    X0 <- rep(0,p)
+  }else{
+    yuima.stop("X0 will be available as soon as possible")
+  }
+#  mu <- true.parameter[model@info@base.Int]
+ # t0 <- object@sampling@Initial[1]
+  true.parameter <- true.parameter[c(model@info@base.Int,model@info@ar.par,model@info@ma.par)]
+  FinalTime <- object@sampling@Terminal[1]
+  
+  res <- SimThinAlg(x=true.parameter,FinalT=FinalTime, p = p, q = q-1)
+  numb<-length(res)
+  
+  if(length(object@model@measure$df@param.measure)==0){
+    param <- 1
+    names(param)<- object@model@measure$df@time.var
+    Nt<-cumsum(c(0,rand(object@model@measure$df, n=numb, param=param)))
+  }else{
+    yuima.stop("Jump size different from 1 will be available as soon as possible")
+  }
+  Nt<-matrix(Nt)
+  colnames(Nt)<-object@model@info@Counting.Process
+  res1<-zoo(x=Nt, order.by=index(res))
+  mydata <- setData(original.data = res1)
+  obsgrid <- na.approx(res1,xout=object@sampling@grid[[1]], method ="constant")
+  mydata@zoo.data[[1]]<-obsgrid 
+  object@data <- mydata
+  object@model@solve.variable <- object@model@info@Counting.Process # Check Again
+  return(object)
+}
 Int_LikelihoodCarmaHawkes <- function(x,p,q,JumpTime,T_k,
                                         numbOfJump,
                                         t0 = 0, Id = diag(p),
