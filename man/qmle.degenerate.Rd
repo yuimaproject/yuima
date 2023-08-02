@@ -3,37 +3,24 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 %%  ~~function to do ... ~~
-QMLE for degenerate diffusions
+Quasi-likelihood estimation for degenerate diffusion processes
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-qmle.degenerate(yuima, start, method = "L-BFGS-B", envir = globalenv(), lower, upper, ...)
+qmle.degenerate(yuima, start, method = "L-BFGS-B", 
+                envir = globalenv(), lower, upper, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{yuima}{
-%%     ~~Describe \code{yuima} here~~
-}
-  \item{start}{
-%%     ~~Describe \code{start} here~~
-}
-  \item{method}{
-%%     ~~Describe \code{method} here~~
-}
-  \item{envir}{
-%%     ~~Describe \code{envir} here~~
-}
-  \item{lower}{
-%%     ~~Describe \code{lower} here~~
-}
-  \item{upper}{
-%%     ~~Describe \code{upper} here~~
-}
-  \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
-}
+  \item{yuima}{a yuima object.}
+  \item{start}{initial values to be passed to the optimizer.}
+  \item{method}{passed to \code{\link{optim}}.}
+  \item{envir}{an environment where the model coefficients are evaluated.}
+  \item{lower}{a named list for specifying lower bounds of parameters.}
+  \item{upper}{a named list for specifying upper bounds of parameters.}
+  \item{\dots}{passed to \code{\link{optim}}.}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -46,10 +33,14 @@ qmle.degenerate(yuima, start, method = "L-BFGS-B", envir = globalenv(), lower, u
 %% ...
 }
 \references{
-%% ~put references to the literature/web site here ~
+Gloter, A. and Yoshida, N. (2020)
+  Adaptive and non-adaptive estimation for degenerate diffusion processes, working paper, available at \doi{10.48550/arXiv.2002.10164}.
+  
+Gloter, A. and Yoshida, N. (2021)
+  Adaptive estimation for degenerate diffusion processes, \emph{Electronic Journal of Statistics}, \bold{15}, 1424--1472.
 }
 \author{
-%%  ~~who you are~~
+Yuta Koike with YUIMA Project Team
 }
 \note{
 %%  ~~further notes~~
@@ -58,17 +49,11 @@ qmle.degenerate(yuima, start, method = "L-BFGS-B", envir = globalenv(), lower, u
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{qmle}}
 }
 \examples{
 To be written.
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
-% \keyword{ ~kwd1 }
-% \keyword{ ~kwd2 }
-% Use only one keyword per line.
-% For non-standard keywords, use \concept instead of \keyword:
-% \concept{ ~cpt1 }
-% \concept{ ~cpt2 }
-% Use only one concept per line.
+\keyword{ts}
