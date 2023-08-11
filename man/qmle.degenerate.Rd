@@ -10,7 +10,8 @@ Quasi-likelihood estimation for degenerate diffusion processes
 }
 \usage{
 qmle.degenerate(yuima, start, method = "L-BFGS-B", 
-                envir = globalenv(), lower, upper, ...)
+                envir = globalenv(), lower, upper, 
+                joint = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,6 +21,7 @@ qmle.degenerate(yuima, start, method = "L-BFGS-B",
   \item{envir}{an environment where the model coefficients are evaluated.}
   \item{lower}{a named list for specifying lower bounds of parameters.}
   \item{upper}{a named list for specifying upper bounds of parameters.}
+  \item{joint}{perform joint estimation or adaptive estimation with one-step correction? by default \code{joint=FALSE}.}
   \item{\dots}{passed to \code{\link{optim}}.}
 }
 \details{
