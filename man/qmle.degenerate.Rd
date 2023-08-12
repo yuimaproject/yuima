@@ -5,7 +5,7 @@
 Quasi-likelihood estimation for degenerate diffusion processes
 }
 \description{
-Calculate a quasi maximum likelihood type estimator of the parameters of a degenerate diffusion process based on discrete observation data.
+Calculate a quasi maximum likelihood type estimator for the parameters of a degenerate diffusion process based on discrete observation data.
 }
 \usage{
 qmle.degenerate(yuima, start, method = "L-BFGS-B", 
