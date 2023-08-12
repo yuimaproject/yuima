@@ -60,7 +60,7 @@ subsetyuima <- function(yuima, idx){
 }
 
 # minus quasi-log likelihood function to estimate diffusion parameters
-minusH1 <- function(yuima, theta1, idx.x, env){
+minusH1 <- function(yuima, theta1, idx.x, print = FALSE, env){
   
   Cmat <- diffusion.term(yuima, theta1, env)[idx.x, idx.x, ]
   
@@ -94,12 +94,21 @@ minusH1 <- function(yuima, theta1, idx.x, env){
     }
   }
   
+  if(print == TRUE){
+    #yuima.warn(sprintf("NEG-QL: %f, %s", -QL, 
+    #                   paste(names(theta1), theta1, 
+    #                         sep = "=", collapse=", ")))
+    cat(sprintf("NEG-QL: %f, %s", -QL, 
+                paste(names(theta1), theta1, 
+                      sep = "=", collapse=", ")), "\n")
+  }
+  
   return(-QL)
 }
 
 # minus adaptive quasi-log likelihood function to estimate 
 # drift parameters with non-degenerate diffusion terms
-minusH2 <- function(yuima, theta2, idx.x, Cmat, env){
+minusH2 <- function(yuima, theta2, idx.x, Cmat, print = FALSE, env){
   
   h <- env$h
   vec <- env$deltaX
@@ -124,18 +133,25 @@ minusH2 <- function(yuima, theta2, idx.x, Cmat, env){
     }
   }
   
+  if(print == TRUE){
+    cat(sprintf("NEG-QL: %f, %s", -QL, 
+                paste(names(theta2), theta2, 
+                      sep = "=", collapse=", ")), "\n")
+  }
+  
   return(-QL)
 }
 
 
 # QMLE for diffusion parameters
 init.est.theta1 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
-                            envir = globalenv(), lower, upper, 
-                            idx.x, ...){
+                            print = FALSE, envir = globalenv(), lower, upper, 
+                            idx.x, diff.par, ...){
   
   call <- match.call() 
   
-  diff.par <- yuima@model@parameter@diffusion
+  if(missing(diff.par))
+    diff.par <- yuima@model@parameter@diffusion
   
   nm <- names(start) 
   
@@ -154,7 +170,7 @@ init.est.theta1 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
   f <- function(p) {
     mycoef <- as.list(p)
     names(mycoef) <- nm[idx.diff]
-    return(minusH1(yuima, mycoef, idx.x, env))
+    return(minusH1(yuima, mycoef, idx.x, print, env))
   }
   
   new.start <- start[idx.diff] # considering only initial guess for diffusion
@@ -179,6 +195,7 @@ init.est.theta1 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
   mydots$aggregation <- NULL ##Kito 4/17/2021
   mydots$rcpp <- NULL ##Kito 4/17/2021
   mydots$idx.x <- NULL
+  mydots$diff.par <- NULL
   
   if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
     mydots$method<-method     ##song
@@ -198,6 +215,7 @@ init.est.theta1 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
     mydots$aggregation <- NULL ##Kito 4/17/2021
     mydots$rcpp <- NULL ##Kito 4/17/2021
     mydots$idx.x <- NULL
+    mydots$diff.par <- NULL
     opt1 <- do.call(optimize, args=mydots)  
     theta1 <- opt1$minimum
     names(theta1) <- diff.par
@@ -211,14 +229,17 @@ init.est.theta1 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
 # adaptive QMLE for drift parameters with non-degenerate diffusion terms
 init.est.theta2 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
                             print = FALSE, envir = globalenv(), 
-                            lower, upper, idx.x, theta1.hat, ...){
+                            lower, upper, idx.x, theta1.hat,
+                            drift.par, ...){
   
   call <- match.call()
   
-  drift.par <- unique(all.vars(yuima@model@drift[idx.x]))
-  drift.par <- setdiff(drift.par, c(yuima@model@solve.variable,
-                                    yuima@model@state.variable))
-  
+  if(missing(drift.par)){
+    drift.par <- unique(all.vars(yuima@model@drift[idx.x]))
+    drift.par <- setdiff(drift.par, c(yuima@model@solve.variable,
+                                      yuima@model@state.variable))
+  }
+   
   #drift.par <- yuima@model@parameter@drift[idx.theta2]
   
   nm <- names(start)
@@ -249,7 +270,7 @@ init.est.theta2 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
   f <- function(p) {
     mycoef <- as.list(p)
     names(mycoef) <- nm[idx.drift]
-    return(minusH2(yuima, mycoef, idx.x, Cmat, env))
+    return(minusH2(yuima, mycoef, idx.x, Cmat, print, env))
   }
   
   new.start <- start[idx.drift] # considering only initial guess for diffusion
@@ -275,6 +296,7 @@ init.est.theta2 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
   mydots$rcpp <- NULL ##Kito 4/17/2021
   mydots$idx.x <- NULL
   mydots$theta1.hat <- NULL
+  mydots$drift.par <- NULL
   
   if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
     mydots$method<-method     ##song
@@ -295,6 +317,7 @@ init.est.theta2 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
     mydots$rcpp <- NULL ##Kito 4/17/2021
     mydots$idx.x <- NULL
     mydots$theta1.hat <- NULL
+    mydots$drift.par <- NULL
     opt1 <- do.call(optimize, args=mydots)  
     theta2 <- opt1$minimum
     names(theta2) <- drift.par
@@ -305,21 +328,119 @@ init.est.theta2 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
   return(theta2)
 }
 
+# function to substitute fixed parameters in expressions
+changeFixedParametersToConstantInExpressions <- function(yuima, fixed) {
+  
+  env <- as.environment(fixed)
+  
+  new.drift <- yuima@model@drift |> calculus::e2c() |>
+    substvec(env = env)
+  new.diffusion <- yuima@model@diffusion |> calculus::e2c() |>
+    substvec(env = env)
+    
+  
+  
+  new.ymodel <- setModel(drift = transformed.drift, diffusion = transformed.diffusion, hurst = yuima@model@hurst, 
+                         jump.coeff = transformed.jump, measure = new.measure, measure.type = yuima@model@measure.type, 
+                         state.variable = yuima@model@state.variable, jump.variable = yuima@model@jump.variable, 
+                         time.variable = yuima@model@time.variable, solve.variable = yuima@model@solve.variable, 
+                         xinit = yuima@model@xinit)
+  new.yuima <- setYuima(data = yuima@data, model = new.ymodel, sampling = yuima@sampling, characteristic = yuima@characteristic, functional = yuima@functional)
+  return(list(new.yuima=new.yuima, env=env))
+}
+
 
 ## main part
 qmle.degenerate <- function(yuima, start, method = "L-BFGS-B", 
-                            #fixed = list(), 
+                            fixed = list(), print = FALSE, 
                             envir = globalenv(), 
                             lower, upper, joint = FALSE, ...){
   
   #### Determine degenerate terms ####
   idx.x <- which(!is.degenerate(yuima))
-  if(length(idx.x) == 0) {
+  if(length(idx.x) == dim(yuima)) {
+    # If there is no degenerate term, perform the standard QMLE
+    yuima.warn("All components are non-degenerate. Perform the standard QMLE.")
     return(qmle(yuima, start = start, method = method, 
-                lower = lower, envir = envir, lower = lower, 
-                upper = upper, joint = joint, ...))
+                fixed = fixed, print = print, envir = envir, 
+                lower = lower, upper = upper, joint = joint, ...))
+  }else if(length(idx.x) == 0){
+    stop("There should be at least one non-degenerate conponent.")
   }
   #### Determine degenerate terms - finish ####
+  
+  #### Check the presence of the jump term ####
+  if(yuima@model@J.flag){
+    stop("Jump terms are not allowed.")
+  }
+  
+  #### Handling fixed parameters ####
+  if(length(fixed) > 0){
+    
+    env <- as.environment(fixed)
+    
+    new.drift <- yuima@model@drift |> calculus::e2c() |>
+      substvec(env = env)
+    #new.diffusion <- yuima@model@diffusion |> calculus::e2c() |>
+    #  substvec(env = env)
+    new.diffusion <- yuima@model@diffusion |> 
+      sapply(FUN = calculus::e2c) |> substvec(env = env)
+    
+    new.ymodel <- setModel(drift = new.drift, 
+                           diffusion = new.diffusion, 
+                           hurst = yuima@model@hurst, 
+                           state.variable = yuima@model@state.variable, 
+                           time.variable = yuima@model@time.variable, 
+                           solve.variable = yuima@model@solve.variable, 
+                           xinit = yuima@model@xinit)
+    new.yuima <- setYuima(data = yuima@data, model = new.ymodel, 
+                          sampling = yuima@sampling, 
+                          characteristic = yuima@characteristic, 
+                          functional = yuima@functional)
+    
+    # new params
+    new.start <- start[!is.element(names(start), names(fixed))]
+    new.lower <- lower[!is.element(names(lower), names(fixed))]
+    new.upper <- upper[!is.element(names(upper), names(fixed))]
+    
+    #Kurisaki 5/23/2021
+    res <- qmle.degenerate(new.yuima, start = new.start, 
+                           method = method, fixed = list(), 
+                           print = print, envir = envir, 
+                           lower = new.lower, upper = new.upper, 
+                           joint = joint, ...)
+    
+    res@call <- match.call()
+    res@model <- yuima@model
+    fixed.res <- fixed
+    mode(fixed.res) <- "numeric"
+    res@fullcoef <- c(res@fullcoef,fixed.res)
+    res@fixed <- fixed.res
+    return(res)
+  }
+  
+  #### Check whether there is at least one unknown parameter ####
+  if(length(yuima@model@parameter@all) == 0){
+    yuima.warn("There is no unknown paremter. Do nothing.")
+    return(NULL)
+  }
+  
+  #### Check whether deltaX or deltaY are used as a variable name ####
+  vars <- c(yuima@model@parameter@all,
+            yuima@model@state.variable,
+            yuima@model@time.variable,
+            yuima@model@solve.variable)
+  
+  if("deltaX" %in% vars | "deltaY" %in% vars){
+    stop("deltaX and deltaY cannot be used as a variable name.")
+  }
+  
+  #### Check parameters common to drift and diffusion coefficients ####
+  if(length(yuima@model@parameter@common) > 0){
+    joint <- TRUE
+    yuima.warn("Drift and diffusion parameters must be different. Doing
+               joint estimation, asymptotic theory may not hold true.")
+  }
   
   #### Computation of constituents of quasi likelihood  ####
   
@@ -387,27 +508,41 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   
   #### Computation of constituents of quasi likelihood - finish  ####
   
-  
-  if(joint){ #### joint estimation ####
+  #### Definition of objective function ####
+  if(print == TRUE){
     
-    #### Environment setting ####
+    f <- function(p){
+      
+      for(i in 1:length(p)){
+        assign(nm[idx[i]], p[i], env)
+      }
+      #names(p) <- nm[idx]
+      
+      QL <- 0
+      
+      for(j in 1:n){
+        
+        for(i in 1:length(svar)){
+          assign(svar[i], Z[j,i], env)
+        }
+        
+        assign("deltaX", dX[j, ], envir = env)
+        assign("deltaY", dY[j, ], envir = env)
+        
+        QL <- QL + eval(eH3summand, env)
+        
+      }
+      
+      #yuima.warn(sprintf("NEG-QL: %f, %s", -QL, 
+      #                   paste(par, p, sep = "=", collapse = ", ")))
+      cat(sprintf("NEG-QL: %f, %s", -QL, 
+                  paste(par, p, sep = "=", collapse = ", ")), "\n")
+      
+      return(QL)
+    }
     
-    env <- new.env(parent = envir) ##Kurisaki 4/4/2021
+  }else{
     
-    #### Environment setting - finish ####
-    
-    #### Identification of unknown parameters to estimate ####
-    
-    par <- yuima@model@parameter@all
-    nm <- names(start)
-    
-    idx <- match(par, nm)
-    new.start <- start[idx] # considering only initial guess for diffusion
-    names(new.start) <- nm[idx]
-    
-    #### Identification of unknown parameters to estimate - finish ####
-    
-    #### Definition of objective function ####
     f <- function(p){
       
       for(i in 1:length(p)){
@@ -433,8 +568,31 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       return(QL)
     }
     
-    #### Definition of objective function - finish ####
+  }
+  
+  #### Definition of objective function - finish ####
+  
+  #### Environment setting ####
+  
+  env <- new.env(parent = envir) ##Kurisaki 4/4/2021
+  
+  #### Environment setting - finish ####
+  
+  if(joint){ 
+    #### joint estimation ####
     
+    #### Identification of unknown parameters to estimate ####
+    
+    par <- yuima@model@parameter@all
+    nm <- names(start)
+    
+    idx <- match(par, nm)
+    new.start <- start[idx] # considering only initial guess for diffusion
+    names(new.start) <- nm[idx]
+    
+    #### Identification of unknown parameters to estimate - finish ####
+    
+    #### Optimization ####
     call <- match.call()
     mydots <- as.list(call)[-(1:2)]
     mydots$print <- NULL
@@ -474,15 +632,15 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
         vcov <- rrr
     }
     
-    myfixed <- as.numeric(rep(NA, length(coef)))
-    names(myfixed) <- names(coef)
+    #myfixed <- as.numeric(rep(NA, length(coef)))
+    #names(myfixed) <- names(coef)
     
     final_res<-new("yuima.qmle", 
                    call = call, 
                    coef = coef, 
                    #fullcoef = unlist(mycoef),
                    fullcoef = coef,
-                   fixed = myfixed,
+                   #fixed = myfixed,
                    vcov = as.matrix(vcov), 
                    min = oout$value, 
                    details = oout, 
@@ -491,44 +649,52 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
                    method = method, 
                    model = yuima@model)
     
-  }else{ #### adaptive estimation ####
+  }else{ 
+    #### adaptive estimation ####
     
     #### Initial estimation ####
     
-    theta1.hat <- init.est.theta1(yuima, start = start, 
-                                  method = method, envir = envir, 
-                                  lower = lower, upper = upper, 
-                                  idx.x = idx.x, ...)
-    theta2.hat <- init.est.theta2(yuima, start = start,
-                                  method = method, envir = envir, 
-                                  lower = lower, upper = upper, 
-                                  idx.x = idx.x, theta1.hat = theta1.hat,
-                                  ...)
-    
-    #### Initial estimation - finish ####
-    
-    #### Environment setting ####
-    
-    env <- new.env(parent = envir) ##Kurisaki 4/4/2021
-    
     theta1 <- yuima@model@parameter@diffusion
+    
+    if(length(theta1) > 0){
+      
+      theta1.hat <- init.est.theta1(yuima, start = start, method = method, 
+                                    print = print, envir = envir, 
+                                    lower = lower, upper = upper, 
+                                    idx.x = idx.x, diff.par = theta1, ...)
+      
+      for(i in seq_along(theta1)){
+        assign(theta1[i], theta1.hat[theta1[i]], env)
+      }
+      
+    }else{
+      theta1.hat <- NULL
+    }
+    
     theta2 <- unique(all.vars(yuima@model@drift[idx.x]))
     theta2 <- setdiff(theta2, c(yuima@model@solve.variable,
                                 yuima@model@state.variable))
     
-    for(i in seq_along(theta1)){
-      assign(theta1[i], theta1.hat[theta1[i]], env)
+    if(length(theta2) > 0){
+      
+      theta2.hat <- init.est.theta2(yuima, start = start, method = method, 
+                                    print = print, envir = envir, 
+                                    lower = lower, upper = upper, 
+                                    idx.x = idx.x, theta1.hat = theta1.hat,
+                                    drift.par = theta2, ...)
+      
+      for(i in seq_along(theta2)){
+        assign(theta2[i], theta2.hat[theta2[i]], env)
+      }
+      
+      #assign(theta2, theta2.hat, env)
+      
+      #assign("h", deltat(get.zoo.data(yuima)[[1]]), envir = env)
+    }else{
+      theta2.hat <- NULL
     }
     
-    for(i in seq_along(theta2)){
-      assign(theta2[i], theta2.hat[theta2[i]], env)
-    }
-    
-    #assign(theta2, theta2.hat, env)
-    
-    #assign("h", deltat(get.zoo.data(yuima)[[1]]), envir = env)
-    
-    #### Environment setting - finish ####
+    #### Initial estimation - finish ####
     
     #### Identification of unknown parameters to estimate ####
     
@@ -537,138 +703,114 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     par <- setdiff(par, c(yuima@model@solve.variable,
                           yuima@model@state.variable))
     
-    nm <- names(start)
-    
-    idx <- match(par, nm)
-    new.start <- start[idx] # considering only initial guess for diffusion
-    names(new.start) <- nm[idx]
-    
-    #### Identification of unknown parameters to estimate - finish ####
-    
-    #### Definition of objective function ####
-    f <- function(p){
-      
-      for(i in 1:length(p)){
-        assign(nm[idx[i]], p[i], env)
-      }
-      #names(p) <- nm[idx]
-      
-      QL <- 0
-      
-      for(j in 1:n){
-        
-        for(i in 1:length(svar)){
-          assign(svar[i], Z[j,i], env)
-        }
-        
-        assign("deltaX", dX[j, ], envir = env)
-        assign("deltaY", dY[j, ], envir = env)
-        
-        QL <- QL + eval(eH3summand, env)
-        
-        #tmpA <- sapply(A, FUN = eval, envir = env)
-        #tmpG <- sapply(G, FUN = eval, envir = env)
-        #tmpSinv <- sapply(Sinv, FUN = eval, envir = env)
-        #tmpSinv <- matrix(tmpSinv, d.size)
-        #tmpSinv <- array(tmpSinv, dim = attr(Sinv, "dim"))
-        #tmpA <- evaluate(A, var = p, params = as.list(env))
-        #tmpG <- evaluate(G, var = p, params = as.list(env))
-        #tmpSinv <- evaluate(Sinv, var = p, params = as.list(env))
-        #tmpdetSinv <- evaluate(detSinv, var = p, params = as.list(env))
-        #tmpA <- evalvec(A, env)
-        #tmpG <- evalvec(G, env)
-        #tmpSinv <- evalvec(Sinv, env)
-        
-        #Dj <- c(h^(-1/2) * (dX[j, ] - h * tmpA),
-        #        h^(-3/2) * (dY[j, ] - h * tmpG))
-        
-        #QL <- QL + 0.5 * (Dj %*% tmpSinv %*% Dj - 
-        #                    log(eval(detSinv, env)))
-        #QL <- QL + 0.5 * (Dj %*% tmpSinv %*% Dj - log(tmpdetSinv))
-        
-      }
-      
-      return(QL)
-    }
-    
-    #### Definition of objective function - finish ####
-    
     call <- match.call()
-    mydots <- as.list(call)[-(1:2)]
-    mydots$print <- NULL
-    mydots$rcpp <- NULL #KK 08/07/16
-    mydots$fixed <- NULL
-    mydots$fn <- as.name("f")
-    mydots$start <- NULL
-    mydots$par <- unlist(new.start)
-    mydots$hessian <- FALSE
-    mydots$upper <- as.numeric(unlist( upper[ nm[idx] ]))
-    mydots$lower <- as.numeric(unlist( lower[ nm[idx] ]))
-    mydots$joint <- NULL # LM 08/03/16
-    mydots$aggregation <- NULL # LM 08/03/16
-    mydots$threshold <- NULL #SMI 2/9/14
-    mydots$envir <- NULL ##Kurisaki 4/4/2021
-    mydots$Est.Incr <- NULL ##Kurisaki 4/10/2021
-    mydots$print <- NULL ##Kito 4/17/2021
-    mydots$aggregation <- NULL ##Kito 4/17/2021
-    mydots$rcpp <- NULL ##Kito 4/17/2021
-    mydots$idx.x <- NULL
     
-    if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
-      mydots$method<-method     ##song
+    if(length(par) > 0){
+      nm <- names(start)
+      
+      idx <- match(par, nm)
+      new.start <- start[idx] # considering only initial guess for diffusion
+      names(new.start) <- nm[idx]
+      
+      #### Identification of unknown parameters to estimate - finish ####
+      
+      #### Optimization ####
+      mydots <- as.list(call)[-(1:2)]
+      mydots$print <- NULL
+      mydots$rcpp <- NULL #KK 08/07/16
+      mydots$fixed <- NULL
+      mydots$fn <- as.name("f")
+      mydots$start <- NULL
+      mydots$par <- unlist(new.start)
+      mydots$hessian <- FALSE
+      mydots$upper <- as.numeric(unlist( upper[ nm[idx] ]))
+      mydots$lower <- as.numeric(unlist( lower[ nm[idx] ]))
+      mydots$joint <- NULL # LM 08/03/16
+      mydots$aggregation <- NULL # LM 08/03/16
+      mydots$threshold <- NULL #SMI 2/9/14
+      mydots$envir <- NULL ##Kurisaki 4/4/2021
+      mydots$Est.Incr <- NULL ##Kurisaki 4/10/2021
+      mydots$print <- NULL ##Kito 4/17/2021
+      mydots$aggregation <- NULL ##Kito 4/17/2021
+      mydots$rcpp <- NULL ##Kito 4/17/2021
+      mydots$idx.x <- NULL
+      
+      if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
+        mydots$method<-method     ##song
+      }else{
+        mydots$method <- "Brent"
+      }
+      
+      oout <- do.call(optim, args=mydots)
+      theta3 <- oout$par
+      names(theta3) <- par
+      min.value <- oout$value
     }else{
-      mydots$method <- "Brent"
+      theta3 <- NULL
+      oout <- list()
+      min.value <- as.numeric(NA)
     }
-    
-    oout <- do.call(optim, args=mydots)
-    theta3 <- oout$par
-    names(theta3) <- par
     
     coef <- c(theta1.hat, theta2.hat, theta3)
+    oout$initial <- coef
     
     #### One-Step Estimation ####
     
     ## Compute the gradient and hessian of the summand of H1
-    dH1summand <- 
-      calculus::gradient(H3summand, var = theta1) |>
-      calculus::c2e()
-    ddH1summand <- 
-      calculus::hessian(H3summand, var = theta1) |>
-      calculus::c2e()
-    
-    ## Compute the summand of H23
-    env.onestep <- new.env()
-    
-    #for(i in seq_along(theta1)){
-    #  assign(theta1[i], as.numeric(theta1.hat[theta1[i]]), envir = env.onestep)
-    #}
-    
-    #for(i in seq_along(theta2)){
-    #  assign(theta2[i], as.numeric(theta2.hat[theta2[i]]), envir = env.onestep)
-    #}
-    
-    for(i in seq_along(par)){
-      assign(par[i], as.numeric(theta3[i]), envir = env.onestep)
+    if(length(theta1) > 0){
+      dH1summand <- 
+        calculus::gradient(H3summand, var = theta1) |>
+        calculus::c2e()
+      ddH1summand <- 
+        calculus::hessian(H3summand, var = theta1) |>
+        calculus::c2e()
+      dH1 <- double(length(theta1))
+      ddH1 <- diag(0, length(theta1))
+    }else{
+      dH1summand <- 0
+      ddH1summand <- 0
+      dH1 <- 0
+      ddH1 <- 0
     }
     
-    Sinv.onestep <- substvec(Sinv, env.onestep)
-    #print(Sinv.onestep[1,1])
-    H23summand <- 0.5 %prod% Dj %mx% Sinv.onestep %mx% Dj
-    
-    ## Compute the gradient and hessian of the summand of H23
-    dH23summand <- 
-      calculus::gradient(H23summand, var = c(theta2, par)) |>
-      calculus::c2e()
-    ddH23summand <- 
-      calculus::hessian(H23summand, var = c(theta2, par)) |>
-      calculus::c2e()
+    ## Compute the summand of H23
+    if(length(theta2) + length(par) > 0){
+      env.onestep <- new.env()
+      
+      #for(i in seq_along(theta1)){
+      #  assign(theta1[i], as.numeric(theta1.hat[theta1[i]]), envir = env.onestep)
+      #}
+      
+      #for(i in seq_along(theta2)){
+      #  assign(theta2[i], as.numeric(theta2.hat[theta2[i]]), envir = env.onestep)
+      #}
+      
+      for(i in seq_along(par)){
+        assign(par[i], as.numeric(theta3[i]), envir = env.onestep)
+      }
+      
+      Sinv.onestep <- substvec(Sinv, env.onestep)
+      #print(Sinv.onestep[1,1])
+      H23summand <- 0.5 %prod% Dj %mx% Sinv.onestep %mx% Dj
+      
+      ## Compute the gradient and hessian of the summand of H23
+      dH23summand <- 
+        calculus::gradient(H23summand, var = c(theta2, par)) |>
+        calculus::c2e()
+      ddH23summand <- 
+        calculus::hessian(H23summand, var = c(theta2, par)) |>
+        calculus::c2e()
+      
+      dH23 <- double(length(theta2) + length(par))
+      ddH23 <- diag(0, length(theta2) + length(par))
+    }else{
+      dH23summand <- 0
+      ddH23summand <- 0
+      dH23 <- 0
+      ddH23 <- 0
+    }
     
     ## Evaluation
-    dH1 <- double(length(theta1))
-    ddH1 <- diag(length(theta1))
-    dH23 <- double(length(theta2) + length(par))
-    ddH23 <- diag(length(theta2) + length(par))
-    
     for(j in 1:n){
       
       for(i in 1:length(svar)){
@@ -685,39 +827,73 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       
     }
     
-    theta1.onestep <- theta1.hat - solve(as.matrix(ddH1), dH1)
-    theta23.onestep <- c(theta2.hat, theta3) - 
-      solve(as.matrix(ddH23), dH23)
+    if(length(theta1) > 0){
+      theta1.onestep <- theta1.hat - solve(as.matrix(ddH1), dH1)
+    }else{
+      theta1.onestep <- NULL
+    }
+    
+    if(length(theta2) + length(par) > 0){
+      theta23.onestep <- c(theta2.hat, theta3) - 
+        solve(as.matrix(ddH23), dH23)
+    }else{
+      theta23.onestep <- NULL
+    }
     
     coef.onestep <- c(theta1.onestep, theta23.onestep)
     
     #### One-Step Estimation - finish ####
     
     #### Standard Error Estimation ####
-    idx22 <- 1:length(theta2)
+    
+    rrr <- try(solve(as.matrix(ddH1)), TRUE)
+    if(class(rrr)[1] != "try-error"){
+      vcov1 <- rrr
+    }else{
+      vcov1 <- diag(NA, length(theta1))
+    }
+    
+    #idx22 <- 1:length(theta2)
+    idx22 <- seq_along(theta2)
     
     ddH2 <- ddH23[idx22,idx22]
     ddH3 <- ddH23[-idx22,-idx22]
     
+    rrr <- try(solve(as.matrix(ddH2)), TRUE)
+    if(class(rrr)[1] != "try-error"){
+      vcov2 <- rrr
+    }else{
+      vcov2 <- diag(NA, length(theta2))
+    }
+    
+    rrr <- try(solve(as.matrix(ddH3)), TRUE)
+    if(class(rrr)[1] != "try-error"){
+      vcov3 <- rrr
+    }else{
+      vcov3 <- diag(NA, length(theta3))
+    }
+    
+    
     #vcov <- bdiag(solve(as.matrix(ddH1)),
     #              solve(as.matrix(ddH23)[idx22,idx22]),
     #              solve(as.matrix(ddH23)[-idx22,-idx22]))
-    vcov <- bdiag(solve(as.matrix(ddH1)),
-                  solve(as.matrix(ddH2)),
-                  solve(as.matrix(ddH3)))
+    #vcov <- bdiag(solve(as.matrix(ddH1)),
+    #              solve(as.matrix(ddH2)),
+    #              solve(as.matrix(ddH3)))
+    vcov <- bdiag(vcov1, vcov2, vcov3)
     #se <- sqrt(diag(vcov))
     
-    myfixed <- as.numeric(rep(NA, length(coef.onestep)))
-    names(myfixed) <- names(coef.onestep)
+    #myfixed <- as.numeric(rep(NA, length(coef.onestep)))
+    #names(myfixed) <- names(coef.onestep)
     
     final_res<-new("yuima.qmle", 
                    call = call, 
                    coef = coef.onestep, 
                    #fullcoef = unlist(mycoef),
                    fullcoef = coef.onestep,
-                   fixed = myfixed,
+                   #fixed = myfixed,
                    vcov = as.matrix(vcov), 
-                   min = oout$value, 
+                   min = min.value, 
                    details = oout, 
                    minuslogl = f,
                    nobs = as.integer(max(length(yuima)) - 1), 

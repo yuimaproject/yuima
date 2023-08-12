@@ -2,22 +2,23 @@
 \alias{qmle.degenerate}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
 Quasi-likelihood estimation for degenerate diffusion processes
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Calculate a quasi maximum likelihood type estimator of the parameters of a degenerate diffusion process based on discrete observation data.
 }
 \usage{
 qmle.degenerate(yuima, start, method = "L-BFGS-B", 
+                fixed = list(), print = FALSE, 
                 envir = globalenv(), lower, upper, 
                 joint = FALSE, ...)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{yuima}{a yuima object.}
   \item{start}{initial values to be passed to the optimizer.}
   \item{method}{passed to \code{\link{optim}}.}
+  \item{fixed}{a list of fixed parameters.}
+  \item{print}{you can see a progress of the estimation when print is \code{TRUE}.}
   \item{envir}{an environment where the model coefficients are evaluated.}
   \item{lower}{a named list for specifying lower bounds of parameters.}
   \item{upper}{a named list for specifying upper bounds of parameters.}
@@ -25,14 +26,14 @@ qmle.degenerate(yuima, start, method = "L-BFGS-B",
   \item{\dots}{passed to \code{\link{optim}}.}
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+When \code{joint=TRUE}, the function calculates the non-adaptive estimator presented in Section 6 of Gloter and Yoshida (2020). 
+
+When \code{joint=FALSE}, the function calculates the adaptive one-step estimator presented in Section 4 of Gloter and Yoshida (2021) with the initial estimator constructed as in Section 3 of Gloter and Yoshida (2021).
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+An object of class \code{\link{yuima.qmle-class}}.
+
+When \code{joint=FALSE}, the slots \code{min}, \code{details} and \code{minuslogl} are for estimation of the drift parameter of the degenerate components, but the \code{details} slot has an additional component \code{initial} containing the initial estimator. 
 }
 \references{
 Gloter, A. and Yoshida, N. (2020)
@@ -45,7 +46,9 @@ Gloter, A. and Yoshida, N. (2021)
 Yuta Koike with YUIMA Project Team
 }
 \note{
-%%  ~~further notes~~
+The model coefficients must be symbolically differentiable. 
+
+The characters \code{"deltaX"} and \code{"deltaY"} cannot be used as any variable name of the model as they are internally used for other variable names. 
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
