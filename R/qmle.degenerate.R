@@ -328,27 +328,6 @@ init.est.theta2 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
   return(theta2)
 }
 
-# function to substitute fixed parameters in expressions
-changeFixedParametersToConstantInExpressions <- function(yuima, fixed) {
-  
-  env <- as.environment(fixed)
-  
-  new.drift <- yuima@model@drift |> calculus::e2c() |>
-    substvec(env = env)
-  new.diffusion <- yuima@model@diffusion |> calculus::e2c() |>
-    substvec(env = env)
-    
-  
-  
-  new.ymodel <- setModel(drift = transformed.drift, diffusion = transformed.diffusion, hurst = yuima@model@hurst, 
-                         jump.coeff = transformed.jump, measure = new.measure, measure.type = yuima@model@measure.type, 
-                         state.variable = yuima@model@state.variable, jump.variable = yuima@model@jump.variable, 
-                         time.variable = yuima@model@time.variable, solve.variable = yuima@model@solve.variable, 
-                         xinit = yuima@model@xinit)
-  new.yuima <- setYuima(data = yuima@data, model = new.ymodel, sampling = yuima@sampling, characteristic = yuima@characteristic, functional = yuima@functional)
-  return(list(new.yuima=new.yuima, env=env))
-}
-
 
 ## main part
 qmle.degenerate <- function(yuima, start, method = "L-BFGS-B", 
