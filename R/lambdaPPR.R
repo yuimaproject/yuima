@@ -744,13 +744,26 @@ Intensity.PPR <- function(yuimaPPR,param){
   #We define the parameters value for each environment
 
   param<-unlist(param)
-  if(my.envd3$YUIMA.PPR@PPR@additional.info %in% all.vars(my.envd3$Integrand2expr)){
+  # if(my.envd3$YUIMA.PPR@PPR@additional.info %in% all.vars(my.envd3$Integrand2expr)){
+  #   result <- InternalConstractionIntensityFeedBackIntegrand(param,my.envd1,
+  #                                  my.envd2,my.envd3)
+  # }else{
+  #   result<-InternalConstractionIntensity2(param,my.envd1,
+  #                                          my.envd2,my.envd3)
+  # }
+  myvardummy <- NULL
+  for(i in c(1:length(my.envd3$Integrand2expr))){
+    myvardummy <- c(myvardummy, all.vars(my.envd3$Integrand2expr[[i]]))
+  }
+  myvardummy<-unique(myvardummy)
+  if(any(my.envd3$YUIMA.PPR@PPR@additional.info %in% myvardummy)){
     result <- InternalConstractionIntensityFeedBackIntegrand(param,my.envd1,
                                    my.envd2,my.envd3)
   }else{
     result<-InternalConstractionIntensity2(param,my.envd1,
                                            my.envd2,my.envd3)
   }
+  
   #if(class(result)=="matrix"){
   if(inherits(result, "matrix")){ # YK, Mar. 22, 2022
     my.matr <- t(result)
