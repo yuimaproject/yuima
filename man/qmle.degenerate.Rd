@@ -48,7 +48,9 @@ Yuta Koike with YUIMA Project Team
 \note{
 The model coefficients must be symbolically differentiable. 
 
-The characters \code{"deltaX"} and \code{"deltaY"} cannot be used as any variable name of the model as they are internally used for other variable names. 
+The characters \code{"deltaX"} and \code{"deltaY"} should not be used as any variable name of the model as they are internally used for other variable names. 
+
+Time-inhomogeneous diffusions are not supported.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

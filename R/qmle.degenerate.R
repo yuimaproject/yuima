@@ -414,10 +414,32 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     stop("deltaX and deltaY cannot be used as a variable name.")
   }
   
-  #### Check parameters common to drift and diffusion coefficients ####
+  #### Identification of unknown parameter names ####
+  
+  ## diffusion param
+  theta1 <- yuima@model@parameter@diffusion 
+  
+  ## drift param for non-degenerate comp
+  theta2 <- unique(all.vars(yuima@model@drift[idx.x]))
+  theta2 <- setdiff(theta2, c(yuima@model@solve.variable,
+                              yuima@model@state.variable,
+                              yuima@model@time.variable))
+  
+  ## drift param for degenerate comp
+  theta3 <- unique(all.vars(yuima@model@drift[-idx.x]))
+  theta3 <- setdiff(theta3, c(yuima@model@solve.variable,
+                              yuima@model@state.variable,
+                              yuima@model@time.variable))
+  
+
+  #### Check parameters common to theta1, theta2 and theta3 ####
   if(length(yuima@model@parameter@common) > 0){
     joint <- TRUE
     yuima.warn("Drift and diffusion parameters must be different. Doing
+               joint estimation, asymptotic theory may not hold true.")
+  }else if(length(intersect(theta2, theta3)) > 0){
+    joint <- TRUE
+    yuima.warn("Drift parameters of degenerate and non-degenerate components must be different. Doing
                joint estimation, asymptotic theory may not hold true.")
   }
   
@@ -562,11 +584,12 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     
     #### Identification of unknown parameters to estimate ####
     
-    par <- yuima@model@parameter@all
+    #par <- yuima@model@parameter@all
+    par <- c(theta1, theta2, theta3) |> unique()
     nm <- names(start)
     
     idx <- match(par, nm)
-    new.start <- start[idx] # considering only initial guess for diffusion
+    new.start <- start[idx] 
     names(new.start) <- nm[idx]
     
     #### Identification of unknown parameters to estimate - finish ####
@@ -633,8 +656,6 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     
     #### Initial estimation ####
     
-    theta1 <- yuima@model@parameter@diffusion
-    
     if(length(theta1) > 0){
       
       theta1.hat <- init.est.theta1(yuima, start = start, method = method, 
@@ -650,10 +671,7 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       theta1.hat <- NULL
     }
     
-    theta2 <- unique(all.vars(yuima@model@drift[idx.x]))
-    theta2 <- setdiff(theta2, c(yuima@model@solve.variable,
-                                yuima@model@state.variable))
-    
+      
     if(length(theta2) > 0){
       
       theta2.hat <- init.est.theta2(yuima, start = start, method = method, 
@@ -675,20 +693,18 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     
     #### Initial estimation - finish ####
     
-    #### Identification of unknown parameters to estimate ####
-    
-    #par <- yuima@model@parameter@drift[idx.theta3]
-    par <- unique(all.vars(yuima@model@drift[-idx.x]))
-    par <- setdiff(par, c(yuima@model@solve.variable,
-                          yuima@model@state.variable))
-    
     call <- match.call()
     
-    if(length(par) > 0){
+    if(length(theta3) > 0){
+      
+      #### Identification of unknown parameters to estimate ####
+      
+      #par <- yuima@model@parameter@drift[idx.theta3]
+      #par <- theta3
       nm <- names(start)
       
-      idx <- match(par, nm)
-      new.start <- start[idx] # considering only initial guess for diffusion
+      idx <- match(theta3, nm)
+      new.start <- start[idx] 
       names(new.start) <- nm[idx]
       
       #### Identification of unknown parameters to estimate - finish ####
@@ -721,16 +737,16 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       }
       
       oout <- do.call(optim, args=mydots)
-      theta3 <- oout$par
-      names(theta3) <- par
+      theta3.hat <- oout$par
+      names(theta3.hat) <- theta3
       min.value <- oout$value
     }else{
-      theta3 <- NULL
+      theta3.hat <- NULL
       oout <- list()
       min.value <- as.numeric(NA)
     }
     
-    coef <- c(theta1.hat, theta2.hat, theta3)
+    coef <- c(theta1.hat, theta2.hat, theta3.hat)
     oout$initial <- coef
     
     #### One-Step Estimation ####
@@ -753,7 +769,7 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     }
     
     ## Compute the summand of H23
-    if(length(theta2) + length(par) > 0){
+    if(length(theta2) + length(theta3) > 0){
       env.onestep <- new.env()
       
       #for(i in seq_along(theta1)){
@@ -764,8 +780,8 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       #  assign(theta2[i], as.numeric(theta2.hat[theta2[i]]), envir = env.onestep)
       #}
       
-      for(i in seq_along(par)){
-        assign(par[i], as.numeric(theta3[i]), envir = env.onestep)
+      for(i in seq_along(theta3)){
+        assign(theta3[i], as.numeric(theta3.hat[i]), envir = env.onestep)
       }
       
       Sinv.onestep <- substvec(Sinv, env.onestep)
@@ -774,14 +790,14 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       
       ## Compute the gradient and hessian of the summand of H23
       dH23summand <- 
-        calculus::gradient(H23summand, var = c(theta2, par)) |>
+        calculus::gradient(H23summand, var = c(theta2, theta3)) |>
         calculus::c2e()
       ddH23summand <- 
-        calculus::hessian(H23summand, var = c(theta2, par)) |>
+        calculus::hessian(H23summand, var = c(theta2, theta3)) |>
         calculus::c2e()
       
-      dH23 <- double(length(theta2) + length(par))
-      ddH23 <- diag(0, length(theta2) + length(par))
+      dH23 <- double(length(theta2) + length(theta3))
+      ddH23 <- diag(0, length(theta2) + length(theta3))
     }else{
       dH23summand <- 0
       ddH23summand <- 0
@@ -812,8 +828,8 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       theta1.onestep <- NULL
     }
     
-    if(length(theta2) + length(par) > 0){
-      theta23.onestep <- c(theta2.hat, theta3) - 
+    if(length(theta2) + length(theta3) > 0){
+      theta23.onestep <- c(theta2.hat, theta3.hat) - 
         solve(as.matrix(ddH23), dH23)
     }else{
       theta23.onestep <- NULL
