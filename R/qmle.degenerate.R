@@ -543,7 +543,7 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       #yuima.warn(sprintf("NEG-QL: %f, %s", -QL, 
       #                   paste(par, p, sep = "=", collapse = ", ")))
       cat(sprintf("NEG-QL: %f, %s", -QL, 
-                  paste(par, p, sep = "=", collapse = ", ")), "\n")
+                  paste(nm[idx], p, sep = "=", collapse = ", ")), "\n")
       
       return(QL)
     }
