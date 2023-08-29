@@ -471,9 +471,12 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   Hy <- calculus::gradient(H, var = svar[-idx.x])
   Hxx <- calculus::hessian(H, var = svar[idx.x])
   
-  L.H <- as.vector(Hx %mx% A) %sum% 
+  #L.H <- as.vector(Hx %mx% A) %sum% 
+  #  (0.5 %prod% (Hxx %dot% Cmat)) %sum%
+  #  as.vector(Hy %mx% H)
+  L.H <- (Hx %dot% A) %sum% 
     (0.5 %prod% (Hxx %dot% Cmat)) %sum%
-    as.vector(Hy %mx% H)
+    (Hy %dot% H)
   
   G <- H %sum% ((0.5 * h) %prod% L.H)
   
