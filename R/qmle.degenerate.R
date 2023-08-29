@@ -128,7 +128,7 @@ minusH2 <- function(yuima, theta2, idx.x, Cmat, print = FALSE, env){
   } else {  # multidimensional X
     for(j in 1:n){
       yB <- tcrossprod(Cmat[ , ,j]) 
-      pn <-  (-1/(2*h)) * crossprod(vec[j, ] - hA[ ,j], solve(yB)) %*% (vec[j, ] - hA[ ,j])
+      pn <-  (-1/(2*h)) * crossprod(vec[j, ] - hA[j, ], solve(yB)) %*% (vec[j, ] - hA[j, ])
       QL <- QL + pn
     }
   }
@@ -404,14 +404,17 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     return(NULL)
   }
   
-  #### Check whether deltaX or deltaY are used as a variable name ####
+  #### Check whether delta[state.variable] are used as a variable name ####
+  svar <- yuima@model@state.variable
+  deltaZ <- paste0("delta", svar)
+  
   vars <- c(yuima@model@parameter@all,
             yuima@model@state.variable,
             yuima@model@time.variable,
             yuima@model@solve.variable)
   
-  if("deltaX" %in% vars | "deltaY" %in% vars){
-    stop("deltaX and deltaY cannot be used as a variable name.")
+  if(any(is.element(deltaZ, vars))){
+    stop("delta[state.variable] cannot be used as a variable name.")
   }
   
   #### Identification of unknown parameter names ####
@@ -449,8 +452,8 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   n <- nrow(Z) - 1
   
   dZ <- diff(Z)
-  dX <- as.matrix(dZ[ ,idx.x])
-  dY <- as.matrix(dZ[ ,-idx.x])
+  #dX <- as.matrix(dZ[ ,idx.x])
+  #dY <- as.matrix(dZ[ ,-idx.x])
   
   A <- calculus::e2c(yuima@model@drift[idx.x])
   H <- calculus::e2c(yuima@model@drift[-idx.x])
@@ -464,14 +467,13 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   
   h <- deltat(get.zoo.data(yuima)[[1]])
   
-  svar <- yuima@model@state.variable
   Hx <- calculus::gradient(H, var = svar[idx.x])
   Hy <- calculus::gradient(H, var = svar[-idx.x])
   Hxx <- calculus::hessian(H, var = svar[idx.x])
   
-  L.H <- (Hx %mx% A) %sum% 
+  L.H <- as.vector(Hx %mx% A) %sum% 
     (0.5 %prod% (Hxx %dot% Cmat)) %sum%
-    (Hy %mx% H)
+    as.vector(Hy %mx% H)
   
   G <- H %sum% ((0.5 * h) %prod% L.H)
   
@@ -492,8 +494,8 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   detSinv <- calculus::mxdet(Sinv)
   logdetS <- paste0("-log", calculus::wrap(detSinv))
   
-  Dj <- c(h^(-1/2) %prod% ("deltaX" %sum% ((-h) %prod% A)),
-          h^(-3/2) %prod% ("deltaY" %sum% ((-h) %prod% G)))
+  Dj <- c(h^(-1/2) %prod% (deltaZ[idx.x] %sum% ((-h) %prod% A)),
+          h^(-3/2) %prod% (deltaZ[-idx.x] %sum% ((-h) %prod% G)))
   
   H3summand <- 0.5 %prod% ((Dj %mx% Sinv %mx% Dj) %sum% logdetS)
   
@@ -525,10 +527,11 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
         
         for(i in 1:length(svar)){
           assign(svar[i], Z[j,i], env)
+          assign(deltaZ[i], dZ[j,i], envir = env)
         }
         
-        assign("deltaX", dX[j, ], envir = env)
-        assign("deltaY", dY[j, ], envir = env)
+        #assign("deltaX", dX[j, ], envir = env)
+        #assign("deltaY", dY[j, ], envir = env)
         
         QL <- QL + eval(eH3summand, env)
         
@@ -557,10 +560,11 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
         
         for(i in 1:length(svar)){
           assign(svar[i], Z[j,i], env)
+          assign(deltaZ[i], dZ[j,i], envir = env)
         }
         
-        assign("deltaX", dX[j, ], envir = env)
-        assign("deltaY", dY[j, ], envir = env)
+        #assign("deltaX", dX[j, ], envir = env)
+        #assign("deltaY", dY[j, ], envir = env)
         
         QL <- QL + eval(eH3summand, env)
         
@@ -810,10 +814,11 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
       
       for(i in 1:length(svar)){
         assign(svar[i], Z[j,i], env)
+        assign(deltaZ[i], dZ[j,i], envir = env)
       }
       
-      assign("deltaX", dX[j, ], envir = env)
-      assign("deltaY", dY[j, ], envir = env)
+      #assign("deltaX", dX[j, ], envir = env)
+      #assign("deltaY", dY[j, ], envir = env)
       
       dH1 <- dH1 + evalvec(dH1summand, env)
       ddH1 <- ddH1 + evalvec(ddH1summand, env)
