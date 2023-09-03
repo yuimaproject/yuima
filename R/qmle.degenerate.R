@@ -467,9 +467,9 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
   
   h <- deltat(get.zoo.data(yuima)[[1]])
   
-  Hx <- calculus::gradient(H, var = svar[idx.x])
-  Hy <- calculus::gradient(H, var = svar[-idx.x])
-  Hxx <- calculus::hessian(H, var = svar[idx.x])
+  Hx <- calculus::gradient(H, var = svar[idx.x], drop = FALSE)
+  Hy <- calculus::gradient(H, var = svar[-idx.x], drop = FALSE)
+  Hxx <- calculus::hessian(H, var = svar[idx.x], drop = FALSE)
   
   #L.H <- as.vector(Hx %mx% A) %sum% 
   #  (0.5 %prod% (Hxx %dot% Cmat)) %sum%
@@ -624,7 +624,40 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     mydots$idx.x <- NULL
     
     if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
-      mydots$method<-method     ##song
+      
+      mydots$method<-method
+      
+      # dH3summand <- 
+      #   calculus::gradient(H3summand, var = par) |>
+      #   calculus::c2e()
+      # 
+      # gr <- function(p){
+      #   
+      #   for(i in 1:length(p)){
+      #     assign(nm[idx[i]], p[i], env)
+      #   }
+      #   
+      #   dH3 <- double(length(par))
+      #   
+      #   for(j in 1:n){
+      #     
+      #     for(i in 1:length(svar)){
+      #       assign(svar[i], Z[j,i], env)
+      #       assign(deltaZ[i], dZ[j,i], envir = env)
+      #     }
+      #     
+      #     #assign("deltaX", dX[j, ], envir = env)
+      #     #assign("deltaY", dY[j, ], envir = env)
+      #     
+      #     dH3 <- dH3 + evalvec(dH3summand, env)
+      #     
+      #   }
+      #   
+      #   return(dH3)
+      # }
+      # 
+      # mydots$gr <- as.name("gr")
+      
     }else{
       mydots$method <- "Brent"
     }
