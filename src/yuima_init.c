@@ -52,15 +52,15 @@ extern SEXP _yuima_W2(SEXP, SEXP, SEXP);
 extern SEXP Cycle_Carma(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP euler(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP pseudoLoglik_COGARCH1(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP driftTermCpp(SEXP, SEXP, SEXP, SEXP);
-extern SEXP diffusionTermCpp(SEXP, SEXP, SEXP, SEXP);
-extern SEXP measureTermCpp(SEXP, SEXP, SEXP, SEXP);
-extern SEXP calc_filter_vcov(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP calc_filter_mean(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_driftTermCpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_diffusionTermCpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_measureTermCpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_vcov(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_mean(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP,SEXP,SEXP, SEXP);
 extern SEXP _yuima_minusloglcpp_linear_state_space_theta2(SEXP,SEXP,SEXP, SEXP, SEXP);
-extern SEXP calc_filter_vcov_are(SEXP, SEXP, SEXP, SEXP);
-extern SEXP calc_filter_mean_explicit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_vcov_are(SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_mean_explicit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CMethodDef CEntries[] = {
     {"bibsynchro",         (DL_FUNC) &bibsynchro,          9},
@@ -109,15 +109,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"Cycle_Carma",                            (DL_FUNC) &Cycle_Carma,                                  12},
     {"euler",                                  (DL_FUNC) &euler,                                        11},
     {"pseudoLoglik_COGARCH1",                  (DL_FUNC) &pseudoLoglik_COGARCH1,                        14},
-    {"driftTermCpp",                           (DL_FUNC) &driftTermCpp,                                  4},
-    {"diffusionTermCpp",                       (DL_FUNC) &diffusionTermCpp,                              4},
-    {"measureTermCpp",                         (DL_FUNC) &measureTermCpp,                                4},
-    {"calc_filter_vcov",                       (DL_FUNC) &calc_filter_vcov,                              6},
-    {"calc_filter_mean",                       (DL_FUNC) &calc_filter_mean,                             11},
-    {"minusloglcpp_linear_state_space_theta1", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta1, 4},
-    {"minusloglcpp_linear_state_space_theta2", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta2, 5},
-    {"calc_filter_vcov_are",                   (DL_FUNC) &calc_filter_vcov_are,                          4},
-    {"calc_filter_mean_explicit",              (DL_FUNC) &calc_filter_mean_explicit,                     7},
+    {"_yuima_driftTermCpp",                           (DL_FUNC) &_yuima_driftTermCpp,                                  4},
+    {"_yuima_diffusionTermCpp",                       (DL_FUNC) &_yuima_diffusionTermCpp,                              4},
+    {"_yuima_measureTermCpp",                         (DL_FUNC) &_yuima_measureTermCpp,                                4},
+    {"_yuima_calc_filter_vcov",                       (DL_FUNC) &_yuima_calc_filter_vcov,                              6},
+    {"_yuima_calc_filter_mean",                       (DL_FUNC) &_yuima_calc_filter_mean,                             11},
+    {"_yuima_minusloglcpp_linear_state_space_theta1", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta1, 4},
+    {"_yuima_minusloglcpp_linear_state_space_theta2", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta2, 5},
+    {"_yuima_calc_filter_vcov_are",                   (DL_FUNC) &_yuima_calc_filter_vcov_are,                          4},
+    {"_yuima_calc_filter_mean_explicit",              (DL_FUNC) &_yuima_calc_filter_mean_explicit,                     7},
     {NULL, NULL, 0}
 };
 
