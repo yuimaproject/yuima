@@ -52,6 +52,15 @@ extern SEXP _yuima_W2(SEXP, SEXP, SEXP);
 extern SEXP Cycle_Carma(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP euler(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP pseudoLoglik_COGARCH1(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP driftTermCpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP diffusionTermCpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP measureTermCpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP calc_filter_vcov(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP calc_filter_mean(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP,SEXP,SEXP, SEXP);
+extern SEXP _yuima_minusloglcpp_linear_state_space_theta2(SEXP,SEXP,SEXP, SEXP, SEXP);
+extern SEXP calc_filter_vcov_are(SEXP, SEXP, SEXP, SEXP);
+extern SEXP calc_filter_mean_explicit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CMethodDef CEntries[] = {
     {"bibsynchro",         (DL_FUNC) &bibsynchro,          9},
@@ -74,32 +83,41 @@ static const R_CMethodDef CEntries[] = {
 };
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_yuima_cpp_collapse",               (DL_FUNC) &_yuima_cpp_collapse,                2},
-    {"_yuima_cpp_E",                      (DL_FUNC) &_yuima_cpp_E,                       1},
-    {"_yuima_cpp_ito",                    (DL_FUNC) &_yuima_cpp_ito,                     5},
-    {"_yuima_cpp_ito_outer",              (DL_FUNC) &_yuima_cpp_ito_outer,               2},
-    {"_yuima_cpp_ito_product",            (DL_FUNC) &_yuima_cpp_ito_product,             8},
-    {"_yuima_cpp_label",                  (DL_FUNC) &_yuima_cpp_label,                   1},
-    {"_yuima_cpp_outer",                  (DL_FUNC) &_yuima_cpp_outer,                   2},
-    {"_yuima_cpp_paste",                  (DL_FUNC) &_yuima_cpp_paste,                   3},
-    {"_yuima_cpp_split",                  (DL_FUNC) &_yuima_cpp_split,                   2},
-    {"_yuima_detcpp",                     (DL_FUNC) &_yuima_detcpp,                      1},
-    {"_yuima_evalKernelCpp",              (DL_FUNC) &_yuima_evalKernelCpp,              10},
-    {"_yuima_evalKernelCpp2",             (DL_FUNC) &_yuima_evalKernelCpp2,             13},
-    {"_yuima_Irregular_PseudoLoglik_COG", (DL_FUNC) &_yuima_Irregular_PseudoLoglik_COG, 15},
-    {"_yuima_is_zero",                    (DL_FUNC) &_yuima_is_zero,                     1},
-    {"_yuima_likndim",                    (DL_FUNC) &_yuima_likndim,                     4},
-    {"_yuima_makeprop",                   (DL_FUNC) &_yuima_makeprop,                    4},
-    {"_yuima_residualCpp",                (DL_FUNC) &_yuima_residualCpp,                 5},
-    {"_yuima_Smake",                      (DL_FUNC) &_yuima_Smake,                       2},
-    {"_yuima_solvecpp",                   (DL_FUNC) &_yuima_solvecpp,                    1},
-    {"_yuima_sqnorm",                     (DL_FUNC) &_yuima_sqnorm,                      1},
-    {"_yuima_sub_f",                      (DL_FUNC) &_yuima_sub_f,                       2},
-    {"_yuima_W1",                         (DL_FUNC) &_yuima_W1,                          4},
-    {"_yuima_W2",                         (DL_FUNC) &_yuima_W2,                          3},
-    {"Cycle_Carma",                       (DL_FUNC) &Cycle_Carma,                       12},
-    {"euler",                             (DL_FUNC) &euler,                             11},
-    {"pseudoLoglik_COGARCH1",             (DL_FUNC) &pseudoLoglik_COGARCH1,             14},
+    {"_yuima_cpp_collapse",                    (DL_FUNC) &_yuima_cpp_collapse,                           2},
+    {"_yuima_cpp_E",                           (DL_FUNC) &_yuima_cpp_E,                                  1},
+    {"_yuima_cpp_ito",                         (DL_FUNC) &_yuima_cpp_ito,                                5},
+    {"_yuima_cpp_ito_outer",                   (DL_FUNC) &_yuima_cpp_ito_outer,                          2},
+    {"_yuima_cpp_ito_product",                 (DL_FUNC) &_yuima_cpp_ito_product,                        8},
+    {"_yuima_cpp_label",                       (DL_FUNC) &_yuima_cpp_label,                              1},
+    {"_yuima_cpp_outer",                       (DL_FUNC) &_yuima_cpp_outer,                              2},
+    {"_yuima_cpp_paste",                       (DL_FUNC) &_yuima_cpp_paste,                              3},
+    {"_yuima_cpp_split",                       (DL_FUNC) &_yuima_cpp_split,                              2},
+    {"_yuima_detcpp",                          (DL_FUNC) &_yuima_detcpp,                                 1},
+    {"_yuima_evalKernelCpp",                   (DL_FUNC) &_yuima_evalKernelCpp,                         10},
+    {"_yuima_evalKernelCpp2",                  (DL_FUNC) &_yuima_evalKernelCpp2,                        13},
+    {"_yuima_Irregular_PseudoLoglik_COG",      (DL_FUNC) &_yuima_Irregular_PseudoLoglik_COG,            15},
+    {"_yuima_is_zero",                         (DL_FUNC) &_yuima_is_zero,                                1},
+    {"_yuima_likndim",                         (DL_FUNC) &_yuima_likndim,                                4},
+    {"_yuima_makeprop",                        (DL_FUNC) &_yuima_makeprop,                               4},
+    {"_yuima_residualCpp",                     (DL_FUNC) &_yuima_residualCpp,                            5},
+    {"_yuima_Smake",                           (DL_FUNC) &_yuima_Smake,                                  2},
+    {"_yuima_solvecpp",                        (DL_FUNC) &_yuima_solvecpp,                               1},
+    {"_yuima_sqnorm",                          (DL_FUNC) &_yuima_sqnorm,                                 1},
+    {"_yuima_sub_f",                           (DL_FUNC) &_yuima_sub_f,                                  2},
+    {"_yuima_W1",                              (DL_FUNC) &_yuima_W1,                                     4},
+    {"_yuima_W2",                              (DL_FUNC) &_yuima_W2,                                     3},
+    {"Cycle_Carma",                            (DL_FUNC) &Cycle_Carma,                                  12},
+    {"euler",                                  (DL_FUNC) &euler,                                        11},
+    {"pseudoLoglik_COGARCH1",                  (DL_FUNC) &pseudoLoglik_COGARCH1,                        14},
+    {"driftTermCpp",                           (DL_FUNC) &driftTermCpp,                                  4},
+    {"diffusionTermCpp",                       (DL_FUNC) &diffusionTermCpp,                              4},
+    {"measureTermCpp",                         (DL_FUNC) &measureTermCpp,                                4},
+    {"calc_filter_vcov",                       (DL_FUNC) &calc_filter_vcov,                              6},
+    {"calc_filter_mean",                       (DL_FUNC) &calc_filter_mean,                             11},
+    {"minusloglcpp_linear_state_space_theta1", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta1, 4},
+    {"minusloglcpp_linear_state_space_theta2", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta2, 5},
+    {"calc_filter_vcov_are",                   (DL_FUNC) &calc_filter_vcov_are,                          4},
+    {"calc_filter_mean_explicit",              (DL_FUNC) &calc_filter_mean_explicit,                     7},
     {NULL, NULL, 0}
 };
 
