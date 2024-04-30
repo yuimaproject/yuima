@@ -20,9 +20,6 @@
   stochastic differential equation by the maximum likelihood method or least squares estimator
   of the drift parameter.}
 \usage{
-%ml.ql(yuima,theta2,theta1,h,theta2.lim=matrix(c(0,1),1,2),theta1.lim=matrix(c(0,1),1,2),print=FALSE,method,param,interval)
-%ql(yuima,theta2,theta1,h,print=FALSE,param)
-%rql(yuima,theta2,theta1,ptheta2,ptheta1,h,print=FALSE,param,prevparam)
 qmle(yuima, start, method = "L-BFGS-B", fixed = list(),
 print = FALSE, envir = globalenv(), lower, upper, joint = FALSE, Est.Incr ="NoIncr",
 aggregation = TRUE, threshold = NULL, rcpp =FALSE, ...)
