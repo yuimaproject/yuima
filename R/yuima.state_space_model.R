@@ -211,9 +211,6 @@ setLinearStateSpaceModel <- function(drift = NULL,
     if (any(params_in_expr(state.variable, model@diffusion[[i]]))) {
       yuima.stop("state.variable must not be included in diffusion.")
     }
-    if (any(params_in_expr(time.variable, model@diffusion[[i]]))) {
-      yuima.stop("time.variable must not be included in diffusion.")
-    }
   }
 
   # set coefficient matrix of drift term

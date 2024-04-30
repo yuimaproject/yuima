@@ -198,7 +198,7 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
   # calculate likelihood
   QL <- 0
   if (rcpp) {
-    QL <- minusloglcpp.linear_state_space.theta1(observed.diffusion, vec, h, drop_terms)
+    QL <- minusloglcpp_linear_state_space_theta1(observed.diffusion, vec, h, drop_terms)
   } else {
     for (j in (drop_terms + 1):n) {
       yB <- tcrossprod(as.matrix(observed.diffusion[, , j]))
@@ -216,7 +216,7 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
 }
 
 # estimate theta1
-estimate.state_space.theta1 <- function(yuima, start, method = "L-BFGS-B", envir = globalenv(),
+estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(),
                                         lower, upper, theta1, rcpp, drop_terms, ...) {
   # validate arguments
   if (missing(yuima)) {
@@ -269,7 +269,7 @@ estimate.state_space.theta1 <- function(yuima, start, method = "L-BFGS-B", envir
     is.observed.column[i] <- all(yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i]) == "(0)"))
     is.unobserved.column[i] <- all(!yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i]) == "(0)"))
   }
-  if (!all(is.observed.column || is.unobserved.column)) {
+  if (!all(is.observed.column | is.unobserved.column)) {
     yuima.stop("Invalid diffusion matrix. Cannnot divide columns to observed/unobserved.")
   }
   observed.diffusion <- lapply(yuima@model@diffusion[yuima@model@is.observed], function(x) x[is.observed.column])[[1]]
@@ -375,6 +375,12 @@ estimate.state_space.theta1 <- function(yuima, start, method = "L-BFGS-B", envir
       vcov <- rrr
     }
   }
+  
+  dummycov<-matrix(0,length(coef),length(coef))
+  rownames(dummycov)<-names(coef)
+  colnames(dummycov)<-names(coef)
+  dummycov[rownames(vcov),colnames(vcov)]<-vcov
+  vcov<-dummycov
 
   # align return value and return
   final_res <- new("yuima.qmle",
@@ -432,7 +438,7 @@ minuslogl.linear_state_space.theta2 <- function(yuima, theta1, theta2, filter_me
   # calculate observed drift
   observed.drift.expr <- yuima@model@drift[is.observed]
   unobserved.variables <- yuima@model@state.variable[!is.observed]
-  observed.drift <- .Call("driftTermCpp", observed.drift.expr, unobserved.variables, m, tmp.env, PACKAGE = "yuima")
+  observed.drift <- driftTermCpp(observed.drift.expr, unobserved.variables, m, tmp.env)
 
   # variables to calculate likelihood
   h <- env$h # time interval of observations
@@ -442,7 +448,7 @@ minuslogl.linear_state_space.theta2 <- function(yuima, theta1, theta2, filter_me
   # calculate likelihood
   QL <- 0
   if (rcpp) {
-    QL <- minusloglcpp.linear_state_space.theta2(observed.drift, observed.diffusion, vec, h, drop_terms)
+    QL <- minusloglcpp_linear_state_space_theta2(observed.drift, observed.diffusion, vec, h, drop_terms)
   } else {
     for (j in (drop_terms + 1):n) {
       yB <- tcrossprod(as.matrix(observed.diffusion[, , j]))
@@ -509,8 +515,15 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   mydots$fn <- as.name("f")
   mydots$par <- unlist(new.start)
   mydots$hessian <- TRUE
-  mydots$upper <- as.numeric(unlist(new.upper))
-  mydots$lower <- as.numeric(unlist(new.lower))
+  if(method == "L-BFGS-B" | method == "Brent"){
+    mydots$upper <- as.numeric(unlist(new.upper))
+    mydots$lower <- as.numeric(unlist(new.lower))
+  }else{
+    mydots$upper <- NULL
+    mydots$lower <- NULL
+  }
+    
+  
   ### remove unnecessary params from `mydots`
   mydots$start <- NULL
   mydots$envir <- NULL
@@ -568,6 +581,12 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
       vcov <- rrr
     }
   }
+  
+  dummycov<-matrix(0,length(coef),length(coef))
+  rownames(dummycov)<-names(coef)
+  colnames(dummycov)<-names(coef)
+  dummycov[rownames(vcov),colnames(vcov)]<-vcov
+  vcov<-dummycov
 
   # align return value and return
   final_res <- new("yuima.qmle",

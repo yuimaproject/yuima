@@ -45,7 +45,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
       is.observed.column[i]   = all( yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i])=="(0)"))
       is.unobserved.column[i] = all(!yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i])=="(0)"))
     }
-    if(!all(is.observed.column || is.unobserved.column)) {
+    if(!all(is.observed.column | is.unobserved.column)) {
       yuima.stop('Invalid diffusion matrix. Cannnot divide columns to observed/unobserved.')
     }
     observed.diffusion.expr   <- lapply(yuima@model@diffusion[is.observed.equation],  function(x) x[is.observed.column])
@@ -82,11 +82,11 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
         delta_smaller_than = delta.vcov.solve
         K <- ceiling( yuima@sampling@delta / delta_smaller_than )
         delta <- yuima@sampling@delta / K
-        n <- yuima@sampling@n[1]* K + 1
-        time.points = as.matrix(1:n/delta)
+        n <- yuima@sampling@n[1]* K 
+        time.points = as.matrix((0:n)*delta)
         # Use Ricatti equation. a, b, c, sigma is dependent of t. so returns evaluated values in 3-dim matrix.
         eval_exp <- function(expr, variable=yuima@model@time.variable, data=time.points, env=tmp.env) {
-            vec <- .Call("diffusionTermCpp", expr, variable, data, env, PACKAGE = "yuima")
+            vec <- diffusionTermCpp(expr, variable, data, env)
             res <- array(vec, dim = c(length(expr),length(expr[[1]]), length(data)))
             return(res)
         }
@@ -112,24 +112,23 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
         if(sum(yuima@model@is.observed) == 1 && sum(!yuima@model@is.observed) == 1) {
           res <- (observed.diffusion %*% t(observed.diffusion)) * abs(unobserved.drift.slope) / (observed.drift.slope^2) * (sqrt(1 + ((unobserved.diffusion %*% t(unobserved.diffusion)) * observed.drift.slope ^ 2)/((observed.diffusion %*% t(observed.diffusion)) * unobserved.drift.slope ^ 2)) - 1)
         } else {
-          res <- .Call("calc_filter_vcov_are",
+          res <- calc_filter_vcov_are(
                   unobserved.drift.slope,
                   unobserved.diffusion,
                   observed.drift.slope,
-                  observed.diffusion, PACKAGE="yuima")
+                  observed.diffusion)
         }
         # solve mean
         if(explicit) {
             vcov <- res
-            mean <- .Call("calc_filter_mean_explicit",
+            mean <- calc_filter_mean_explicit(
                 unobserved.drift.slope,
                 observed.drift.slope,
                 observed.diffusion,
                 vcov,
                 mean_init,
                 delta,
-                delta.observed.variable,
-                PACKAGE="yuima"
+                delta.observed.variable
             )
             vcov <- array(vcov, dim=c(dim(vcov),yuima@sampling@n[1] + 1)) # vcov to return
         } else {
@@ -144,7 +143,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
             observed.drift.intercept <- arrayize(observed.drift.intercept)
             observed.drift.slope <- arrayize(observed.drift.slope)
             observed.diffusion <- arrayize(observed.diffusion)
-            mean <- .Call("calc_filter_mean",
+            mean <- calc_filter_mean(
                 unobserved.drift.slope, 
                 unobserved.drift.intercept,
                 unobserved.diffusion,
@@ -155,17 +154,16 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
                 inv_sq_ob_diff,
                 mean_init,
                 yuima@sampling@delta, 
-                delta.observed.variable,
-                PACKAGE="yuima"
+                delta.observed.variable
             )
         }
     } else {
-	    res <- .Call("calc_filter_vcov",
+	    res <- calc_filter_vcov(
             unobserved.drift.slope, 
             unobserved.diffusion,
             observed.drift.slope,
             observed.diffusion,
-            vcov_init, delta, PACKAGE="yuima")
+            vcov_init, delta)
         vcov <- res$vcov
         inv_sq_ob_diff <- res$inv_sq_ob_diff
         
@@ -187,7 +185,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
         inv_sq_ob_diff <- get.subsampling(inv_sq_ob_diff)
         
         # solve m
-        mean <- .Call("calc_filter_mean",
+        mean <- calc_filter_mean(
             unobserved.drift.slope, 
             unobserved.drift.intercept,
             unobserved.diffusion,
@@ -198,8 +196,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
             inv_sq_ob_diff,
             mean_init,
             yuima@sampling@delta, 
-            delta.observed.variable,
-            PACKAGE="yuima")
+            delta.observed.variable)
     }
     rownames(mean) <- unobserved.variables
     ts.mean <- ts(t(mean), start = start(yuima@data@zoo.data[[1]]), frequency = frequency(yuima@data@zoo.data[[1]]))
