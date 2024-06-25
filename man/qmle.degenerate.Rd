@@ -59,7 +59,79 @@ Time-inhomogeneous diffusions are not supported.
 \code{\link{qmle}}
 }
 \examples{
-To be written.
+## dXt = theta3*Yt*dt
+## dYt = -theta2*(Xt+Yt)dt + theta1*dWt
+
+## Setting of the model
+drift <- c("theta3*y", "-theta2*(x+y)")
+diff.mat <- matrix(c(0, 0, 0, "theta1"), 2, 2)
+ymod <- setModel(drift = drift, diffusion = diff.mat,
+                 state.variable=c("x", "y"),solve.variable=c("x", "y"))
+param <- list(theta1=1, theta2=2, theta3=0.7)
+
+## Setting of the sampling scheme 
+n <- 900
+ysamp <- setSampling(Terminal = n/100, n = 10*n)
+ysubsamp <- setSampling(Terminal = n/100, n = n)
+yuima1 <- setYuima(model = ymod, sampling = ysamp)
+
+## Simulation
+set.seed(111)
+yuima <- simulate(yuima1, xinit=c(1, 1), true.parameter = param)
+yuima <- subsampling(yuima, ysubsamp)
+plot(yuima)
+
+## Adaptive one-step estimation 
+start <- list(theta1=0.5, theta2=0.5, theta3=0.5)
+lower <- list(theta1=0.1, theta2=0.1, theta3=0.1)
+upper <- list(theta1=5, theta2=5, theta3=5)
+res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
+print(res)
+
+## Monte Carlo simulation
+system.time(result <- replicate(100, 
+  {yuima <- simulate(yuima1, xinit=c(1, 1), true.parameter = param)
+  yuima <- subsampling(yuima, ysubsamp)
+  out <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
+  return(out@coef)
+  }))
+summary(t(result))
+
+## Joint estimation
+set.seed(123)
+yuima <- simulate(yuima1, xinit=c(1, 1), true.parameter = param)
+yuima <- subsampling(yuima, ysubsamp)
+res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper,
+                       joint = T)
+print(res)
+
+## Fix theta1 to the true value
+res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper, 
+                       fixed = list(theta1 =1))
+print(res)
+
+## Multi-dimensional case
+drift <- c("a1*z", "a2*(z+w)", "-b1*x-z", "-b2*(x+y)-w")
+diff.mat <- matrix(c(0,0,0,0,0,0,0,0,0,0,0, "sigma1", 0, 0,"sigma2", "sigma3"), 4, 4,byrow=TRUE)
+ymod <- setModel(drift = drift, diffusion = diff.mat,
+                 state.variable=c("x", "y", "z", "w"),solve.variable=c("x", "y", "z", "w"))
+param <- list(a1=1,a2=0.5,b1=1,b2=0.5,sigma1=1,sigma2=0.5,sigma3=0.5)
+
+n <- 100
+ysamp <- setSampling(Terminal = n/10, n = 10*n)
+ysubsamp <- setSampling(Terminal = n/10, n = n)
+yuima1 <- setYuima(model = ymod, sampling = ysamp)
+
+set.seed(111)
+yuima <- simulate(yuima1, xinit=c(1, 1, 1, 1), true.parameter = param)
+yuima <- subsampling(yuima, ysubsamp)
+plot(yuima)
+
+start <- list(a1=2,a2=2,b1=2,b2=2,sigma1=2,sigma2=2,sigma3=2)
+lower <- list(a1=0.1,a2=0.1,b1=0.1,b2=0.1,sigma1=0.1,sigma2=0.1,sigma3=0.1)
+upper <- list(a1=5,a2=5,b1=5,b2=5,sigma1=5,sigma2=5,sigma3=5)
+res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
+print(res)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
