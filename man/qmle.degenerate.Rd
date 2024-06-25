@@ -88,15 +88,6 @@ upper <- list(theta1=5, theta2=5, theta3=5)
 res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
 print(res)
 
-## Monte Carlo simulation
-system.time(result <- replicate(100, 
-  {yuima <- simulate(yuima1, xinit=c(1, 1), true.parameter = param)
-  yuima <- subsampling(yuima, ysubsamp)
-  out <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
-  return(out@coef)
-  }))
-summary(t(result))
-
 ## Joint estimation
 set.seed(123)
 yuima <- simulate(yuima1, xinit=c(1, 1), true.parameter = param)
