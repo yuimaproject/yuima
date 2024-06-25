@@ -71,8 +71,6 @@ minusH1 <- function(yuima, theta1, idx.x, print = FALSE, env){
   
   if(length(idx.x) == 1){  # one dimensional X
     
-    n <- length(Cmat)
-    
     for(j in 1:n){
       yB <- Cmat[j]^2
       logdet <- log(yB)
@@ -81,8 +79,6 @@ minusH1 <- function(yuima, theta1, idx.x, print = FALSE, env){
     }
     
   } else {  # multidimensional X
-    
-    n <- dim(Cmat)[3]
     
     for(j in 1:n){
       yB <- tcrossprod(Cmat[ , ,j]) 
@@ -124,8 +120,6 @@ minusH2 <- function(yuima, theta2, idx.x, Cmat, print = FALSE, env){
   
   if(length(idx.x) == 1){  # one dimensional X
     
-    n <- length(Cmat)
-    
     for(j in 1:n){
       yB <- Cmat[j]^2
       pn <- -0.5 * (vec[j] - hA[j])^2/(h*yB)
@@ -133,8 +127,6 @@ minusH2 <- function(yuima, theta2, idx.x, Cmat, print = FALSE, env){
     }
     
   } else {  # multidimensional X
-    
-    n <- dim(Cmat)[3]
     
     for(j in 1:n){
       yB <- tcrossprod(Cmat[ , ,j]) 
