@@ -26,7 +26,7 @@ qmle.degenerate(yuima, start, method = "L-BFGS-B",
   \item{\dots}{passed to \code{\link{optim}}.}
 }
 \details{
-When \code{joint=TRUE}, the function calculates the non-adaptive estimator presented in Section 6 of Gloter and Yoshida (2020). 
+When \code{joint=TRUE}, the function calculates the non-adaptive estimator presented in Gloter and Yoshida (2024). 
 
 When \code{joint=FALSE}, the function calculates the adaptive one-step estimator presented in Section 4 of Gloter and Yoshida (2021) with the initial estimator constructed as in Section 3 of Gloter and Yoshida (2021).
 }
@@ -41,6 +41,9 @@ Gloter, A. and Yoshida, N. (2020)
   
 Gloter, A. and Yoshida, N. (2021)
   Adaptive estimation for degenerate diffusion processes, \emph{Electronic Journal of Statistics}, \bold{15}, 1424--1472.
+  
+Gloter, A. and Yoshida, N. (2024)
+  Non-adaptive estimation for degenerate diffusion processes, \emph{Theory of Probability and Mathematical Statistics}, \bold{110}, 75--99.
 }
 \author{
 Yuta Koike with YUIMA Project Team
@@ -48,7 +51,7 @@ Yuta Koike with YUIMA Project Team
 \note{
 The model coefficients must be symbolically differentiable. 
 
-If "x" is a component of \code{state.variable}, the character \code{"deltax"} should not be used as any variable name of the model as they are internally used for other variable names. 
+If "x" is a component of \code{state.variable}, the character \code{"deltax"} should not be used as any variable name of the model since they are internally used for other variable names. 
 
 Time-inhomogeneous diffusions are not supported.
 }
@@ -92,10 +95,10 @@ print(res)
 set.seed(123)
 yuima <- simulate(yuima1, xinit=c(1, 1), true.parameter = param)
 yuima <- subsampling(yuima, ysubsamp)
-res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper,
-                       joint = T)
+res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper, joint = TRUE)
 print(res)
 
+\dontrun{
 ## Fix theta1 to the true value
 res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper, 
                        fixed = list(theta1 =1))
@@ -123,6 +126,7 @@ lower <- list(a1=0.1,a2=0.1,b1=0.1,b2=0.1,sigma1=0.1,sigma2=0.1,sigma3=0.1)
 upper <- list(a1=5,a2=5,b1=5,b2=5,sigma1=5,sigma2=5,sigma3=5)
 res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
 print(res)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):

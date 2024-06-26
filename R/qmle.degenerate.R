@@ -67,6 +67,8 @@ minusH1 <- function(yuima, theta1, idx.x, print = FALSE, env){
   h <- env$h
   vec <- env$deltaX
   
+  n <- nrow(as.matrix(onezoo(yuima))) - 1
+  
   QL <- 0
   
   if(length(idx.x) == 1){  # one dimensional X
@@ -113,6 +115,8 @@ minusH2 <- function(yuima, theta2, idx.x, Cmat, print = FALSE, env){
   
   h <- env$h
   vec <- env$deltaX
+  
+  n <- nrow(as.matrix(onezoo(yuima))) - 1
   
   hA <- h * drift.term(yuima, theta2, env)[ ,idx.x]
   
