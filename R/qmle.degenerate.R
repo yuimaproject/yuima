@@ -336,7 +336,7 @@ init.est.theta2 <- function(yuima, start, method = "L-BFGS-B", #fixed = list(),
 
 
 ## main part
-qmle.degenerate <- function(yuima, start, method = "L-BFGS-B", 
+qmleDegenerate <- function(yuima, start, method = "L-BFGS-B", 
                             fixed = list(), print = FALSE, 
                             envir = globalenv(), 
                             lower, upper, joint = FALSE, ...){
@@ -389,11 +389,11 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     new.upper <- upper[!is.element(names(upper), names(fixed))]
     
     #Kurisaki 5/23/2021
-    res <- qmle.degenerate(new.yuima, start = new.start, 
-                           method = method, fixed = list(), 
-                           print = print, envir = envir, 
-                           lower = new.lower, upper = new.upper, 
-                           joint = joint, ...)
+    res <- qmleDegenerate(new.yuima, start = new.start, 
+                          method = method, fixed = list(), 
+                          print = print, envir = envir, 
+                          lower = new.lower, upper = new.upper, 
+                          joint = joint, ...)
     
     res@call <- match.call()
     res@model <- yuima@model
@@ -922,7 +922,10 @@ qmle.degenerate <- function(yuima, start, method = "L-BFGS-B",
     #vcov <- bdiag(solve(as.matrix(ddH1)),
     #              solve(as.matrix(ddH2)),
     #              solve(as.matrix(ddH3)))
-    vcov <- bdiag(vcov1, vcov2, vcov3)
+    #vcov <- bdiag(vcov1, vcov2, vcov3)
+    vcov <- rbind(cbind(vcov1, matrix(0, nrow(vcov1), ncol(vcov2) + ncol(vcov3))),
+                  cbind(matrix(0, nrow(vcov2), ncol(vcov1)), vcov2, matrix(0, nrow(vcov2), ncol(vcov3))),
+                  cbind(matrix(0, nrow(vcov3), ncol(vcov1) + ncol(vcov2)), vcov3))
     #se <- sqrt(diag(vcov))
     
     #myfixed <- as.numeric(rep(NA, length(coef.onestep)))

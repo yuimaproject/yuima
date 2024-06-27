@@ -1,5 +1,5 @@
-\name{qmle.degenerate}
-\alias{qmle.degenerate}
+\name{qmleDegenerate}
+\alias{qmleDegenerate}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Quasi-likelihood estimation for degenerate diffusion processes
@@ -8,7 +8,7 @@ Quasi-likelihood estimation for degenerate diffusion processes
 Calculate a quasi maximum likelihood type estimator for the parameters of a degenerate diffusion process based on discrete observation data.
 }
 \usage{
-qmle.degenerate(yuima, start, method = "L-BFGS-B", 
+qmleDegenerate(yuima, start, method = "L-BFGS-B", 
                 fixed = list(), print = FALSE, 
                 envir = globalenv(), lower, upper, 
                 joint = FALSE, ...)
@@ -88,19 +88,19 @@ plot(yuima)
 start <- list(theta1=0.5, theta2=0.5, theta3=0.5)
 lower <- list(theta1=0.1, theta2=0.1, theta3=0.1)
 upper <- list(theta1=5, theta2=5, theta3=5)
-res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
+res <- qmleDegenerate(yuima, start = start, lower = lower,upper = upper)
 print(res)
 
+\dontrun{
 ## Joint estimation
 set.seed(123)
 yuima <- simulate(yuima1, xinit=c(1, 1), true.parameter = param)
 yuima <- subsampling(yuima, ysubsamp)
-res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper, joint = TRUE)
+res <- qmleDegenerate(yuima, start = start, lower = lower,upper = upper, joint = TRUE)
 print(res)
 
-\dontrun{
 ## Fix theta1 to the true value
-res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper, 
+res <- qmleDegenerate(yuima, start = start, lower = lower,upper = upper, 
                        fixed = list(theta1 =1))
 print(res)
 
@@ -124,7 +124,7 @@ plot(yuima)
 start <- list(a1=2,a2=2,b1=2,b2=2,sigma1=2,sigma2=2,sigma3=2)
 lower <- list(a1=0.1,a2=0.1,b1=0.1,b2=0.1,sigma1=0.1,sigma2=0.1,sigma3=0.1)
 upper <- list(a1=5,a2=5,b1=5,b2=5,sigma1=5,sigma2=5,sigma3=5)
-res <- qmle.degenerate(yuima, start = start, lower = lower,upper = upper)
+res <- qmleDegenerate(yuima, start = start, lower = lower,upper = upper)
 print(res)
 }
 }

@@ -244,7 +244,7 @@ export(IC)
 export(snr)
 export(JBtest)
 export(DataPPR)
-export(qmle.degenerate) # added by YK
+export(qmleDegenerate) # added by YK
 
 export(Intensity.PPR)
 
