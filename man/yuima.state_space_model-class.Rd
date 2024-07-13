@@ -7,10 +7,10 @@
 \alias{limiting.gamma,yuima.state_space_model-method}
 \alias{simulate,yuima.state_space_model-method}
 
-\title{Class for the Mathematical Description of Linear State Space Models}
+\title{Class for the Mathematical Description of State Space Models}
 \description{
   The \code{yuima.state_space_model} class is a class in the \pkg{yuima} package
-  for the mathematical description and simulation of linear state space models.
+  for the mathematical description and simulation of state space models.
 }
 \section{Slots}{
   \describe{
