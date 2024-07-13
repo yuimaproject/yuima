@@ -7,46 +7,35 @@
 \alias{limiting.gamma,yuima.state_space_model-method}
 \alias{simulate,yuima.state_space_model-method}
 
-\title{Classes for the mathematical description of state space model}
+\title{Class for the Mathematical Description of Linear State Space Models}
 \description{
-  The \code{yuima.state_space_model} class is a class of the  \pkg{yuima} package.
+  The \code{yuima.state_space_model} class is a class in the \pkg{yuima} package
+  for the mathematical description and simulation of linear state space models.
 }
 \section{Slots}{
   \describe{
-    \item{\code{drift}:}{is an \R{} expression which specifies the drift
-	 coefficient (a vector).}
-    \item{\code{diffusion}:}{is an \R{} expression which specifies the diffusion
-     coefficient (a matrix).}
-    \item{\code{hurst}:}{the Hurst parameter of the gaussian noise. If
-	 \code{h=0.5}, the process is Wiener otherwise it is fractional Brownian
-	 motion with that precise value of the Hurst index. Can be set to \code{NA} for further specification.}
-    \item{\code{jump.coeff}:}{a matrix of \code{expression}s for the jump
-	 component.}
-    \item{\code{measure}:}{Levy measure for jump variables.}
-    \item{\code{measure.type}:}{Type specification for Levy measures.}
-    \item{state.variable}{a vector of names identifying the names used to
-     denote the state variable in the drift and diffusion specifications.}
-    \item{\code{parameter}:}{which is a short name for ``parameters'', is an
-	 object of class \code{\link{model.parameter-class}}. For more details see
-	 \code{\link{model.parameter-class}} documentation page.}
-    \item{\code{state.variable}:}{identifies the state variables in the \R{}
-     expression.}
-    \item{\code{jump.variable}:}{identifies the variable for the jump
-	 coefficient.}
-    \item{\code{time.variable}:}{the time variable.}
-    \item{\code{noise.number}:}{denotes the number of sources of noise.
-	 Currently only for the Gaussian part.}
-    \item{\code{equation.number}:}{denotes the dimension of the stochastic
-     differential equation.}
-    \item{\code{dimension}:}{the dimensions of the parameter given in the
-     \code{parameter} slot.}
-    \item{\code{solve.variable}:}{identifies the variable with respect to which
-	 the stochastic differential equation has to be solved.}
-    \item{\code{xinit}:}{contains the initial value of the stochastic
-	 differential equation.}
-    \item{\code{J.flag}:}{whether jump.coeff include jump.variable.}
-    \item{\code{is.observed}:}{whether each state variable is observed (i.e. data is given) or not}
-  }
+    \item{\code{drift}:}{An \R{} expression specifying the drift coefficient (a vector).}
+    \item{\code{diffusion}:}{An \R{} expression specifying the diffusion coefficient (a matrix).}
+    \item{\code{hurst}:}{The Hurst parameter of the Gaussian noise. If \code{hurst=0.5}, 
+    the process is a Wiener process; otherwise, it is fractional Brownian motion 
+    with the specified Hurst index. Can be set to \code{NA} for further specification.}
+    \item{\code{jump.coeff}:}{A matrix of \R{} expressions for the jump component.}
+    \item{\code{measure}:}{The Levy measure for jump variables.}
+    \item{\code{measure.type}:}{The type specification for Levy measures.}
+    \item{\code{state.variable}:}{A vector of names identifying the state variables 
+    used in the drift and diffusion specifications.}
+    \item{\code{parameter}:}{An object of class \code{\link{model.parameter-class}}, 
+    representing the model parameters. 
+    For more details, see the \code{\link{model.parameter-class}} documentation page.}
+    \item{\code{jump.variable}:}{The variable for the jump coefficient.}
+    \item{\code{time.variable}:}{The time variable.}
+    \item{\code{noise.number}:}{The number of sources of noise, currently only for the Gaussian part.}
+    \item{\code{equation.number}:}{The dimension of the stochastic differential equation.}
+    \item{\code{dimension}:}{The dimensions of the parameter given in the \code{parameter} slot.}
+    \item{\code{solve.variable}:}{The variable with respect to which the stochastic differential equation is solved.}
+    \item{\code{xinit}:}{The initial value of the stochastic differential equation.}
+    \item{\code{J.flag}:}{Indicates whether \code{jump.coeff} includes \code{jump.variable}.}
+    \item{\code{is.observed}:}{Indicates whether each state variable is observed (i.e., data is given) or not.}
 }
 \author{The YUIMA Project Team}
 \keyword{classes}
