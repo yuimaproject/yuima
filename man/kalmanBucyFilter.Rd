@@ -5,36 +5,33 @@
 Kalman-Bucy Filter
 }
 \description{
-Estimate values of unobserved variables from observed variables in a Linear State Space Model.
+Estimates values of unobserved variables from observed variables in a Linear State Space Model.
 }
 \usage{
 kalmanBucyFilter(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, env = globalenv())
 }
 \arguments{
-  \item{yuima}{A yuima object. The class of \code{yuima@model} must be `yuima.linear_state_space_model`.
-}
-  \item{params}{A list of numeric values representing names and values of parameters.}
+  \item{yuima}{A yuima object. The class of \code{yuima@model} must be \code{yuima.linear_state_space_model}.}
+  \item{params}{A list of numeric values representing the names and values of parameters.}
   \item{mean_init}{A numeric value representing the initial value of unobserved variables.}
-  \item{vcov_init}{A matrix representing the initial variance-covariance value of unobserved variables. This is required if \code{are = FALSE}. It can be a numeric of length 1 if the length of observed.variables is 1.}
-  \item{delta.vcov.solve}{A numeric value representing the step size in solving vcov.}
-  \item{are}{A logical value. If \code{TRUE}, solve the algebraic Ricatti equation.}
-  \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filitering equation.}
-  \item{env}{An environment. The environment where the model coefficients are evaluated.}
+  \item{vcov_init}{A matrix representing the initial variance-covariance value of unobserved variables. This is required if \code{are = FALSE}. It can be a numeric of length 1 if the number of observed variables is 1.}
+  \item{delta.vcov.solve}{A numeric value representing the step size in solving the variance-covariance equation.}
+  \item{are}{A logical value. If \code{TRUE}, solve the algebraic Riccati equation.}
+  \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filtering equation.}
+  \item{env}{An environment. The environment in which the model coefficients are evaluated.}
 }
 \value{
 A \code{\link{yuima.kalmanBucyFilter}} object.
 \item{model}{A \code{\link{yuima.linear_state_space_model}} object.}
-\item{mean}{A \code{\link{ts}} object. Estimated values of unobserved variables.}
-\item{vcov}{An array object. Estimated variance-covariance matrix of unobserved variables.}
+\item{mean}{A \code{\link{ts}} object containing the estimated values of unobserved variables.}
+\item{vcov}{An array object containing the estimated variance-covariance matrix of unobserved variables.}
 \item{mean.init}{A numeric value representing the initial value of unobserved variables.}
-\item{vcov.init}{A matrix representing the initial vcov value of unobserved variables.}
-\item{delta}{A numeric value representing the time delta of observations.}
+\item{vcov.init}{A matrix representing the initial variance-covariance value of unobserved variables.}
+\item{delta}{A numeric value representing the time step of observations.}
 \item{data}{A \code{\link{yuima.data}} object.}
 }
 \references{
-## Kalman Bucy filter
-
-Liptser, R. S., &amp; Shirjaev, A. N. (2001). Statistics of random processes. General theory. Springer. 
+Liptser, R. S., & Shiryaev, A. N. (2001). \emph{Statistics of Random Processes: General Theory}. Springer.
 }
 \author{YUIMA TEAM}
 \examples{
