@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -28,20 +28,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Simulator function for multi-dimensional stochastic processes</h1>
-    
+
     <div class="hidden name"><code>simulate.Rd</code></div>
     </div>
 
@@ -57,50 +57,51 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>object</dt>
-<dd><p>an <code><a href="yuima-class.html">yuima-class</a></code>, 
+    <p></p>
+<dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
+<dd><p>an <code><a href="yuima-class.html">yuima-class</a></code>,
     <code><a href="yuima.model-class.html">yuima.model-class</a></code> or <code><a href="yuima.carma-class.html">yuima.carma-class</a></code>  object.</p></dd>
 
-  <dt>xinit</dt>
+  <dt id="arg-xinit">xinit<a class="anchor" aria-label="anchor" href="#arg-xinit"></a></dt>
 <dd><p>initial value vector of state variables.</p></dd>
 
-  <dt>true.parameter</dt>
+  <dt id="arg-true-parameter">true.parameter<a class="anchor" aria-label="anchor" href="#arg-true-parameter"></a></dt>
 <dd><p>named list of parameters.</p></dd>
 
-  <dt>space.discretized</dt>
+  <dt id="arg-space-discretized">space.discretized<a class="anchor" aria-label="anchor" href="#arg-space-discretized"></a></dt>
 <dd><p>flag to switch to space-discretized Euler
 	Maruyama method.</p></dd>
 
-  <dt>increment.W</dt>
+  <dt id="arg-increment-w">increment.W<a class="anchor" aria-label="anchor" href="#arg-increment-w"></a></dt>
 <dd><p>to specify Wiener increment for each time tics in advance.</p></dd>
 
-  <dt>increment.L</dt>
+  <dt id="arg-increment-l">increment.L<a class="anchor" aria-label="anchor" href="#arg-increment-l"></a></dt>
 <dd><p>to specify Levy increment for each time tics in advance.</p></dd>
 
-  <dt>method</dt>
+  <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>string Variable for simulation scheme. The default value <code>method=euler</code> uses the euler discretization  for the simulation of a sample path.</p></dd>
 
-  <dt>nsim</dt>
-<dd><p>Not used yet. Included only to match the standard genenirc in 
+  <dt id="arg-nsim">nsim<a class="anchor" aria-label="anchor" href="#arg-nsim"></a></dt>
+<dd><p>Not used yet. Included only to match the standard genenirc in
 	package <code>stats</code>.</p></dd>
 
-  <dt>seed</dt>
-<dd><p>Not used yet. Included only to match the standard genenirc in 
+  <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Not used yet. Included only to match the standard genenirc in
 	package <code>stats</code>.</p></dd>
 
-  <dt>hurst</dt>
+  <dt id="arg-hurst">hurst<a class="anchor" aria-label="anchor" href="#arg-hurst"></a></dt>
 <dd><p>value of Hurst parameter for simulation of the fGn. Overrides the specified hurst slot.</p></dd>
 
-  <dt>methodfGn</dt>
+  <dt id="arg-methodfgn">methodfGn<a class="anchor" aria-label="anchor" href="#arg-methodfgn"></a></dt>
 <dd><p>simulation methods for fractional Gaussian noise.</p></dd>
 
-  <dt>...</dt>
+  <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>passed to <code><a href="setSampling.html">setSampling</a></code> to create a sampling</p></dd>
 
-  <dt>sampling</dt>
+  <dt id="arg-sampling">sampling<a class="anchor" aria-label="anchor" href="#arg-sampling"></a></dt>
 <dd><p>a <code><a href="yuima.sampling-class.html">yuima.sampling-class</a></code> object.</p></dd>
 
-  <dt>subsampling</dt>
+  <dt id="arg-subsampling">subsampling<a class="anchor" aria-label="anchor" href="#arg-subsampling"></a></dt>
 <dd><p>a <code><a href="yuima.sampling-class.html">yuima.sampling-class</a></code> object.</p></dd>
 
 </dl></div>
@@ -114,17 +115,18 @@ discretized Euler-Maruyama method for one dimensional SDE.</p>
 fractional Gaussian noise awith/without jumps.</p>
 <p>If a <code><a href="yuima-class.html">yuima-class</a></code> object is passed as input, then the sampling
 information is taken from the slot <code>sampling</code> of the object.
-If a <code><a href="yuima.carma-class.html">yuima.carma-class</a></code> object, a <code><a href="yuima.model-class.html">yuima.model-class</a></code> object or a 
+If a <code><a href="yuima.carma-class.html">yuima.carma-class</a></code> object, a <code><a href="yuima.model-class.html">yuima.model-class</a></code> object or a
 <code><a href="yuima-class.html">yuima-class</a></code> object with missing <code>sampling</code> slot is passed
 as input the <code>sampling</code> argument is used. If this argument is missing
 then the sampling structure is constructed from <code>Initial</code>, <code>Terminal</code>,
-etc. arguments (see <code><a href="setSampling.html">setSampling</a></code> for details on how to use these 
+etc. arguments (see <code><a href="setSampling.html">setSampling</a></code> for details on how to use these
 arguments).</p>
 <p>For a COGARCH(p,q) process setting <code>method=mixed</code> implies that the simulation scheme is based on the solution of the state space process. For the case in which the underlying noise is a compound poisson Levy process, the trajectory is build firstly by simulation of the jump time, then the quadratic variation and the increments noise are simulated exactly at jump time. For the others Levy process, the simulation scheme is based on the discretization of the state space process solution.</p>
     </div>
     <div id="value">
     <h2>Value</h2>
-    <dl><dt>yuima</dt>
+    <p></p>
+<dl><dt>yuima</dt>
 <dd><p>a <code>yuima-class</code> object.</p></dd>
 
 </dl></div>
@@ -236,7 +238,7 @@ arguments).</p>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ou1</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="simulate-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A multi-dimensional (correlated) diffusion process. </span></span></span>
 <span class="r-in"><span><span class="co"># To describe the following model: </span></span></span>
@@ -493,7 +495,7 @@ arguments).</p>
 <span class="r-in"><span>                     sampling<span class="op">=</span><span class="va">samp</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sim.carma1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -508,15 +510,15 @@ arguments).</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

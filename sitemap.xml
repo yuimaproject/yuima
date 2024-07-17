@@ -1,345 +1,117 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/CPoint.html</loc>
-  </url>
-  <url>
-    <loc>/reference/CarmaNoise.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DataPpr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Diagnostic.Carma.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Diagnostic.Cogarch.html</loc>
-  </url>
-  <url>
-    <loc>/reference/EstimCarmaHawkes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/FromCF2yuima_law.html</loc>
-  </url>
-  <url>
-    <loc>/reference/IC.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Intensity.PPR.html</loc>
-  </url>
-  <url>
-    <loc>/reference/JBtest.html</loc>
-  </url>
-  <url>
-    <loc>/reference/LawMethods.html</loc>
-  </url>
-  <url>
-    <loc>/reference/LogSPX.html</loc>
-  </url>
-  <url>
-    <loc>/reference/MWK151.html</loc>
-  </url>
-  <url>
-    <loc>/reference/adaBayes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ae.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeCharacteristic.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeDensity.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeExpectation.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeKurtosis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeMarginal.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeMean.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeMoment.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeSd.html</loc>
-  </url>
-  <url>
-    <loc>/reference/aeSkewness.html</loc>
-  </url>
-  <url>
-    <loc>/reference/asymptotic_term.html</loc>
-  </url>
-  <url>
-    <loc>/reference/bns.test.html</loc>
-  </url>
-  <url>
-    <loc>/reference/carma.info-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/carmaHawkes.info-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cce.factor.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cce.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cogarch.info-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cogarchNoise.html</loc>
-  </url>
-  <url>
-    <loc>/reference/estimation_LRM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fitCIR.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get.counting.data.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hyavar.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/info.Map.html</loc>
-  </url>
-  <url>
-    <loc>/reference/info.Ppr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/lambdaFromData.html</loc>
-  </url>
-  <url>
-    <loc>/reference/lasso.html</loc>
-  </url>
-  <url>
-    <loc>/reference/limiting.gamma.html</loc>
-  </url>
-  <url>
-    <loc>/reference/llag.html</loc>
-  </url>
-  <url>
-    <loc>/reference/llag.test.html</loc>
-  </url>
-  <url>
-    <loc>/reference/lm.jumptest.html</loc>
-  </url>
-  <url>
-    <loc>/reference/lseBayes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mllag.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mmfrac.html</loc>
-  </url>
-  <url>
-    <loc>/reference/model.parameter-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mpv.html</loc>
-  </url>
-  <url>
-    <loc>/reference/noisy.sampling.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ntv.html</loc>
-  </url>
-  <url>
-    <loc>/reference/param.Map.html</loc>
-  </url>
-  <url>
-    <loc>/reference/phi.test.html</loc>
-  </url>
-  <url>
-    <loc>/reference/poisson.random.sampling.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pz.test.html</loc>
-  </url>
-  <url>
-    <loc>/reference/qgv.html</loc>
-  </url>
-  <url>
-    <loc>/reference/qmle.html</loc>
-  </url>
-  <url>
-    <loc>/reference/qmleLevy.html</loc>
-  </url>
-  <url>
-    <loc>/reference/rconst.html</loc>
-  </url>
-  <url>
-    <loc>/reference/rng.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setCarma.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setCarmaHawkes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setCharacteristic.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setCogarch.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setData.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setFunctional.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setHawkes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setIntegral.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setLRM.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setLaw.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setLaw_th.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setMap.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setPoisson.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setPpr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setSampling.html</loc>
-  </url>
-  <url>
-    <loc>/reference/setYuima.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simBmllag.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simCIR.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simFunctional.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simulate.html</loc>
-  </url>
-  <url>
-    <loc>/reference/snr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/spectralcov.html</loc>
-  </url>
-  <url>
-    <loc>/reference/subsampling.html</loc>
-  </url>
-  <url>
-    <loc>/reference/toLatex.html</loc>
-  </url>
-  <url>
-    <loc>/reference/wllag.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ybook.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.CP.qmle-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.Hawkes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.LevyRM-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.Map-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.PPR.qmle-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.Ppr.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.ae-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.carma-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.carma.qmle-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.carmaHawkes-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.characteristic-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.cogarch-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.data-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.functional-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.model-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.multimodel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.poisson-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.qmleLevy.incr-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.sampling-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.snr-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/yuima.th-class.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/CPoint.html</loc></url>
+<url><loc>/reference/CarmaNoise.html</loc></url>
+<url><loc>/reference/DataPpr.html</loc></url>
+<url><loc>/reference/Diagnostic.Carma.html</loc></url>
+<url><loc>/reference/Diagnostic.Cogarch.html</loc></url>
+<url><loc>/reference/EstimCarmaHawkes.html</loc></url>
+<url><loc>/reference/FromCF2yuima_law.html</loc></url>
+<url><loc>/reference/IC.html</loc></url>
+<url><loc>/reference/Intensity.PPR.html</loc></url>
+<url><loc>/reference/JBtest.html</loc></url>
+<url><loc>/reference/LawMethods.html</loc></url>
+<url><loc>/reference/LogSPX.html</loc></url>
+<url><loc>/reference/MWK151.html</loc></url>
+<url><loc>/reference/adaBayes.html</loc></url>
+<url><loc>/reference/ae.html</loc></url>
+<url><loc>/reference/aeCharacteristic.html</loc></url>
+<url><loc>/reference/aeDensity.html</loc></url>
+<url><loc>/reference/aeExpectation.html</loc></url>
+<url><loc>/reference/aeKurtosis.html</loc></url>
+<url><loc>/reference/aeMarginal.html</loc></url>
+<url><loc>/reference/aeMean.html</loc></url>
+<url><loc>/reference/aeMoment.html</loc></url>
+<url><loc>/reference/aeSd.html</loc></url>
+<url><loc>/reference/aeSkewness.html</loc></url>
+<url><loc>/reference/asymptotic_term.html</loc></url>
+<url><loc>/reference/bns.test.html</loc></url>
+<url><loc>/reference/carma.info-class.html</loc></url>
+<url><loc>/reference/carmaHawkes.info-class.html</loc></url>
+<url><loc>/reference/cce.factor.html</loc></url>
+<url><loc>/reference/cce.html</loc></url>
+<url><loc>/reference/cogarch.info-class.html</loc></url>
+<url><loc>/reference/cogarchNoise.html</loc></url>
+<url><loc>/reference/estimation_LRM.html</loc></url>
+<url><loc>/reference/fitCIR.html</loc></url>
+<url><loc>/reference/get.counting.data.html</loc></url>
+<url><loc>/reference/hyavar.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/info.Map.html</loc></url>
+<url><loc>/reference/info.Ppr.html</loc></url>
+<url><loc>/reference/lambdaFromData.html</loc></url>
+<url><loc>/reference/lasso.html</loc></url>
+<url><loc>/reference/limiting.gamma.html</loc></url>
+<url><loc>/reference/llag.html</loc></url>
+<url><loc>/reference/llag.test.html</loc></url>
+<url><loc>/reference/lm.jumptest.html</loc></url>
+<url><loc>/reference/lseBayes.html</loc></url>
+<url><loc>/reference/mllag.html</loc></url>
+<url><loc>/reference/mmfrac.html</loc></url>
+<url><loc>/reference/model.parameter-class.html</loc></url>
+<url><loc>/reference/mpv.html</loc></url>
+<url><loc>/reference/noisy.sampling.html</loc></url>
+<url><loc>/reference/ntv.html</loc></url>
+<url><loc>/reference/param.Map.html</loc></url>
+<url><loc>/reference/phi.test.html</loc></url>
+<url><loc>/reference/poisson.random.sampling.html</loc></url>
+<url><loc>/reference/pz.test.html</loc></url>
+<url><loc>/reference/qgv.html</loc></url>
+<url><loc>/reference/qmle.html</loc></url>
+<url><loc>/reference/qmleLevy.html</loc></url>
+<url><loc>/reference/rconst.html</loc></url>
+<url><loc>/reference/rng.html</loc></url>
+<url><loc>/reference/setCarma.html</loc></url>
+<url><loc>/reference/setCarmaHawkes.html</loc></url>
+<url><loc>/reference/setCharacteristic.html</loc></url>
+<url><loc>/reference/setCogarch.html</loc></url>
+<url><loc>/reference/setData.html</loc></url>
+<url><loc>/reference/setFunctional.html</loc></url>
+<url><loc>/reference/setHawkes.html</loc></url>
+<url><loc>/reference/setIntegral.html</loc></url>
+<url><loc>/reference/setLRM.html</loc></url>
+<url><loc>/reference/setLaw.html</loc></url>
+<url><loc>/reference/setLaw_th.html</loc></url>
+<url><loc>/reference/setMap.html</loc></url>
+<url><loc>/reference/setModel.html</loc></url>
+<url><loc>/reference/setPoisson.html</loc></url>
+<url><loc>/reference/setPpr.html</loc></url>
+<url><loc>/reference/setSampling.html</loc></url>
+<url><loc>/reference/setYuima.html</loc></url>
+<url><loc>/reference/simBmllag.html</loc></url>
+<url><loc>/reference/simCIR.html</loc></url>
+<url><loc>/reference/simFunctional.html</loc></url>
+<url><loc>/reference/simulate.html</loc></url>
+<url><loc>/reference/snr.html</loc></url>
+<url><loc>/reference/spectralcov.html</loc></url>
+<url><loc>/reference/subsampling.html</loc></url>
+<url><loc>/reference/toLatex.html</loc></url>
+<url><loc>/reference/wllag.html</loc></url>
+<url><loc>/reference/ybook.html</loc></url>
+<url><loc>/reference/yuima-class.html</loc></url>
+<url><loc>/reference/yuima.CP.qmle-class.html</loc></url>
+<url><loc>/reference/yuima.Hawkes.html</loc></url>
+<url><loc>/reference/yuima.LevyRM-class.html</loc></url>
+<url><loc>/reference/yuima.Map-class.html</loc></url>
+<url><loc>/reference/yuima.PPR.qmle-class.html</loc></url>
+<url><loc>/reference/yuima.Ppr.html</loc></url>
+<url><loc>/reference/yuima.ae-class.html</loc></url>
+<url><loc>/reference/yuima.carma-class.html</loc></url>
+<url><loc>/reference/yuima.carma.qmle-class.html</loc></url>
+<url><loc>/reference/yuima.carmaHawkes-class.html</loc></url>
+<url><loc>/reference/yuima.characteristic-class.html</loc></url>
+<url><loc>/reference/yuima.cogarch-class.html</loc></url>
+<url><loc>/reference/yuima.data-class.html</loc></url>
+<url><loc>/reference/yuima.functional-class.html</loc></url>
+<url><loc>/reference/yuima.model-class.html</loc></url>
+<url><loc>/reference/yuima.multimodel.html</loc></url>
+<url><loc>/reference/yuima.poisson-class.html</loc></url>
+<url><loc>/reference/yuima.qmleLevy.incr-class.html</loc></url>
+<url><loc>/reference/yuima.sampling-class.html</loc></url>
+<url><loc>/reference/yuima.snr-class.html</loc></url>
+<url><loc>/reference/yuima.th-class.html</loc></url>
 </urlset>
+

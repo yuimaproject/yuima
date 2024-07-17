@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -28,20 +28,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Method of Moments for COGARCH(P,Q).</h1>
-    
+
     <div class="hidden name"><code>gmm.rd</code></div>
     </div>
 
@@ -57,41 +57,42 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>yuima</dt>
+    <p></p>
+<dl><dt id="arg-yuima">yuima<a class="anchor" aria-label="anchor" href="#arg-yuima"></a></dt>
 <dd><p>a yuima object or an object of <code><a href="yuima.cogarch-class.html">yuima.cogarch-class</a></code>.</p></dd>
 
-  <dt>data</dt>
+  <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>an object of class <code><a href="yuima.data-class.html">yuima.data-class</a></code> contains the observations available at uniformly spaced time. If <code>data=NULL</code>, the default, the function uses the data in an object of <code><a href="yuima-class.html">yuima-class</a></code>.</p></dd>
 
-  <dt>start</dt>
+  <dt id="arg-start">start<a class="anchor" aria-label="anchor" href="#arg-start"></a></dt>
 <dd><p>a <code>list</code> containing the starting values for the optimization routine.</p></dd>
 
-  <dt>method</dt>
+  <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>a string indicating one of the methods available in <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a></code>.</p></dd>
 
-  <dt>fixed</dt>
+  <dt id="arg-fixed">fixed<a class="anchor" aria-label="anchor" href="#arg-fixed"></a></dt>
 <dd><p>a list of fixed parameters in optimization routine.</p></dd>
 
-  <dt>lower</dt>
+  <dt id="arg-lower">lower<a class="anchor" aria-label="anchor" href="#arg-lower"></a></dt>
 <dd><p>a named list for specifying lower bounds of parameters.</p></dd>
 
-  <dt>upper</dt>
+  <dt id="arg-upper">upper<a class="anchor" aria-label="anchor" href="#arg-upper"></a></dt>
 <dd><p>a named list for specifying upper bounds of parameters.</p></dd>
 
-  <dt>lag.max</dt>
+  <dt id="arg-lag-max">lag.max<a class="anchor" aria-label="anchor" href="#arg-lag-max"></a></dt>
 <dd><p>maximum lag at which to calculate the theoretical and empirical acf. Default is <code>sqrt{N}</code> where <code>N</code> is the number of observation.</p></dd>
 
-  <dt>equally.spaced</dt>
+  <dt id="arg-equally-spaced">equally.spaced<a class="anchor" aria-label="anchor" href="#arg-equally-spaced"></a></dt>
 <dd><p>Logical variable. If <code>equally.spaced = TRUE.</code>, the function use the returns of COGARCH(P,Q) evaluated at unitary length for the computation of the empirical autocorrelations. If <code>equally.spaced = FALSE</code>, the increments are evaluated on the interval with frequency specified in an object of class <code><a href="yuima.data-class.html">yuima.data-class</a></code> that contains the observed time series.</p></dd>
 
-  <dt>aggregation</dt>
+  <dt id="arg-aggregation">aggregation<a class="anchor" aria-label="anchor" href="#arg-aggregation"></a></dt>
 <dd><p>If <code>aggregation=TRUE</code>, before the estimation of the levy parameters we aggregate the estimated increments</p></dd>
 
-  <dt>Est.Incr</dt>
+  <dt id="arg-est-incr">Est.Incr<a class="anchor" aria-label="anchor" href="#arg-est-incr"></a></dt>
 <dd><p>a string variable, If <code>Est.Incr = "NoIncr"</code>, default value, <code>gmm</code> returns an object of class  <code><a href="cogarch.est.html">cogarch.est-class</a></code> that contains the COGARCH parameters.
   If <code>Est.Incr = "Incr"</code> or <code>Est.Incr = "IncrPar"</code> the output is an object of class <code>cogarch.est.incr-class</code>. In the first case the object contains the increments of underlying noise while in the second case also the estimated parameter of levy measure.</p></dd>
 
-  <dt>objFun</dt>
+  <dt id="arg-objfun">objFun<a class="anchor" aria-label="anchor" href="#arg-objfun"></a></dt>
 <dd><p>a string variable that indentifies the objective function in the optimization step. <code>objFun = "L2"</code>, default value, the objective function is  a quadratic form where the weighting Matrix is the identity one. <code>objFun = "L2CUE"</code> the weighting matrix is estimated using Continuously Updating GMM (L2CUE).
   <code>objFun = "L1"</code>, the objective function is the mean absolute error. In the last case the standard error for estimators are not available.</p></dd>
 
@@ -115,7 +116,7 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Example COGARCH(1,1): the parameters are the same used in Haugh et al. 2005. In this case</span></span></span>
 <span class="r-in"><span><span class="co"># we assume the underlying noise is a symmetric variance gamma.</span></span></span>
 <span class="r-in"><span><span class="co"># As first step we define the COGARCH(1,1) in yuima:</span></span></span>
@@ -139,7 +140,7 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -154,15 +155,15 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

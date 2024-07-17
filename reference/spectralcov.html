@@ -4,7 +4,7 @@ This function implements the local method of moments proposed in Bibinger et al.
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -29,20 +29,20 @@ This function implements the local method of moments proposed in Bibinger et al.
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1><!-- %% ~~function to do ... ~~ --> Spectral Method for Cumulative Covariance Estimation</h1>
-    
+
     <div class="hidden name"><code>spectralcov.Rd</code></div>
     </div>
 
@@ -58,43 +58,44 @@ This function implements the local method of moments proposed in Bibinger et al.
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>x</dt>
+    <p></p>
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{x} here~~ -->
 an object of  <code><a href="yuima-class.html">yuima-class</a></code> or <code><a href="yuima.data-class.html">yuima.data-class</a></code>.</p></dd>
 
-  <dt>block</dt>
+  <dt id="arg-block">block<a class="anchor" aria-label="anchor" href="#arg-block"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{block} here~~ -->
 a positive integer indicating the number of the blocks which the observation interval is split into.</p></dd>
 
-  <dt>freq</dt>
+  <dt id="arg-freq">freq<a class="anchor" aria-label="anchor" href="#arg-freq"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{freq} here~~ -->
 a positive integer indicating the number of the frequencies used to compute the final estimator.</p></dd>
 
-  <dt>freq.p</dt>
+  <dt id="arg-freq-p">freq.p<a class="anchor" aria-label="anchor" href="#arg-freq-p"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{freq.p} here~~ -->
 a positive integer indicating the number of the frequencies used to compute the pilot estimator for the spot covariance matrix (corresponding to the number \(J_n\) in Eq.(29) from Altmeyer and Bibinger (2015)).</p></dd>
 
-  <dt>K</dt>
+  <dt id="arg-k">K<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{K} here~~ -->
 a positive integer indicating the number of the blocks used to compute the pilot estimator for the spot covariance matrix (corresponding to the number \(K_n\) in Eq.(29) from Altmeyer and Bibinger (2015)).</p></dd>
 
-  <dt>interval</dt>
+  <dt id="arg-interval">interval<a class="anchor" aria-label="anchor" href="#arg-interval"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{interval} here~~ -->
 a vector indicating the observation interval. The first component represents the initial value and the second component represents the terminal value.</p></dd>
 
-  <dt>Sigma.p</dt>
+  <dt id="arg-sigma-p">Sigma.p<a class="anchor" aria-label="anchor" href="#arg-sigma-p"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{Sigma.p} here~~ -->
 a <code>block</code> by <code>dim(x)</code> matrix giving the pilot estimates of the spot covariance matrix plugged into the optimal weight matrices. If <code>NULL</code> (the default), it is computed by using formula (29) from Altmeyer and Bibinger (2015).</p></dd>
 
-  <dt>noise.var</dt>
+  <dt id="arg-noise-var">noise.var<a class="anchor" aria-label="anchor" href="#arg-noise-var"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{noise.var} here~~ -->
 character string giving the method to estimate the noise variances. There are several options: <code>"AMZ"</code> (the default) uses equation (3.7) from Gatheral and Oomen (2010), i.e. the quasi-maximum likelihood estimator proposed by Ait-Sahalia et al. (2005) (see also Xiu (2010)). <code>"BR"</code> uses equation (3.9) from Gatheral and Oomen (2010), i.e. the sample average of the squared returns divided by 2, the estimator proposed by Bandi and Russel (2006). <code>"O"</code> uses equation (3.8) from Gatheral and Oomen (2010), i.e. another method-of-moments estimator proposed by Oomen (2006). It is also possible to directly specify the noise variances by setting this argument to a numeric vector. In this case the <code>i</code>-th component of <code>noise.var</code> must indicates the variance of the noise for the <code>i</code>-th component of the observation process.</p></dd>
 
-  <dt>samp.adj</dt>
+  <dt id="arg-samp-adj">samp.adj<a class="anchor" aria-label="anchor" href="#arg-samp-adj"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{samp.adj} here~~ -->
 character string giving the method to adjust the effect of the sampling times on the variances of the spectral statistics for the noise part. The default method <code>"direct"</code> uses the local sums of the squares of the one-skip differences of the sampling times divided by 2, which directly appears in the representation of the variances of the spectral statistics for the noise part. Another choice is <code>"QVT"</code>, which uses the local quadratic variations of time as in Altmeyer and Bibinger (2015) and Bibinger et al. (2014).</p></dd>
 
-  <dt>psd</dt>
+  <dt id="arg-psd">psd<a class="anchor" aria-label="anchor" href="#arg-psd"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{psd} here~~ -->
 logical. If <code>TRUE</code> (the default), the estimated covariance matrix and variance-covariance matrix are converted to their spectral absolute values to ensure their positive semi-definiteness. This procedure does not matter in terms of the asymptotic theory.</p></dd>
 
@@ -106,24 +107,12 @@ The default implementation is the adaptive version of the local method of moment
     </div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p><!-- %%  ~Describe the value returned --></p>
-
-
-<p><!-- %%  If it is a LIST, use --></p>
-
-
-<p><!-- %%  \item{comp1 }{Description of 'comp1'} --></p>
-
-
-<p><!-- %%  \item{comp2 }{Description of 'comp2'} --></p>
-
-
-<p><!-- %% ... --></p>
-
-
-<p>An object of class <code>"yuima.specv"</code>, which is a list with the following elements:</p>
+    <p><!-- %%  ~Describe the value returned -->
+<!-- %%  If it is a LIST, use -->
+<!-- %%  \item{comp1 }{Description of 'comp1'} -->
+<!-- %%  \item{comp2 }{Description of 'comp2'} -->
+<!-- %% ... -->
+An object of class <code>"yuima.specv"</code>, which is a list with the following elements:</p>
 <dl><dt>covmat</dt>
 <dd><p>the estimated covariance matrix</p></dd>
 
@@ -139,28 +128,28 @@ The default implementation is the adaptive version of the local method of moment
     <p><!-- %% ~put references to the literature/web site here ~ -->
 Ait-Sahalia, Y., Mykland, P. A. and Zhang, L. (2005)
   How often to sample a continuous-time process in the presence of market microstructure noise,
-  <em>The Review of Financial Studies</em>, <b>18</b>, 351--416.</p>
+  <em>The Review of Financial Studies</em>, <b>18</b>, 351–416.</p>
 <p>Altmeyer, R. and Bibinger, M. (2015)
   Functional stable limit theorems for quasi-efficient spectral covolatility estimators,
-    to appear in <em>Stochastic processes and their applications</em>, doi:10.1016/j.spa.2015.07.009.</p>    
+    to appear in <em>Stochastic processes and their applications</em>, doi:10.1016/j.spa.2015.07.009.</p>
 <p>Bandi, F. M. and Russell, J. R. (2006)
   Separating microstructure noise from volatility,
-  <em>Journal of Financial Economics</em>, <b>79</b>, 655--692.</p>    
+  <em>Journal of Financial Economics</em>, <b>79</b>, 655–692.</p>
 <p>Bibinger, M., Hautsch, N., Malec, P. and Reiss, M. (2014)
   Estimating the quadratic covariation matrix from noisy observations: local method of moments and efficiency,
-  <em>Annals of Statistics</em>, <b>42</b>, 80--114.</p>  
+  <em>Annals of Statistics</em>, <b>42</b>, 80–114.</p>
 <p>Gatheral J. and Oomen, R. C. A. (2010)
   Zero-intelligence realized variance estimation,
-  <em>Finance Stochastics</em>, <b>14</b>, 249--283.</p>  
+  <em>Finance Stochastics</em>, <b>14</b>, 249–283.</p>
 <p>Oomen, R. C. A. (2006)
   Properties of realized variance under alternative sampling schemes,
-  <em>Journal of Business and Economic Statistics</em>, <b>24</b>, 219--237.</p>  
+  <em>Journal of Business and Economic Statistics</em>, <b>24</b>, 219–237.</p>
 <p>Reiss, M. (2011)
   Asymptotic equivalence for inference on the volatility from noisy observations,
-  <em>Annals of Statistics</em>, <b>39</b>, 772--802.</p>  
+  <em>Annals of Statistics</em>, <b>39</b>, 772–802.</p>
 <p>Xiu, D. (2010)
   Quasi-maximum likelihood estimation of volatility with high frequency data,
-  <em>Journal of Econometrics</em>, <b>159</b>, 235--250.</p>
+  <em>Journal of Econometrics</em>, <b>159</b>, 235–250.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -381,15 +370,15 @@ Yuta Koike with YUIMA Project Team</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

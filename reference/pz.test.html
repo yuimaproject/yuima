@@ -4,7 +4,7 @@ Performs a test for the null hypothesis that the realized path has no jump follo
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -29,20 +29,20 @@ Performs a test for the null hypothesis that the realized path has no jump follo
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1><!-- %% ~~function to do ... ~~ --> Podolskij and Ziggel's Test for the Presence of Jumps Using Power Variation with Perturbed Truncation</h1>
-    
+
     <div class="hidden name"><code>pz.test.Rd</code></div>
     </div>
 
@@ -57,44 +57,33 @@ Performs a test for the null hypothesis that the realized path has no jump follo
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>yuima</dt>
+    <p></p>
+<dl><dt id="arg-yuima">yuima<a class="anchor" aria-label="anchor" href="#arg-yuima"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{yuima} here~~ -->
 an object of  <code><a href="yuima-class.html">yuima-class</a></code> or <code><a href="yuima.data-class.html">yuima.data-class</a></code>.</p></dd>
 
-  <dt>p</dt>
+  <dt id="arg-p">p<a class="anchor" aria-label="anchor" href="#arg-p"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{p} here~~ -->
 a positive number indicating the exponent of the (truncated) power variation to compute test statistic(s). Theoretically, it must be greater than or equal to 2.</p></dd>
 
-  <dt>threshold</dt>
+  <dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{threshold} here~~ -->
 a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in <code>threshold</code> are recycled if there are two few elements in <code>threshold</code>.</p>
 <p>Alternatively, you can specify either <code>"PZ"</code> or <code>"local"</code> to automatically select a (hopefully) appropriate threshold. When <code>threshold="PZ"</code>, selection is performed following Section 5.1 in Podolskij and Ziggel (2010). When <code>threshold="local"</code>, selection is performed following Section 5.1 in Koike (2014). The default is <code>threshold="local"</code>.</p></dd>
 
-  <dt>tau</dt>
+  <dt id="arg-tau">tau<a class="anchor" aria-label="anchor" href="#arg-tau"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{tau} here~~ -->
 a probability controlling the strength of perturbation. See Section 2.3 in Podolskij and Ziggel (2010) for details. Podolskij and Ziggel (2010) suggests using a relatively small value for <code>tau</code>, e.g. <code>tau=0.1</code> or <code>tau=0.05</code>.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p><!-- %%  ~Describe the value returned --></p>
-
-
-<p><!-- %%  If it is a LIST, use --></p>
-
-
-<p><!-- %%  \item{comp1 }{Description of 'comp1'} --></p>
-
-
-<p><!-- %%  \item{comp2 }{Description of 'comp2'} --></p>
-
-
-<p><!-- %% ... --></p>
-
-
-<p>A list with the same length as <code>dim(yuima)</code>. Each component of the list has class “<code>htest</code>” and contains the following components:</p>
+    <p><!-- %%  ~Describe the value returned -->
+<!-- %%  If it is a LIST, use -->
+<!-- %%  \item{comp1 }{Description of 'comp1'} -->
+<!-- %%  \item{comp2 }{Description of 'comp2'} -->
+<!-- %% ... -->
+A list with the same length as <code>dim(yuima)</code>. Each component of the list has class “<code>htest</code>” and contains the following components:</p>
 <dl><dt>statistic</dt>
 <dd><p>the value of the test statistic of the corresponding component of <code>yuima</code>.</p></dd>
 
@@ -113,18 +102,18 @@ a probability controlling the strength of perturbation. See Section 2.3 in Podol
     <p><!-- %% ~put references to the literature/web site here ~ -->
 Dumitru, A.-M. and Urga, G. (2012)
   Identifying jumps in financial assets: A comparison between nonparametric jump tests.
-  <em>Journal of Business and Economic Statistics</em>, <b>30</b>, 242--255.</p>  
+  <em>Journal of Business and Economic Statistics</em>, <b>30</b>, 242–255.</p>
 <p>Koike, Y. (2014)
   An estimator for the cumulative co-volatility of asynchronously observed semimartingales with jumps,
-  <em>Scandinavian Journal of Statistics</em>, <b>41</b>, 460--481.</p>  
+  <em>Scandinavian Journal of Statistics</em>, <b>41</b>, 460–481.</p>
 <p>Maneesoonthorn, W., Martin, G. M. and Forbes, C. S. (2020)
   High-frequency jump tests: Which test should we use?
-  <em>Journal of Econometrics</em>, <b>219</b>, 478--487.</p>
+  <em>Journal of Econometrics</em>, <b>219</b>, 478–487.</p>
 <p>Podolskij, M. and Ziggel, D. (2010)
   New tests for jumps in semimartingale models,
-  <em>Statistical Inference for Stochastic Processes</em>, <b>13</b>, 15--41.</p>  
+  <em>Statistical Inference for Stochastic Processes</em>, <b>13</b>, 15–41.</p>
 <p>Theodosiou, M. and Zikes, F. (2011)
-  A comprehensive comparison of alternative tests for jumps in asset prices. 
+  A comprehensive comparison of alternative tests for jumps in asset prices.
   Central Bank of Cyprus Working Paper 2011-2.</p>
     </div>
     <div id="author">
@@ -145,7 +134,7 @@ Podolskij and Ziggel (2010) also introduce a pre-averaged version of the test to
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One-dimensional case</span></span></span>
@@ -184,7 +173,7 @@ Podolskij and Ziggel (2010) also introduce a pre-averaged version of the test to
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">yuima</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">pz.test</span><span class="op">(</span><span class="va">yuima</span><span class="op">)</span> <span class="co"># test is performed component-wise</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -199,15 +188,15 @@ Podolskij and Ziggel (2010) also introduce a pre-averaged version of the test to
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

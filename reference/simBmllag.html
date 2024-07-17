@@ -4,7 +4,7 @@ This function simulates increments of bivariate Brownian motions with multi-scal
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -29,20 +29,20 @@ This function simulates increments of bivariate Brownian motions with multi-scal
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1><!-- %% ~~function to do ... ~~ --> Simulation of increments of bivariate Brownian motions with multi-scale lead-lag relationships</h1>
-    
+
     <div class="hidden name"><code>simBmllag.Rd</code></div>
     </div>
 
@@ -58,27 +58,28 @@ This function simulates increments of bivariate Brownian motions with multi-scal
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>n</dt>
+    <p></p>
+<dl><dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{n} here~~ -->
 the number of increments to be simulated.</p></dd>
 
-  <dt>J</dt>
+  <dt id="arg-j">J<a class="anchor" aria-label="anchor" href="#arg-j"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{J} here~~ -->
 a positive integer to determine the finest time resolution: <code>2^(-J-1)</code> is regarded as the finest time resolution.</p></dd>
 
-  <dt>rho</dt>
+  <dt id="arg-rho">rho<a class="anchor" aria-label="anchor" href="#arg-rho"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{rho} here~~ -->
 a vector of scale-by-scale correlation coefficients. If <code>length(rho) &lt; J</code>, zeros are appended to make the length equal to <code>J</code>.</p></dd>
 
-  <dt>theta</dt>
+  <dt id="arg-theta">theta<a class="anchor" aria-label="anchor" href="#arg-theta"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{theta} here~~ -->
 a vector of scale-by-scale lead-lag parameters. If <code>length(theta) &lt; J</code>, zeros are appended to make the length equal to <code>J</code>.</p></dd>
 
-  <dt>delta</dt>
+  <dt id="arg-delta">delta<a class="anchor" aria-label="anchor" href="#arg-delta"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{delta} here~~ -->
 the step size of time increments. This must be smaller than or equal to <code>2^(-J-1)</code>.</p></dd>
 
-  <dt>imaginary</dt>
+  <dt id="arg-imaginary">imaginary<a class="anchor" aria-label="anchor" href="#arg-imaginary"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{imaginary} here~~ -->
 logical. <!-- %If \code{TRUE}, the function returns complex-valued increments whose real and imaginary parts are independent and have the same law as   -->
 See `Details'.</p></dd>
@@ -88,33 +89,19 @@ See `Details'.</p></dd>
     <h2>Details</h2>
     <p><!-- %%  ~~ If necessary, more details than the description above ~~ -->
 Let \(B(t)\) be a bivariate Gaussian process with stationary increments such that its marginal processes are standard Brownian motions and its cross-spectral density is given by Eq.(14) of Hayashi and Koike (2018a). The function <code>simBmllag</code> simulates the increments \(B(i\delta)-B((i-1)\delta)\), \(i=1,\dots,n\). The parameters \(R_j\) and \(theta_j\) in Eq.(14) of Hayashi and Koike (2018a) are specified by <code>rho</code> and <code>theta</code>, while \(\delta\) and \(n\) are specified by <code>delta</code> and <code>n</code>, respecitively.</p>
-<p>Simulation is implemented by the multi-dimensional circulant embedding algorithm of Chan and Wood (1999). The last step of this algorithm returns a bivariate complex-valued sequence whose real and imaginary parts are independent and has the same law as \(B(k\delta)-B((k-1)\delta)\), \(k=1,\dots,n\); see Step 3 of Chan and Wood (1999, Section 3.2). 
+<p>Simulation is implemented by the multi-dimensional circulant embedding algorithm of Chan and Wood (1999). The last step of this algorithm returns a bivariate complex-valued sequence whose real and imaginary parts are independent and has the same law as \(B(k\delta)-B((k-1)\delta)\), \(k=1,\dots,n\); see Step 3 of Chan and Wood (1999, Section 3.2).
 If <code>imaginary = TRUE</code>, the function <code>simBmllag</code> directly returns this bivariate complex-valued sequence, so we obtain two sets of simulated increments of \(B(t)\) by taking its real and complex parts. If <code>imaginary = FALSE</code> (default), the function returns only the real part of this sequence, so we directly obtain simulated increments of \(B(t)\).</p>
 <p>The function <code>simBmllag.coef</code> is internally used to compute the sequence of coefficient matrices \(R(k)\Lambda(k)^{1/2}\) in Step 2 of Chan and Wood (1999, Section 3.2). This procedure can be implemented before generating random numbers. <!-- %Thus, when we conduct a Monte Carlo simulation for \eqn{(B(k\delta)-B((k-1)\delta))_{k=1}^n} with a fixed set of parameters, it is enough to implement the function \code{simBmllag.coef} only one time.  -->
 Since this step typically takes the most computational cost, this function is useful to reduce computational time when we conduct a Monte Carlo simulation for \((B(k\delta)-B((k-1)\delta))_{k=1}^n\) with a fixed set of parameters. See `Examples' for how to use this function to simulate \((B(k\delta)-B((k-1)\delta))_{k=1}^n\).</p>
     </div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p><!-- %%  ~Describe the value returned --></p>
-
-
-<p><!-- %%  If it is a LIST, use --></p>
-
-
-<p><!-- %%  \item{comp1 }{Description of 'comp1'} --></p>
-
-
-<p><!-- %%  \item{comp2 }{Description of 'comp2'} --></p>
-
-
-<p><!-- %% ... --></p>
-
-
-<p><code>simBmllag</code> returns a <code>n</code> x 2 matrix if <code>imaginary = FALSE</code> (default). Otherwise, <code>simBmllag</code> returns a complex-valued <code>n</code> x 2 matrix.</p>
-
-
+    <p><!-- %%  ~Describe the value returned -->
+<!-- %%  If it is a LIST, use -->
+<!-- %%  \item{comp1 }{Description of 'comp1'} -->
+<!-- %%  \item{comp2 }{Description of 'comp2'} -->
+<!-- %% ... -->
+<code>simBmllag</code> returns a <code>n</code> x 2 matrix if <code>imaginary = FALSE</code> (default). Otherwise, <code>simBmllag</code> returns a complex-valued <code>n</code> x 2 matrix.</p>
 <p><code>simBmllag.coef</code> returns a complex-valued \(m\) x 2 x 2 array, where \(m\) is an integer determined by the rule described at the end of Chan and Wood (1999, Section 2.3).</p>
     </div>
     <div id="references">
@@ -122,12 +109,12 @@ Since this step typically takes the most computational cost, this function is us
     <p><!-- %% ~put references to the literature/web site here ~ -->
 Chan, G. and Wood, A. T. A. (1999).
   Simulation of stationary Gaussian vector fields,
-  <em>Statistics and Computing</em>, <b>9</b>, 265--268.</p>  
+  <em>Statistics and Computing</em>, <b>9</b>, 265–268.</p>
 <p>Hayashi, T. and Koike, Y. (2018a).
   Wavelet-based methods for high-frequency lead-lag analysis,
-  <em>SIAM Journal of Financial Mathematics</em>, <b>9</b>, 1208--1248.</p>  
-<p>Hayashi, T. and Koike, Y. (2018b). 
-Multi-scale analysis of lead-lag relationships in high-frequency financial markets. 
+  <em>SIAM Journal of Financial Mathematics</em>, <b>9</b>, 1208–1248.</p>
+<p>Hayashi, T. and Koike, Y. (2018b).
+Multi-scale analysis of lead-lag relationships in high-frequency financial markets.
 <a href="https://doi.org/10.48550/arXiv.1708.03992" class="external-link">doi:10.48550/arXiv.1708.03992</a>
 .</p>
     </div>
@@ -253,15 +240,15 @@ There are typos in the first and second displayed equations in page 1221 of Haya
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

@@ -4,7 +4,7 @@ This function estimates the asymptotic variances of covariance and correlation e
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -29,20 +29,20 @@ This function estimates the asymptotic variances of covariance and correlation e
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1><!-- %% ~~function to do ... ~~ --> Asymptotic Variance Estimator for the Hayashi-Yoshida estimator</h1>
-    
+
     <div class="hidden name"><code>hyavar.Rd</code></div>
     </div>
 
@@ -57,20 +57,21 @@ This function estimates the asymptotic variances of covariance and correlation e
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>yuima</dt>
+    <p></p>
+<dl><dt id="arg-yuima">yuima<a class="anchor" aria-label="anchor" href="#arg-yuima"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{yuima} here~~ -->
 an object of yuima-class or yuima.data-class.</p></dd>
 
-  <dt>bw</dt>
+  <dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{bw} here~~ -->
 a positive number or a numeric matrix. If it is a matrix, each component indicate the bandwidth parameter for the kernel estimators used to estimate the asymptotic variance of the corresponding component (necessary only for off-diagonal components). If it is a number, it is converted to a matrix as <code>matrix(bw,d,d)</code>, where <code>d=dim(x)</code>. The default value is the matrix whose \((i,j)\)-th component is given by \(min(n_i,n_j)^{0.45}\), where \(n_i\) denotes the number of the observations for the \(i\)-th component of the data.</p></dd>
 
-  <dt>nonneg</dt>
+  <dt id="arg-nonneg">nonneg<a class="anchor" aria-label="anchor" href="#arg-nonneg"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{psd} here~~ -->
 logical. If <code>TRUE</code>, the asymptotic variance estimates for correlations are always ensured to be non-negative. See `Details'.</p></dd>
 
 
-<dt>psd</dt>
+<dt id="arg-psd">psd<a class="anchor" aria-label="anchor" href="#arg-psd"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{psd} here~~ -->
 passed to <code><a href="cce.html">cce</a></code>.</p></dd>
 
@@ -78,8 +79,8 @@ passed to <code><a href="cce.html">cce</a></code>.</p></dd>
     <div id="details">
     <h2>Details</h2>
     <p><!-- %%  ~~ If necessary, more details than the description above ~~ -->
-The precise description of the method used to estimate the asymptotic variances is as follows. 
-For diagonal components, they are estimated by the realized quarticity multiplied by <code>2/3</code>. Its theoretical validity is ensured by Hayashi et al. (2011), for example. 
+The precise description of the method used to estimate the asymptotic variances is as follows.
+For diagonal components, they are estimated by the realized quarticity multiplied by <code>2/3</code>. Its theoretical validity is ensured by Hayashi et al. (2011), for example.
 For off-diagonal components, they are estimated by the naive kernel approach descrived in Section 8.2 of Hayashi and Yoshida (2011). Note that the asymptotic covariance between a diagonal component and another component, which is necessary to evaluate the asymptotic variances of correlation estimates, is not provided in Hayashi and Yoshida (2011), but it can be derived in a similar manner to that paper.
 <br><br>
 If <code>nonneg</code> is <code>TRUE</code>, negative values of the asymptotic variances of correlations are avoided in the following way. The computed asymptotic varaince-covariance matrix of the vector \((HY_{ii},HY_{ij},HY_{jj})\) is converted to its spectral absolute value. Here, \(HY_{ij}\) denotes the Hayashi-Yohida estimator for the \((i,j)\)-th component.
@@ -88,24 +89,12 @@ The function also returns the covariance and correlation matrices calculated by 
     </div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p><!-- %%  ~Describe the value returned --></p>
-
-
-<p><!-- %%  If it is a LIST, use --></p>
-
-
-<p><!-- %%  \item{comp1 }{Description of 'comp1'} --></p>
-
-
-<p><!-- %%  \item{comp2 }{Description of 'comp2'} --></p>
-
-
-<p><!-- %% ... --></p>
-
-
-<p>A list with components:</p>
+    <p><!-- %%  ~Describe the value returned -->
+<!-- %%  If it is a LIST, use -->
+<!-- %%  \item{comp1 }{Description of 'comp1'} -->
+<!-- %%  \item{comp2 }{Description of 'comp2'} -->
+<!-- %% ... -->
+A list with components:</p>
 <dl><dt>covmat</dt>
 <dd><p>the estimated covariance matrix</p></dd>
 
@@ -123,18 +112,18 @@ The function also returns the covariance and correlation matrices calculated by 
     <h2>References</h2>
     <p><!-- %% ~put references to the literature/web site here ~ -->
 Barndorff-Nilesen, O. E. and Shephard, N. (2004)
-  Econometric analysis of realized covariation: High frequency based covariance, regression, and correlation in financial economics, 
-  <em>Econometrica</em>, <b>72</b>, no. 3, 885--925.</p>
+  Econometric analysis of realized covariation: High frequency based covariance, regression, and correlation in financial economics,
+  <em>Econometrica</em>, <b>72</b>, no. 3, 885–925.</p>
 <p>Bibinger, M. (2011)
-  Asymptotics of Asynchronicity, 
+  Asymptotics of Asynchronicity,
   technical report, Available at <a href="https://doi.org/10.48550/arXiv.1106.4222" class="external-link">doi:10.48550/arXiv.1106.4222</a>
 .</p>
 <p>Hayashi, T., Jacod, J. and Yoshida, N. (2011)
   Irregular sampling and central limit theorems for power variations: The continuous case,
-  <em>Annales de l'Institut Henri Poincare - Probabilites et Statistiques</em>, <b>47</b>, no. 4, 1197--1218.</p>
+  <em>Annales de l'Institut Henri Poincare - Probabilites et Statistiques</em>, <b>47</b>, no. 4, 1197–1218.</p>
 <p>Hayashi, T. and Yoshida, N. (2011)
   Nonsynchronous covariation process and limit theorems,
-  <em>Stochastic processes and their applications</em>, <b>121</b>, 2416--2454.</p>
+  <em>Stochastic processes and their applications</em>, <b>121</b>, 2416–2454.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -154,7 +143,7 @@ Construction of kernel-type estimators for off-diagonal components is implemente
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co">## Set a model</span></span></span>
 <span class="r-in"><span><span class="va">diff.coef.1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span>, <span class="va">x1</span> <span class="op">=</span> <span class="fl">0</span>, <span class="va">x2</span> <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fl">1</span><span class="op">+</span><span class="va">t</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">diff.coef.2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span>, <span class="va">x1</span> <span class="op">=</span> <span class="fl">0</span>, <span class="va">x2</span> <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fl">1</span><span class="op">+</span><span class="va">t</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></span>
@@ -243,7 +232,7 @@ Construction of kernel-type estimators for off-diagonal components is implemente
 <span class="r-in"><span><span class="va">se.z</span> <span class="op">&lt;-</span> <span class="va">se.cor</span><span class="op">/</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">cor.est</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="co"># standard error for z (calculated by the delta method)</span></span></span>
 <span class="r-in"><span><span class="co">## 95% confidence interval for correlation via the Fisher z transformation</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Hyperbolic.html" class="external-link">tanh</a></span><span class="op">(</span><span class="va">z</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.025</span><span class="op">)</span> <span class="op">*</span> <span class="va">se.z</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Hyperbolic.html" class="external-link">tanh</a></span><span class="op">(</span><span class="va">z</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.975</span><span class="op">)</span> <span class="op">*</span> <span class="va">se.z</span><span class="op">)</span><span class="op">)</span> </span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -258,15 +247,15 @@ Construction of kernel-type estimators for off-diagonal components is implemente
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

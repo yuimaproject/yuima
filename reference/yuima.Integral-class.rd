@@ -4,7 +4,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -29,20 +29,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Class for the mathematical description of integral of a stochastic process</h1>
-    
+
     <div class="hidden name"><code>yuima.Integral-class.rd</code></div>
     </div>
 
@@ -65,7 +65,7 @@
             <dt><code>Integrandparam</code>:</dt>
 <dd><p>labels of all parameters only in the integral.</p></dd>
 
-          
+
 </dl><p></p></dd>
 
         <dt><code>variable.Integral</code>:</dt>
@@ -84,7 +84,7 @@
           <dt><code>var.time</code>:</dt>
 <dd><p>label of time.</p></dd>
 
-          
+
 </dl><p></p></dd>
 
         <dt><code>Integrand</code>:</dt>
@@ -94,13 +94,13 @@
                 <dt><code>dimIntegrand</code>:</dt>
 <dd><p>a <code>numeric</code> object that is the dimensions of the output.</p></dd>
 
-                
+
 </dl><p></p></dd>
 
-      
+
 </dl><p></p></dd>
 
-  
+
 </dl></div>
     <div id="methods">
     <h2>Methods</h2>
@@ -108,7 +108,7 @@
 <dd><p>simulation method. For more information see
 	  <code><a href="simulate.html">simulate</a></code>.</p></dd>
 
-  
+
 </dl></div>
 
   </div>
@@ -123,15 +123,15 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

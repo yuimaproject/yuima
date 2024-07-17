@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -28,20 +28,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1><code>yuima law-class</code>: A mathematical description for the noise.</h1>
-    
+
     <div class="hidden name"><code>yuima.law-class.rd</code></div>
     </div>
 
@@ -52,7 +52,7 @@
 
     <div id="slots">
     <h2>Slots</h2>
-    
+
 <dl><dt>rng</dt>
 <dd><p>A user defined function that generates the noise sample.</p></dd>
 
@@ -101,7 +101,7 @@
 <dd><p><code>signature(object = "yuima.law", u = "numeric",
 	  param = "list", ...)</code>: This method returns the characteristic function of the noise, <code>u</code> is the vector of the support.</p></dd>
 
-  
+
 </dl></div>
     <div id="author">
     <h2>Author</h2>
@@ -121,15 +121,15 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

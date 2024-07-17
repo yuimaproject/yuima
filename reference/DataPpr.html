@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -28,20 +28,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>From <code>zoo</code> data to <code>yuima.PPR</code>.</h1>
-    
+
     <div class="hidden name"><code>DataPpr.Rd</code></div>
     </div>
 
@@ -55,13 +55,14 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>CountVar</dt>
+    <p></p>
+<dl><dt id="arg-countvar">CountVar<a class="anchor" aria-label="anchor" href="#arg-countvar"></a></dt>
 <dd><p>An object of class <code>zoo</code> that contains counting variables and covariates. <code>index(CountVar)</code> returns the arrival times.</p></dd>
 
-  <dt>yuimaPPR</dt>
+  <dt id="arg-yuimappr">yuimaPPR<a class="anchor" aria-label="anchor" href="#arg-yuimappr"></a></dt>
 <dd><p>An object of class <code><a href="yuima.Ppr.html">yuima.PPR</a></code> that contains a mathematical description of the point process regression model assumed to be the generator of the observed data.</p></dd>
 
-  <dt>samp</dt>
+  <dt id="arg-samp">samp<a class="anchor" aria-label="anchor" href="#arg-samp"></a></dt>
 <dd><p>An object of class <code>yuima.sampling</code>.</p></dd>
 
 </dl></div>
@@ -72,7 +73,7 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># In this example we generate a dataset contains the Counting Variable N</span></span></span>
 <span class="r-in"><span><span class="co"># and the Covariate X.</span></span></span>
 <span class="r-in"><span><span class="co"># The covariate X is an OU driven by a Gamma process.</span></span></span>
@@ -142,7 +143,7 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">sim2</span> <span class="op">&lt;-</span> <span class="fu">DataPPR</span><span class="op">(</span><span class="va">CountVar</span>, yuimaPPR<span class="op">=</span><span class="va">simprvKern</span>, samp<span class="op">=</span><span class="va">simprvKern</span><span class="op">@</span><span class="va">sampling</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -157,15 +158,15 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

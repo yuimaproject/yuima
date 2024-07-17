@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -28,20 +28,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Lead Lag Estimator</h1>
-    
+
     <div class="hidden name"><code>llag.Rd</code></div>
     </div>
 
@@ -57,59 +57,62 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>x</dt>
+
+
+
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>an object of  <code><a href="yuima-class.html">yuima-class</a></code> or <code><a href="yuima.data-class.html">yuima.data-class</a></code>.</p></dd>
 
 
-<dt>verbose</dt>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>logical. If <code>FALSE</code>, <code>llag</code> returns lead-lag time estimates only. The default is <code>FALSE</code>.</p></dd>
 
 
-<dt>from</dt>
+<dt id="arg-from">from<a class="anchor" aria-label="anchor" href="#arg-from"></a></dt>
 <dd><p>a numeric vector each of whose component(s) indicates the lower end of a finite grid on which the contrast function is evaluated, if <code>grid</code> is missing.</p></dd>
 
 
-<dt>to</dt>
+<dt id="arg-to">to<a class="anchor" aria-label="anchor" href="#arg-to"></a></dt>
 <dd><p>a numeric vector each of whose component(s) indicates the upper end of a finite grid on which the contrast function is evaluated, if <code>grid</code> is missing.</p></dd>
 
 
-<dt>division</dt>
+<dt id="arg-division">division<a class="anchor" aria-label="anchor" href="#arg-division"></a></dt>
 <dd><p>a numeric vector each of whose component(s) indicates the number of the points of a finite grid on which the contrast function is evaluated, if <code>grid</code> is missing.</p></dd>
 
 
-<dt>grid</dt>
+<dt id="arg-grid">grid<a class="anchor" aria-label="anchor" href="#arg-grid"></a></dt>
 <dd><p>a numeric vector or a list of numeric vectors. See 'Details'.</p></dd>
 
 
-<dt>psd</dt>
+<dt id="arg-psd">psd<a class="anchor" aria-label="anchor" href="#arg-psd"></a></dt>
 <dd><p>logical. If <code>TRUE</code>, the estimated cross-correlation functions are converted to the interval [-1,1]. See 'Details'.</p></dd>
 
 
-<dt>plot</dt>
+<dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
 <dd><p>logical. If <code>TRUE</code>, the estimated cross-correlation functions are plotted. If <code>ci</code> is also <code>TRUE</code>, the pointwise confidence intervals (under the null hypothesis that the corresponding correlation is zero) are also plotted. The default is <code>FALSE</code>.</p></dd>
 
 
-<dt>ccor</dt>
+<dt id="arg-ccor">ccor<a class="anchor" aria-label="anchor" href="#arg-ccor"></a></dt>
 <dd><p>logical. If <code>TRUE</code>, the estimated cross-correlation functions are returned. This argument is ignored if <code>verbose</code> is <code>FALSE</code>. The default is <code>FALSE</code>.</p></dd>
 
 
-<dt>ci</dt>
+<dt id="arg-ci">ci<a class="anchor" aria-label="anchor" href="#arg-ci"></a></dt>
 <dd><p>logical. If <code>TRUE</code>, (pointwise) confidence intervals of the estimated cross-correlation functions and p-values for the significance of the correlations at the estimated lead-lag parameters are calculated. Note that the confidence intervals are only plotted when <code>plot=TRUE</code>.</p></dd>
 
 
-<dt>alpha</dt>
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>a posive number indicating the significance level of the confidence intervals for the cross-correlation functions.</p></dd>
 
 
-<dt>fisher</dt>
+<dt id="arg-fisher">fisher<a class="anchor" aria-label="anchor" href="#arg-fisher"></a></dt>
 <dd><p>logical. If <code>TRUE</code>, the p-values and the confidence intervals for the cross-correlation functions is evaluated after applying the Fisher z transformation. This argument is only meaningful if <code>pval = "corr"</code>.</p></dd>
 
 
-<dt>bw</dt>
+<dt id="arg-bw">bw<a class="anchor" aria-label="anchor" href="#arg-bw"></a></dt>
 <dd><p>bandwidth parameter to compute the asymptotic variances. See 'Details' and <code><a href="hyavar.html">hyavar</a></code> for details.</p></dd>
 
 
-<dt>tol</dt>
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
 <dd><p>tolelance parameter to avoid numerical errors in comparison of time stamps. All time stamps are divided by <code>tol</code> and rounded to integers. Note that the values of <code>grid</code> are also divided by <code>tol</code> and rounded to integers. A reasonable choice of <code>tol</code> is the minimum unit of time stamps. The default value <code>1e-6</code> supposes that the minimum unit of time stamps is greater or equal to 1 micro-second.</p></dd>
 
 </dl></div>
@@ -119,7 +122,7 @@
 <p>Let \(X^i_{t^i_{0}},X^i_{t^i_{1}},\dots,X^i_{t^i_{n(i)}}\) be the observation data of the \(i\)-th component (i.e. the \(i\)-th component of the <code>zoo.data</code> of the object <code>x</code>).</p>
 <p>The shifted Hayashi-Yoshida covariation contrast function \(U_{ij}(\theta)\) of the observations \(X^i\) and \(X^j\) \((i&lt;j)\) is defined by the same way as in Hoffmann et al. (2013), which corresponds to their cross-covariance function. The lead-lag parameter \(\theta_{ij}\) is defined as a maximizer of \(|U_{ij}(\theta)|\). \(U_{ij}(\theta)\) is evaluated on a finite grid \(G_{ij}\) defined below. Thus \(\theta_{ij}\) belongs to this grid. If there exist more than two maximizers, the lowest one is selected.</p>
 <p>If <code>psd</code> is <code>TRUE</code>, for any \(i,j\) the matrix \(C:=(U_{kl}(\theta))_{k,l\in{i,j}}\) is converted to <code>(C%*%C)^(1/2)</code> for ensuring the positive semi-definiteness, and \(U_{ij}(\theta)\) is redefined as the \((1,2)\)-component of the converted \(C\). Here, \(U_{kk}(\theta)\) is set to the realized volatility of \(Xk\). In this case \(\theta_{ij}\) is given as a maximizer of the cross-correlation functions.</p>
-<p>The grid \(G_{ij}\) is defined as follows. First, if <code>grid</code> is missing, \(G_{ij}\) is given by  
+<p>The grid \(G_{ij}\) is defined as follows. First, if <code>grid</code> is missing, \(G_{ij}\) is given by
 $$a, a+(b-a)/(N-1), \dots, a+(N-2)(b-a)/(N-1), b,$$
 where \(a,b\) and \(N\) are the \((d(i-1)-(i-1)i/2+(j-i))\)-th components of <code>from</code>, <code>to</code> and <code>division</code> respectively.  If the corresponding component of <code>from</code> (resp. <code>to</code>) is <code>-Inf</code> (resp. <code>Inf</code>), \(a=-(t^j_{n(j)}-t^i_{0})\) (resp. \(b=t^i_{n(i)}-t^j_{0}\)) is used, while if the corresponding component of <code>division</code> is <code>FALSE</code>, \(N=round(2max(n(i),n(j)))+1\) is used. Missing components are filled with <code>-Inf</code> (resp. <code>Inf</code>, <code>FALSE</code>). The default value <code>-Inf</code> (resp. <code>Inf</code>, <code>FALSE</code>) means that all components are <code>-Inf</code> (resp. <code>Inf</code>, <code>FALSE</code>). Next, if <code>grid</code> is a numeric vector, \(G_{ij}\) is given by <code>grid</code>. If <code>grid</code> is a list of numeric vectors, \(G_{ij}\) is given by the \((d(i-1)-(i-1)i/2+(j-i))\)-th component of <code>grid</code>.</p>
 <p>The estimated lead-lag parameters are returned as the skew-symmetric matrix \((\theta_{ij})_{i,j=1,\dots,d}\). If <code>verbose</code> is <code>TRUE</code>, the covariance matrix \((U_{ij}(\theta_{ij}))_{i,j=1,\dots,d}\) corresponding to the estimated lead-lag parameters, the corresponding correlation matrix and the computed contrast functions are also returned. If further <code>ccor</code> is <code>TRUE</code>,the computed cross-correlation functions are returned as a list with the length \(d(d-1)/2\). For \(i&lt;j\), the \((d(i-1)-(i-1)i/2+(j-i))\)-th component of the list consists of an object \(U_{ij}(\theta)/sqrt(U_{ii}(\theta)*U_{jj}(\theta))\) of class zoo indexed by \(G_{ij}\).</p>
@@ -128,9 +131,7 @@ where \(a,b\) and \(N\) are the \((d(i-1)-(i-1)i/2+(j-i))\)-th components of <co
     </div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>If <code>verbose</code> is <code>FALSE</code>, a skew-symmetric matrix corresponding to the estimated lead-lag parameters is returned. 
+    <p>If <code>verbose</code> is <code>FALSE</code>, a skew-symmetric matrix corresponding to the estimated lead-lag parameters is returned.
 Otherwise, an object of class <code>"yuima.llag"</code>, which is a list with the following components, is returned:</p>
 <dl><dt>lagcce</dt>
 <dd><p>a skew-symmetric matrix corresponding to the estimated lead-lag parameters.</p></dd>
@@ -167,13 +168,13 @@ Otherwise, an object of class <code>"yuima.llag"</code>, which is a list with th
     <h2>References</h2>
     <p>Hayashi, T. and Yoshida, N. (2011)
   Nonsynchronous covariation process and limit theorems,
-  <em>Stochastic processes and their applications</em>, <b>121</b>, 2416--2454.</p>  
+  <em>Stochastic processes and their applications</em>, <b>121</b>, 2416–2454.</p>
 <p>Hoffmann, M., Rosenbaum, M. and Yoshida, N. (2013)
-  Estimation of the lead-lag parameter from non-synchronous data, 
-  <em>Bernoulli</em>, <b>19</b>, no. 2, 426--461.</p>  
+  Estimation of the lead-lag parameter from non-synchronous data,
+  <em>Bernoulli</em>, <b>19</b>, no. 2, 426–461.</p>
 <p>Huth, N. and Abergel, F. (2014)
-  High frequency lead/lag relationships --- Empirical facts,
-  <em>Journal of Empirical Finance</em>, <b>26</b>, 41--58.</p>
+  High frequency lead/lag relationships — Empirical facts,
+  <em>Journal of Empirical Finance</em>, <b>26</b>, 41–58.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -356,15 +357,15 @@ Otherwise, an object of class <code>"yuima.llag"</code>, which is a list with th
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

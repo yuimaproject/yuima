@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -28,20 +28,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Hawkes Process with a Continuous Autoregressive Moving Average(p, q) intensity</h1>
-    
+
     <div class="hidden name"><code>setCarmaHawkes.Rd</code></div>
     </div>
 
@@ -58,49 +58,48 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>p</dt>
+    <p></p>
+<dl><dt id="arg-p">p<a class="anchor" aria-label="anchor" href="#arg-p"></a></dt>
 <dd><p>a non-negative integer that indicates the number of the autoregressive coefficients.</p></dd>
 
-  <dt>q</dt>
+  <dt id="arg-q">q<a class="anchor" aria-label="anchor" href="#arg-q"></a></dt>
 <dd><p>a non-negative integer that indicates the number of the moving average coefficients.</p></dd>
 
-  <dt>law</dt>
+  <dt id="arg-law">law<a class="anchor" aria-label="anchor" href="#arg-law"></a></dt>
 <dd><p>An object of <code><a href="yuima.law-class.html">yuima.law-class</a></code> that describes the jump size. If it is <code>NULL</code>, the jump size is unitary.</p></dd>
 
-  <dt>base.Int</dt>
+  <dt id="arg-base-int">base.Int<a class="anchor" aria-label="anchor" href="#arg-base-int"></a></dt>
 <dd><p>a character-string that is the label of the baseline Intensity parameter. Defaults to <code>"mu0"</code>.
 <!-- %%     ~~Describe \code{base.Int} here~~ --></p></dd>
 
-  <dt>ar.par</dt>
+  <dt id="arg-ar-par">ar.par<a class="anchor" aria-label="anchor" href="#arg-ar-par"></a></dt>
 <dd><p>a character-string that is the label of the autoregressive coefficients. The default Value is <code>ar.par="a"</code>.</p></dd>
 
-  <dt>ma.par</dt>
+  <dt id="arg-ma-par">ma.par<a class="anchor" aria-label="anchor" href="#arg-ma-par"></a></dt>
 <dd><p>a character-string that is the label of the moving average coefficients. The default Value is <code>ma.par="b"</code>.</p></dd>
 
-  <dt>Counting.Process</dt>
+  <dt id="arg-counting-process">Counting.Process<a class="anchor" aria-label="anchor" href="#arg-counting-process"></a></dt>
 <dd><p>a character-string that is the label of the Counting process. Defaults to <code>"N"</code>.</p></dd>
 
-  <dt>Intensity.var</dt>
+  <dt id="arg-intensity-var">Intensity.var<a class="anchor" aria-label="anchor" href="#arg-intensity-var"></a></dt>
 <dd><p>a character-string that is the label of the Intensity process. Defaults to <code>"lambda"</code></p></dd>
 
-  <dt>Latent.var</dt>
+  <dt id="arg-latent-var">Latent.var<a class="anchor" aria-label="anchor" href="#arg-latent-var"></a></dt>
 <dd><p>a character-string that is the label of the unobserved process. Defaults to <code>"x"</code>.</p></dd>
 
-  <dt>time.var</dt>
+  <dt id="arg-time-var">time.var<a class="anchor" aria-label="anchor" href="#arg-time-var"></a></dt>
 <dd><p>the name of the time variable.</p></dd>
 
-  <dt>Type.Jump</dt>
+  <dt id="arg-type-jump">Type.Jump<a class="anchor" aria-label="anchor" href="#arg-type-jump"></a></dt>
 <dd><p>a logical value. If it is <code>TRUE</code>, the jump size is deterministic.</p></dd>
 
-  <dt>XinExpr</dt>
+  <dt id="arg-xinexpr">XinExpr<a class="anchor" aria-label="anchor" href="#arg-xinexpr"></a></dt>
 <dd><p>a logical variable. The default value <code>XinExpr=FALSE</code> implies that the starting condition for <code>Latent.var</code> is zero. If <code>XinExpr=TRUE</code>, each component of <code>Latent.var</code> has a parameter as a initial value.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>Model an object of <code><a href="yuima.carmaHawkes-class.html">yuima.carmaHawkes-class</a></code>.</p>
+    <p>Model an object of <code><a href="yuima.carmaHawkes-class.html">yuima.carmaHawkes-class</a></code>.</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -115,13 +114,13 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Definition of an Hawkes with exponential Kernel</span></span></span>
 <span class="r-in"><span><span class="va">mod1</span> <span class="op">&lt;-</span> <span class="fu">setCarmaHawkes</span><span class="op">(</span>p <span class="op">=</span> <span class="fl">1</span>, q <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Definition of an Hawkes with a CARMA(2,1) Intensity process</span></span></span>
 <span class="r-in"><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="fu">setCarmaHawkes</span><span class="op">(</span>p <span class="op">=</span> <span class="fl">2</span>, q <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -136,15 +135,15 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

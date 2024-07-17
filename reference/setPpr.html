@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -28,20 +28,20 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/yuimaproject/yuima/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
-     
+
   </a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Point Process</h1>
-    
+
     <div class="hidden name"><code>setPpr.Rd</code></div>
     </div>
 
@@ -57,37 +57,38 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>yuima</dt>
+    <p></p>
+<dl><dt id="arg-yuima">yuima<a class="anchor" aria-label="anchor" href="#arg-yuima"></a></dt>
 <dd><p>an object of <code><a href="yuima.model-class.html">yuima.model-class</a></code> that describes the mathematical features of counting and covariates processes <code>Y[t]=(X[t],N[t])</code>.</p></dd>
 
-  <dt>counting.var</dt>
+  <dt id="arg-counting-var">counting.var<a class="anchor" aria-label="anchor" href="#arg-counting-var"></a></dt>
 <dd><p>a label denoting the name of the counting process.</p></dd>
 
-  <dt>gFun</dt>
+  <dt id="arg-gfun">gFun<a class="anchor" aria-label="anchor" href="#arg-gfun"></a></dt>
 <dd><p>a vector string that is the mathematical expression of the vector function <code>g(t,Y[t-],theta)</code> in the intensity process.</p></dd>
 
-  <dt>Kernel</dt>
+  <dt id="arg-kernel">Kernel<a class="anchor" aria-label="anchor" href="#arg-kernel"></a></dt>
 <dd><p>a matrix string that is the kernel <code>kappa(t-s,Y[s],theta)</code> in the definition of the intensity process.</p></dd>
 
-  <dt>var.dx</dt>
+  <dt id="arg-var-dx">var.dx<a class="anchor" aria-label="anchor" href="#arg-var-dx"></a></dt>
 <dd><p>a string denoting the integration variable in the intensity process.</p></dd>
 
-  <dt>var.dt</dt>
+  <dt id="arg-var-dt">var.dt<a class="anchor" aria-label="anchor" href="#arg-var-dt"></a></dt>
 <dd><p>a string denoting the integration time variable in the intensity process.</p></dd>
 
-  <dt>lambda.var</dt>
+  <dt id="arg-lambda-var">lambda.var<a class="anchor" aria-label="anchor" href="#arg-lambda-var"></a></dt>
 <dd><p>name of the intensity process.</p></dd>
 
-  <dt>lower.var</dt>
+  <dt id="arg-lower-var">lower.var<a class="anchor" aria-label="anchor" href="#arg-lower-var"></a></dt>
 <dd><p>Lower bound of the support for the integral in the definition of the intensity process.</p></dd>
 
-  <dt>upper.var</dt>
+  <dt id="arg-upper-var">upper.var<a class="anchor" aria-label="anchor" href="#arg-upper-var"></a></dt>
 <dd><p>Upper bound of the support for the integral in the definition of the intensity process.</p></dd>
 
-  <dt>nrow</dt>
+  <dt id="arg-nrow">nrow<a class="anchor" aria-label="anchor" href="#arg-nrow"></a></dt>
 <dd><p>number of rows in the kernel.</p></dd>
 
-  <dt>ncol</dt>
+  <dt id="arg-ncol">ncol<a class="anchor" aria-label="anchor" href="#arg-ncol"></a></dt>
 <dd><p>number of columns in the kernel.</p></dd>
 
 </dl></div>
@@ -111,7 +112,7 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co">## Hawkes process with power law kernel</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># I. Law Definition:</span></span></span>
@@ -133,7 +134,7 @@
 <span class="r-in"><span><span class="co"># IV. Construction of an yuima.PPR object</span></span></span>
 <span class="r-in"><span><span class="va">PPR.Hwk2</span> <span class="op">&lt;-</span> <span class="fu">setPPR</span><span class="op">(</span>yuima <span class="op">=</span> <span class="va">mod.Hwk2</span>, gFun<span class="op">=</span><span class="va">g.Hwk2</span>,</span></span>
 <span class="r-in"><span>  Kernel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">Kern.Hwk2</span><span class="op">)</span>,var.dx <span class="op">=</span> <span class="st">"N"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -148,15 +149,15 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 
