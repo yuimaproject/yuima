@@ -21,7 +21,7 @@ qmle.linear_state_space_model(yuima, start, lower, upper, method = "L-BFGS-B", f
   \item{filter_mean_init}{Initial values of unobserved variables for the filter calculation.}
   \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filitering equation.}
   \item{rcpp}{A logical value. If \code{TRUE}, use Rcpp to calculate minus log quasi-likelihood.}
-  \item{drop_terms}{A numeric value. Losses for the first specified number of terms will be ignored during optimization.}
+  \item{drop_terms}{A numeric value. The specified number of initial terms in the filtering result will be excluded from the quasi-likelihood function calculation.}
   \item{...}{Additional arguments to be passed to the \code{\link{optim}} method. See Examples.}
 }
 \value{
