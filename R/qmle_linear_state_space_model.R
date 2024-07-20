@@ -157,7 +157,9 @@ qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "
     method = optim_method,
     nobs = yuima.nobs,
     model = yuima@model,
-    drop_terms = drop_terms
+    drop_terms = drop_terms,
+    explicit = explicit,
+    mean_init = filter_mean_init
   )
   return(res)
 }

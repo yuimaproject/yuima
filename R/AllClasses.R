@@ -215,7 +215,9 @@ setClass("yuima.linear_state_space_model",
 setClass("yuima.linear_state_space_qmle",
   slots = c(
     model = "yuima.linear_state_space_model",
-    drop_terms = "numeric"
+    drop_terms = "numeric",
+    explicit = "logical",
+    mean_init = "numeric"
   ),
   contains = "yuima.qmle"
 )
