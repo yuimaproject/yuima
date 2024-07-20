@@ -59,7 +59,10 @@ model.class = NULL, observed.variable = NULL, unobserved.variable = NULL
 \details{
 Please refer to the vignettes and examples or to the \pkg{yuimadocs} package.
 
-The return class depends on the given \code{model.class} argument. If \code{model.class} is \code{"model"}, the returned value is an object of class \code{\link{yuima.model-class}}. If \code{model.class} is \code{"stateSpaceModel"}, the returned value is an object of class \code{\link{yuima.state_space_model-class}}. If \code{model.class} is \code{"linearStateSpaceModel"}, the returned value is an object of class \code{\link{yuima.linear_state_space_model-class}}. If \code{model.class} is \code{NULL}, the returned value is inferred from the model specification.
+The return class depends on the given \code{model.class} argument. If \code{model.class} is \code{"model"}, the returned value is an object of class \code{\link{yuima.model-class}}. If \code{model.class} is \code{"stateSpaceModel"}, the returned value is an object of class \code{\link{yuima.state_space_model-class}}. If \code{model.class} is \code{"linearStateSpaceModel"}, the returned value is an object of class \code{\link{yuima.linear_state_space_model-class}}. If \code{model.class} is \code{NULL}, the class is inferred automatically.
+If neither \code{observed.variable} nor \code{unobserved.variable} is specified, a \code{yuima.model} object is returned. Otherwise, the linearity of the drift term is checked, and a \code{yuima.state_space_model} or \code{yuima.linear_state_space_model} object is returned accordingly.
+
+If \code{model.class} is \code{"stateSpaceModel"} or \code{"linearStateSpaceModel"}, only unobserved variables can be contained in expressions for the drift coefficients and the user must specify either \code{observed.variable} or \code{unobserved.variable}. If both are specified, they must be mutually exclusive, and their union must equal the state variables. In addition, if \code{model.class} is \code{"linearStateSpaceModel"}, the drift coefficients must be linear in the unobserved variables. 
 
 An object of \code{\link{yuima.model-class}} contains several slots:
 
@@ -104,15 +107,13 @@ names for \code{state.variable}, \code{jump.variable}, \code{solution.variable},
 All the remaining terms in the \R expressions are considered as parameters 
 and identified accordingly in the \code{parameter} slot.
 
-If \code{model.class} is \code{"stateSpaceModel"} or \code{"linearStateSpaceModel"}, only unobserved variables can be contained in expressions for the drift coefficients and the user must specify either \code{observed.variable} or \code{unobserved.variable}. If both are specified, they must be mutually exclusive, and their union must equal the state variables. In addition, if \code{model.class} is \code{"linearStateSpaceModel"}, the drift coefficients must be linear in the unobserved variables. 
-
-If \code{model.class} is \code{"stateSpaceModel"}, \code{setModel} returns a \code{\link{yuima.state_space_model-class}} object. A \code{\link{yuima.state_space_model-class}} object extends the \code{\link{yuima.model-class}} object with the following slot:
+An object of \code{\link{yuima.state_space_model-class}} extends an object of \code{\link{yuima.model-class}} with the following slot:
 
 \describe{
 \item{\code{is.observed}:}{a logical vector of length equal to the number of state variables, indicating whether each state variable is observed.}
 }
 
-If \code{model.class} is \code{"linearStateSpaceModel"}, \code{setModel} returns a \code{\link{yuima.linear_state_space_model-class}} object. A \code{\link{yuima.linear_state_space_model-class}} object extends the \code{\link{yuima.state_space_model-class}} object with the following slots:
+An object of \code{\link{yuima.linear_state_space_model-class}} extends an object of \code{\link{yuima.state_space_model-class}} with the following slots:
 
 \describe{
 \item{\code{drift.slope}:}{a list of expressions.}
@@ -120,9 +121,6 @@ If \code{model.class} is \code{"linearStateSpaceModel"}, \code{setModel} returns
 }
 
 In the case of \code{yuima.linear_state_space_model-class}, the drift term of the model is assumed to be affine in the unobserved variables, i.e., \code{drift = drift.slope * unobserved.variable + drift.intercept}.
-
-If \code{model.class} is \code{NULL}, the class is inferred automatically.
-If neither \code{observed.variable} nor \code{unobserved.variable} is specified, a \code{yuima.model} object is returned. Otherwise, the linearity of the drift term is checked, and a \code{yuima.state_space_model} or \code{yuima.linear_state_space_model} object is returned accordingly.
 }
 
 \value{
