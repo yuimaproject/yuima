@@ -31,7 +31,7 @@ A \code{\link{yuima.linear_state_space_qmle}} object, extending the \code{\link{
 \item{...}{Additional slots inherited from the \code{yuima.qmle} class.}
 }
 \references{
-Kurisaki, M. (2023). Parameter estimation for ergodic linear SDEs from partial and discrete observations. Stat Inference Stoch Process, 26, 279–330.
+Kurisaki, M. (2023). Parameter estimation for ergodic linear SDEs from partial and discrete observations. Stat Inference Stoch Process, 26, 279-330.
 
 Bini, D., Iannazzo, B., & Meini, B. (2012). Numerical Solution of Algebraic Riccati Equations. Society for Industrial and Applied Mathematics.
 }
@@ -46,8 +46,7 @@ ymodel <- setModel(
     diffusion = diffusion, 
     solve.variable = c("X", "Y"),
     state.variable = c("X", "Y"),
-    observed.variable = "Y",
-    model.class = "linearStateSpaceModel"
+    observed.variable = "Y"
 )
 
 ### Set data
@@ -67,7 +66,7 @@ rm(tmp.yuima)
 
 ### Set yuima
 variable_data_mapping <- list(
-    "X" = NA,
+    #"X" = NA,
     "Y" = 2
 )
 yuima <- setYuima(model = ymodel, data = ydata, variable_data_mapping = variable_data_mapping)
@@ -91,7 +90,7 @@ start.par <- list(
     sigma = 0.9
 )
 
-filter_mean_init <- c(0)
+filter_mean_init <- 0
 
-res <- qmle.linear_state_space_model(yuima, start = start.par, upper = upper.par, lower = lower.par, filter_mean_init = filter_mean_init, explicit = FALSE, rcpp = TRUE)
+res <- qmle.linear_state_space_model(yuima, start = start.par, upper = upper.par, lower = lower.par, filter_mean_init = filter_mean_init, rcpp = TRUE)
 }
