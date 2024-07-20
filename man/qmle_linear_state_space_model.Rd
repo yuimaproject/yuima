@@ -15,10 +15,12 @@ qmle.linear_state_space_model(yuima, start, lower, upper, method = "L-BFGS-B", f
   \item{start}{Initial values to be passed to the optimizer.}
   \item{lower}{A named list specifying lower bounds of parameters.}
   \item{upper}{A named list specifying upper bounds of parameters.}
+  \item{method}{Optimization method. See \code{\link{optim}}.
   \item{fixed}{For conditional (quasi)maximum likelihood estimation.}
+  \item{envir}{An environment where the model coefficients are evaluated.}
   \item{filter_mean_init}{Initial values of unobserved variables in filter calculation.}
-  \item{explicit}{Solve ARE explicitly?} 
-  \item{rcpp}{Use C++ code?}
+  \item{explicit}{A logical value. If \code{TRUE}, use the algebraic Riccati equation and calculate filter explicitly.}
+  \item{rcpp}{A logical value. If \code{TRUE}, the algebraic Riccati equation is solved by Rcpp.}
   \item{drop_terms}{Losses for the first given number of terms will be ignored during optimization.}
   \item{...}{Passed to \code{\link{optim}} method. See Examples.}
 }
