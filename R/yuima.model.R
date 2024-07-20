@@ -160,7 +160,13 @@ setModel <- function(drift = NULL,
       unobserved.variable <- model@state.variable[!model@is.observed]
 
       ## check if the model is linear
-      if (!is.linear(model@drift, unobserved.variable)) {
+      drift.is.linear.with.unobserved <- tryCatch(
+        is.linear(model@drift, unobserved.variable),
+        warning = function(w) {
+          return(TRUE)
+        }
+      )
+      if (!drift.is.linear.with.unobserved) {
         model.class <- "stateSpaceModel"
       }
       # check that state.variable and time.variable are not in diffusion

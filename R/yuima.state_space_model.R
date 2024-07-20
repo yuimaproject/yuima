@@ -203,7 +203,13 @@ setLinearStateSpaceModel <- function(drift = NULL,
 
   # model validation
   ## check if drift term of given model is linear in unobserved.variable
-  if (!is.linear(model@drift, unobserved.variable)) {
+  drift.is.linear.with.unobserved <- tryCatch(
+    is.linear(model@drift, unobserved.variable),
+    warning = function(w) {
+      return(TRUE)
+    }
+  )
+  if (!drift.is.linear.with.unobserved) {
     yuima.stop("Invalid model. Coefficients of drift term must be linear in unobserved.variable.")
   }
   # check that state.variable and time.variable are not in diffusion
