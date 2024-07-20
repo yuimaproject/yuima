@@ -23,7 +23,9 @@
 \usage{
 setModel(drift = NULL, diffusion = NULL, hurst = 0.5, jump.coeff = NULL,
 measure = list(), measure.type = character(), state.variable = "x",
-jump.variable = "z", time.variable = "t", solve.variable, xinit)
+jump.variable = "z", time.variable = "t", solve.variable, xinit,
+model.class = NULL, observed.variable = NULL, unobserved.variable = NULL
+)
 }
 
 \arguments{
@@ -49,14 +51,16 @@ jump.variable = "z", time.variable = "t", solve.variable, xinit)
     \code{diffusion}).}  
   \item{xinit}{a vector of numbers identifying the initial value of the 
   \code{solve.variable}.}
-  \item{model.class=NULL}{a character string identifying the class of the model. Allowed values are \code{"model"}, \code{"stateSpaceModel"}, \code{"linearStateSpaceModel"} or \code{NULL}. If \code{NULL}, the class is inferred from the model specification.}
-  \item{observed.variable=NULL}{a vector of names of the observed variables. If \code{model.class} is \code{"stateSpaceModel"} or \code{"linearStateSpaceModel"}, either `observed.variable` or `unobserved.variable` must be specified.}
-  \item{unobserved.variable}{a vector of names of the unobserved variables. If \code{model.class} is \code{"stateSpaceModel"} or \code{"linearStateSpaceModel"}, either `observed.variable` or `unobserved.variable` must be specified.}
+  \item{model.class}{a character string identifying the class of the model. Allowed values are \code{"model"}, \code{"stateSpaceModel"}, \code{"linearStateSpaceModel"} or \code{NULL}. If \code{NULL}, the class is inferred from the model specification.}
+  \item{observed.variable}{a vector of names of the observed variables. See 'Details'.}
+  \item{unobserved.variable}{a vector of names of the unobserved variables. See 'Details'.}
 }
 
 \details{
 Please refer to the vignettes and the examples or to the \pkg{yuimadocs}
 package.
+
+The return class depends on the given \code{model.class} argument. If \code{model.class} is \code{"model"}, the returned value is an object of class \code{\link{yuima.model-class}}. If \code{model.class} is \code{"stateSpaceModel"}, the returned value is an object of class \code{\link{yuima.state_space_model-class}}. If \code{model.class} is \code{"linearStateSpaceModel"}, the returned value is an object of class \code{\link{yuima.linear_state_space_model-class}}. If \code{model.class} is \code{NULL}, the returned value is inferred from the model specification.
 
 An object of \code{\link{yuima.model-class}} contains several slots:
 
@@ -95,9 +99,6 @@ coefficient (a matrix).}
  \code{parameter} slot.}
 \item{\code{xinit}:}{denotes the initial value of the stochastic differential 
  equation.}
-\item{model.class=NULL}{a character string identifying the class of the model. Allowed values are \code{"model"}, \code{"stateSpaceModel"}, \code{"linearStateSpaceModel"} or \code{NULL}. If \code{NULL}, the class is inferred from the model specification. The class of returned value differs depending on the value of this argument.}
-\item{observed.variable=NULL}{a vector of names of the observed variables. If \code{model.class} is \code{"stateSpaceModel"} or \code{"linearStateSpaceModel"}, either `observed.variable` or `unobserved.variable` must be specified. If both are specified, they must be mutually exclusive and the union of the two must be equal to the state variables.}
-\item{unobserved.variable=NULL}{a vector of names of the unobserved variables. If \code{model.class} is \code{"stateSpaceModel"} or \code{"linearStateSpaceModel"}, either `observed.variable` or `unobserved.variable` must be specified. If both are specified, they must be mutually exclusive and the union of the two must be equal to the state variables.}
 }
 
 The \code{\link{yuima.model-class}} structure assumes that the user either uses the default
@@ -105,9 +106,30 @@ names for \code{state.variable}, \code{jump.variable}, \code{solution.variable} 
 \code{time.variable} or specifies his/her own names. 
 All the rest of the terms in the \R expressions are considered as parameters 
 and identified accordingly in the \code{parameter} slot.
+
+If \code{model.class} is \code{"stateSpaceModel"} or \code{"linearStateSpaceModel"}, only unobserved variables can be contained in expressions for the drift coefficients and the user must specify either \code{observed.variable} or \code{unobserved.variable}. If both are specified, they must be mutually exclusive, and their union must equal the state variables.In addition, if \code{model.class} is \code{"linearStateSpaceModel"}, the drift coefficients must be linear in the unobserved variables. 
+
+If  \code{model.class} is \code{"stateSpaceModel"}, \code{setModel} returns \code{\link{yuima.state_space_model-class}} object. \code{\link{yuima.state_space_model-class}} object extends \code{\link{yuima.model-class}} object with the following slots:
+
+\describe{
+\item{\code{is.observed}:}{a logical vector of length equal to the number of state variables, indicating whether each state variable is observed.}
 }
+
+If  \code{model.class} is \code{"linearStateSpaceModel"}, \code{setModel} returns \code{\link{yuima.linear_state_space_model-class}} object. \code{\link{yuima.linear_state_space_model-class}} object extends \code{\link{yuima.state_space_model-class}} object with the following slots:
+
+\describe{
+\item{drift.slope}{a list of expressions.}
+\item{drift.intercept}{a list of expressions.}
+}
+
+In \code{yuima.linear_state_space_model-class} case, the drift term of the model is assumed to be affine in the unobserved variables. i.e. \code{drift = drift.slope * unobserved.variable + drift.intercept}.
+
+If \code{model.class} is \code{NULL}, the class is inferred automatically.
+If neither \code{observed.variable} nor \code{unobserved.variable} is specified, a \code{yuima.model} object is returned. Otherwise, linearity of the drift term is checked and a \code{yuima.state_space_model} or \code{yuima.linear_state_space_model} object is returned accordingly.
+}
+
 \value{
-  \item{model}{the class of \code{model} differs depending on the value of the argument \code{model.class}. If \code{model.class} is \code{"model"}, the returned value is an object of \code{\link{yuima.model-class}}. If \code{model.class} is \code{"stateSpaceModel"}, the returned value is an object of \code{\link{yuima.state_space_model-class}}. If \code{model.class} is \code{"linearStateSpaceModel"}, the returned value is an object of \code{\link{yuima.linear_state_space_model-class}}. If \code{model.class} is \code{NULL}, the returned value is inferred from the model specification.}
+  \item{model}{The class of the returned object depends on the value of \code{model.class}. If \code{model.class} is specified, the returned value is an object of the specified class. If \code{model.class} is \code{NULL}, the returned value is inferred from the model specification. See Details for more information.}
 }
 
 \author{The YUIMA Project Team}
@@ -180,4 +202,3 @@ mod6 <- setModel(drift="3*y", diffusion=1, hurst=0.3, solve.variable=c("y"))
 str(mod6)
 }
 \keyword{ts}
-
