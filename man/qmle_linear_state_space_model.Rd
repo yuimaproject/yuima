@@ -28,8 +28,8 @@ qmle.linear_state_space_model(yuima, start, lower, upper, method = "L-BFGS-B", f
 A \code{\link{yuima.linear_state_space_qmle}} object, extending the \code{\link{yuima.qmle}} class.
 \item{model}{A \code{\link{yuima.linear_state_space_model}} object.}
 \item{drop_terms}{A numeric value representing the number of terms ignored during optimization.}
-\item{explicit}{A logical value given as an argument.}
-\item{mean_init}{A numeric value given as an argument \code{filter_mean_init}.}
+\item{explicit}{A logical value provided as an argument.}
+\item{mean_init}{A numeric value provided as the argument \code{filter_mean_init}.}
 \item{...}{Additional slots inherited from the \code{yuima.qmle} class.}
 }
 \references{
