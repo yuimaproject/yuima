@@ -19,8 +19,8 @@ qmle.linear_state_space_model(yuima, start, lower, upper, method = "L-BFGS-B", f
   \item{fixed}{A named list of parameters to be held fixed during optimization.}
   \item{envir}{An environment in which the model coefficients are evaluated.}
   \item{filter_mean_init}{Initial values of unobserved variables for the filter calculation.}
-  \item{explicit}{A logical value. If \code{TRUE}, use the algebraic Riccati equation and calculate the filter explicitly.}
-  \item{rcpp}{A logical value. If \code{TRUE}, the algebraic Riccati equation is solved using Rcpp.}
+  \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filitering equation.}
+  \item{rcpp}{A logical value. If \code{TRUE}, use Rcpp to calculate minus log quasi-likelihood.}
   \item{drop_terms}{A numeric value. Losses for the first specified number of terms will be ignored during optimization.}
   \item{...}{Additional arguments to be passed to the \code{\link{optim}} method. See Examples.}
 }
