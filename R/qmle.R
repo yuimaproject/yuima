@@ -46,7 +46,8 @@ diffusion.term <- function(yuima, theta, env){
   tmp.env <- new.env(parent = env) ##Kurisaki 4/4/2021
   assign(yuima@model@time.variable, env$time, envir=tmp.env)
   diff <- array(0, dim=c(d.size, r.size, n))
-  for(i in 1:length(theta)){
+  #for(i in 1:length(theta)){
+  for(i in seq_along(theta)){ # YK, Aug 12, 2023
     assign(names(theta)[i],theta[[i]],envir=tmp.env)
   }
   
