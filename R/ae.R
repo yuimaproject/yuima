@@ -298,7 +298,7 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
   # Characteristic function
   psi <- function(m){
     
-    martingale <- sprintf('exp(%s)', (calculus::wrap(1i*AE$Mu) %inner% AE$u) %sum% (-0.5 * AE$Sigma) %inner% (AE$u %outer% AE$u))
+    martingale <- sprintf('exp(%s)', (calculus::wrap(1i*AE$Mu) %inner% AE$u) %sum% ((-0.5 * AE$Sigma) %inner% (AE$u %outer% AE$u)))
     
     if(m>0){
       psi <- cpp_collapse(paste0(AE$eps.var, "^", (1:m)) %prod% calculus::wrap(AE$P.m[1:m]), " + ")
