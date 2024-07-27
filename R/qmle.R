@@ -20,7 +20,7 @@ drift.term <- function(yuima, theta, env) {
   DRIFT <- yuima@model@drift
   modelstate <- yuima@model@state.variable
   data <- env$X
-  drift <- .Call("driftTermCpp", DRIFT, modelstate, data, tmp.env, PACKAGE="yuima")
+  drift <- driftTermCpp(DRIFT, modelstate, data, tmp.env)
   drift
 }
 
@@ -33,7 +33,7 @@ diffusion.term <- function(yuima, theta, env) {
   DIFFUSION <- yuima@model@diffusion
   modelstate <- yuima@model@state.variable
   data <- env$X
-  diffusion.vector <- .Call("diffusionTermCpp", DIFFUSION, modelstate, data, tmp.env, PACKAGE="yuima")
+  diffusion.vector <- diffusionTermCpp(DIFFUSION, modelstate, data, tmp.env)
   diffusion <- array(diffusion.vector, c(length(yuima@model@diffusion),length(yuima@model@diffusion[[1]]),length(yuima@data)[1]))
   diffusion
 }
@@ -49,7 +49,7 @@ measure.term <- function(yuima, theta, env) {
   JUMP <- yuima@model@jump.coeff
   modelstate <- yuima@model@state.variable
   data <- env$X
-  measure.vector <- .Call("measureTermCpp", JUMP, modelstate, data, tmp.env, PACKAGE="yuima")
+  measure.vector <- measureTermCpp(JUMP, modelstate, data, tmp.env)
   measure <- array(measure.vector, c(length(yuima@model@jump.coeff),length(yuima@model@jump.coeff[[1]]),length(yuima@data)[1]))
   measure
 }
