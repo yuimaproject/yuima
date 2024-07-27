@@ -1,6 +1,7 @@
 \name{kalmanBucyFilter}
 \alias{kalmanBucyFilter}
 \alias{kalmanBucyFilter,yuima-method}
+\alias{yuima.kalmanBucyFilter-class}
 \title{
 Kalman-Bucy Filter
 }
@@ -25,7 +26,7 @@ kalmanBucyFilter(
   \item{env}{An environment. The environment in which the model coefficients are evaluated.}
 }
 \value{
-A \code{\code{yuima.kalmanBucyFilter}} object.
+A \code{yuima.kalmanBucyFilter} object.
 \item{model}{A \code{\link{yuima.linear_state_space_model}} object.}
 \item{mean}{A \code{\link{ts}} object containing the estimated values of unobserved variables.}
 \item{vcov}{An array object containing the estimated mean squared error of the estimator of unobserved variables.}
