@@ -66,7 +66,8 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
     if(are) {
         # Use algebraic Ricatti equation. a, b, c, sigma is independent of t. so returns evaluated values in 2-dim matrix.
         delta <- yuima@sampling@delta
-        eval_exp <- function(expr, env=tmp.env) {
+        eval_exp <- function(expr) {
+            env=tmp.env
             nrow = length(expr)
             ncol = length(expr[[1]])
             res = matrix(nrow=nrow, ncol=ncol)
@@ -85,7 +86,10 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
         n <- yuima@sampling@n[1]* K 
         time.points = as.matrix((0:n)*delta)
         # Use Ricatti equation. a, b, c, sigma is dependent of t. so returns evaluated values in 3-dim matrix.
-        eval_exp <- function(expr, variable=yuima@model@time.variable, data=time.points, env=tmp.env) {
+        eval_exp <- function(expr) {
+            variable=yuima@model@time.variable
+            data=time.points
+            env=tmp.env
             vec <- diffusionTermCpp(expr, variable, data, env)
             res <- array(vec, dim = c(length(expr),length(expr[[1]]), length(data)))
             return(res)
