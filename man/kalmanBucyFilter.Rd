@@ -21,14 +21,14 @@ kalmanBucyFilter(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 
   \item{env}{An environment. The environment in which the model coefficients are evaluated.}
 }
 \value{
-A \code{\link{yuima.kalmanBucyFilter}} object.
+A \code{\code{yuima.kalmanBucyFilter}} object.
 \item{model}{A \code{\link{yuima.linear_state_space_model}} object.}
 \item{mean}{A \code{\link{ts}} object containing the estimated values of unobserved variables.}
 \item{vcov}{An array object containing the estimated mean squared error of the estimator of unobserved variables.}
 \item{mean.init}{A numeric value representing the initial value of unobserved variables.}
 \item{vcov.init}{A matrix representing the initial mean squared error of the estimator of unobserved variables.}
 \item{delta}{A numeric value representing the time step of observations.}
-\item{data}{A \code{\link{yuima.data}} object.}
+\item{data}{A \code{yuima.data} object.}
 }
 \references{
 Liptser, R. S., & Shiryaev, A. N. (2001). \emph{Statistics of Random Processes: General Theory}. Springer.
