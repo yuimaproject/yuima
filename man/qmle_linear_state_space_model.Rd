@@ -1,6 +1,7 @@
 \name{qmle.linear_state_space_model}
 \alias{qmle.linear_state_space_model}
 \alias{qmle.linear_state_space_model,yuima-method}
+\alias{yuima.linear_state_space_qmle-class}
 \title{
 Calculate Quasi-Likelihood and Maximum Likelihood Estimator for Linear State Space Model
 }
@@ -29,7 +30,7 @@ qmle.linear_state_space_model(
   \item{...}{Additional arguments to be passed to the \code{\link{optim}} method. See Examples.}
 }
 \value{
-A \code{\link{yuima.linear_state_space_qmle}} object, extending the \code{\link{yuima.qmle}} class.
+A \code{yuima.linear_state_space_qmle-class} object, extending the \code{\link{yuima.qmle-class}} class.
 \item{model}{A \code{\link{yuima.linear_state_space_model}} object.}
 \item{drop_terms}{A numeric value representing the number of terms ignored during optimization.}
 \item{explicit}{A logical value provided as an argument.}
