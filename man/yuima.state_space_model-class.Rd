@@ -36,6 +36,7 @@
     \item{\code{xinit}:}{The initial value of the stochastic differential equation.}
     \item{\code{J.flag}:}{Indicates whether \code{jump.coeff} includes \code{jump.variable}.}
     \item{\code{is.observed}:}{Indicates whether each state variable is observed (i.e., data is given) or not.}
+  }
 }
 \author{The YUIMA Project Team}
 \keyword{classes}
