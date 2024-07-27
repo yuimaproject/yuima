@@ -201,6 +201,9 @@ str(mod6)
 # Yt = Xt + dVt (observed)
 drift <- c("-theta*x", "1")
 diffusion <- matrix(c("sigma", "0", "0", "1"), 2, 2)
-mod7 <- setModel(drift=drift, diffusion=diffusion, solve.variable=c("x", "y"), state.variable=c("x", "y"), observed.variable="y")
+mod7 <- setModel(
+  drift=drift, diffusion=diffusion, solve.variable=c("x", "y"),
+  state.variable=c("x", "y"), observed.variable="y"
+)
 }
 \keyword{ts}

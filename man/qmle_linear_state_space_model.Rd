@@ -8,7 +8,11 @@ Calculate Quasi-Likelihood and Maximum Likelihood Estimator for Linear State Spa
 A function for the quasi-maximum likelihood estimation of linear state space models, extending the \code{\link{qmle}} function.
 }
 \usage{
-qmle.linear_state_space_model(yuima, start, lower, upper, method = "L-BFGS-B", fixed = list(), envir = globalenv(), filter_mean_init, explicit = FALSE, rcpp = FALSE, drop_terms = 0, ...)
+qmle.linear_state_space_model(
+  yuima, start, lower, upper, method = "L-BFGS-B", fixed = list(),
+  envir = globalenv(), filter_mean_init, explicit = FALSE, rcpp = FALSE, drop_terms = 0,
+  ...
+)
 }
 \arguments{
   \item{yuima}{A yuima object. The class of \code{yuima@model} must be \code{yuima.linear_state_space_model}.}
@@ -62,7 +66,9 @@ true.par <- list(
     b = 0.3,
     sigma = 0.053
 )
-tmp.yuima <- simulate(ymodel, true.parameter = true.par, sampling = setSampling(n = N, Terminal = T))
+tmp.yuima <- simulate(
+  ymodel, true.parameter = true.par, sampling = setSampling(n = N, Terminal = T)
+)
 ydata <- tmp.yuima@data
 rm(tmp.yuima)
 
@@ -94,5 +100,8 @@ start.par <- list(
 
 filter_mean_init <- 0
 
-res <- qmle.linear_state_space_model(yuima, start = start.par, upper = upper.par, lower = lower.par, filter_mean_init = filter_mean_init, rcpp = TRUE)
+res <- qmle.linear_state_space_model(
+  yuima, start = start.par, upper = upper.par, lower = lower.par, 
+  filter_mean_init = filter_mean_init, rcpp = TRUE
+)
 }

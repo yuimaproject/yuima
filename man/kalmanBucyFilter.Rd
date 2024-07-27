@@ -8,13 +8,17 @@ Kalman-Bucy Filter
 Estimates values of unobserved variables from observed variables in a Linear State Space Model.
 }
 \usage{
-kalmanBucyFilter(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, env = globalenv())
+kalmanBucyFilter(
+  yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001,
+  are = FALSE, explicit = FALSE, env = globalenv()
+)
 }
 \arguments{
   \item{yuima}{A yuima object. The class of \code{yuima@model} must be \code{yuima.linear_state_space_model}.}
   \item{params}{A list of numeric values representing the names and values of parameters.}
   \item{mean_init}{A numeric value representing the initial value of unobserved variables.}
-  \item{vcov_init}{A matrix representing the initial variance-covariance value of unobserved variables. This is required if \code{are = FALSE}. It can be a numeric of length 1 if the number of observed variables is 1.}
+  \item{vcov_init}{A matrix representing the initial variance-covariance value of unobserved variables. 
+    This is required if \code{are = FALSE}. It can be a numeric of length 1 if the number of observed variables is 1.}
   \item{delta.vcov.solve}{A numeric value representing the step size in solving the mean squared error of the estimator.}
   \item{are}{A logical value. If \code{TRUE}, solve the algebraic Riccati equation.}
   \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filtering equation.}
@@ -46,12 +50,16 @@ n <- 10^4
 h <- 0.001
 
 trueparam <- list(a = a, b = b, c = c, sigma = sigma)
-mod <- setModel(drift = c("-a*X", "c*X"), diffusion = matrix(c("b", "0", "0", "sigma"), 2, 2),
+mod <- setModel(drift = c("-a*X", "c*X"),
+                diffusion = matrix(c("b", "0", "0", "sigma"), 2, 2),
                 solve.variable = c("X", "Y"), state.variable = c("X", "Y"),
                 observed.variable = "Y")
 
 samp <- setSampling(delta = h, n = n)
 yuima <- simulate(mod, sampling = samp, true.parameter = trueparam)
 
-res <- kalmanBucyFilter(yuima, trueparam, mean_init, vcov_init, 0.001, are = FALSE, env = globalenv())
+res <- kalmanBucyFilter(
+  yuima, trueparam, mean_init, vcov_init, 0.001,
+  are = FALSE, env = globalenv()
+)
 }
