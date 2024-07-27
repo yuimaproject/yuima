@@ -1,7 +1,7 @@
 kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, env = globalenv()) {
     # are : flag if use algebraic Riccati equation or not
     # validate input
-    if(class(yuima@model) != "yuima.linear_state_space_model") {
+    if(!inherits(yuima@model, "yuima.linear_state_space_model")) {
         yuima.stop("model must be yuima.linear_state_space_model")
     }
     
@@ -20,7 +20,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
         yuima.stop("'vcov_init' is required if are = FALSE")
       }
       ## if length of observed.variables is 1 and numeric of length 1 is given to vcov_init, convert vcov_init to matrix.
-      if(is.element("numeric", class(vcov_init))) {
+      if(inherits(vcov_init, "numeric")) {
         if(length(vcov_init) != 1) {
             yuima.stop("Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) or numeric of length 1.")
         }
@@ -28,7 +28,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
           yuima.stop("Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) when length(observed.variables) > 1.")
         }
         vcov_init <- matrix(vcov_init)
-      } else if(is.element("matrix", class(vcov_init))){
+      } else if(inherits(vcov_init, "matrix")){
         if(!all(dim(vcov_init) == length(unobserved.variables))) {
             yuima.stop("Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) or numeric of length 1.")
         }

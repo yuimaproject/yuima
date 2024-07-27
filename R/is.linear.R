@@ -4,7 +4,7 @@ is.linear <- function(drift, variables) {
 
   # try symbolic differentiation to check linearity
   hessians <- try(derivative(f = derivative(f = drift, var = variables), var = variables), silent = T)
-  if (class(hessians) != "try-error") {
+  if (!inherits(hessians, "try-error")) {
     return(all(hessians == "0"))
   }
 
