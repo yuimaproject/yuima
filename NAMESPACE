@@ -81,6 +81,9 @@ importFrom(calculus,"%outer%")
 importFrom(calculus,"%prod%")
 importFrom(calculus,"%sum%")
 
+# added by Kosuke Kito on Jul. 27, 2024
+importFrom(Matrix, "bdiag")
+importFrom(calculus, "derivative")
 
 exportClasses("yuima",
 "yuima.data",
