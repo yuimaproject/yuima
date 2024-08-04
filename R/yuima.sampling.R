@@ -40,7 +40,7 @@ regular, sdelta, sgrid, oindex, interpolation){
 				   .Object@grid <- grid
 				   .Object@Initial <- sapply(grid, min)
 				   .Object@Terminal <- sapply(grid, max)
-				   .Object@n <- sapply(grid, function(x) length(x))
+				   .Object@n <- sapply(grid, function(x) length(x) - 1)
 				   .Object@random <- FALSE
 				   .Object@delta <- as.numeric(sapply(grid, which.delta))
 				   .Object@regular <- !any(is.na( .Object@delta ) )	

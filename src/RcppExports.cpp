@@ -206,6 +206,74 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// calc_filter_vcov
+List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube ob_diff, arma::mat init, double delta);
+RcppExport SEXP _yuima_calc_filter_vcov(SEXP un_dr_slSEXP, SEXP un_diffSEXP, SEXP ob_dr_slSEXP, SEXP ob_diffSEXP, SEXP initSEXP, SEXP deltaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube >::type un_dr_sl(un_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type un_diff(un_diffSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type ob_dr_sl(ob_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type ob_diff(ob_diffSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type init(initSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_filter_vcov(un_dr_sl, un_diff, ob_dr_sl, ob_diff, init, delta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calc_filter_mean
+arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube ob_dr_in, arma::cube ob_diff, arma::cube vcov, arma::cube inv_sq_ob_diff, arma::vec init, double delta, arma::mat deltaY);
+RcppExport SEXP _yuima_calc_filter_mean(SEXP un_dr_slSEXP, SEXP un_dr_inSEXP, SEXP un_diffSEXP, SEXP ob_dr_slSEXP, SEXP ob_dr_inSEXP, SEXP ob_diffSEXP, SEXP vcovSEXP, SEXP inv_sq_ob_diffSEXP, SEXP initSEXP, SEXP deltaSEXP, SEXP deltaYSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube >::type un_dr_sl(un_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type un_dr_in(un_dr_inSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type un_diff(un_diffSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type ob_dr_sl(ob_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type ob_dr_in(ob_dr_inSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type ob_diff(ob_diffSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type vcov(vcovSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type inv_sq_ob_diff(inv_sq_ob_diffSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init(initSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type deltaY(deltaYSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_filter_mean(un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, ob_diff, vcov, inv_sq_ob_diff, init, delta, deltaY));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calc_filter_vcov_are
+arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat ob_diff);
+RcppExport SEXP _yuima_calc_filter_vcov_are(SEXP un_dr_slSEXP, SEXP un_diffSEXP, SEXP ob_dr_slSEXP, SEXP ob_diffSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type un_dr_sl(un_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type un_diff(un_diffSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ob_dr_sl(ob_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ob_diff(ob_diffSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_filter_vcov_are(un_dr_sl, un_diff, ob_dr_sl, ob_diff));
+    return rcpp_result_gen;
+END_RCPP
+}
+// calc_filter_mean_explicit
+arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat ob_dr_sl, arma::mat ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY);
+RcppExport SEXP _yuima_calc_filter_mean_explicit(SEXP un_dr_slSEXP, SEXP ob_dr_slSEXP, SEXP ob_diffSEXP, SEXP vcovSEXP, SEXP initSEXP, SEXP deltaSEXP, SEXP deltaYSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type un_dr_sl(un_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ob_dr_sl(ob_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ob_diff(ob_diffSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type vcov(vcovSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type init(initSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type deltaY(deltaYSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_filter_mean_explicit(un_dr_sl, ob_dr_sl, ob_diff, vcov, init, delta, deltaY));
+    return rcpp_result_gen;
+END_RCPP
+}
 // W1
 double W1(NumericMatrix crossdx, NumericMatrix b, NumericMatrix A, double h);
 RcppExport SEXP _yuima_W1(SEXP crossdxSEXP, SEXP bSEXP, SEXP ASEXP, SEXP hSEXP) {
@@ -255,6 +323,77 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type DeltaG2(DeltaG2SEXP);
     Rcpp::traits::input_parameter< arma::vec >::type Deltat(DeltatSEXP);
     rcpp_result_gen = Rcpp::wrap(Irregular_PseudoLoglik_COG(lengthObs, B, Btilde, InvBtilde, a0, bq, a1, V, PseudologLik, ta, state, stateMean, e, DeltaG2, Deltat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// minusloglcpp_linear_state_space_theta1
+double minusloglcpp_linear_state_space_theta1(arma::cube observed_diffusion, arma::mat dx, double h, int drop_terms);
+RcppExport SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP observed_diffusionSEXP, SEXP dxSEXP, SEXP hSEXP, SEXP drop_termsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube >::type observed_diffusion(observed_diffusionSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type dx(dxSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< int >::type drop_terms(drop_termsSEXP);
+    rcpp_result_gen = Rcpp::wrap(minusloglcpp_linear_state_space_theta1(observed_diffusion, dx, h, drop_terms));
+    return rcpp_result_gen;
+END_RCPP
+}
+// minusloglcpp_linear_state_space_theta2
+double minusloglcpp_linear_state_space_theta2(arma::mat observed_drift, arma::cube observed_diffusion, arma::mat dx, double h, int drop_terms);
+RcppExport SEXP _yuima_minusloglcpp_linear_state_space_theta2(SEXP observed_driftSEXP, SEXP observed_diffusionSEXP, SEXP dxSEXP, SEXP hSEXP, SEXP drop_termsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type observed_drift(observed_driftSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type observed_diffusion(observed_diffusionSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type dx(dxSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< int >::type drop_terms(drop_termsSEXP);
+    rcpp_result_gen = Rcpp::wrap(minusloglcpp_linear_state_space_theta2(observed_drift, observed_diffusion, dx, h, drop_terms));
+    return rcpp_result_gen;
+END_RCPP
+}
+// driftTermCpp
+NumericMatrix driftTermCpp(ExpressionVector drift, CharacterVector modelstate, arma::mat data, Environment env);
+RcppExport SEXP _yuima_driftTermCpp(SEXP driftSEXP, SEXP modelstateSEXP, SEXP dataSEXP, SEXP envSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< ExpressionVector >::type drift(driftSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type modelstate(modelstateSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
+    rcpp_result_gen = Rcpp::wrap(driftTermCpp(drift, modelstate, data, env));
+    return rcpp_result_gen;
+END_RCPP
+}
+// diffusionTermCpp
+NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, arma::mat data, Environment env);
+RcppExport SEXP _yuima_diffusionTermCpp(SEXP diffusionSEXP, SEXP modelstateSEXP, SEXP dataSEXP, SEXP envSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type diffusion(diffusionSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type modelstate(modelstateSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
+    rcpp_result_gen = Rcpp::wrap(diffusionTermCpp(diffusion, modelstate, data, env));
+    return rcpp_result_gen;
+END_RCPP
+}
+// measureTermCpp
+NumericVector measureTermCpp(List measure, CharacterVector modelstate, arma::mat data, Environment env);
+RcppExport SEXP _yuima_measureTermCpp(SEXP measureSEXP, SEXP modelstateSEXP, SEXP dataSEXP, SEXP envSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type measure(measureSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type modelstate(modelstateSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
+    rcpp_result_gen = Rcpp::wrap(measureTermCpp(measure, modelstate, data, env));
     return rcpp_result_gen;
 END_RCPP
 }
