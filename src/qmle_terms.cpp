@@ -1,16 +1,20 @@
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
 
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericMatrix driftTermCpp(ExpressionVector drift, CharacterVector modelstate, NumericMatrix data, Environment env) {
-    int dataNum = data.nrow();
+NumericMatrix driftTermCpp(ExpressionVector drift, CharacterVector modelstate, arma::mat data, Environment env) {
+    //To avoid warnings, use arma::mat instead of NumericMatrix for data
+
+    int dataNum = data.n_rows;
     int stateNum = modelstate.length();
     int i, j;
     NumericMatrix res(dataNum, drift.length());
     for(i = 0; i < dataNum; i++) {
         for(j = 0; j < stateNum; j++) {
-            env.assign(as<std::string>(modelstate[j]), data(i, j));
+            std::string state = as<std::string>(modelstate[j]);
+            double value = data(i, j);
+            env.assign(state, value);
         }
         for(j = 0; j < drift.length(); j++) {
             SEXP evaluatedValue = Rf_eval(drift[j], env);
@@ -21,8 +25,10 @@ NumericMatrix driftTermCpp(ExpressionVector drift, CharacterVector modelstate, N
 }
 
 // [[Rcpp::export]]
-NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, NumericMatrix data, Environment env) {
-    int dataNum = data.nrow();
+NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, arma::mat data, Environment env) {
+    //To avoid warnings, use arma::mat instead of NumericMatrix for data
+
+    int dataNum = data.n_rows;
     int stateNum = modelstate.length();
     int i, j, k;
     int eqNum = diffusion.length();
@@ -30,12 +36,14 @@ NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, Numer
     NumericVector res(dataNum * eqNum * wienerNum);
     for(i = 0; i < dataNum; i++) {
         for(j = 0; j < stateNum; j++) {
-            env.assign(as<std::string>(modelstate[j]), data(i, j));
+            std::string state = as<std::string>(modelstate[j]);
+            double value = data(i, j);
+            env.assign(state, value);
         }
         for(j = 0; j < wienerNum; j++) {
             for(k = 0; k < eqNum; k++) {
                 SEXP evaluatedValue = Rf_eval((as<ExpressionVector>(diffusion[k]))[j], env);
-                res(i * eqNum * wienerNum + eqNum * j + k) = as<double>(evaluatedValue);
+                res[i * eqNum * wienerNum + eqNum * j + k] = as<double>(evaluatedValue);
             }
         }
     }
@@ -43,8 +51,10 @@ NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, Numer
 }
 
 // [[Rcpp::export]]
-NumericVector measureTermCpp(List measure, CharacterVector modelstate, NumericMatrix data, Environment env) {
-    int dataNum = data.nrow();
+NumericVector measureTermCpp(List measure, CharacterVector modelstate, arma::mat data, Environment env) {
+    //To avoid warnings, use arma::mat instead of NumericMatrix for data
+
+    int dataNum = data.n_rows;
     int stateNum = modelstate.length();
     int i, j, k;
     int eqNum = measure.length();
@@ -52,7 +62,9 @@ NumericVector measureTermCpp(List measure, CharacterVector modelstate, NumericMa
     NumericVector res(dataNum * eqNum * jumpNum);
     for(i = 0; i < dataNum; i++) {
         for(j = 0; j < stateNum; j++) {
-            env.assign(as<std::string>(modelstate[j]), data(i, j));
+            std::string state = as<std::string>(modelstate[j]);
+            double value = data(i, j);
+            env.assign(state, value);
         }
         for(j = 0; j < jumpNum; j++) {
             for(k = 0; k < eqNum; k++) {

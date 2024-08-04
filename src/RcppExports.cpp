@@ -356,42 +356,42 @@ BEGIN_RCPP
 END_RCPP
 }
 // driftTermCpp
-NumericMatrix driftTermCpp(ExpressionVector drift, CharacterVector modelstate, NumericMatrix data, Environment env);
+NumericMatrix driftTermCpp(ExpressionVector drift, CharacterVector modelstate, arma::mat data, Environment env);
 RcppExport SEXP _yuima_driftTermCpp(SEXP driftSEXP, SEXP modelstateSEXP, SEXP dataSEXP, SEXP envSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< ExpressionVector >::type drift(driftSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type modelstate(modelstateSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
     Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
     rcpp_result_gen = Rcpp::wrap(driftTermCpp(drift, modelstate, data, env));
     return rcpp_result_gen;
 END_RCPP
 }
 // diffusionTermCpp
-NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, NumericMatrix data, Environment env);
+NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, arma::mat data, Environment env);
 RcppExport SEXP _yuima_diffusionTermCpp(SEXP diffusionSEXP, SEXP modelstateSEXP, SEXP dataSEXP, SEXP envSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type diffusion(diffusionSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type modelstate(modelstateSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
     Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
     rcpp_result_gen = Rcpp::wrap(diffusionTermCpp(diffusion, modelstate, data, env));
     return rcpp_result_gen;
 END_RCPP
 }
 // measureTermCpp
-NumericVector measureTermCpp(List measure, CharacterVector modelstate, NumericMatrix data, Environment env);
+NumericVector measureTermCpp(List measure, CharacterVector modelstate, arma::mat data, Environment env);
 RcppExport SEXP _yuima_measureTermCpp(SEXP measureSEXP, SEXP modelstateSEXP, SEXP dataSEXP, SEXP envSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type measure(measureSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type modelstate(modelstateSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
     Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
     rcpp_result_gen = Rcpp::wrap(measureTermCpp(measure, modelstate, data, env));
     return rcpp_result_gen;
