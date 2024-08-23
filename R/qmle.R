@@ -1935,9 +1935,9 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     
     K <- -0.5*d.size * log( (2*pi*h) )
     
-    dimB <- dim(diff[, , 1])
+    first_record <- diff[, , 1]
     
-    if(is.null(dimB)){  # one dimensional X
+    if(length(first_record) == 1){  # one dimensional X and Wiener process
       for(t in 1:(n-1)){
         yB <- diff[, , t]^2
         logdet <- log(yB)
@@ -1945,9 +1945,11 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
         QL <- QL+pn
         
       }
-    } else {  # multidimensional X
+    } else {  # multidimensional X and Wiener process
       for(t in 1:(n-1)){
-        yB <- diff[, , t] %*% t(diff[, , t])
+        record = diff[, , t, drop=FALSE] # extract the t-th slice of diff
+        dim(record) <- dim(record)[1:2] # drop the third dimension
+        yB <- record %*% t(record)
         logdet <- log(det(yB))
         if(is.infinite(logdet) ){ # should we return 1e10?
           pn <- log(1)
