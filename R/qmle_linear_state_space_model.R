@@ -203,7 +203,9 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
     QL <- minusloglcpp_linear_state_space_theta1(observed.diffusion, vec, h, drop_terms)
   } else {
     for (j in (drop_terms + 1):n) {
-      yB <- tcrossprod(as.matrix(observed.diffusion[, , j]))
+      j_th.observed.diffusion <- observed.diffusion[, , j, drop = FALSE] # extract the j-th slice of diff
+      dim(j_th.observed.diffusion) <- dim(j_th.observed.diffusion)[1:2] # drop the third dimension
+      yB <- tcrossprod(as.matrix(j_th.observed.diffusion))
       logdet <- log(det(yB))
       if (is.infinite(logdet)) { # should we return 1e10?
         pn <- log(1)
