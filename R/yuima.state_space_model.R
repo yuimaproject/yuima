@@ -201,24 +201,6 @@ setLinearStateSpaceModel <- function(drift = NULL,
   attr(model@parameter@diffusion, "observed") <- params_in_exprs(model@parameter@diffusion, model@diffusion[model@is.observed])
   attr(model@parameter@diffusion, "unobserved") <- params_in_exprs(model@parameter@diffusion, model@diffusion[!model@is.observed])
 
-  # model validation
-  ## check if drift term of given model is linear in unobserved.variable
-  drift.is.linear.with.unobserved <- tryCatch(
-    is.linear(model@drift, unobserved.variable),
-    warning = function(w) {
-      return(TRUE)
-    }
-  )
-  if (!drift.is.linear.with.unobserved) {
-    yuima.stop("Invalid model. Coefficients of drift term must be linear in unobserved.variable.")
-  }
-  # check that state.variable and time.variable are not in diffusion
-  for (i in 1:length(model@diffusion)) {
-    if (any(params_in_expr(state.variable, model@diffusion[[i]]))) {
-      yuima.stop("state.variable must not be included in diffusion.")
-    }
-  }
-
   # set coefficient matrix of drift term
   tmp.env <- new.env()
   eqnum <- model@equation.number

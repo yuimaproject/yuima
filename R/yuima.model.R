@@ -169,9 +169,9 @@ setModel <- function(drift = NULL,
       if (!drift.is.linear.with.unobserved) {
         model.class <- "stateSpaceModel"
       }
-      # check that state.variable and time.variable are not in diffusion
+      # check that any of unobserved.variable is not in diffusion
       for (i in 1:length(model@diffusion)) {
-        if (any(params_in_expr(params = state.variable, expr = model@diffusion[[i]]))) {
+        if (any(params_in_expr(params = unobserved.variable, expr = model@diffusion[[i]]))) {
           model.class <- "stateSpaceModel"
         }
       }
