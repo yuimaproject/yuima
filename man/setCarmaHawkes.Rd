@@ -54,7 +54,7 @@ a logical variable. The default value \code{XinExpr=FALSE} implies that the star
 Model an object of \code{\link{yuima.carmaHawkes-class}}.
 }
 \references{
-Mercuri, L., Perchiazzo, A., & Rroji, E. (2022). A Hawkes model with CARMA (p, q) intensity. \doi{10.48550/arXiv.2208.02659}.
+Mercuri, L., Perchiazzo, A., & Rroji, E. (2022). A Hawkes model with CARMA (p, q) intensity. \emph{Insurance: Mathematics and Economics}, \bold{116}, 1-26. \doi{10.1016/j.insmatheco.2024.01.007}.
 }
 \author{
 The YUIMA Project Team
