@@ -38,4 +38,4 @@ quant(object, p, param, ...)
 YUIMA TEAM}
 \note{ There may be missing information in the description. Please contribute with suggestions and fixings.
 
-Contacts: Lorenzo Mercuri \email{lorenzo.mercuri@unimi.it}
+Contacts: Lorenzo Mercuri \email{lorenzo.mercuri@unimi.it}}

@@ -119,7 +119,7 @@ setCarmaHawkes <- function(p, q, law = NULL, base.Int = "mu0",
                      Latent.var=Latent.var, diffusion=NULL,
                      # time.variable = time.var, 
                      # jump.variable = Counting.Process,
-                     measure= list(df = "dconst"),
+                     measure= list(df=setLaw()),
                      measure.type="code",
                      XinExpr = XinExpr)
   # prova1 <- setCarma(p,q, loc.par=base.Int,
