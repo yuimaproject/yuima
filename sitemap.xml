@@ -42,6 +42,7 @@
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/info.Map.html</loc></url>
 <url><loc>/reference/info.Ppr.html</loc></url>
+<url><loc>/reference/kalmanBucyFilter.html</loc></url>
 <url><loc>/reference/lambdaFromData.html</loc></url>
 <url><loc>/reference/lasso.html</loc></url>
 <url><loc>/reference/limiting.gamma.html</loc></url>
@@ -62,6 +63,7 @@
 <url><loc>/reference/qgv.html</loc></url>
 <url><loc>/reference/qmle.html</loc></url>
 <url><loc>/reference/qmleLevy.html</loc></url>
+<url><loc>/reference/qmle_linear_state_space_model.html</loc></url>
 <url><loc>/reference/rconst.html</loc></url>
 <url><loc>/reference/rng.html</loc></url>
 <url><loc>/reference/setCarma.html</loc></url>
@@ -98,6 +100,7 @@
 <url><loc>/reference/yuima.Map-class.html</loc></url>
 <url><loc>/reference/yuima.PPR.qmle-class.html</loc></url>
 <url><loc>/reference/yuima.Ppr.html</loc></url>
+<url><loc>/reference/yuima.adabayes-class.html</loc></url>
 <url><loc>/reference/yuima.ae-class.html</loc></url>
 <url><loc>/reference/yuima.carma-class.html</loc></url>
 <url><loc>/reference/yuima.carma.qmle-class.html</loc></url>
@@ -106,12 +109,14 @@
 <url><loc>/reference/yuima.cogarch-class.html</loc></url>
 <url><loc>/reference/yuima.data-class.html</loc></url>
 <url><loc>/reference/yuima.functional-class.html</loc></url>
+<url><loc>/reference/yuima.linear_state_space_model-class.html</loc></url>
 <url><loc>/reference/yuima.model-class.html</loc></url>
 <url><loc>/reference/yuima.multimodel.html</loc></url>
 <url><loc>/reference/yuima.poisson-class.html</loc></url>
 <url><loc>/reference/yuima.qmleLevy.incr-class.html</loc></url>
 <url><loc>/reference/yuima.sampling-class.html</loc></url>
 <url><loc>/reference/yuima.snr-class.html</loc></url>
+<url><loc>/reference/yuima.state_space_model-class.html</loc></url>
 <url><loc>/reference/yuima.th-class.html</loc></url>
 </urlset>
 

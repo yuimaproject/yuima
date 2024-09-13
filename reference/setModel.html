@@ -70,7 +70,9 @@ All functions relying on the yuima
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setModel</span><span class="op">(</span>drift <span class="op">=</span> <span class="cn">NULL</span>, diffusion <span class="op">=</span> <span class="cn">NULL</span>, hurst <span class="op">=</span> <span class="fl">0.5</span>, jump.coeff <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>measure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>, measure.type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>, state.variable <span class="op">=</span> <span class="st">"x"</span>,</span>
-<span>jump.variable <span class="op">=</span> <span class="st">"z"</span>, time.variable <span class="op">=</span> <span class="st">"t"</span>, <span class="va">solve.variable</span>, <span class="va">xinit</span><span class="op">)</span></span></code></pre></div>
+<span>jump.variable <span class="op">=</span> <span class="st">"z"</span>, time.variable <span class="op">=</span> <span class="st">"t"</span>, <span class="va">solve.variable</span>, <span class="va">xinit</span>,</span>
+<span>model.class <span class="op">=</span> <span class="cn">NULL</span>, observed.variable <span class="op">=</span> <span class="cn">NULL</span>, unobserved.variable <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -120,41 +122,50 @@ All functions relying on the yuima
 <dd><p>a vector of numbers identifying the initial value of the
   <code>solve.variable</code>.</p></dd>
 
+  <dt id="arg-model-class">model.class<a class="anchor" aria-label="anchor" href="#arg-model-class"></a></dt>
+<dd><p>a character string identifying the class of the model. Allowed values are <code>"model"</code>, <code>"stateSpaceModel"</code>, <code>"linearStateSpaceModel"</code> or <code>NULL</code>. If <code>NULL</code>, the class is inferred from the model specification.</p></dd>
+
+  <dt id="arg-observed-variable">observed.variable<a class="anchor" aria-label="anchor" href="#arg-observed-variable"></a></dt>
+<dd><p>a vector of names of the observed variables. See 'Details'.</p></dd>
+
+  <dt id="arg-unobserved-variable">unobserved.variable<a class="anchor" aria-label="anchor" href="#arg-unobserved-variable"></a></dt>
+<dd><p>a vector of names of the unobserved variables. See 'Details'.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
-    <p>Please refer to the vignettes and the examples or to the <span class="pkg">yuimadocs</span>
-package.</p>
+    <p>Please refer to the vignettes and examples or to the <span class="pkg">yuimadocs</span> package.</p>
+<p>The return class depends on the given <code>model.class</code> argument. If <code>model.class</code> is <code>"model"</code>, the returned value is an object of class <code><a href="yuima.model-class.html">yuima.model-class</a></code>. If <code>model.class</code> is <code>"stateSpaceModel"</code>, the returned value is an object of class <code><a href="yuima.state_space_model-class.html">yuima.state_space_model-class</a></code>. If <code>model.class</code> is <code>"linearStateSpaceModel"</code>, the returned value is an object of class <code><a href="yuima.linear_state_space_model-class.html">yuima.linear_state_space_model-class</a></code>. If <code>model.class</code> is <code>NULL</code>, the class is inferred automatically.
+If neither <code>observed.variable</code> nor <code>unobserved.variable</code> is specified, a <code>yuima.model</code> object is returned. Otherwise, the linearity of the drift term is checked, and a <code>yuima.state_space_model</code> or <code>yuima.linear_state_space_model</code> object is returned accordingly.</p>
+<p>If <code>model.class</code> is <code>"stateSpaceModel"</code> or <code>"linearStateSpaceModel"</code>, only unobserved variables can be contained in expressions for the drift coefficients and the user must specify either <code>observed.variable</code> or <code>unobserved.variable</code>. If both are specified, they must be mutually exclusive, and their union must equal the state variables. In addition, if <code>model.class</code> is <code>"linearStateSpaceModel"</code>, the drift coefficients must be linear in the unobserved variables.</p>
 <p>An object of <code><a href="yuima.model-class.html">yuima.model-class</a></code> contains several slots:</p>
 <dl><dt><code>drift</code>:</dt>
-<dd><p>an <span style="R">R</span> expression which specifies the drift coefficient
-(a vector).</p></dd>
+<dd><p>an <span style="R">R</span> expression specifying the drift coefficient (a vector).</p></dd>
 
 <dt><code>diffusion</code>:</dt>
-<dd><p>an <span style="R">R</span> expression which specifies the diffusion
-coefficient (a matrix).</p></dd>
+<dd><p>an <span style="R">R</span> expression specifying the diffusion coefficient (a matrix).</p></dd>
 
 <dt><code>jump.coeff</code>:</dt>
-<dd><p>coefficient of the jump term.</p></dd>
+<dd><p>the coefficient of the jump term.</p></dd>
 
 <dt><code>measure</code>:</dt>
-<dd><p>the Levy measure of the driving Levy process.</p></dd>
+<dd><p>the Lévy measure of the driving Lévy process.</p></dd>
 
 <dt><code>measure.type</code>:</dt>
 <dd><p>specifies the type of the measure, such as
- <code>CP</code>, <code>code</code> or <code>density</code>. See below.</p></dd>
+ <code>CP</code>, <code>code</code>, or <code>density</code>. See below.</p></dd>
 
 <dt><code>parameter</code>:</dt>
-<dd><p>a short name for “parameters”. It  is an object
- of  <code><a href="model.parameter-class.html">model.parameter-class</a></code> which is a list of vectors of
+<dd><p>a short name for "parameters". It is an object
+ of <code><a href="model.parameter-class.html">model.parameter-class</a></code>, which is a list of vectors of
  names of parameters belonging to the single components of the model (drift,
- diffusion, jump and measure), the names of common parameters and the names
- of all parameters. For more details see <code><a href="model.parameter-class.html">model.parameter-class</a></code>
+ diffusion, jump, and measure), the names of common parameters, and the names
+ of all parameters. For more details, see <code><a href="model.parameter-class.html">model.parameter-class</a></code>
  documentation page.</p></dd>
 
 <dt><code>solve.variable</code>:</dt>
 <dd><p>a vector of variable names, each element
- corresponds to the name of the solution variable (left-hand-side) of each
+ corresponding to the name of the solution variable (left-hand side) of each
  equation in the model, in the corresponding order.</p></dd>
 	
 <dt><code>state.variable</code>:</dt>
@@ -170,12 +181,12 @@ coefficient (a matrix).</p></dd>
 
 <dt><code>solve.variable</code>:</dt>
 <dd><p>used to identify the solution variables in the
- <span style="R">R</span> expression, i.e. the variable with respect to which the stochastic
+ <span style="R">R</span> expression, i.e., the variable with respect to which the stochastic
  differential equation has to be solved. By default, it is assumed to be
- <code>x</code>, otherwise the user can choose any other model specification.</p></dd>
+ <code>x</code>; otherwise, the user can choose any other model specification.</p></dd>
 
 <dt><code>noise.number</code>:</dt>
-<dd><p>denotes the number of sources of noise. Currently
+<dd><p>denotes the number of sources of noise, currently
  only for the Gaussian part.</p></dd>
 
 <dt><code>equation.number</code>:</dt>
@@ -192,16 +203,30 @@ coefficient (a matrix).</p></dd>
 
 
 </dl><p>The <code><a href="yuima.model-class.html">yuima.model-class</a></code> structure assumes that the user either uses the default
-names for <code>state.variable</code>, <code>jump.variable</code>, <code>solution.variable</code> and
-<code>time.variable</code> or specifies his/her own names.
-All the rest of the terms in the <span style="R">R</span> expressions are considered as parameters
+names for <code>state.variable</code>, <code>jump.variable</code>, <code>solution.variable</code>, and
+<code>time.variable</code>, or specifies their own names.
+All the remaining terms in the <span style="R">R</span> expressions are considered as parameters
 and identified accordingly in the <code>parameter</code> slot.</p>
+<p>An object of <code><a href="yuima.state_space_model-class.html">yuima.state_space_model-class</a></code> extends an object of <code><a href="yuima.model-class.html">yuima.model-class</a></code> with the following slot:</p>
+<dl><dt><code>is.observed</code>:</dt>
+<dd><p>a logical vector of length equal to the number of state variables, indicating whether each state variable is observed.</p></dd>
+
+
+</dl><p>An object of <code><a href="yuima.linear_state_space_model-class.html">yuima.linear_state_space_model-class</a></code> extends an object of <code><a href="yuima.state_space_model-class.html">yuima.state_space_model-class</a></code> with the following slots:</p>
+<dl><dt><code>drift.slope</code>:</dt>
+<dd><p>a list of expressions.</p></dd>
+
+<dt><code>drift.intercept</code>:</dt>
+<dd><p>a list of expressions.</p></dd>
+
+
+</dl><p>In the case of <code>yuima.linear_state_space_model-class</code>, the drift term of the model is assumed to be affine in the unobserved variables, i.e., <code>drift = drift.slope * unobserved.variable + drift.intercept</code>.</p>
     </div>
     <div id="value">
     <h2>Value</h2>
     <p></p>
 <dl><dt>model</dt>
-<dd><p>an object of  <code><a href="yuima.model-class.html">yuima.model-class</a></code>.</p></dd>
+<dd><p>The class of the returned object depends on the value of <code>model.class</code>. If <code>model.class</code> is specified, the returned value is an object of the specified class. If <code>model.class</code> is <code>NULL</code>, the returned value is inferred from the model specification. See Details for more information.</p></dd>
 
 </dl></div>
     <div id="author">
@@ -444,6 +469,16 @@ Please contribute with suggestions and fixings.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ solve.variable : chr "y"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ xinit          :  expression((0))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ J.flag         : logi FALSE</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Ex 7. (Linear state-space model)</span></span></span>
+<span class="r-in"><span><span class="co"># dXt = -theta*Xt*dt + sigma*dZt (unobserved)</span></span></span>
+<span class="r-in"><span><span class="co"># Yt = Xt + dVt (observed)</span></span></span>
+<span class="r-in"><span><span class="va">drift</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-theta*x"</span>, <span class="st">"1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">diffusion</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sigma"</span>, <span class="st">"0"</span>, <span class="st">"0"</span>, <span class="st">"1"</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mod7</span> <span class="op">&lt;-</span> <span class="fu">setModel</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  drift<span class="op">=</span><span class="va">drift</span>, diffusion<span class="op">=</span><span class="va">diffusion</span>, solve.variable<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  state.variable<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>, observed.variable<span class="op">=</span><span class="st">"y"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>
   </div>
