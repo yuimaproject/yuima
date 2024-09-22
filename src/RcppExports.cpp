@@ -258,19 +258,21 @@ BEGIN_RCPP
 END_RCPP
 }
 // calc_filter_mean_explicit
-arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat ob_dr_sl, arma::mat ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY);
-RcppExport SEXP _yuima_calc_filter_mean_explicit(SEXP un_dr_slSEXP, SEXP ob_dr_slSEXP, SEXP ob_diffSEXP, SEXP vcovSEXP, SEXP initSEXP, SEXP deltaSEXP, SEXP deltaYSEXP) {
+arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma::mat ob_dr_sl, arma::mat ob_dr_in, arma::mat ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY);
+RcppExport SEXP _yuima_calc_filter_mean_explicit(SEXP un_dr_slSEXP, SEXP un_dr_inSEXP, SEXP ob_dr_slSEXP, SEXP ob_dr_inSEXP, SEXP ob_diffSEXP, SEXP vcovSEXP, SEXP initSEXP, SEXP deltaSEXP, SEXP deltaYSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type un_dr_sl(un_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type un_dr_in(un_dr_inSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type ob_dr_sl(ob_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ob_dr_in(ob_dr_inSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type ob_diff(ob_diffSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type vcov(vcovSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type init(initSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type deltaY(deltaYSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_filter_mean_explicit(un_dr_sl, ob_dr_sl, ob_diff, vcov, init, delta, deltaY));
+    rcpp_result_gen = Rcpp::wrap(calc_filter_mean_explicit(un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, ob_diff, vcov, init, delta, deltaY));
     return rcpp_result_gen;
 END_RCPP
 }
