@@ -127,7 +127,9 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
             vcov <- res
             mean <- calc_filter_mean_explicit(
                 unobserved.drift.slope,
+                unobserved.drift.intercept,
                 observed.drift.slope,
+                observed.drift.intercept,
                 observed.diffusion,
                 vcov,
                 mean_init,

@@ -105,12 +105,14 @@ arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat 
 }
 
 //[[Rcpp::export]]
-arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat ob_dr_sl, arma::mat ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY) {
+arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma::mat ob_dr_sl, arma::mat ob_dr_in, arma::mat ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY) {
     /*
     calculate mean explicitly if coefficients are time-independent.
     use when estimated vcov with Algebric Riccati Equation.
     
-    m_{i+1} = \exp(-\alpha(\theta1, \theta2)h)m_{i} + \exp(-\alpha(\theta1, \theta2)h)\gamma(\theta1, \theta2)c(\theta2)^T\Sigma)\theta1)^{-1}\Delta_{i+1}Y
+    m_{i+1} = e*m_{i} + e*a_2*h + e*\gamma(\theta1, \theta2)c(\theta2)^T\Sigma(\theta1)^{-1}\Delta_{i+1}Y + e*\gamma(\theta1, \theta2)c(\theta2)^T\Sigma(\theta1)^{-1}*c_2*h
+    where 
+    e = \exp(-\alpha(\theta1, \theta2)h)
     \alpha(\theta1, \theta2) = a(\theta1) + \gamma(\theta1, \theta2)c(\theta2)^T\Sigma(\theta1)c(\theta2)
     \Sigma = \sigma(\theta1)\sigma^T(\theta1)
     */
@@ -127,7 +129,7 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat ob_dr_sl, arma
 
     for(int i = 1; i < n_data; i++){
         arma::vec mean_prev = mean.col(i - 1);
-        arma::vec mean_next = exp_alpha_h * mean_prev + deltaY_coeff * deltaY.col(i-1);
+        arma::vec mean_next = exp_alpha_h * mean_prev + exp_alpha_h * un_dr_in * delta + deltaY_coeff * deltaY.col(i-1) + deltaY_coeff * ob_dr_in * delta;
         mean.col(i) = mean_next;
     }
 
@@ -144,7 +146,7 @@ vcov = calc_filter_vcov_are(un_dr_sl, un_diff, ob_dr_sl, ob_diff)
 mean_init <- c(1,1,1)
 delta <- 0.1
 deltaY <- matrix(rnorm(6), nrow=2)
-calc_filter_mean_explicit(un_dr_sl, ob_dr_sl, ob_diff, vcov, mean_init, delta, deltaY)
+calc_filter_mean_explicit(un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, ob_diff, vcov, mean_init, delta, deltaY)
 */
 /*
 un_dr_sl <- array(rep(1:9, 4), dim = c(3, 3, 4))
