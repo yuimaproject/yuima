@@ -53,7 +53,10 @@ Noise Inference For Ergodic Levy Driven SDE, \emph{Electronic Journal of Statist
 %%
 \examples{
 \dontrun{
-### The following example reports all steps for the construction of an yuima.law object using the external R package VarianceGamma available on CRAN
+### The following example reports all steps 
+### for the construction of an yuima.law
+### object using the external R package 
+### VarianceGamma available on CRAN
 
 library(VarianceGamma)
 
