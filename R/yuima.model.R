@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # setMethod("initialize", "model.parameter",
 #           function(.Object,
 #                    all,
@@ -859,7 +858,7 @@ check.yuima.model <- function(x){
     return(NULL)
   }
 }
-=======
+
 # setMethod("initialize", "model.parameter",
 #           function(.Object,
 #                    all,
@@ -1832,4 +1831,3 @@ check.yuima.model <- function(x) {
     return(NULL)
   }
 }
->>>>>>> 83780af089770e1c10e03955940e4401c89d8047
