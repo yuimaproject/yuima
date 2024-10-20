@@ -22,7 +22,7 @@ kalmanBucyFilter(
     This is required if \code{are = FALSE}. It can be a numeric of length 1 if the number of observed variables is 1.}
   \item{delta.vcov.solve}{A numeric value representing the step size in solving the mean squared error of the estimator.}
   \item{are}{A logical value. If \code{TRUE}, solve the algebraic Riccati equation.}
-  \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filtering equation.}
+  \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filtering equation. The formula is available only if coefficients are time-independent.}
   \item{env}{An environment. The environment in which the model coefficients are evaluated.}
 }
 \value{
