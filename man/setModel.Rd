@@ -70,7 +70,7 @@ An object of \code{\link{yuima.model-class}} contains several slots:
 \item{\code{drift}:}{an \R expression specifying the drift coefficient (a vector).}
 \item{\code{diffusion}:}{an \R expression specifying the diffusion coefficient (a matrix).}
 \item{\code{jump.coeff}:}{the coefficient of the jump term.}
-\item{\code{measure}:}{the Lévy measure of the driving Lévy process.}
+\item{\code{measure}:}{the Levy measure of the driving Levy process.}
 \item{\code{measure.type}:}{specifies the type of the measure, such as 
  \code{CP}, \code{code}, or \code{density}. See below.}
 \item{\code{parameter}:}{a short name for "parameters". It is an object 

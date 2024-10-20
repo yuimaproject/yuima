@@ -63,21 +63,21 @@ arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat 
     c = \mathrm{ob\_dr\_sl}, 
     \sigma = \mathrm{ob\_diff}
     */
-    for(int i = 0; i < un_dr_sl.n_rows; i++) {
-        for(int j = 0; j < un_dr_sl.n_cols; j++) {
+    for(unsigned int i = 0; i < un_dr_sl.n_rows; i++) {
+        for(unsigned int j = 0; j < un_dr_sl.n_cols; j++) {
             H(j,i) = -un_dr_sl(i,j);
             H(un_dr_sl.n_cols + i, un_dr_sl.n_rows + j) = un_dr_sl(i,j);
         }
     }
     arma::mat lower_left_matrix = un_diff * un_diff.t();
-    for(int i = 0; i < un_dr_sl.n_rows; i++) {
-        for(int j = 0; j < un_dr_sl.n_rows; j++) {
+    for(unsigned int i = 0; i < un_dr_sl.n_rows; i++) {
+        for(unsigned int j = 0; j < un_dr_sl.n_rows; j++) {
             H(un_dr_sl.n_cols + i, j) = lower_left_matrix(i,j);
         }
     }
     arma::mat upper_right_matrix = ob_dr_sl.t() * arma::inv_sympd(ob_diff * ob_diff.t()) * ob_dr_sl;
-    for(int i = 0; i < un_dr_sl.n_cols; i++) {
-        for(int j = 0; j < un_dr_sl.n_cols; j++) {
+    for(unsigned int i = 0; i < un_dr_sl.n_cols; i++) {
+        for(unsigned int j = 0; j < un_dr_sl.n_cols; j++) {
             H(i, un_dr_sl.n_rows + j) = upper_right_matrix(i,j);
         }
     }
