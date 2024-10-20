@@ -5,97 +5,54 @@
 
 ### TO BE FIXED: all caculations should be made on a private environment to
 ### avoid problems.
-### I have rewritten drift.term and diff.term instead of calc.drift and
-### calc.diffusion to make them independent of the specification of the
-### parameters.  S.M.I. 22/06/2010
 
-drift.term <- function(yuima, theta, env){
-  r.size <- yuima@model@noise.number
-  d.size <- yuima@model@equation.number
-  modelstate <- yuima@model@state.variable
-  DRIFT <- yuima@model@drift
-  #	n <- length(yuima)[1]
-  n <- dim(env$X)[1]
-  
-  drift <- matrix(0,n,d.size)
-  tmp.env <- new.env(parent = env) ##Kurisaki 4/4/2021
-  assign(yuima@model@time.variable, env$time, envir=tmp.env)
-  
-  
+
+## 03/05/2022 Kito
+##::evaluate drift and diffusion term with Rcpp
+##::handle with non vectorized functions
+
+
+drift.term <- function(yuima, theta, env) {
+  tmp.env <- new.env(parent = env)
   for(i in 1:length(theta)){
     assign(names(theta)[i],theta[[i]], envir=tmp.env)
   }
-  
-  for(d in 1:d.size){
-    assign(modelstate[d], env$X[,d], envir=tmp.env)
-  }
-  for(d in 1:d.size){
-    drift[,d] <- eval(DRIFT[d], envir=tmp.env)
-  }
-  
-  return(drift)
+  DRIFT <- yuima@model@drift
+  modelstate <- yuima@model@state.variable
+  data <- env$X
+  drift <- driftTermCpp(DRIFT, modelstate, data, tmp.env)
+  drift
 }
 
-diffusion.term <- function(yuima, theta, env){
-  r.size <- yuima@model@noise.number
-  d.size <- yuima@model@equation.number
-  modelstate <- yuima@model@state.variable
-  DIFFUSION <- yuima@model@diffusion
-  #	n <- length(yuima)[1]
-  n <- dim(env$X)[1]
-  tmp.env <- new.env(parent = env) ##Kurisaki 4/4/2021
-  assign(yuima@model@time.variable, env$time, envir=tmp.env)
-  diff <- array(0, dim=c(d.size, r.size, n))
+
+diffusion.term <- function(yuima, theta, env) {
+  tmp.env <- new.env(parent = env)
   for(i in 1:length(theta)){
-    assign(names(theta)[i],theta[[i]],envir=tmp.env)
+    assign(names(theta)[i],theta[[i]], envir=tmp.env)
   }
-  
-  for(d in 1:d.size){
-    assign(modelstate[d], env$X[,d], envir=tmp.env)
-  }
-  
-  for(r in 1:r.size){
-    for(d in 1:d.size){
-      diff[d, r, ] <- eval(DIFFUSION[[d]][r], envir=tmp.env)
-    }
-  }
-  
-  return(diff)
+  DIFFUSION <- yuima@model@diffusion
+  modelstate <- yuima@model@state.variable
+  data <- env$X
+  diffusion.vector <- diffusionTermCpp(DIFFUSION, modelstate, data, tmp.env)
+  diffusion <- array(diffusion.vector, c(length(yuima@model@diffusion),length(yuima@model@diffusion[[1]]),length(yuima@data)[1]))
+  diffusion
 }
 
 ## Koike's code
 ##::extract jump term from yuima
 ##::gamma: parameter of diffusion term (theta3)
-measure.term <- function(yuima, theta, env){
-  r.size <- yuima@model@noise.number
-  d.size <- yuima@model@equation.number
-  modelstate <- yuima@model@state.variable
-  n <- dim(env$X)[1]
-  
-  tmp.env <- new.env(parent = env) # 4/17/2021 Kito
-  assign(yuima@model@time.variable, env$time, envir =tmp.env)
-  JUMP <- yuima@model@jump.coeff
-  measure <- array(0, dim=c(d.size, r.size, n))
+measure.term <- function(yuima, theta, env) {
+  tmp.env <- new.env(parent = env)
   for(i in 1:length(theta)){
-    assign(names(theta)[i],theta[[i]],envir=tmp.env)
+    assign(names(theta)[i],theta[[i]], envir=tmp.env)
   }
-  
-  for(d in 1:d.size){
-    assign(modelstate[d], env$X[,d],envir=tmp.env)
-  }
-  for(r in 1:r.size){
-    #for(d.tmp in 1:d){
-    if(d.size==1){
-      measure[1,r,] <- eval(JUMP[[r]],envir=tmp.env)
-    }else{
-      for(d in 1:d.size){
-        measure[d,r,] <- eval(JUMP[[d]][r],envir=tmp.env)
-      }
-    }
-  }
-  return(measure)
+  JUMP <- yuima@model@jump.coeff
+  modelstate <- yuima@model@state.variable
+  data <- env$X
+  measure.vector <- measureTermCpp(JUMP, modelstate, data, tmp.env)
+  measure <- array(measure.vector, c(length(yuima@model@jump.coeff),length(yuima@model@jump.coeff[[1]]),length(yuima@data)[1]))
+  measure
 }
-
 
 ### I have rewritten qmle as a version of ml.ql
 ### This function has an interface more similar to mle.
@@ -741,6 +698,8 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
         mydots$aggregation <- NULL ##Kito 4/17/2021
         mydots$rcpp <- NULL ##Kito 4/17/2021
         
+        env$phase <- "diffusion"
+        
         if((length(mydots$par)>1) | any(is.infinite(c(mydots$upper,mydots$lower)))){
           mydots$method<-method     ##song
           oout <- do.call(optim, args=mydots)
@@ -768,6 +727,7 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
         fixed <- old.fixed
         start <- old.start
         fixed.par <- old.fixed.par
+        env$phase <- NULL
         
       } ## endif(length(idx.diff)>0)
       
@@ -1376,7 +1336,7 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
       if(yuima@model@measure.type=="code"){
         #     #  "rIG", "rNIG", "rgamma", "rbgamma", "rvgamma"
         #if(class(model@measure$df)=="yuima.law"){
-        if(inherits(model@measure$df, "yuima.law")){ # YK, Mar. 22, 2022
+        if(inherits(model@measure$df, "yuima.law")){ # YK, Mar. 22, 202
           valuemeasure <- "yuima.law"
           NaIdx<-NULL
         }else{
@@ -1958,9 +1918,14 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     #         return(NULL)
     #     }
   } else if (!rcpp) {
-    drift <- drift.term(yuima, param, env)
-    diff <- diffusion.term(yuima, param, env)
-    
+    if(!is.null(env$phase)) {#if env$phase == "diffusion"
+      ### to be written
+      drift <- matrix(0, nrow=n, ncol=d.size)
+      diff <- diffusion.term(yuima, param, env)
+    } else {
+      drift <- drift.term(yuima, param, env)
+      diff <- diffusion.term(yuima, param, env)
+    }
     QL <- 0
     
     pn <- 0
@@ -1970,9 +1935,9 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     
     K <- -0.5*d.size * log( (2*pi*h) )
     
-    dimB <- dim(diff[, , 1])
+    first_record <- diff[, , 1]
     
-    if(is.null(dimB)){  # one dimensional X
+    if(length(first_record) == 1){  # one dimensional X and Wiener process
       for(t in 1:(n-1)){
         yB <- diff[, , t]^2
         logdet <- log(yB)
@@ -1980,9 +1945,11 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
         QL <- QL+pn
         
       }
-    } else {  # multidimensional X
+    } else {  # multidimensional X and Wiener process
       for(t in 1:(n-1)){
-        yB <- diff[, , t] %*% t(diff[, , t])
+        record = diff[, , t, drop=FALSE] # extract the t-th slice of diff
+        dim(record) <- dim(record)[1:2] # drop the third dimension
+        yB <- record %*% t(record)
         logdet <- log(det(yB))
         if(is.infinite(logdet) ){ # should we return 1e10?
           pn <- log(1)
@@ -1996,8 +1963,13 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
       }
     }
   } else {
-    drift_name <- yuima@model@drift
-    diffusion_name <- yuima@model@diffusion
+    if(!is.null(env$phase)) {
+      drift_name <- as.expression(rep((0), d.size))
+      diffusion_name <- yuima@model@diffusion
+    } else {
+      drift_name <- yuima@model@drift
+      diffusion_name <- yuima@model@diffusion
+    }
     ####data <- yuima@data@original.data
     data <- matrix(0,length(yuima@data@zoo.data[[1]]),d.size)
     for(i in 1:d.size) data[,i] <- as.numeric(yuima@data@zoo.data[[i]])
