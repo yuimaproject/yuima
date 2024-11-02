@@ -21,7 +21,7 @@ double minusloglcpp_linear_state_space_theta1(arma::cube observed_diffusion, arm
             log_det_sq_observed_diffusion = log(arma::det(sq_observed_diffusion));
             inv_sq_observed_diffusion = arma::inv_sympd(sq_observed_diffusion);
         }
-        catch (std::runtime_error) {
+        catch (std::runtime_error&) {
             return double(-1e10);
         }
     	if(drop_terms < i){
@@ -49,7 +49,7 @@ double minusloglcpp_linear_state_space_theta2(arma::mat observed_drift, arma::cu
         try {
             inv_sq_observed_diffusion = arma::inv_sympd(sq_observed_diffusion);
         } 
-        catch (std::runtime_error) {
+        catch (std::runtime_error&) {
             return double(1e10);
         }
         arma::mat tmp = (observed_drift.row(i-1) * h - dx.row(i-1));

@@ -163,7 +163,7 @@ changeFixedParametersToConstant <- function(yuima, fixed) {
     new.measure <- list()
   }
 
-  if (class(yuima@model) == "yuima.linear_state_space_model") {
+  if (inherits(yuima@model, "yuima.linear_state_space_model")) {
     new.ymodel <- setModel(
       drift = transformed.drift, diffusion = transformed.diffusion, hurst = yuima@model@hurst,
       jump.coeff = transformed.jump, measure = new.measure, measure.type = yuima@model@measure.type,
