@@ -412,7 +412,7 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
 # env$h : time interval of observations
 # env$deltaX : diff of observed values
 
-minuslogl.linear_state_space.theta2 <- function(yuima, theta1, theta2, filter_mean_init, env, explicit, rcpp = FALSE, drop_terms) {
+minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, theta1, theta2, filter_mean_init, env, explicit, rcpp = FALSE, drop_terms) {
   is.observed <- yuima@model@is.observed
   # calculate unobserved diffusion
   tmp.env <- new.env(parent = env)
@@ -435,7 +435,7 @@ minuslogl.linear_state_space.theta2 <- function(yuima, theta1, theta2, filter_me
 
   # calculate `m` (estimation of `x`) using filter
   theta <- c(theta1, theta2)
-  filter_res <- kalmanBucyFilter(yuima, params = theta, mean_init = filter_mean_init, are = TRUE, explicit = explicit, env = tmp.env)
+  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta, mean_init = filter_mean_init, are = TRUE, explicit = explicit, env = tmp.env)
   m <- filter_res@mean
 
 
@@ -505,12 +505,18 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   new.upper <- upper[nm[idx.theta2]]
   new.lower <- lower[nm[idx.theta2]]
 
+  is.observed.equation <- yuima@model@is.observed
+  observed.variables <- yuima@model@state.variable[is.observed.equation]
+  delta.observed.variable <- array(dim = c(length(observed.variables), length(yuima@data@zoo.data[[1]]) - 1), dimnames=list(observed.variables))
+  for(variable in observed.variables) {
+    delta.observed.variable[variable,] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable== variable)]]))
+  }
   # set args for optim
   ## define objective function
   f <- function(p) {
     theta2.values <- as.list(p)
     names(theta2.values) <- nm[idx.theta2]
-    return(minuslogl.linear_state_space.theta2(yuima, theta1 = theta1.est, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, rcpp = rcpp, drop_terms = drop_terms))
+    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, theta1 = theta1.est, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, rcpp = rcpp, drop_terms = drop_terms))
   }
 
   call <- match.call()

@@ -1,5 +1,16 @@
 kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, env = globalenv()) {
+  is.observed.equation <- yuima@model@is.observed
+  observed.variables <- yuima@model@state.variable[is.observed.equation]
+  delta.observed.variable <- array(dim = c(length(observed.variables), length(yuima@data@zoo.data[[1]]) - 1), dimnames=list(observed.variables))
+  for(variable in observed.variables) {
+    delta.observed.variable[variable,] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable== variable)]]))
+  }
+  return(kalmanBucyFilter.inner(yuima, delta.observed.variable, params, mean_init, vcov_init, delta.vcov.solve, are, explicit, env))
+}
+
+kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, env = globalenv()) {
     # are : flag if use algebraic Riccati equation or not
+    # Calculation of `delta.observed.variable` is relatively slow and it can be a bottle neck in parameter estimation. So users can pass the values of delta.observed.variable.
     # validate input
     if(!inherits(yuima@model, "yuima.linear_state_space_model")) {
         yuima.stop("model must be yuima.linear_state_space_model")
@@ -101,12 +112,6 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
     observed.drift.slope <- eval_exp(observed.drift.slope.expr)
     observed.diffusion <- eval_exp(observed.diffusion.expr)
     observed.drift.intercept <- eval_exp(observed.drift.intercept.expr)
-
-    # create other variables
-    delta.observed.variable <- array(dim = c(length(observed.variables), length(yuima@data@zoo.data[[1]]) - 1), dimnames=list(observed.variables))
-    for(variable in observed.variables) {
-        delta.observed.variable[variable,] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable== variable)]]))
-    }
 
     # calculate vcov and mean
 
