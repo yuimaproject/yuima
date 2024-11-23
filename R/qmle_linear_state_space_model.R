@@ -414,14 +414,17 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
 
 minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, theta1, theta2, filter_mean_init, env, explicit, rcpp = FALSE, drop_terms) {
   is.observed <- yuima@model@is.observed
-  # calculate unobserved diffusion
+
+  # define env for eval
   tmp.env <- new.env(parent = env)
-  if (length(theta1) > 0) {
-    for (i in 1:length(theta1)) {
-      assign(names(theta1)[i], theta1[[i]], envir = tmp.env)
+  theta <- c(theta1, theta2)
+  if (length(theta) > 0) {
+    for (i in 1:length(theta)) {
+      assign(names(theta)[i], theta[[i]], envir = tmp.env)
     }
   }
 
+  # calculate unobserved diffusion
   DIFFUSION <- yuima@model@diffusion[is.observed]
   nrow <- length(DIFFUSION)
   ncol <- length(DIFFUSION[[1]])
@@ -434,16 +437,37 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
   observed.diffusion <- array(observed.diffusion.matrix, c(nrow, ncol, length(yuima@data)[1]))
 
   # calculate `m` (estimation of `x`) using filter
-  theta <- c(theta1, theta2)
-  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta, mean_init = filter_mean_init, are = TRUE, explicit = explicit, env = tmp.env)
+  are <- TRUE # NOTE: Estimation using are=FALSE is not implemented yet.
+  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta, mean_init = filter_mean_init, are = are, explicit = explicit, env = tmp.env)
   m <- filter_res@mean
 
 
   # calculate observed drift
-  observed.drift.expr <- yuima@model@drift[is.observed]
-  unobserved.variables <- yuima@model@state.variable[!is.observed]
-  observed.drift <- driftTermCpp(observed.drift.expr, unobserved.variables, m, tmp.env)
-
+  if(are){
+    # observed.drift.slope and observed.drift.intercept is independent of t
+    observed.drift.slope.expr <- yuima@model@drift_slope[yuima@model@is.observed]
+    observed.drift.intercept.expr <- yuima@model@drift_intercept[yuima@model@is.observed]
+    eval_exp <- function(expr) {
+      env=tmp.env
+      nrow = length(expr)
+      ncol = length(expr[[1]])
+      res = matrix(nrow=nrow, ncol=ncol)
+      for( r in 1:nrow ) {
+        for( c in 1:ncol ) {
+          res[r,c] <- eval(expr[[r]][c], envir=tmp.env)
+        }
+      }
+      return(res)
+    }
+    observed.drift.slope <- eval_exp(observed.drift.slope.expr)
+    observed.drift.intercept <- eval_exp(observed.drift.intercept.expr)
+    observed.drift <- linearDriftTermCpp(observed.drift.slope, observed.drift.intercept, m)
+  } else {
+    # NOTE: Future expansion. If are=FALSE, slope and intercept can depend on t.
+    observed.drift.expr <- yuima@model@drift[is.observed]
+    unobserved.variables <- yuima@model@state.variable[!is.observed]
+    observed.drift <- driftTermCpp(observed.drift.expr, unobserved.variables, m, tmp.env)
+  }
   # variables to calculate likelihood
   h <- env$h # time interval of observations
   vec <- env$deltaX # diff of observed values

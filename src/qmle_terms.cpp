@@ -25,6 +25,23 @@ NumericMatrix driftTermCpp(ExpressionVector drift, CharacterVector modelstate, a
 }
 
 // [[Rcpp::export]]
+arma::mat linearDriftTermCpp(arma::mat slope, arma::vec intercept, arma::mat data) {
+  // available when drift term is the form of `slope * variable + intercept`.
+  int dataNum = data.n_rows;
+  int dimInput = data.n_cols;
+  int dimOutput = slope.n_cols;
+  arma::vec datum(dimInput);
+  arma::mat res(dataNum, dimOutput);
+  for(int i = 0; i < dataNum; i++) {
+    datum = data.row(i).t();
+    res.row(i) = (slope * datum + intercept).t();
+  }
+  return res;
+}
+
+
+
+// [[Rcpp::export]]
 NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, arma::mat data, Environment env) {
     //To avoid warnings, use arma::mat instead of NumericMatrix for data
 
