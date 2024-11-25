@@ -57,8 +57,8 @@ cpp_ito <- function(K_set, dZ, Z_K, d, r) {
     .Call('_yuima_cpp_ito', PACKAGE = 'yuima', K_set, dZ, Z_K, d, r)
 }
 
-calc_filter_vcov <- function(un_dr_sl, un_diff, ob_dr_sl, ob_diff, init, delta) {
-    .Call('_yuima_calc_filter_vcov', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, ob_diff, init, delta)
+calc_filter_vcov <- function(un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff, init, delta) {
+    .Call('_yuima_calc_filter_vcov', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff, init, delta)
 }
 
 calc_filter_vcov_time_homogeneous <- function(un_dr_sl, un_diff, ob_dr_sl, ob_diff, init, delta, n) {
@@ -77,8 +77,8 @@ calc_filter_mean_time_homogeneous <- function(un_dr_sl, un_dr_in, ob_dr_sl, ob_d
     .Call('_yuima_calc_filter_mean_time_homogeneous', PACKAGE = 'yuima', un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov, init, delta, deltaY)
 }
 
-calc_filter_vcov_are <- function(un_dr_sl, un_diff, ob_dr_sl, ob_diff) {
-    .Call('_yuima_calc_filter_vcov_are', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, ob_diff)
+calc_filter_vcov_are <- function(un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff) {
+    .Call('_yuima_calc_filter_vcov_are', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff)
 }
 
 calc_filter_mean_explicit <- function(un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov, init, delta, deltaY) {
@@ -101,8 +101,12 @@ minusloglcpp_linear_state_space_theta1 <- function(observed_diffusion, dx, h, dr
     .Call('_yuima_minusloglcpp_linear_state_space_theta1', PACKAGE = 'yuima', observed_diffusion, dx, h, drop_terms)
 }
 
-minusloglcpp_linear_state_space_theta2 <- function(observed_drift, observed_diffusion, dx, h, drop_terms) {
-    .Call('_yuima_minusloglcpp_linear_state_space_theta2', PACKAGE = 'yuima', observed_drift, observed_diffusion, dx, h, drop_terms)
+minusloglcpp_linear_state_space_theta2 <- function(observed_drift, inv_sq_observed_diffusion, dx, h, drop_terms) {
+    .Call('_yuima_minusloglcpp_linear_state_space_theta2', PACKAGE = 'yuima', observed_drift, inv_sq_observed_diffusion, dx, h, drop_terms)
+}
+
+calc_inverce_square <- function(cube) {
+    .Call('_yuima_calc_inverce_square', PACKAGE = 'yuima', cube)
 }
 
 driftTermCpp <- function(drift, modelstate, data, env) {

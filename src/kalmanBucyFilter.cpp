@@ -5,15 +5,13 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube ob_diff, arma::mat init, double delta) {
+List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube inv_sq_ob_diff, arma::mat init, double delta) {
     // initialize vcov with suitable size, no value
     arma::cube vcov = arma::cube(un_dr_sl.n_rows, un_dr_sl.n_cols, un_dr_sl.n_slices, arma::fill::none);
     vcov.slice(0) = init;
 
-    arma::cube inv_sq_ob_diff = arma::cube(ob_diff.n_rows, ob_diff.n_rows, ob_diff.n_slices, arma::fill::none);
     int n_data = un_dr_sl.n_slices;
     for(int i = 1; i < n_data; i++){
-        inv_sq_ob_diff.slice(i-1) = arma::inv_sympd(ob_diff.slice(i-1) * ob_diff.slice(i-1).t());
         arma::mat vcov_prev = vcov.slice(i - 1);
         arma::mat vcov_next = vcov_prev + delta * (
             un_diff.slice(i-1) * un_diff.slice(i-1).t()
@@ -126,7 +124,7 @@ arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_
 }
 
 // [[Rcpp::export]]
-arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat ob_diff) {
+arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat inv_sq_ob_diff) {
     arma::mat H(un_dr_sl.n_cols + un_dr_sl.n_rows, un_dr_sl.n_cols + un_dr_sl.n_rows);
     /*
     H = 
@@ -153,7 +151,7 @@ arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat 
             H(un_dr_sl.n_cols + i, j) = lower_left_matrix(i,j);
         }
     }
-    arma::mat upper_right_matrix = ob_dr_sl.t() * arma::inv_sympd(ob_diff * ob_diff.t()) * ob_dr_sl;
+    arma::mat upper_right_matrix = ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
     for(unsigned int i = 0; i < un_dr_sl.n_cols; i++) {
         for(unsigned int j = 0; j < un_dr_sl.n_cols; j++) {
             H(i, un_dr_sl.n_rows + j) = upper_right_matrix(i,j);

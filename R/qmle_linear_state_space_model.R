@@ -405,48 +405,35 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
 
 # function to calculate minus quasi-log likelihood for theta2 estimation
 # yuima: yuima objects
-# theta1: params in observed diffusion
+# inv.squared.observed.diffusion: inverce of squared observed diffusion coef
 # theta2: params in drift or unobserved diffusion
 # filter_mean_init: estimated value for X_0
 # env: env to evaluate drift and diffusion. must include belows
 # env$h : time interval of observations
 # env$deltaX : diff of observed values
 
-minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, theta1, theta2, filter_mean_init, env, explicit, rcpp = FALSE, drop_terms) {
+minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, inv.squared.observed.diffusion, theta2, filter_mean_init, env, explicit, rcpp = FALSE, drop_terms) {
   is.observed <- yuima@model@is.observed
 
   # define env for eval
   tmp.env <- new.env(parent = env)
-  theta <- c(theta1, theta2)
-  if (length(theta) > 0) {
-    for (i in 1:length(theta)) {
-      assign(names(theta)[i], theta[[i]], envir = tmp.env)
+  if (length(theta2) > 0) {
+    for (i in 1:length(theta2)) {
+      assign(names(theta2)[i], theta2[[i]], envir = tmp.env)
     }
   }
-
-  # calculate unobserved diffusion
-  DIFFUSION <- yuima@model@diffusion[is.observed]
-  nrow <- length(DIFFUSION)
-  ncol <- length(DIFFUSION[[1]])
-  observed.diffusion.matrix <- matrix(nrow = nrow, ncol = ncol)
-  for (r in 1:nrow) {
-    for (c in 1:ncol) {
-      observed.diffusion.matrix[r, c] <- eval(DIFFUSION[[r]][c], envir = tmp.env)
-    }
-  }
-  observed.diffusion <- array(observed.diffusion.matrix, c(nrow, ncol, length(yuima@data)[1]))
-
+  
   # calculate `m` (estimation of `x`) using filter
   are <- TRUE # NOTE: Estimation using are=FALSE is not implemented yet.
-  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta, mean_init = filter_mean_init, are = are, explicit = explicit, env = tmp.env)
+  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta2, inv.squared.observed.diffusion = inv.squared.observed.diffusion ,mean_init = filter_mean_init, are = are, explicit = explicit, env = tmp.env)
   m <- filter_res@mean
 
 
   # calculate observed drift
   if(are){
     # observed.drift.slope and observed.drift.intercept is independent of t
-    observed.drift.slope.expr <- yuima@model@drift_slope[yuima@model@is.observed]
-    observed.drift.intercept.expr <- yuima@model@drift_intercept[yuima@model@is.observed]
+    observed.drift.slope.expr <- yuima@model@drift_slope[is.observed]
+    observed.drift.intercept.expr <- yuima@model@drift_intercept[is.observed]
     eval_exp <- function(expr) {
       env=tmp.env
       nrow = length(expr)
@@ -476,19 +463,10 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
   # calculate likelihood
   QL <- 0
   if (rcpp) {
-    QL <- minusloglcpp_linear_state_space_theta2(observed.drift, observed.diffusion, vec, h, drop_terms)
+    QL <- minusloglcpp_linear_state_space_theta2(observed.drift, inv.squared.observed.diffusion, vec, h, drop_terms)
   } else {
     for (j in (drop_terms + 1):n) {
-      j_th.observed.diffusion <- observed.diffusion[, , j, drop = FALSE] # extract the j-th slice of diff
-      dim(j_th.observed.diffusion) <- dim(j_th.observed.diffusion)[1:2] # drop the third dimension
-      yB <- tcrossprod(j_th.observed.diffusion)
-      inv_yB <- solve(yB)
-      if (is.infinite(inv_yB)) { # should we return 1e10?
-        pn <- log(1)
-        yuima.warn("singular diffusion matrix")
-        return(1e10)
-      }
-      pn <- -0.5 * env$h_inv * crossprod(observed.drift[j, ] * h - vec[j, ], inv_yB) %*% (observed.drift[j, ] * h - vec[j, ])
+      pn <- -0.5 * env$h_inv * crossprod(observed.drift[j, ] * h - vec[j, ], inv.squared.observed.diffusion) %*% (observed.drift[j, ] * h - vec[j, ])
       QL <- QL + pn
     }
   }
@@ -535,12 +513,31 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   for(variable in observed.variables) {
     delta.observed.variable[variable,] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable== variable)]]))
   }
+  
+  # calculate observed diffusion
+  tmp.env <- new.env(parent = env)
+  if (length(theta1.est) > 0) {
+    for (i in 1:length(theta1.est)) {
+      assign(names(theta1.est)[i], theta1.est[[i]], envir = tmp.env)
+    }
+  }
+  DIFFUSION <- yuima@model@diffusion[is.observed.equation]
+  nrow <- length(DIFFUSION)
+  ncol <- length(DIFFUSION[[1]])
+  observed.diffusion.matrix <- matrix(nrow = nrow, ncol = ncol)
+  for (r in 1:nrow) {
+    for (c in 1:ncol) {
+      observed.diffusion.matrix[r, c] <- eval(DIFFUSION[[r]][c], envir = tmp.env)
+    }
+  }
+  inv.squared.observed.diffusion <- solve(tcrossprod(observed.diffusion.matrix))
+  
   # set args for optim
   ## define objective function
   f <- function(p) {
     theta2.values <- as.list(p)
     names(theta2.values) <- nm[idx.theta2]
-    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, theta1 = theta1.est, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, rcpp = rcpp, drop_terms = drop_terms))
+    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, inv.squared.observed.diffusion = inv.squared.observed.diffusion, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, rcpp = rcpp, drop_terms = drop_terms))
   }
 
   call <- match.call()
