@@ -31,16 +31,23 @@ List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_
 }
 
 // [[Rcpp::export]]
-arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube ob_dr_in, arma::cube ob_diff, arma::cube vcov, arma::cube inv_sq_ob_diff, arma::vec init, double delta, arma::mat deltaY) {
+arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube ob_dr_sl, arma::cube ob_dr_in, arma::cube vcov, arma::cube inv_sq_ob_diff, arma::vec init, double delta, arma::mat deltaY) {
     // initialize vcov with suitable size, no value
-    arma::mat mean = arma::mat(un_dr_sl.n_rows, un_dr_sl.n_slices, arma::fill::none);
+    arma::mat mean(un_dr_sl.n_rows, un_dr_sl.n_slices, arma::fill::none);
     mean.col(0) = init;
     int n_data = un_dr_sl.n_slices;
     for(int i = 1; i < n_data; i++){
-        arma::vec mean_prev = mean.col(i - 1);
+        arma::vec mean_prev(&mean(0, i-1), mean.n_rows, false, true);
+        arma::mat ob_dr_sl_slice(&ob_dr_sl(0, 0, i-1), ob_dr_sl.n_rows, ob_dr_sl.n_cols, false, true);
+        arma::vec ob_dr_in_slice(&ob_dr_in(0, 0, i-1), ob_dr_in.n_rows, false, true);
+        arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, i-1), un_dr_sl.n_rows, un_dr_sl.n_cols, false, true);
+        arma::vec un_dr_in_slice(&un_dr_in(0, 0, i-1), un_dr_in.n_rows, false, true);
+        arma::mat vcov_slice(&vcov(0, 0, i-1), vcov.n_rows, vcov.n_cols, false, true);
+        arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, i-1), inv_sq_ob_diff.n_rows, inv_sq_ob_diff.n_cols, false, true);
+        arma::vec deltaY_col(&deltaY(0, i-1), deltaY.n_rows, false, true);
         arma::vec mean_next = mean_prev 
-                           + (un_dr_sl.slice(i-1) * mean_prev + un_dr_in.slice(i-1) - vcov.slice(i-1) * ob_dr_sl.slice(i-1).t() * inv_sq_ob_diff.slice(i-1) * (ob_dr_sl.slice(i-1) * mean_prev + ob_dr_in.slice(i-1))) * delta
-                           + vcov.slice(i-1) * ob_dr_sl.slice(i-1).t() * inv_sq_ob_diff.slice(i-1) * deltaY.col(i-1);
+                           + (un_dr_sl_slice * mean_prev + un_dr_in_slice - vcov_slice * ob_dr_sl_slice.t() * inv_sq_ob_diff_slice * (ob_dr_sl_slice * mean_prev + ob_dr_in_slice)) * delta
+                           + vcov_slice * ob_dr_sl_slice.t() * inv_sq_ob_diff_slice * deltaY_col;
         mean.col(i) = mean_next;
     }
 
@@ -105,7 +112,7 @@ arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat 
 }
 
 //[[Rcpp::export]]
-arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma::mat ob_dr_sl, arma::mat ob_dr_in, arma::mat ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY) {
+arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma::mat ob_dr_sl, arma::mat ob_dr_in, arma::mat inv_sq_ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY) {
     /*
     calculate mean explicitly if coefficients are time-independent.
     use when estimated vcov with Algebric Riccati Equation.
@@ -121,11 +128,9 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma
     arma::mat mean = arma::mat(un_dr_sl.n_rows, n_data, arma::fill::none);
     mean.col(0) = init;
     
-    arma::mat Sigma = ob_diff * ob_diff.t();
-    arma::mat inv_Sigma = arma::inv_sympd(Sigma);
-    arma::mat alpha = un_dr_sl - vcov * ob_dr_sl.t() * inv_Sigma * ob_dr_sl;
+    arma::mat alpha = un_dr_sl - vcov * ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
     arma::mat exp_alpha_h = arma::expmat(alpha * delta);
-    arma::mat deltaY_coeff = exp_alpha_h * vcov * ob_dr_sl.t() * inv_Sigma;
+    arma::mat deltaY_coeff = exp_alpha_h * vcov * ob_dr_sl.t() * inv_sq_ob_diff;
     arma::mat intercept = (exp_alpha_h * un_dr_in + deltaY_coeff * ob_dr_in) * delta;
 
     for(int i = 1; i < n_data; i++){

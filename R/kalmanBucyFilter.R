@@ -11,6 +11,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
 kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, env = globalenv()) {
     # are : flag if use algebraic Riccati equation or not
     # Calculation of `delta.observed.variable` is relatively slow and it can be a bottle neck in parameter estimation. So users can pass the values of delta.observed.variable.
+    # Calculation of `inv_sq_ob_diff` is relatively slow and it can be a bottle neck in parameter estimation. So users can pass the values of inv.squared.observed.diffusion.
     # validate input
     if(!inherits(yuima@model, "yuima.linear_state_space_model")) {
         yuima.stop("model must be yuima.linear_state_space_model")
@@ -130,12 +131,13 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, mean_
         # solve mean
         if(explicit) {
             vcov <- res
+            inv.squared.observed.diffusion. <- solve(observed.diffusion %*% t(observed.diffusion))
             mean <- calc_filter_mean_explicit(
                 unobserved.drift.slope,
                 unobserved.drift.intercept,
                 observed.drift.slope,
                 observed.drift.intercept,
-                observed.diffusion,
+                inv.squared.observed.diffusion.,
                 vcov,
                 mean_init,
                 delta,
@@ -157,10 +159,8 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, mean_
             mean <- calc_filter_mean(
                 unobserved.drift.slope, 
                 unobserved.drift.intercept,
-                unobserved.diffusion,
                 observed.drift.slope,
                 observed.drift.intercept,
-                observed.diffusion,
                 vcov, 
                 inv_sq_ob_diff,
                 mean_init,
