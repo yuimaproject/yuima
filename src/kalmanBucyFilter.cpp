@@ -31,7 +31,7 @@ List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_
 }
 
 // [[Rcpp::export]]
-arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube ob_dr_sl, arma::cube ob_dr_in, arma::cube vcov, arma::cube inv_sq_ob_diff, arma::vec init, double delta, arma::mat deltaY) {
+arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube ob_dr_sl, arma::cube ob_dr_in, arma::cube inv_sq_ob_diff, arma::cube vcov, arma::vec init, double delta, arma::mat deltaY) {
     // initialize mean with suitable size, no value
     int d_un = un_dr_sl.n_rows; // the number of observed variables
     int d_ob = un_dr_sl.n_cols; // the number of unobserved variables
@@ -55,6 +55,28 @@ arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube 
     }
 
     return mean;
+}
+
+// [[Rcpp::export]]
+arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_in, arma::mat ob_dr_sl, arma::vec ob_dr_in, arma::mat inv_sq_ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY) {
+  // initialize mean with suitable size, no value
+  int d_un = un_dr_sl.n_rows; // the number of observed variables
+  int d_ob = un_dr_sl.n_cols; // the number of unobserved variables
+  int n = deltaY.n_cols;  // the number of observations
+  arma::mat mean(d_un, n, arma::fill::none);
+  mean.col(0) = init;
+  
+  arma::mat eye = arma::eye(d_un, d_un);
+  arma::mat deltaY_coef = vcov * ob_dr_sl.t() * inv_sq_ob_diff;
+  arma::mat mean_prev_coef = eye + (un_dr_sl - deltaY_coef * ob_dr_sl) * delta;
+  arma::vec intercept = (un_dr_in - deltaY_coef * ob_dr_in) * delta;
+  for(int i = 1; i < n; i++){
+    arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
+    arma::vec mean_prev(&mean(0, i-1), mean.n_rows);
+    mean.col(i) = mean_prev_coef * mean_prev + deltaY_coef * deltaY_col + intercept;
+  }
+  
+  return mean;
 }
 
 // [[Rcpp::export]]
