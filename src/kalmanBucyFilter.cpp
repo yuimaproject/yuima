@@ -5,8 +5,6 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-
-
 List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube ob_diff, arma::mat init, double delta) {
     // initialize vcov with suitable size, no value
     arma::cube vcov = arma::cube(un_dr_sl.n_rows, un_dr_sl.n_cols, un_dr_sl.n_slices, arma::fill::none);
@@ -28,6 +26,29 @@ List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_
     //return vcov and inv_sq_ob_diff;
     List res = List::create(Named("vcov") = vcov , Named("inv_sq_ob_diff") = inv_sq_ob_diff);
     return res;
+}
+
+// [[Rcpp::export]]
+List calc_filter_vcov_time_homogeneous(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat ob_diff, arma::mat init, double delta, int n) {
+  // initialize vcov with suitable size, no value
+  arma::cube vcov(un_dr_sl.n_rows, un_dr_sl.n_cols, n, arma::fill::none);
+  vcov.slice(0) = init;
+  
+  arma::mat inv_sq_ob_diff = arma::inv_sympd(ob_diff * ob_diff.t());
+  
+  arma::mat intercept = delta * un_diff * un_diff.t();
+  arma::mat vcov_vcov_coef = delta * ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
+  arma::mat vcov_coef = delta * un_dr_sl;
+  for(int i = 1; i < n; i++){
+    arma::mat vcov_prev(&vcov(0, 0, i-1), un_dr_sl.n_rows, un_dr_sl.n_cols);
+    vcov.slice(i) = vcov_prev
+                  + vcov_coef * vcov_prev + vcov_prev * vcov_coef.t()
+                  - vcov_prev * vcov_vcov_coef * vcov_prev + intercept;
+  }
+  
+  //return vcov and inv_sq_ob_diff;
+  List res = List::create(Named("vcov") = vcov , Named("inv_sq_ob_diff") = inv_sq_ob_diff);
+  return res;
 }
 
 // [[Rcpp::export]]
@@ -58,11 +79,11 @@ arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube 
 }
 
 // [[Rcpp::export]]
-arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_in, arma::mat ob_dr_sl, arma::vec ob_dr_in, arma::mat inv_sq_ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY) {
+arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(arma::mat un_dr_sl, arma::vec un_dr_in, arma::mat ob_dr_sl, arma::vec ob_dr_in, arma::mat inv_sq_ob_diff, arma::mat vcov, arma::vec init, double delta, arma::mat deltaY) {
   // initialize mean with suitable size, no value
   int d_un = un_dr_sl.n_rows; // the number of observed variables
   int d_ob = un_dr_sl.n_cols; // the number of unobserved variables
-  int n = deltaY.n_cols;  // the number of observations
+  int n = deltaY.n_cols + 1;  // the number of observations
   arma::mat mean(d_un, n, arma::fill::none);
   mean.col(0) = init;
   
@@ -74,6 +95,31 @@ arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_
     arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
     arma::vec mean_prev(&mean(0, i-1), mean.n_rows);
     mean.col(i) = mean_prev_coef * mean_prev + deltaY_coef * deltaY_col + intercept;
+  }
+  
+  return mean;
+}
+
+// [[Rcpp::export]]
+arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_in, arma::mat ob_dr_sl, arma::vec ob_dr_in, arma::mat inv_sq_ob_diff, arma::cube vcov, arma::vec init, double delta, arma::mat deltaY) {
+  // initialize mean with suitable size, no value
+  int d_un = un_dr_sl.n_rows; // the number of observed variables
+  int d_ob = un_dr_sl.n_cols; // the number of unobserved variables
+  int n = deltaY.n_cols + 1;  // the number of observations
+  arma::mat mean(d_un, n, arma::fill::none);
+  mean.col(0) = init;
+  
+  arma::mat eye = arma::eye(d_un, d_un);
+  arma::mat vcov_deltaY_coef = ob_dr_sl.t() * inv_sq_ob_diff;
+  arma::mat mean_prev_coef = eye + un_dr_sl * delta;
+  arma::mat vcov_mean_prev_coef = vcov_deltaY_coef * ob_dr_sl * delta;
+  arma::vec vcov_coef = vcov_deltaY_coef * ob_dr_in * delta;
+  arma::vec intercept = un_dr_in * delta;
+  for(int i = 1; i < n; i++){
+    arma::mat vcov_slice(&vcov(0, 0, i-1), d_un, d_un, false, true);
+    arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
+    arma::vec mean_prev(&mean(0, i-1), mean.n_rows);
+    mean.col(i) = mean_prev_coef * mean_prev + vcov_slice * (vcov_mean_prev_coef * mean_prev + vcov_mean_prev_coef * deltaY_col + vcov_coef) + intercept;
   }
   
   return mean;

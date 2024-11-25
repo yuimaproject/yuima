@@ -143,7 +143,7 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, mean_
                 delta.observed.variable
             )
         } else {
-            mean <- calc_filter_mean_time_homogeneous(
+            mean <- calc_filter_mean_time_homogeneous_with_vcov_are(
                 unobserved.drift.slope, 
                 unobserved.drift.intercept,
                 observed.drift.slope,
