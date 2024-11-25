@@ -203,9 +203,9 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma
     arma::mat intercept = (exp_alpha_h * un_dr_in + deltaY_coeff * ob_dr_in) * delta;
 
     for(int i = 1; i < n_data; i++){
-        arma::vec mean_prev = mean.col(i - 1);
-        arma::vec mean_next = exp_alpha_h * mean_prev + deltaY_coeff * deltaY.col(i-1) + intercept;
-        mean.col(i) = mean_next;
+        arma::vec mean_prev(&mean(0, i-1), mean.n_rows);
+        arma::vec deltaY_col(&deltaY(0, i-1), deltaY.n_rows, false, true);
+        mean.col(i) = exp_alpha_h * mean_prev + deltaY_coeff * deltaY_col + intercept;
     }
 
     return mean;

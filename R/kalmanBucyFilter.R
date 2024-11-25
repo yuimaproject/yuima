@@ -121,8 +121,8 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
         ## solve algebraic Ricatti equation
         # solve vcov
         if(sum(yuima@model@is.observed) == 1 && sum(!yuima@model@is.observed) == 1) {
-          vcov <- squared.observed.diffusion * abs(unobserved.drift.slope) / (observed.drift.slope^2) * (sqrt(1 + (squared.observed.diffusion * observed.drift.slope ^ 2) / (squared.observed.diffusion * unobserved.drift.slope ^ 2)) - 1)
-          #res <- (observed.diffusion %*% t(observed.diffusion)) * abs(unobserved.drift.slope) / (observed.drift.slope^2) * (sqrt(1 + ((unobserved.diffusion %*% t(unobserved.diffusion)) * observed.drift.slope ^ 2)/((observed.diffusion %*% t(observed.diffusion)) * unobserved.drift.slope ^ 2)) - 1)
+          squared.observed.diffusion = 1 / inv.squared.observed.diffusion
+          vcov <- squared.observed.diffusion * abs(unobserved.drift.slope) / (observed.drift.slope^2) * (sqrt(1 + (tcrossprod(unobserved.diffusion) * observed.drift.slope ^ 2) / (squared.observed.diffusion * unobserved.drift.slope ^ 2)) - 1)
         } else {
           vcov <- calc_filter_vcov_are(
                   unobserved.drift.slope,
