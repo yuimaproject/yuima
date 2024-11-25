@@ -206,7 +206,7 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma
     int n = deltaY.n_cols + 1;  // the number of observations
 
     // initialize mean with suitable size, no value
-    arma::mat mean = arma::mat(d_un, n_data, arma::fill::none);
+    arma::mat mean = arma::mat(d_un, n, arma::fill::none);
     mean.col(0) = init;
     
     arma::mat alpha = un_dr_sl - vcov * ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
@@ -214,7 +214,7 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma
     arma::mat deltaY_coeff = exp_alpha_h * vcov * ob_dr_sl.t() * inv_sq_ob_diff;
     arma::mat intercept = (exp_alpha_h * un_dr_in + deltaY_coeff * ob_dr_in) * delta;
 
-    for(int i = 1; i < n_data; i++){
+    for(int i = 1; i < n; i++){
         arma::vec mean_prev(&mean(0, i-1), d_un);
         arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
         mean.col(i) = exp_alpha_h * mean_prev + deltaY_coeff * deltaY_col + intercept;
