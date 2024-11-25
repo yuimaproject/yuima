@@ -7,8 +7,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube inv_sq_ob_diff, arma::mat init, double delta) {
     int d_un = un_dr_sl.n_rows; // the number of observed variables
-    int d_ob = ob_dr_sl.n_rows; // the number of unobserved variables
-    int n = deltaY.n_cols + 1;  // the number of observations
+    int n = un_diff.n_slices;  // the number of observations
     
     // initialize vcov with suitable size, no value
     arma::cube vcov = arma::cube(d_un, d_un, n, arma::fill::none);
@@ -32,8 +31,6 @@ List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_
 // [[Rcpp::export]]
 List calc_filter_vcov_time_homogeneous(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat ob_diff, arma::mat init, double delta, int n) {
   int d_un = un_dr_sl.n_rows; // the number of observed variables
-  int d_ob = ob_dr_sl.n_rows; // the number of unobserved variables
-  int n = deltaY.n_cols + 1;  // the number of observations
 
     // initialize vcov with suitable size, no value
   arma::cube vcov(d_un, d_un, n, arma::fill::none);
