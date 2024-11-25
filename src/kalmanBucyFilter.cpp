@@ -33,22 +33,25 @@ List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_
 // [[Rcpp::export]]
 arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube ob_dr_sl, arma::cube ob_dr_in, arma::cube vcov, arma::cube inv_sq_ob_diff, arma::vec init, double delta, arma::mat deltaY) {
     // initialize mean with suitable size, no value
-    arma::mat mean(un_dr_sl.n_rows, un_dr_sl.n_slices, arma::fill::none);
+    int d_un = un_dr_sl.n_rows; // the number of observed variables
+    int d_ob = un_dr_sl.n_cols; // the number of unobserved variables
+    int n = un_dr_sl.n_slices;  // the number of observations
+    arma::mat mean(d_un, n, arma::fill::none);
     mean.col(0) = init;
-    int n_data = un_dr_sl.n_slices;
-    for(int i = 1; i < n_data; i++){
-        arma::vec mean_prev(&mean(0, i-1), mean.n_rows, false, true);
-        arma::mat ob_dr_sl_slice(&ob_dr_sl(0, 0, i-1), ob_dr_sl.n_rows, ob_dr_sl.n_cols, false, true);
-        arma::vec ob_dr_in_slice(&ob_dr_in(0, 0, i-1), ob_dr_in.n_rows, false, true);
-        arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, i-1), un_dr_sl.n_rows, un_dr_sl.n_cols, false, true);
-        arma::vec un_dr_in_slice(&un_dr_in(0, 0, i-1), un_dr_in.n_rows, false, true);
-        arma::mat vcov_slice(&vcov(0, 0, i-1), vcov.n_rows, vcov.n_cols, false, true);
-        arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, i-1), inv_sq_ob_diff.n_rows, inv_sq_ob_diff.n_cols, false, true);
-        arma::vec deltaY_col(&deltaY(0, i-1), deltaY.n_rows, false, true);
-        arma::vec mean_next = mean_prev 
-                           + (un_dr_sl_slice * mean_prev + un_dr_in_slice - vcov_slice * ob_dr_sl_slice.t() * inv_sq_ob_diff_slice * (ob_dr_sl_slice * mean_prev + ob_dr_in_slice)) * delta
-                           + vcov_slice * ob_dr_sl_slice.t() * inv_sq_ob_diff_slice * deltaY_col;
-        mean.col(i) = mean_next;
+    for(int i = 1; i < n; i++){
+        arma::vec mean_prev(&mean(0, i-1), mean.n_rows);
+        arma::mat ob_dr_sl_slice(&ob_dr_sl(0, 0, i-1), d_ob, d_ob, false, true);
+        arma::mat ob_dr_sl_slice_t = ob_dr_sl_slice.t();
+        arma::vec ob_dr_in_slice(&ob_dr_in(0, 0, i-1), d_ob, false, true);
+        arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, i-1), d_un, d_ob, false, true);
+        arma::vec un_dr_in_slice(&un_dr_in(0, 0, i-1), d_un, false, true);
+        arma::mat vcov_slice(&vcov(0, 0, i-1), d_un, d_un, false, true);
+        arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, i-1), d_ob, d_ob, false, true);
+        arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
+        arma::mat coef = vcov_slice * ob_dr_sl_slice_t * inv_sq_ob_diff_slice;
+        mean.col(i) = mean_prev
+                    + (un_dr_sl_slice * mean_prev + un_dr_in_slice - coef * (ob_dr_sl_slice * mean_prev + ob_dr_in_slice)) * delta
+                    + coef * deltaY_col;
     }
 
     return mean;

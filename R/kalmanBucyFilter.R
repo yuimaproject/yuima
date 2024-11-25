@@ -199,10 +199,8 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, mean_
         mean <- calc_filter_mean(
             unobserved.drift.slope, 
             unobserved.drift.intercept,
-            unobserved.diffusion,
             observed.drift.slope,
             observed.drift.intercept,
-            observed.diffusion,
             vcov, 
             inv_sq_ob_diff,
             mean_init,
