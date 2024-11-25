@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 
 List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube ob_diff, arma::mat init, double delta) {
-    // initialize vcov with suitablesize, no value
+    // initialize vcov with suitable size, no value
     arma::cube vcov = arma::cube(un_dr_sl.n_rows, un_dr_sl.n_cols, un_dr_sl.n_slices, arma::fill::none);
     vcov.slice(0) = init;
 
@@ -32,7 +32,7 @@ List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_
 
 // [[Rcpp::export]]
 arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::cube un_dr_in, arma::cube ob_dr_sl, arma::cube ob_dr_in, arma::cube vcov, arma::cube inv_sq_ob_diff, arma::vec init, double delta, arma::mat deltaY) {
-    // initialize vcov with suitable size, no value
+    // initialize mean with suitable size, no value
     arma::mat mean(un_dr_sl.n_rows, un_dr_sl.n_slices, arma::fill::none);
     mean.col(0) = init;
     int n_data = un_dr_sl.n_slices;
