@@ -35,20 +35,21 @@ double minusloglcpp_linear_state_space_theta1(arma::cube observed_diffusion, arm
 // [[Rcpp::export]]
 double minusloglcpp_linear_state_space_theta2(arma::mat observed_drift, arma::mat inv_sq_observed_diffusion, arma::mat dx, double h, int drop_terms) {
     // observed_drift : 2-dim matrix of evaluated observed drift coefficients
-    // observed_diffusion : 3-dim array of evaluated observed diffusion coefficients
+    // inv_sq_observed_diffusion : (\sigma\sigma^T)^{-1} \sigma is 2-dim array of evaluated observed diffusion coefficients)
     // dx : 2-dim matrix of delta of observerd variables in each time point
     // h : interval of observations
-    int n_data = observed_drift.n_rows;
+    int d_ob = observed_drift.n_rows;
+    int n_data = observed_drift.n_cols;
 
     // calculate quasi-log-likelihood
     double QL = 0;
-    for(int i = 1; i < n_data; i++){
-      arma::mat tmp = (observed_drift.row(i-1) * h - dx.row(i-1));
-    	if(drop_terms < i) {
-        QL += -0.5 / h * arma::as_scalar(tmp * inv_sq_observed_diffusion * tmp.t());
-    	}
+    for(int i = drop_terms+1; i < n_data; i++){
+      arma::vec observed_drift_col(&observed_drift(0, i-1), d_ob, false, true);
+      arma::vec dx_col(&dx(0, i-1), d_ob, false, true);
+      arma::vec tmp = observed_drift_col * h - dx_col;
+      QL += arma::as_scalar(tmp.t() * inv_sq_observed_diffusion * tmp);
     }
-    return QL;
+    return -QL/2/h;
 }
 
 // [[Rcpp::export]]

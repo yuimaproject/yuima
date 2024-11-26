@@ -410,7 +410,6 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
 # filter_mean_init: estimated value for X_0
 # env: env to evaluate drift and diffusion. must include belows
 # env$h : time interval of observations
-# env$deltaX : diff of observed values
 
 minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, inv.squared.observed.diffusion, theta2, filter_mean_init, env, explicit, rcpp = FALSE, drop_terms) {
   is.observed <- yuima@model@is.observed
@@ -448,27 +447,28 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
     }
     observed.drift.slope <- eval_exp(observed.drift.slope.expr)
     observed.drift.intercept <- eval_exp(observed.drift.intercept.expr)
-    observed.drift <- linearDriftTermCpp(observed.drift.slope, observed.drift.intercept, m)
+    observed.drift <- t(linearDriftTermCpp(observed.drift.slope, observed.drift.intercept, m))
   } else {
     # NOTE: Future expansion. If are=FALSE, slope and intercept can depend on t.
     observed.drift.expr <- yuima@model@drift[is.observed]
     unobserved.variables <- yuima@model@state.variable[!is.observed]
-    observed.drift <- driftTermCpp(observed.drift.expr, unobserved.variables, m, tmp.env)
+    observed.drift <- t(driftTermCpp(observed.drift.expr, unobserved.variables, m, tmp.env))
   }
   # variables to calculate likelihood
   h <- env$h # time interval of observations
-  vec <- env$deltaX # diff of observed values
-  n <- dim(vec)[1] # the humber of observations - 1
-
+  
   # calculate likelihood
   QL <- 0
   if (rcpp) {
-    QL <- minusloglcpp_linear_state_space_theta2(observed.drift, inv.squared.observed.diffusion, vec, h, drop_terms)
+    QL <- minusloglcpp_linear_state_space_theta2(observed.drift, inv.squared.observed.diffusion, delta.observed.variable, h, drop_terms)
   } else {
+    n <- dim(delta.observed.variable)[2] # the humber of observations - 1
     for (j in (drop_terms + 1):n) {
-      pn <- -0.5 * env$h_inv * crossprod(observed.drift[j, ] * h - vec[j, ], inv.squared.observed.diffusion) %*% (observed.drift[j, ] * h - vec[j, ])
+      tmp <- (observed.drift[, j] * h - delta.observed.variable[, j])
+      pn <- t(tmp) %*% inv.squared.observed.diffusion %*% tmp
       QL <- QL + pn
     }
+    QL <- - QL / 2 / h
   }
   return(-drop(QL))
 }
@@ -497,7 +497,6 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   assign("X", X, envir = env)
   assign("deltaX", dX, envir = env)
   assign("h", deltat(get.zoo.data(yuima)[[1]]), envir = env)
-  assign("h_inv", 1 / deltat(get.zoo.data(yuima)[[1]]), envir = env)
 
   nm <- names(start)
 
