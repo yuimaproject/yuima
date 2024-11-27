@@ -91,9 +91,8 @@ arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(arma::mat un_dr_sl, ar
   arma::mat mean(d_un, n, arma::fill::none);
   mean.col(0) = init;
   
-  arma::mat eye = arma::eye(d_un, d_un);
   arma::mat deltaY_coef = vcov * ob_dr_sl.t() * inv_sq_ob_diff;
-  arma::mat mean_prev_coef = eye + (un_dr_sl - deltaY_coef * ob_dr_sl) * delta;
+  arma::mat mean_prev_coef = arma::eye(d_un, d_un) + (un_dr_sl - deltaY_coef * ob_dr_sl) * delta;
   arma::vec intercept = (un_dr_in - deltaY_coef * ob_dr_in) * delta;
   for(int i = 1; i < n; i++){
     arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
@@ -113,9 +112,8 @@ arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_
   arma::mat mean(d_un, n, arma::fill::none);
   mean.col(0) = init;
   
-  arma::mat eye = arma::eye(d_un, d_un);
   arma::mat vcov_deltaY_coef = ob_dr_sl.t() * inv_sq_ob_diff;
-  arma::mat mean_prev_coef = eye + un_dr_sl * delta;
+  arma::mat mean_prev_coef = arma::eye(d_un, d_un) + un_dr_sl * delta;
   arma::mat vcov_mean_prev_coef = vcov_deltaY_coef * ob_dr_sl * delta;
   arma::vec vcov_coef = vcov_deltaY_coef * ob_dr_in * delta;
   arma::vec intercept = un_dr_in * delta;
@@ -200,10 +198,10 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma
     */
     int d_un = un_dr_sl.n_rows; // the number of observed variables
     int d_ob = ob_dr_sl.n_rows; // the number of unobserved variables
-    int n = deltaY.n_cols + 1;  // the number of observations
+    int n_deltaY = deltaY.n_cols;  // the number of observations - 1
 
     // initialize mean with suitable size, no value
-    arma::mat mean = arma::mat(d_un, n, arma::fill::none);
+    arma::mat mean = arma::mat(d_un, n_deltaY + 1, arma::fill::none);
     mean.col(0) = init;
 
     // Compute exp_alpha_h, deltaY_coeff, and intercept within an inner scope
@@ -220,10 +218,10 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::mat un_dr_in, arma
       intercept = (exp_alpha_h * un_dr_in + deltaY_coeff * ob_dr_in) * delta;
     }
 
-    for(int i = 1; i < n; i++){
-        arma::vec mean_prev(&mean(0, i-1), d_un, false, true);
-        arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
-        mean.col(i) = exp_alpha_h * mean_prev + deltaY_coeff * deltaY_col + intercept;
+    for(int i = 0; i < n_deltaY; i++){
+        arma::vec mean_prev(&mean(0, i), d_un, false, true);
+        arma::vec deltaY_col(&deltaY(0, i), d_ob, false, true);
+        mean.col(i + 1) = exp_alpha_h * mean_prev + deltaY_coeff * deltaY_col + intercept;
     }
 
     return mean;

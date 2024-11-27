@@ -188,17 +188,18 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
     }
   }
 
+  sq.observed.diffusion <- tcrossprod(as.matrix(observed.diffusion))
+  inv.sq.observed.diffusion <- solve(sq.observed.diffusion)
+  logdet.sq.observed.diffusion <- log(det(sq.observed.diffusion))
+  
   # calculate likelihood
   if (rcpp) {
-    QL <- minusloglcpp_linear_state_space_theta1(observed.diffusion, delta.observed.variable, h, drop_terms)
+    QL <- minusloglcpp_linear_state_space_theta1(logdet.sq.observed.diffusion, inv.sq.observed.diffusion, delta.observed.variable, h, drop_terms)
   } else {
     QL <- 0
     n <- yuima@sampling@n # the number of observations - 1
-    yB <- tcrossprod(as.matrix(observed.diffusion))
-    inv_yB <- solve(yB)
-    logdet <- log(det(yB))
     for (j in (drop_terms + 1):n) {
-      pn <- -0.5 * logdet + (-1 / (2 * h)) * t(delta.observed.variable[, j]) %*% inv_yB %*% delta.observed.variable[, j]
+      pn <- -0.5 * logdet.sq.observed.diffusion + (-1 / (2 * h)) * t(delta.observed.variable[, j]) %*% inv.sq.observed.diffusion %*% delta.observed.variable[, j]
       QL <- QL + pn
     }
   }
@@ -259,7 +260,7 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
   }
   observed.diffusion <- lapply(yuima@model@diffusion[yuima@model@is.observed], function(x) x[is.observed.column])[[1]]
   if (sum(yuima@model@is.observed) == 1 && sum(is.observed.column) == 1) {
-    n <- length(dX)
+    n <- yuima@sampling@n
     param_name <- yuima@model@parameter@diffusion[!attr(yuima@model@parameter@diffusion, "unobserved")]
     if (as.character(observed.diffusion) == paste("(", param_name, ")", sep = "")) {
       coef <- sqrt(sum(dX^2) / (h * n))
