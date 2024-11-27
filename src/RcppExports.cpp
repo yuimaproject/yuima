@@ -382,12 +382,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // minusloglcpp_linear_state_space_theta1
-double minusloglcpp_linear_state_space_theta1(arma::cube observed_diffusion, arma::mat dx, double h, int drop_terms);
+double minusloglcpp_linear_state_space_theta1(arma::mat observed_diffusion, arma::mat dx, double h, int drop_terms);
 RcppExport SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP observed_diffusionSEXP, SEXP dxSEXP, SEXP hSEXP, SEXP drop_termsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::cube >::type observed_diffusion(observed_diffusionSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type observed_diffusion(observed_diffusionSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type dx(dxSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
     Rcpp::traits::input_parameter< int >::type drop_terms(drop_termsSEXP);
