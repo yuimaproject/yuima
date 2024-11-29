@@ -174,13 +174,12 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
         unobserved.diffusion <- kalman_bucy_filter_eval_exp(unobserved.diffusion.expr, tmp.env, yuima@model@time.variable, time.points)
         observed.drift.slope <- kalman_bucy_filter_eval_exp(observed.drift.slope.expr, tmp.env, yuima@model@time.variable, time.points)
         observed.drift.intercept <- kalman_bucy_filter_eval_exp(observed.drift.intercept.expr, tmp.env, yuima@model@time.variable, time.points)
-        vcov_res <- calc_filter_vcov(
+        vcov <- calc_filter_vcov(
             unobserved.drift.slope, 
             unobserved.diffusion,
             observed.drift.slope,
             inv.squared.observed.diffusion,
             vcov_init, delta)
-        vcov <- vcov_res$vcov
 
         # subsampling for solving m
         get.subsampling <- function(array.obj) {

@@ -61,8 +61,12 @@ calc_filter_vcov <- function(un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff, init, 
     .Call('_yuima_calc_filter_vcov', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff, init, delta)
 }
 
-calc_filter_vcov_time_homogeneous <- function(un_dr_sl, un_diff, ob_dr_sl, ob_diff, init, delta, n) {
-    .Call('_yuima_calc_filter_vcov_time_homogeneous', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, ob_diff, init, delta, n)
+calc_filter_vcov_time_homogeneous <- function(un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff, init, delta, n) {
+    .Call('_yuima_calc_filter_vcov_time_homogeneous', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff, init, delta, n)
+}
+
+calc_filter_vcov_are <- function(un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff) {
+    .Call('_yuima_calc_filter_vcov_are', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff)
 }
 
 calc_filter_mean <- function(un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov, init, delta, deltaY) {
@@ -75,10 +79,6 @@ calc_filter_mean_time_homogeneous_with_vcov_are <- function(un_dr_sl, un_dr_in, 
 
 calc_filter_mean_time_homogeneous <- function(un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov, init, delta, deltaY) {
     .Call('_yuima_calc_filter_mean_time_homogeneous', PACKAGE = 'yuima', un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov, init, delta, deltaY)
-}
-
-calc_filter_vcov_are <- function(un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff) {
-    .Call('_yuima_calc_filter_vcov_are', PACKAGE = 'yuima', un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff)
 }
 
 calc_filter_mean_explicit <- function(un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov, init, delta, deltaY) {

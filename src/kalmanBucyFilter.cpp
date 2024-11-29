@@ -5,7 +5,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube inv_sq_ob_diff, arma::mat init, double delta) {
+arma::cube calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube inv_sq_ob_diff, arma::mat init, double delta) {
     int d_un = un_dr_sl.n_rows; // the number of observed variables
     int n = un_diff.n_slices;  // the number of observations
     
@@ -24,19 +24,16 @@ List calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_
     }
 
     //return vcov and inv_sq_ob_diff;
-    List res = List::create(Named("vcov") = vcov , Named("inv_sq_ob_diff") = inv_sq_ob_diff);
-    return res;
+    return vcov;
 }
 
 // [[Rcpp::export]]
-List calc_filter_vcov_time_homogeneous(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat ob_diff, arma::mat init, double delta, int n) {
+arma::cube calc_filter_vcov_time_homogeneous(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat inv_sq_ob_diff, arma::mat init, double delta, int n) {
   int d_un = un_dr_sl.n_rows; // the number of observed variables
 
     // initialize vcov with suitable size, no value
   arma::cube vcov(d_un, d_un, n, arma::fill::none);
   vcov.slice(0) = init;
-  
-  arma::mat inv_sq_ob_diff = arma::inv_sympd(ob_diff * ob_diff.t());
   
   arma::mat intercept = delta * un_diff * un_diff.t();
   arma::mat vcov_vcov_coef = delta * ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
@@ -48,9 +45,64 @@ List calc_filter_vcov_time_homogeneous(arma::mat un_dr_sl, arma::mat un_diff, ar
                   - vcov_prev * vcov_vcov_coef * vcov_prev + intercept;
   }
   
-  //return vcov and inv_sq_ob_diff;
-  List res = List::create(Named("vcov") = vcov , Named("inv_sq_ob_diff") = inv_sq_ob_diff);
-  return res;
+  return vcov;
+}
+
+// [[Rcpp::export]]
+arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat inv_sq_ob_diff) {
+  arma::mat H(un_dr_sl.n_cols + un_dr_sl.n_rows, un_dr_sl.n_cols + un_dr_sl.n_rows);
+  /*
+   H = 
+   \left(
+   \begin{array}{cc}
+   a(\theta_2)^\top & c(\theta_2)^\top\{\sigma(\theta_1)\sigma(\theta_1)^\top\}^{-1}c(\theta_2) \\
+   b(\theta_2)b(\theta_2)^\top & -a(\theta_2) \                                                  \
+   \end{array}
+   \right), 
+   a = \mathrm{un\_dr\_sl}, 
+   b = \mathrm{un\_diff}, 
+   c = \mathrm{ob\_dr\_sl}, 
+   \sigma = \mathrm{ob\_diff}
+   */
+  for(unsigned int i = 0; i < un_dr_sl.n_rows; i++) {
+    for(unsigned int j = 0; j < un_dr_sl.n_cols; j++) {
+      H(j,i) = -un_dr_sl(i,j);
+      H(un_dr_sl.n_cols + i, un_dr_sl.n_rows + j) = un_dr_sl(i,j);
+    }
+  }
+  arma::mat lower_left_matrix = un_diff * un_diff.t();
+  for(unsigned int i = 0; i < un_dr_sl.n_rows; i++) {
+    for(unsigned int j = 0; j < un_dr_sl.n_rows; j++) {
+      H(un_dr_sl.n_cols + i, j) = lower_left_matrix(i,j);
+    }
+  }
+  arma::mat upper_right_matrix = ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
+  for(unsigned int i = 0; i < un_dr_sl.n_cols; i++) {
+    for(unsigned int j = 0; j < un_dr_sl.n_cols; j++) {
+      H(i, un_dr_sl.n_rows + j) = upper_right_matrix(i,j);
+    }
+  }
+  /////////////////////////
+  // `QZ` inplementation //
+  /////////////////////////
+  // dummy matrix for QZ
+  arma::mat B(arma::size(H), arma::fill::eye);
+  arma::mat AA;
+  arma::mat BB;
+  arma::mat Q;
+  arma::mat Z;
+  
+  bool qz_res = qz(AA, BB, Q, Z, H, B, "rhp");
+  if(qz_res == false) {
+    stop("Failed in QZ decomposition in vcov calculation."); 
+  }
+  
+  arma::mat generalized_eigenvec_mat = Q.t();
+  
+  arma::mat upper_right_q = generalized_eigenvec_mat.submat(0              , 0, un_dr_sl.n_rows - 1    , un_dr_sl.n_rows - 1);
+  arma::mat lower_right_q = generalized_eigenvec_mat.submat(un_dr_sl.n_cols, 0, un_dr_sl.n_rows * 2 - 1, un_dr_sl.n_rows - 1);
+  arma::mat gamma = lower_right_q * arma::inv(upper_right_q);
+  return gamma;
 }
 
 // [[Rcpp::export]]
@@ -125,63 +177,6 @@ arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_
   }
   
   return mean;
-}
-
-// [[Rcpp::export]]
-arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl, arma::mat inv_sq_ob_diff) {
-    arma::mat H(un_dr_sl.n_cols + un_dr_sl.n_rows, un_dr_sl.n_cols + un_dr_sl.n_rows);
-    /*
-    H = 
-    \left(
-        \begin{array}{cc}
-        a(\theta_2)^\top & c(\theta_2)^\top\{\sigma(\theta_1)\sigma(\theta_1)^\top\}^{-1}c(\theta_2) \\
-        b(\theta_2)b(\theta_2)^\top & -a(\theta_2) \\
-        \end{array}
-    \right), 
-    a = \mathrm{un\_dr\_sl}, 
-    b = \mathrm{un\_diff}, 
-    c = \mathrm{ob\_dr\_sl}, 
-    \sigma = \mathrm{ob\_diff}
-    */
-    for(unsigned int i = 0; i < un_dr_sl.n_rows; i++) {
-        for(unsigned int j = 0; j < un_dr_sl.n_cols; j++) {
-            H(j,i) = -un_dr_sl(i,j);
-            H(un_dr_sl.n_cols + i, un_dr_sl.n_rows + j) = un_dr_sl(i,j);
-        }
-    }
-    arma::mat lower_left_matrix = un_diff * un_diff.t();
-    for(unsigned int i = 0; i < un_dr_sl.n_rows; i++) {
-        for(unsigned int j = 0; j < un_dr_sl.n_rows; j++) {
-            H(un_dr_sl.n_cols + i, j) = lower_left_matrix(i,j);
-        }
-    }
-    arma::mat upper_right_matrix = ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
-    for(unsigned int i = 0; i < un_dr_sl.n_cols; i++) {
-        for(unsigned int j = 0; j < un_dr_sl.n_cols; j++) {
-            H(i, un_dr_sl.n_rows + j) = upper_right_matrix(i,j);
-        }
-    }
-    /////////////////////////
-    // `QZ` inplementation //
-    /////////////////////////
-    // dummy matrix for QZ
-    arma::mat B(arma::size(H), arma::fill::eye);
-    arma::mat AA;
-    arma::mat BB;
-    arma::mat Q;
-    arma::mat Z;
-
-    bool qz_res = qz(AA, BB, Q, Z, H, B, "rhp");
-    if(qz_res == false) {
-        stop("Failed in QZ decomposition in vcov calculation."); 
-    }
-
-    arma::mat generalized_eigenvec_mat = Q.t();
-
-    arma::mat upper_right_q = generalized_eigenvec_mat.submat(0              , 0, un_dr_sl.n_rows - 1    , un_dr_sl.n_rows - 1);
-    arma::mat lower_right_q = generalized_eigenvec_mat.submat(un_dr_sl.n_cols, 0, un_dr_sl.n_rows * 2 - 1, un_dr_sl.n_rows - 1);
-    arma::mat gamma = lower_right_q * arma::inv(upper_right_q);
-    return gamma;
 }
 
 //[[Rcpp::export]]
