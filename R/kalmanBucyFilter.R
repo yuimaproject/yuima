@@ -29,6 +29,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
   if(are | time_homogeneous) {
     observed.diffusion <- kalman_bucy_filter_eval_exp_time_homogeneous(observed.diffusion.expr, tmp.env)
     inv.squared.observed.diffusion <- solve(tcrossprod(observed.diffusion))
+    dim(inv.squared.observed.diffusion) <- c(dim(inv.squared.observed.diffusion), 1)
   } else {
     delta_smaller_than = delta.vcov.solve
     K <- ceiling( yuima@sampling@delta / delta_smaller_than )
@@ -108,9 +109,8 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
         assign(names(params)[i],params[[i]], envir=tmp.env)
     }
 
-    # calculate vcov and mean
+    # evaluate each coefficients
     if(are) {
-        # Use algebraic Ricatti equation.
         # coefficients are independent of t.
         unobserved.drift.slope <- kalman_bucy_filter_eval_exp_time_homogeneous(unobserved.drift.slope.expr, tmp.env)
         unobserved.drift.intercept <- kalman_bucy_filter_eval_exp_time_homogeneous(unobserved.drift.intercept.expr, tmp.env)
@@ -118,59 +118,11 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
         observed.drift.slope <- kalman_bucy_filter_eval_exp_time_homogeneous(observed.drift.slope.expr, tmp.env)
         observed.drift.intercept <- kalman_bucy_filter_eval_exp_time_homogeneous(observed.drift.intercept.expr, tmp.env)
         
-        ## solve algebraic Ricatti equation
-        # solve vcov
-        if(sum(yuima@model@is.observed) == 1 && sum(!yuima@model@is.observed) == 1) {
-          squared.observed.diffusion = 1 / inv.squared.observed.diffusion
-          vcov <- squared.observed.diffusion * abs(unobserved.drift.slope) / (observed.drift.slope^2) * (sqrt(1 + (tcrossprod(unobserved.diffusion) * observed.drift.slope ^ 2) / (squared.observed.diffusion * unobserved.drift.slope ^ 2)) - 1)
-        } else {
-          vcov <- calc_filter_vcov_are(
-                  unobserved.drift.slope,
-                  unobserved.diffusion,
-                  observed.drift.slope,
-                  inv.squared.observed.diffusion)
-        }
-        # solve mean
-        if(explicit) {
-            mean <- calc_filter_mean_explicit(
-                unobserved.drift.slope,
-                unobserved.drift.intercept,
-                observed.drift.slope,
-                observed.drift.intercept,
-                inv.squared.observed.diffusion,
-                vcov,
-                mean_init,
-                yuima@sampling@delta,
-                delta.observed.variable
-            )
-        } else {
-            mean <- calc_filter_mean_time_homogeneous_with_vcov_are(
-                unobserved.drift.slope, 
-                unobserved.drift.intercept,
-                observed.drift.slope,
-                observed.drift.intercept,
-                inv.squared.observed.diffusion,
-                vcov, 
-                mean_init,
-                yuima@sampling@delta, 
-                delta.observed.variable
-            )
-        }
-        vcov <- array(vcov, dim=c(dim(vcov),yuima@sampling@n[1] + 1)) # vcov to return
+        subsamp_rate <- 1
     } else {
       # evaluate in higher frequency for vcov
-      delta_smaller_than = delta.vcov.solve
-      K <- ceiling( yuima@sampling@delta / delta_smaller_than )
-      delta <- yuima@sampling@delta / K
-      n <- yuima@sampling@n[1] * K + 1
-      time.points = as.matrix((0:(n-1))*delta)
-
-      # subsampling for solving m
-      get.subsampling <- function(array.obj) {
-        res <- array.obj[,,0:yuima@sampling@n[1] * K + 1]
-        res <- array(res, dim=c(dim(array.obj)[1],dim(array.obj)[2],yuima@sampling@n[1] + 1))
-        return(res)
-      }
+      delta_smaller_than <- delta.vcov.solve
+      subsamp_rate <- ceiling( yuima@sampling@delta / delta_smaller_than )
 
       if (time_homogeneous){
         # coefficients are independent of t.
@@ -179,62 +131,39 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
         unobserved.diffusion <- kalman_bucy_filter_eval_exp_time_homogeneous(unobserved.diffusion.expr, tmp.env)
         observed.drift.slope <- kalman_bucy_filter_eval_exp_time_homogeneous(observed.drift.slope.expr, tmp.env)
         observed.drift.intercept <- kalman_bucy_filter_eval_exp_time_homogeneous(observed.drift.intercept.expr, tmp.env)
-        
-        vcov <- calc_filter_vcov_time_homogeneous(
-          unobserved.drift.slope,
-          unobserved.diffusion,
-          observed.drift.slope,
-          inv.squared.observed.diffusion,
-          vcov_init, delta, n)
-        vcov <- get.subsampling(vcov)
-        mean <- calc_filter_mean_time_homogeneous(
-          unobserved.drift.slope,
-          unobserved.drift.intercept,
-          observed.drift.slope,
-          observed.drift.intercept,
-          inv.squared.observed.diffusion, vcov,
-          mean_init, yuima@sampling@delta, delta.observed.variable 
-        )
       } else {
-        # evaluate each coefficients
-        
-        # Use Ricatti equation.
         # coefficients are dependent of t.
+        subsamp_delta <- yuima@sampling@delta / subsamp_rate
+        subsamp_n <- yuima@sampling@n[1] * subsamp_rate + 1
+        time.points = as.matrix((0:(subsamp_n-1))*subsamp_delta)
+        
         unobserved.drift.slope <- kalman_bucy_filter_eval_exp(unobserved.drift.slope.expr, tmp.env, yuima@model@time.variable, time.points)
         unobserved.drift.intercept <- kalman_bucy_filter_eval_exp(unobserved.drift.intercept.expr, tmp.env, yuima@model@time.variable, time.points)
         unobserved.diffusion <- kalman_bucy_filter_eval_exp(unobserved.diffusion.expr, tmp.env, yuima@model@time.variable, time.points)
         observed.drift.slope <- kalman_bucy_filter_eval_exp(observed.drift.slope.expr, tmp.env, yuima@model@time.variable, time.points)
         observed.drift.intercept <- kalman_bucy_filter_eval_exp(observed.drift.intercept.expr, tmp.env, yuima@model@time.variable, time.points)
-        vcov <- calc_filter_vcov(
-            unobserved.drift.slope, 
-            unobserved.diffusion,
-            observed.drift.slope,
-            inv.squared.observed.diffusion,
-            vcov_init, delta)
-
-        unobserved.drift.slope <- get.subsampling(unobserved.drift.slope)
-        unobserved.drift.intercept <- get.subsampling(unobserved.drift.intercept)
-        unobserved.diffusion <- get.subsampling(unobserved.diffusion)
-        
-        observed.drift.slope <- get.subsampling(observed.drift.slope)
-        observed.drift.intercept <- get.subsampling(observed.drift.intercept)
-        
-        vcov <- get.subsampling(vcov)
-        inv.squared.observed.diffusion <- get.subsampling(inv.squared.observed.diffusion)
-        
-        # solve m
-        mean <- calc_filter_mean(
-            unobserved.drift.slope, 
-            unobserved.drift.intercept,
-            observed.drift.slope,
-            observed.drift.intercept,
-            inv.squared.observed.diffusion,
-            vcov, 
-            mean_init,
-            yuima@sampling@delta, 
-            delta.observed.variable)
       }
     }
+    dim(unobserved.drift.intercept) <- dim(unobserved.drift.intercept)[c(1,3)]
+    dim(observed.drift.intercept) <- dim(observed.drift.intercept)[c(1,3)]
+    
+    filter_res <- calc_kalman_bucy_filter_cpp(
+      unobserved.drift.slope,
+      unobserved.drift.intercept,
+      unobserved.diffusion,
+      observed.drift.slope,
+      observed.drift.intercept,
+      inv.squared.observed.diffusion,
+      vcov_init,
+      mean_init,       
+      yuima@sampling@delta,
+      delta.observed.variable, 
+      are, 
+      explicit, 
+      time_homogeneous, 
+      subsamp_rate)
+    vcov <- filter_res$vcov
+    mean <- filter_res$mean
     rownames(mean) <- unobserved.variables
     ts.mean <- ts(t(mean), start = start(yuima@data@zoo.data[[1]]), frequency = frequency(yuima@data@zoo.data[[1]]))
     res <- new(
@@ -259,14 +188,16 @@ kalman_bucy_filter_eval_exp <- function(expr, env, time.variable, time.points) {
 }
 
 # When expr is independent of t, evaluated values are 2-dim matrix.
+# Returns 3-dim array with dim(res)[3] == 1.
 kalman_bucy_filter_eval_exp_time_homogeneous <- function(expr, env) {
-  nrow = length(expr)
-  ncol = length(expr[[1]])
-  res = matrix(nrow=nrow, ncol=ncol)
-  for( r in 1:nrow ) {
-    for( c in 1:ncol ) {
-      res[r,c] <- eval(expr[[r]][c], envir=env)
+  n_row = length(expr)
+  n_col = length(expr[[1]])
+  res = array(dim = c(n_row,n_col, 1))
+  for( r in 1:n_row ) {
+    for( c in 1:n_col ) {
+      res[r,c,1] <- eval(expr[[r]][c], envir=env)
     }
   }
+
   return(res)
 }

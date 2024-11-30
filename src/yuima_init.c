@@ -61,11 +61,12 @@ extern SEXP _yuima_minusloglcpp_linear_state_space_theta2(SEXP,SEXP,SEXP, SEXP, 
 extern SEXP _yuima_calc_filter_vcov(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_vcov_time_homogeneous(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_vcov_are(SEXP, SEXP, SEXP, SEXP);
-extern SEXP _yuima_calc_filter_mean(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _yuima_calc_filter_mean_time_homogeneous(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_mean(SEXP, SEXP, SEXP, SEXP,SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_mean_time_homogeneous(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_mean_time_homogeneous_with_vcov_are(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_mean_explicit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_inverce_square(SEXP);
+extern SEXP _yuima_calc_kalman_bucy_filter_cpp(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 
 
 static const R_CMethodDef CEntries[] = {
@@ -124,11 +125,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_yuima_calc_filter_vcov",                       (DL_FUNC) &_yuima_calc_filter_vcov,                              6},
     {"_yuima_calc_filter_vcov_time_homogeneous",                       (DL_FUNC) &_yuima_calc_filter_vcov_time_homogeneous,                              7},
     {"_yuima_calc_filter_vcov_are",                   (DL_FUNC) &_yuima_calc_filter_vcov_are,                          4},
-    {"_yuima_calc_filter_mean",                       (DL_FUNC) &_yuima_calc_filter_mean,                              9},
-    {"_yuima_calc_filter_mean_time_homogeneous",      (DL_FUNC) &_yuima_calc_filter_mean_time_homogeneous,             9},
+    {"_yuima_calc_filter_mean",                       (DL_FUNC) &_yuima_calc_filter_mean,                             10},
+    {"_yuima_calc_filter_mean_time_homogeneous",      (DL_FUNC) &_yuima_calc_filter_mean_time_homogeneous,            10},
     {"_yuima_calc_filter_mean_time_homogeneous_with_vcov_are",      (DL_FUNC) &_yuima_calc_filter_mean_time_homogeneous_with_vcov_are,             9},
     {"_yuima_calc_filter_mean_explicit",              (DL_FUNC) &_yuima_calc_filter_mean_explicit,                     9},
     {"_yuima_calc_inverce_square",                    (DL_FUNC) &_yuima_calc_inverce_square,                           1},
+    {"_yuima_calc_kalman_bucy_filter_cpp",                    (DL_FUNC) &_yuima_calc_kalman_bucy_filter_cpp,                           14},
     {NULL, NULL, 0}
 };
 
