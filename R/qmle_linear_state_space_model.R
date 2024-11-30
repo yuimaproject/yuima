@@ -79,9 +79,9 @@ qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "
 
   # compute delta of observed data
   observed.variables <- yuima@model@state.variable[yuima@model@is.observed]
-  delta.observed.variable <- array(dim = c(length(observed.variables), yuima@sampling@n[[1]]), dimnames=list(observed.variables))
-  for(variable in observed.variables) {
-    delta.observed.variable[variable,] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable== variable)]]))
+  delta.observed.variable <- array(dim = c(length(observed.variables), yuima@sampling@n[[1]]), dimnames = list(observed.variables))
+  for (variable in observed.variables) {
+    delta.observed.variable[variable, ] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable == variable)]]))
   }
 
   # split parameters
@@ -196,7 +196,7 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
   sq.observed.diffusion <- tcrossprod(as.matrix(observed.diffusion))
   inv.sq.observed.diffusion <- solve(sq.observed.diffusion)
   logdet.sq.observed.diffusion <- log(det(sq.observed.diffusion))
-  
+
   # calculate likelihood
   if (rcpp) {
     QL <- minusloglcpp_linear_state_space_theta1(logdet.sq.observed.diffusion, inv.sq.observed.diffusion, delta.observed.variable, h, drop_terms)
@@ -213,7 +213,7 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
 
 # estimate theta1
 estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(),
-                                        lower, upper, theta1, delta.observed.variable,rcpp, drop_terms, ...) {
+                                        lower, upper, theta1, delta.observed.variable, rcpp, drop_terms, ...) {
   # validate arguments
   if (missing(yuima)) {
     yuima.stop("yuima object is missing.")
@@ -361,12 +361,12 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
       vcov <- rrr
     }
   }
-  
-  dummycov<-matrix(0,length(coef),length(coef))
-  rownames(dummycov)<-names(coef)
-  colnames(dummycov)<-names(coef)
-  dummycov[rownames(vcov),colnames(vcov)]<-vcov
-  vcov<-dummycov
+
+  dummycov <- matrix(0, length(coef), length(coef))
+  rownames(dummycov) <- names(coef)
+  colnames(dummycov) <- names(coef)
+  dummycov[rownames(vcov), colnames(vcov)] <- vcov
+  vcov <- dummycov
 
   # align return value and return
   final_res <- new("yuima.qmle",
@@ -402,25 +402,25 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
       assign(names(theta2)[i], theta2[[i]], envir = tmp.env)
     }
   }
-  
+
   # calculate `m` (estimation of `x`) using filter
   are <- TRUE # NOTE: Estimation using are=FALSE is not implemented yet.
-  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta2, inv.squared.observed.diffusion = inv.squared.observed.diffusion ,mean_init = filter_mean_init, are = are, explicit = explicit, env = tmp.env)
+  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta2, inv.squared.observed.diffusion = inv.squared.observed.diffusion, mean_init = filter_mean_init, are = are, explicit = explicit, env = tmp.env)
   m <- filter_res@mean
 
   # calculate observed drift
-  if(are){
+  if (are) {
     # observed.drift.slope and observed.drift.intercept is independent of t
     observed.drift.slope.expr <- yuima@model@drift_slope[is.observed]
     observed.drift.intercept.expr <- yuima@model@drift_intercept[is.observed]
     eval_exp <- function(expr) {
-      env=tmp.env
-      nrow = length(expr)
-      ncol = length(expr[[1]])
-      res = matrix(nrow=nrow, ncol=ncol)
-      for( r in 1:nrow ) {
-        for( c in 1:ncol ) {
-          res[r,c] <- eval(expr[[r]][c], envir=tmp.env)
+      env <- tmp.env
+      nrow <- length(expr)
+      ncol <- length(expr[[1]])
+      res <- matrix(nrow = nrow, ncol = ncol)
+      for (r in 1:nrow) {
+        for (c in 1:ncol) {
+          res[r, c] <- eval(expr[[r]][c], envir = tmp.env)
         }
       }
       return(res)
@@ -446,7 +446,7 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
       pn <- t(tmp) %*% inv.squared.observed.diffusion %*% tmp
       QL <- QL + pn
     }
-    QL <- - QL / 2 / h
+    QL <- -QL / 2 / h
   }
   return(-drop(QL))
 }
@@ -495,7 +495,7 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   }
   inv.squared.observed.diffusion <- solve(tcrossprod(observed.diffusion.matrix))
   dim(inv.squared.observed.diffusion) <- c(dim(inv.squared.observed.diffusion), 1)
-  
+
   # set args for optim
   ## define objective function
   f <- function(p) {
@@ -512,15 +512,15 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   mydots$fn <- as.name("f")
   mydots$par <- unlist(new.start)
   mydots$hessian <- TRUE
-  if(method == "L-BFGS-B" | method == "Brent"){
+  if (method == "L-BFGS-B" | method == "Brent") {
     mydots$upper <- as.numeric(unlist(new.upper))
     mydots$lower <- as.numeric(unlist(new.lower))
-  }else{
+  } else {
     mydots$upper <- NULL
     mydots$lower <- NULL
   }
-    
-  
+
+
   ### remove unnecessary params from `mydots`
   mydots$start <- NULL
   mydots$envir <- NULL
@@ -579,12 +579,12 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
       vcov <- rrr
     }
   }
-  
-  dummycov<-matrix(0,length(coef),length(coef))
-  rownames(dummycov)<-names(coef)
-  colnames(dummycov)<-names(coef)
-  dummycov[rownames(vcov),colnames(vcov)]<-vcov
-  vcov<-dummycov
+
+  dummycov <- matrix(0, length(coef), length(coef))
+  rownames(dummycov) <- names(coef)
+  colnames(dummycov) <- names(coef)
+  dummycov[rownames(vcov), colnames(vcov)] <- vcov
+  vcov <- dummycov
 
   # align return value and return
   final_res <- new("yuima.qmle",
