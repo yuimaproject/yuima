@@ -412,7 +412,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // calc_inverce_square
-arma::mat calc_inverce_square(arma::cube cube);
+arma::cube calc_inverce_square(arma::cube cube);
 RcppExport SEXP _yuima_calc_inverce_square(SEXP cubeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

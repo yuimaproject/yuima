@@ -4,6 +4,14 @@
 
 using namespace Rcpp;
 
+// // [[Rcpp::export]]
+// List calc_kalman_bucy_filter_cpp(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube inv_sq_ob_diff, arma::mat init, double delta, bool use_are, bool is_explicit, bool is_time_homogeneous) {
+//   if(use_are) {
+//   } else {
+//     
+//   }
+// }
+
 // [[Rcpp::export]]
 arma::cube calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff, arma::cube ob_dr_sl, arma::cube inv_sq_ob_diff, arma::mat init, double delta) {
     int d_un = un_dr_sl.n_rows; // the number of observed variables
@@ -151,7 +159,7 @@ arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(arma::mat un_dr_sl, ar
     arma::vec mean_prev(&mean(0, i-1), d_un, false, true);
     mean.col(i) = mean_prev_coef * mean_prev + deltaY_coef * deltaY_col + intercept;
   }
-  
+
   return mean;
 }
 
@@ -166,16 +174,16 @@ arma::mat calc_filter_mean_time_homogeneous(arma::mat un_dr_sl, arma::vec un_dr_
   
   arma::mat vcov_deltaY_coef = ob_dr_sl.t() * inv_sq_ob_diff;
   arma::mat mean_prev_coef = arma::eye(d_un, d_un) + un_dr_sl * delta;
-  arma::mat vcov_mean_prev_coef = vcov_deltaY_coef * ob_dr_sl * delta;
-  arma::vec vcov_coef = vcov_deltaY_coef * ob_dr_in * delta;
+  arma::mat vcov_mean_prev_coef = - vcov_deltaY_coef * ob_dr_sl * delta;
+  arma::vec vcov_coef = - vcov_deltaY_coef * ob_dr_in * delta;
   arma::vec intercept = un_dr_in * delta;
   for(int i = 1; i < n; i++){
     arma::mat vcov_slice(&vcov(0, 0, i-1), d_un, d_un, false, true);
     arma::vec deltaY_col(&deltaY(0, i-1), d_ob, false, true);
     arma::vec mean_prev(&mean(0, i-1), d_un, false, true);
-    mean.col(i) = mean_prev_coef * mean_prev + vcov_slice * (vcov_mean_prev_coef * mean_prev + vcov_mean_prev_coef * deltaY_col + vcov_coef) + intercept;
+    mean.col(i) = mean_prev_coef * mean_prev + vcov_slice * (vcov_mean_prev_coef * mean_prev + vcov_deltaY_coef * deltaY_col + vcov_coef) + intercept;
   }
-  
+
   return mean;
 }
 

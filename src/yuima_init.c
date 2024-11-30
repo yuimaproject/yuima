@@ -56,13 +56,14 @@ extern SEXP _yuima_driftTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_linearDriftTermCpp(SEXP, SEXP, SEXP);
 extern SEXP _yuima_diffusionTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_measureTermCpp(SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP,SEXP,SEXP,SEXP, SEXP);
+extern SEXP _yuima_minusloglcpp_linear_state_space_theta2(SEXP,SEXP,SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_vcov(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_vcov_time_homogeneous(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_calc_filter_vcov_are(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_mean(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_mean_time_homogeneous(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_mean_time_homogeneous_with_vcov_are(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP,SEXP,SEXP,SEXP, SEXP);
-extern SEXP _yuima_minusloglcpp_linear_state_space_theta2(SEXP,SEXP,SEXP, SEXP, SEXP);
-extern SEXP _yuima_calc_filter_vcov_are(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_filter_mean_explicit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_calc_inverce_square(SEXP);
 
@@ -118,13 +119,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_yuima_linearDriftTermCpp",                     (DL_FUNC) &_yuima_linearDriftTermCpp,                            3},
     {"_yuima_diffusionTermCpp",                       (DL_FUNC) &_yuima_diffusionTermCpp,                              4},
     {"_yuima_measureTermCpp",                         (DL_FUNC) &_yuima_measureTermCpp,                                4},
+    {"_yuima_minusloglcpp_linear_state_space_theta1", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta1, 5},
+    {"_yuima_minusloglcpp_linear_state_space_theta2", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta2, 5},
     {"_yuima_calc_filter_vcov",                       (DL_FUNC) &_yuima_calc_filter_vcov,                              6},
+    {"_yuima_calc_filter_vcov_time_homogeneous",                       (DL_FUNC) &_yuima_calc_filter_vcov_time_homogeneous,                              7},
+    {"_yuima_calc_filter_vcov_are",                   (DL_FUNC) &_yuima_calc_filter_vcov_are,                          4},
     {"_yuima_calc_filter_mean",                       (DL_FUNC) &_yuima_calc_filter_mean,                              9},
     {"_yuima_calc_filter_mean_time_homogeneous",      (DL_FUNC) &_yuima_calc_filter_mean_time_homogeneous,             9},
     {"_yuima_calc_filter_mean_time_homogeneous_with_vcov_are",      (DL_FUNC) &_yuima_calc_filter_mean_time_homogeneous_with_vcov_are,             9},
-    {"_yuima_minusloglcpp_linear_state_space_theta1", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta1, 5},
-    {"_yuima_minusloglcpp_linear_state_space_theta2", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta2, 5},
-    {"_yuima_calc_filter_vcov_are",                   (DL_FUNC) &_yuima_calc_filter_vcov_are,                          4},
     {"_yuima_calc_filter_mean_explicit",              (DL_FUNC) &_yuima_calc_filter_mean_explicit,                     9},
     {"_yuima_calc_inverce_square",                    (DL_FUNC) &_yuima_calc_inverce_square,                           1},
     {NULL, NULL, 0}
