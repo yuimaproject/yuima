@@ -408,7 +408,6 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
   filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta2, inv.squared.observed.diffusion = inv.squared.observed.diffusion ,mean_init = filter_mean_init, are = are, explicit = explicit, env = tmp.env)
   m <- filter_res@mean
 
-
   # calculate observed drift
   if(are){
     # observed.drift.slope and observed.drift.intercept is independent of t
@@ -495,6 +494,7 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
     }
   }
   inv.squared.observed.diffusion <- solve(tcrossprod(observed.diffusion.matrix))
+  dim(inv.squared.observed.diffusion) <- c(dim(inv.squared.observed.diffusion), 1)
   
   # set args for optim
   ## define objective function
