@@ -27,7 +27,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
     assign(names(params)[i], params[[i]], envir = tmp.env)
   }
   if (are | time_homogeneous) {
-    observed.diffusion <- kalman_bucy_filter_eval_exp_time_homogeneous(observed.diffusion.expr, tmp.env)
+    observed.diffusion <- kalman_bucy_filter_eval_exp_time_homogeneous(observed.diffusion.expr, tmp.env)[, , 1]
     inv.squared.observed.diffusion <- solve(tcrossprod(observed.diffusion))
     dim(inv.squared.observed.diffusion) <- c(dim(inv.squared.observed.diffusion), 1)
   } else {

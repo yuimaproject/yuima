@@ -1,57 +1,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
 
-// [[Rcpp::export]]
-arma::cube calc_filter_vcov(arma::cube un_dr_sl, arma::cube un_diff,
-                            arma::cube ob_dr_sl, arma::cube inv_sq_ob_diff,
-                            arma::mat init, double delta) {
-  int d_un = un_dr_sl.n_rows;  // the number of observed variables
-  int n = un_diff.n_slices;    // the number of observations
-
-  // initialize vcov with suitable size, no value
-  arma::cube vcov = arma::cube(d_un, d_un, n, arma::fill::none);
-  vcov.slice(0) = init;
-
-  for (int i = 1; i < n; i++) {
-    arma::mat vcov_prev = vcov.slice(i - 1);
-    arma::mat vcov_next =
-        vcov_prev + delta * (un_diff.slice(i - 1) * un_diff.slice(i - 1).t() +
-                             un_dr_sl.slice(i - 1) * vcov_prev +
-                             vcov_prev * un_dr_sl.slice(i - 1).t() -
-                             vcov_prev * ob_dr_sl.slice(i - 1).t() *
-                                 inv_sq_ob_diff.slice(i - 1) *
-                                 ob_dr_sl.slice(i - 1) * vcov_prev);
-    vcov.slice(i) = vcov_next;
-  }
-
-  // return vcov and inv_sq_ob_diff;
-  return vcov;
-}
-
-// [[Rcpp::export]]
-arma::cube calc_filter_vcov_time_homogeneous(
-    arma::mat un_dr_sl, arma::mat un_diff, arma::mat ob_dr_sl,
-    arma::mat inv_sq_ob_diff, arma::mat init, double delta, int n) {
-  int d_un = un_dr_sl.n_rows;  // the number of observed variables
-
-  // initialize vcov with suitable size, no value
-  arma::cube vcov(d_un, d_un, n, arma::fill::none);
-  vcov.slice(0) = init;
-
-  arma::mat intercept = delta * un_diff * un_diff.t();
-  arma::mat vcov_vcov_coef = delta * ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
-  arma::mat vcov_coef = delta * un_dr_sl;
-  for (int i = 1; i < n; i++) {
-    arma::mat vcov_prev(&vcov(0, 0, i - 1), d_un, d_un, false, true);
-    vcov.slice(i) = vcov_prev + vcov_coef * vcov_prev +
-                    vcov_prev * vcov_coef.t() -
-                    vcov_prev * vcov_vcov_coef * vcov_prev + intercept;
-  }
-
-  return vcov;
-}
-
-// [[Rcpp::export]]
 arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff,
                                arma::mat ob_dr_sl, arma::mat inv_sq_ob_diff) {
   arma::mat H(un_dr_sl.n_cols + un_dr_sl.n_rows,
@@ -113,51 +62,12 @@ arma::mat calc_filter_vcov_are(arma::mat un_dr_sl, arma::mat un_diff,
   return gamma;
 }
 
-// [[Rcpp::export]]
-arma::mat calc_filter_mean(arma::cube un_dr_sl, arma::mat un_dr_in,
-                           arma::cube ob_dr_sl, arma::mat ob_dr_in,
-                           arma::cube inv_sq_ob_diff, arma::cube vcov,
-                           arma::vec init, double delta, arma::mat deltaY,
-                           int subsump_rate = 1) {
-  int d_un = un_dr_sl.n_rows;  // the number of observed variables
-  int d_ob = ob_dr_sl.n_rows;  // the number of unobserved variables
-  int n = deltaY.n_cols + 1;   // the number of observations
-
-  // initialize mean with suitable size, no value
-  arma::mat mean(d_un, n, arma::fill::none);
-  mean.col(0) = init;
-  for (int i = 1; i < n; i++) {
-    int subsump_i = subsump_rate * (i - 1);
-    arma::vec mean_prev(&mean(0, i - 1), d_un, false, true);
-    arma::mat ob_dr_sl_slice(&ob_dr_sl(0, 0, subsump_i), d_ob, d_ob, false,
-                             true);
-    arma::mat ob_dr_sl_slice_t = ob_dr_sl_slice.t();
-    arma::vec ob_dr_in_col(&ob_dr_in(0, subsump_i), d_ob, false, true);
-    arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, subsump_i), d_un, d_ob, false,
-                             true);
-    arma::vec un_dr_in_col(&un_dr_in(0, subsump_i), d_un, false, true);
-    arma::mat vcov_slice(&vcov(0, 0, subsump_i), d_un, d_un, false, true);
-    arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, subsump_i), d_ob, d_ob,
-                                   false, true);
-    arma::vec deltaY_col(&deltaY(0, i - 1), d_ob, false, true);
-    arma::mat coef = vcov_slice * ob_dr_sl_slice_t * inv_sq_ob_diff_slice;
-    mean.col(i) = mean_prev +
-                  (un_dr_sl_slice * mean_prev + un_dr_in_col -
-                   coef * (ob_dr_sl_slice * mean_prev + ob_dr_in_col)) *
-                      delta +
-                  coef * deltaY_col;
-  }
-
-  return mean;
-}
-
-// [[Rcpp::export]]
 arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(
     arma::mat un_dr_sl, arma::vec un_dr_in, arma::mat ob_dr_sl,
     arma::vec ob_dr_in, arma::mat inv_sq_ob_diff, arma::mat vcov,
     arma::vec init, double delta, arma::mat deltaY) {
-  int d_un = un_dr_sl.n_rows;  // the number of observed variables
-  int d_ob = ob_dr_sl.n_rows;  // the number of unobserved variables
+  int d_un = un_dr_sl.n_rows;  // the number of unobserved variables
+  int d_ob = ob_dr_sl.n_rows;  // the number of observed variables
   int n = deltaY.n_cols + 1;   // the number of observations
 
   // initialize mean with suitable size, no value
@@ -178,38 +88,6 @@ arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(
   return mean;
 }
 
-// [[Rcpp::export]]
-arma::mat calc_filter_mean_time_homogeneous(
-    arma::mat un_dr_sl, arma::vec un_dr_in, arma::mat ob_dr_sl,
-    arma::vec ob_dr_in, arma::mat inv_sq_ob_diff, arma::cube vcov,
-    arma::vec init, double delta, arma::mat deltaY, int subsump_rate) {
-  // initialize mean with suitable size, no value
-  int d_un = un_dr_sl.n_rows;  // the number of observed variables
-  int d_ob = ob_dr_sl.n_rows;  // the number of unobserved variables
-  int n = deltaY.n_cols + 1;   // the number of observations
-  arma::mat mean(d_un, n, arma::fill::none);
-  mean.col(0) = init;
-
-  arma::mat vcov_deltaY_coef = ob_dr_sl.t() * inv_sq_ob_diff;
-  arma::mat mean_prev_coef = arma::eye(d_un, d_un) + un_dr_sl * delta;
-  arma::mat vcov_mean_prev_coef = -vcov_deltaY_coef * ob_dr_sl * delta;
-  arma::vec vcov_coef = -vcov_deltaY_coef * ob_dr_in * delta;
-  arma::vec intercept = un_dr_in * delta;
-  for (int i = 1; i < n; i++) {
-    int subsump_i = subsump_rate * (i - 1);
-    arma::mat vcov_slice(&vcov(0, 0, subsump_i), d_un, d_un, false, true);
-    arma::vec deltaY_col(&deltaY(0, i - 1), d_ob, false, true);
-    arma::vec mean_prev(&mean(0, i - 1), d_un, false, true);
-    mean.col(i) = mean_prev_coef * mean_prev +
-                  vcov_slice * (vcov_mean_prev_coef * mean_prev +
-                                vcov_deltaY_coef * deltaY_col + vcov_coef) +
-                  intercept;
-  }
-
-  return mean;
-}
-
-//[[Rcpp::export]]
 arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::vec un_dr_in,
                                     arma::mat ob_dr_sl, arma::vec ob_dr_in,
                                     arma::mat inv_sq_ob_diff, arma::mat vcov,
@@ -227,8 +105,8 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::vec un_dr_in,
   \theta2)c(\theta2)^T\Sigma(\theta1)c(\theta2)
   \Sigma = \sigma(\theta1)\sigma^T(\theta1)
   */
-  int d_un = un_dr_sl.n_rows;    // the number of observed variables
-  int d_ob = ob_dr_sl.n_rows;    // the number of unobserved variables
+  int d_un = un_dr_sl.n_rows;    // the number of unobserved variables
+  int d_ob = ob_dr_sl.n_rows;    // the number of observed variables
   int n_deltaY = deltaY.n_cols;  // the number of observations - 1
 
   // initialize mean with suitable size, no value
@@ -259,19 +137,146 @@ arma::mat calc_filter_mean_explicit(arma::mat un_dr_sl, arma::vec un_dr_in,
   return mean;
 }
 
+Rcpp::List calc_kalman_bucy_filter_no_are_no_time_homogeneous(
+    arma::cube un_dr_sl, arma::mat un_dr_in, arma::cube un_diff,
+    arma::cube ob_dr_sl, arma::mat ob_dr_in, arma::cube inv_sq_ob_diff,
+    arma::mat vcov_init, arma::vec mean_init, double delta, arma::mat deltaY,
+    int upsamp_rate = 1) {
+  int d_un = un_dr_sl.n_rows;  // the number of unobserved variables
+  int d_ob = ob_dr_sl.n_rows;  // the number of observed variables
+  int n = deltaY.n_cols + 1;   // the number of observations
+
+  double upsamp_delta =
+      delta / upsamp_rate;  // the interval of upsampled observations
+
+  // initialize vcov and mean with suitable size, no value
+  arma::cube vcov(d_un, d_un, n, arma::fill::none);
+  vcov.slice(0) = vcov_init;
+  arma::mat mean(d_un, n, arma::fill::none);
+  mean.col(0) = mean_init;
+
+  // temporary object for interpolated vcovs.
+  arma::mat tmp_vcov = vcov_init;
+
+  for (int i = 1; i < n; i++) {
+    // calc mean
+    int prev_i = (i - 1) * upsamp_rate;
+    arma::vec mean_prev(&mean(0, i - 1), d_un, false, true);
+    arma::mat ob_dr_sl_slice(&ob_dr_sl(0, 0, prev_i), d_ob, d_ob, false, true);
+    arma::vec ob_dr_in_col(&ob_dr_in(0, prev_i), d_ob, false, true);
+    arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, prev_i), d_un, d_ob, false, true);
+    arma::vec un_dr_in_col(&un_dr_in(0, prev_i), d_un, false, true);
+    arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, prev_i), d_ob, d_ob,
+                                   false, true);
+    arma::vec deltaY_col(&deltaY(0, i - 1), d_ob, false, true);
+    arma::mat coef = tmp_vcov * ob_dr_sl_slice.t() * inv_sq_ob_diff_slice;
+    mean.col(i) = mean_prev +
+                  (un_dr_sl_slice * mean_prev + un_dr_in_col -
+                   coef * (ob_dr_sl_slice * mean_prev + ob_dr_in_col)) *
+                      delta +
+                  coef * deltaY_col;
+
+    // calc vcov
+    for (int j = 0; j < upsamp_rate; j++) {
+      int upsamp_i = (i - 1) * upsamp_rate + j;
+
+      arma::mat un_diff_slice(&un_diff(0, 0, upsamp_i), d_un, un_diff.n_cols,
+                              false, true);
+      arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, upsamp_i), d_un, d_un, false,
+                               true);
+      arma::mat ob_dr_sl_slice(&ob_dr_sl(0, 0, upsamp_i), d_ob, d_un, false,
+                               true);
+      arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, upsamp_i), d_ob,
+                                     d_ob, false, true);
+      arma::mat first_order_term = un_dr_sl_slice * tmp_vcov;
+      tmp_vcov =
+          tmp_vcov +
+          upsamp_delta * (un_diff_slice * un_diff_slice.t() + first_order_term +
+                          first_order_term.t() -
+                          tmp_vcov * ob_dr_sl_slice.t() * inv_sq_ob_diff_slice *
+                              ob_dr_sl_slice * tmp_vcov);
+    }
+    vcov.slice(i) = tmp_vcov;
+  }
+
+  Rcpp::List res = Rcpp::List::create(Rcpp::Named("vcov") = vcov,
+                                      Rcpp::Named("mean") = mean);
+  return res;
+}
+
+Rcpp::List calc_kalman_bucy_filter_time_homogeneous(
+    arma::mat un_dr_sl, arma::vec un_dr_in, arma::mat un_diff,
+    arma::mat ob_dr_sl, arma::vec ob_dr_in, arma::mat inv_sq_ob_diff,
+    arma::mat vcov_init, arma::vec mean_init, double delta, arma::mat deltaY,
+    int upsamp_rate = 1) {
+  int d_un = un_dr_sl.n_rows;  // the number of unobserved variables
+  int d_ob = ob_dr_sl.n_rows;  // the number of observed variables
+  int n = deltaY.n_cols + 1;   // the number of observations
+
+  double upsamp_delta =
+      delta / upsamp_rate;  // the interval of upsampled observations
+
+  // initialize vcov with suitable size, no value
+  arma::cube vcov(d_un, d_un, n, arma::fill::none);
+  vcov.slice(0) = vcov_init;
+  arma::mat mean(d_un, n, arma::fill::none);
+  mean.col(0) = mean_init;
+
+  // coefficients for mean calc
+  arma::mat mean_vcov_deltaY_coef = ob_dr_sl.t() * inv_sq_ob_diff;
+  arma::mat mean_mean_coef = arma::eye(d_un, d_un) + un_dr_sl * delta;
+  arma::mat mean_vcov_mean_coef = -mean_vcov_deltaY_coef * ob_dr_sl * delta;
+  arma::vec mean_vcov_coef = -mean_vcov_deltaY_coef * ob_dr_in * delta;
+  arma::vec mean_intercept = un_dr_in * delta;
+
+  // coefficients for vcov calc
+  arma::mat vcov_intercept = upsamp_delta * un_diff * un_diff.t();
+  arma::mat vcov_second_order_coef =
+      upsamp_delta * ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl;
+  arma::mat vcov_first_order_coef = upsamp_delta * un_dr_sl;
+
+  // temporary object for interpolated vcovs.
+  arma::mat tmp_vcov = vcov_init;
+
+  for (int i = 1; i < n; i++) {
+    // calc mean
+    arma::vec deltaY_col(&deltaY(0, i - 1), d_ob, false, true);
+    arma::vec mean_prev(&mean(0, i - 1), d_un, false, true);
+    mean.col(i) =
+        mean_mean_coef * mean_prev +
+        tmp_vcov * (mean_vcov_mean_coef * mean_prev +
+                    mean_vcov_deltaY_coef * deltaY_col + mean_vcov_coef) +
+        mean_intercept;
+
+    // calc vcov
+    for (int j = 0; j < upsamp_rate; j++) {
+      arma::mat first_order_term = vcov_first_order_coef * tmp_vcov;
+      tmp_vcov = tmp_vcov + first_order_term + first_order_term.t() -
+                 tmp_vcov * vcov_second_order_coef * tmp_vcov + vcov_intercept;
+    }
+    vcov.slice(i) = tmp_vcov;
+  }
+
+  Rcpp::List res = Rcpp::List::create(Rcpp::Named("vcov") = vcov,
+                                      Rcpp::Named("mean") = mean);
+  return res;
+}
+
 // [[Rcpp::export]]
 Rcpp::List calc_kalman_bucy_filter_cpp(
     arma::cube un_dr_sl, arma::mat un_dr_in, arma::cube un_diff,
     arma::cube ob_dr_sl, arma::mat ob_dr_in, arma::cube inv_sq_ob_diff,
     arma::mat vcov_init, arma::vec mean_init, double delta, arma::mat deltaY,
     bool use_are, bool is_explicit, bool is_time_homogeneous,
-    int subsump_rate = 1) {
+    int upsump_rate = 1) {
   int d_un = un_dr_sl.n_rows;  // the number of observed variables
   int d_ob = ob_dr_sl.n_rows;  // the number of unobserved variables
 
   arma::cube vcov;
   arma::mat mean;
   if (use_are) {
+    // coefficients of SDE are independent of time.
+    // So n_slices of coefficients should be 1.
     arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, 0), d_un, d_un, false, true);
     arma::vec un_dr_in_col(&un_dr_in(0, 0), d_un, false, true);
     arma::mat un_diff_slice(&un_diff(0, 0, 0), d_un, un_diff.n_cols, false,
@@ -280,10 +285,12 @@ Rcpp::List calc_kalman_bucy_filter_cpp(
     arma::vec ob_dr_in_col(&ob_dr_in(0, 0), d_ob, false, true);
     arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, 0), d_ob, d_ob, false,
                                    true);
+
+    // calc vcov
     arma::mat vcov_slice = calc_filter_vcov_are(
         un_dr_sl_slice, un_diff_slice, ob_dr_sl_slice, inv_sq_ob_diff_slice);
-    vcov = arma::cube(vcov_slice.n_rows, vcov_slice.n_cols, 1);
-    vcov.slice(0) = vcov_slice;
+
+    // calc mean
     if (is_explicit) {
       mean = calc_filter_mean_explicit(
           un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
@@ -293,10 +300,18 @@ Rcpp::List calc_kalman_bucy_filter_cpp(
           un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
           inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY);
     }
+
+    // make a cube of vcov for consistency
+    vcov = arma::cube(vcov_slice.n_rows, vcov_slice.n_cols, 1);
+    vcov.slice(0) = vcov_slice;
+
+    Rcpp::List res = Rcpp::List::create(Rcpp::Named("vcov") = vcov,
+                                        Rcpp::Named("mean") = mean);
+    return res;
   } else {
-    int upsamp_n = deltaY.n_cols * subsump_rate + 1;
-    double upsamp_delta = delta / subsump_rate;
     if (is_time_homogeneous) {
+      // coefficients of SDE are independent of time.
+      // So n_slices of coefficients should be 1.
       arma::mat un_dr_sl_slice(&un_dr_sl(0, 0, 0), d_un, d_un, false, true);
       arma::vec un_dr_in_col(&un_dr_in(0, 0), d_un, false, true);
       arma::mat un_diff_slice(&un_diff(0, 0, 0), d_un, un_diff.n_cols, false,
@@ -306,22 +321,14 @@ Rcpp::List calc_kalman_bucy_filter_cpp(
       arma::mat inv_sq_ob_diff_slice(&inv_sq_ob_diff(0, 0, 0), d_ob, d_ob,
                                      false, true);
 
-      vcov = calc_filter_vcov_time_homogeneous(
-          un_dr_sl_slice, un_diff_slice, ob_dr_sl_slice, inv_sq_ob_diff_slice,
-          vcov_init, upsamp_delta, upsamp_n);
-      mean = calc_filter_mean_time_homogeneous(
-          un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
-          inv_sq_ob_diff_slice, vcov, mean_init, delta, deltaY, subsump_rate);
+      return calc_kalman_bucy_filter_time_homogeneous(
+          un_dr_sl_slice, un_dr_in_col, un_diff_slice, ob_dr_sl_slice,
+          ob_dr_in_col, inv_sq_ob_diff_slice, vcov_init, mean_init, delta,
+          deltaY, upsump_rate);
     } else {
-      vcov = calc_filter_vcov(un_dr_sl, un_diff, ob_dr_sl, inv_sq_ob_diff,
-                              vcov_init, upsamp_delta);
-      mean = calc_filter_mean(un_dr_sl, un_dr_in, ob_dr_sl, ob_dr_in,
-                              inv_sq_ob_diff, vcov, mean_init, delta, deltaY,
-                              subsump_rate);
+      return calc_kalman_bucy_filter_no_are_no_time_homogeneous(
+          un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff,
+          vcov_init, mean_init, delta, deltaY, upsump_rate);
     }
   }
-
-  Rcpp::List res = Rcpp::List::create(Rcpp::Named("vcov") = vcov,
-                                      Rcpp::Named("mean") = mean);
-  return res;
 }
