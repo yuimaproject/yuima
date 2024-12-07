@@ -57,8 +57,8 @@ cpp_ito <- function(K_set, dZ, Z_K, d, r) {
     .Call('_yuima_cpp_ito', PACKAGE = 'yuima', K_set, dZ, Z_K, d, r)
 }
 
-calc_kalman_bucy_filter_cpp <- function(un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov_init, mean_init, delta, deltaY, use_are, is_explicit, is_time_homogeneous, upsump_rate = 1L) {
-    .Call('_yuima_calc_kalman_bucy_filter_cpp', PACKAGE = 'yuima', un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov_init, mean_init, delta, deltaY, use_are, is_explicit, is_time_homogeneous, upsump_rate)
+calc_kalman_bucy_filter_cpp <- function(un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov_init, mean_init, delta, deltaY, use_are, is_explicit, is_time_homogeneous, calc_minuslogl, drop_terms, upsump_rate = 1L) {
+    .Call('_yuima_calc_kalman_bucy_filter_cpp', PACKAGE = 'yuima', un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov_init, mean_init, delta, deltaY, use_are, is_explicit, is_time_homogeneous, calc_minuslogl, drop_terms, upsump_rate)
 }
 
 W1 <- function(crossdx, b, A, h) {
@@ -75,10 +75,6 @@ Irregular_PseudoLoglik_COG <- function(lengthObs, B, Btilde, InvBtilde, a0, bq, 
 
 minusloglcpp_linear_state_space_theta1 <- function(logdet_sq_observed_diffusion, inv_sq_observed_diffusion, dx, h, drop_terms) {
     .Call('_yuima_minusloglcpp_linear_state_space_theta1', PACKAGE = 'yuima', logdet_sq_observed_diffusion, inv_sq_observed_diffusion, dx, h, drop_terms)
-}
-
-minusloglcpp_linear_state_space_theta2 <- function(observed_drift, inv_sq_observed_diffusion, dx, h, drop_terms) {
-    .Call('_yuima_minusloglcpp_linear_state_space_theta2', PACKAGE = 'yuima', observed_drift, inv_sq_observed_diffusion, dx, h, drop_terms)
 }
 
 calc_inverce_square <- function(cube) {

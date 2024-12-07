@@ -1,4 +1,4 @@
-kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, time_homogeneous = FALSE, env = globalenv()) {
+kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, time_homogeneous = FALSE, minuslogl = FALSE, env = globalenv()) {
   # calculate diff of observed variables
   is.observed.equation <- yuima@model@is.observed
   observed.variables <- yuima@model@state.variable[is.observed.equation]
@@ -39,10 +39,10 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
     observed.diffusion <- kalman_bucy_filter_eval_exp(observed.diffusion.expr, tmp.env, yuima@model@time.variable, time.points)
     inv.squared.observed.diffusion <- calc_inverce_square(observed.diffusion)
   }
-  return(kalmanBucyFilter.inner(yuima, delta.observed.variable, params, inv.squared.observed.diffusion, mean_init, vcov_init, delta.vcov.solve, are, explicit, time_homogeneous, env))
+  return(kalmanBucyFilter.inner(yuima, delta.observed.variable, params, inv.squared.observed.diffusion, mean_init, vcov_init, delta.vcov.solve, are, explicit, time_homogeneous, minuslogl, env))
 }
 
-kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.squared.observed.diffusion, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, time_homogeneous = FALSE, env = globalenv()) {
+kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.squared.observed.diffusion, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, time_homogeneous = FALSE, minuslogl = FALSE, drop_terms = 0, env = globalenv()) {
   # are : flag if use algebraic Riccati equation or not
   # Calculation of `delta.observed.variable` is relatively slow and it can be a bottle neck in parameter estimation. So users can pass the values of delta.observed.variable.
   # Calculation of `inv_sq_ob_diff` is relatively slow and it can be a bottle neck in parameter estimation. So users can pass the values of inv.squared.observed.diffusion.
@@ -146,7 +146,6 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
   }
   dim(unobserved.drift.intercept) <- dim(unobserved.drift.intercept)[c(1, 3)]
   dim(observed.drift.intercept) <- dim(observed.drift.intercept)[c(1, 3)]
-
   filter_res <- calc_kalman_bucy_filter_cpp(
     unobserved.drift.slope,
     unobserved.drift.intercept,
@@ -161,10 +160,13 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
     are,
     explicit,
     time_homogeneous,
+    minuslogl,
+    drop_terms,
     subsamp_rate
   )
   vcov <- filter_res$vcov
   mean <- filter_res$mean
+  minuslogl <- filter_res$minuslogl
   rownames(mean) <- unobserved.variables
   ts.mean <- ts(t(mean), start = start(yuima@data@zoo.data[[1]]), frequency = frequency(yuima@data@zoo.data[[1]]))
   res <- new(
@@ -175,7 +177,8 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
     mean.init = mean_init,
     vcov.init = vcov_init,
     delta = yuima@sampling@delta,
-    data = yuima@data
+    data = yuima@data,
+    minuslogl = minuslogl
   )
   return(res)
 }

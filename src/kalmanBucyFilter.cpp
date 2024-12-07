@@ -32,10 +32,11 @@ arma::mat calc_filter_vcov_are(const arma::mat& un_dr_sl,
   return gamma;
 }
 
-arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(
+std::tuple<arma::mat, double> calc_filter_mean_time_homogeneous_with_vcov_are(
     arma::mat& un_dr_sl, arma::vec& un_dr_in, arma::mat& ob_dr_sl,
     arma::vec& ob_dr_in, arma::mat& inv_sq_ob_diff, arma::mat& vcov,
-    arma::vec& init, double delta, arma::mat& deltaY) {
+    arma::vec& init, double delta, arma::mat& deltaY, bool calc_minuslogl,
+    int drop_terms) {
   int d_un = un_dr_sl.n_rows;  // the number of unobserved variables
   int d_ob = ob_dr_sl.n_rows;  // the number of observed variables
   int n = deltaY.n_cols + 1;   // the number of observations
@@ -43,6 +44,8 @@ arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(
   // initialize mean with suitable size, no value
   arma::mat mean(d_un, n, arma::fill::none);
   mean.col(0) = init;
+
+  double minuslogl = 0;
 
   arma::mat deltaY_coef = vcov * ob_dr_sl.t() * inv_sq_ob_diff;
   arma::mat mean_prev_coef =
@@ -53,16 +56,24 @@ arma::mat calc_filter_mean_time_homogeneous_with_vcov_are(
     arma::vec mean_prev(&mean(0, i - 1), d_un, false, true);
     mean.col(i) =
         mean_prev_coef * mean_prev + deltaY_coef * deltaY_col + intercept;
+    if (calc_minuslogl) {
+      if (drop_terms < i) {
+        arma::vec tmp = (ob_dr_sl * mean_prev + ob_dr_in) * delta - deltaY_col;
+        minuslogl += arma::as_scalar(tmp.t() * inv_sq_ob_diff * tmp);
+      }
+    }
   }
+  minuslogl = minuslogl / 2 / delta;
 
-  return mean;
+  return std::forward_as_tuple(mean, minuslogl);
 }
 
-arma::mat calc_filter_mean_explicit(
+std::tuple<arma::mat, double> calc_filter_mean_explicit(
     const arma::mat& un_dr_sl, const arma::vec& un_dr_in,
     const arma::mat& ob_dr_sl, const arma::vec& ob_dr_in,
     const arma::mat& inv_sq_ob_diff, const arma::mat& vcov,
-    const arma::vec& init, double delta, arma::mat deltaY) {
+    const arma::vec& init, double delta, arma::mat deltaY, bool calc_minuslogl,
+    int drop_terms) {
   /*
   calculate mean explicitly if coefficients are time-independent.
   use when estimated vcov with Algebric Riccati Equation.
@@ -82,6 +93,7 @@ arma::mat calc_filter_mean_explicit(
   // initialize mean with suitable size, no value
   arma::mat mean = arma::mat(d_un, n_deltaY + 1, arma::fill::none);
   mean.col(0) = init;
+  double minuslogl;
 
   // Compute exp_alpha_h, deltaY_coeff, and intercept within an inner scope
   arma::mat exp_alpha_h;
@@ -103,9 +115,16 @@ arma::mat calc_filter_mean_explicit(
 
     mean.col(i + 1) =
         exp_alpha_h * mean_prev + deltaY_coeff * deltaY_col + intercept;
+    if (calc_minuslogl) {
+      if (drop_terms < i) {
+        arma::vec tmp = (ob_dr_sl * mean_prev + ob_dr_in) * delta - deltaY_col;
+        minuslogl += arma::as_scalar(tmp.t() * inv_sq_ob_diff * tmp);
+      }
+    }
   }
+  minuslogl = minuslogl / 2 / delta;
 
-  return mean;
+  return std::forward_as_tuple(mean, minuslogl);
 }
 
 Rcpp::List calc_kalman_bucy_filter_no_are_no_time_homogeneous(
@@ -170,9 +189,9 @@ Rcpp::List calc_kalman_bucy_filter_no_are_no_time_homogeneous(
     vcov.slice(i) = tmp_vcov;
   }
 
-  Rcpp::List res = Rcpp::List::create(Rcpp::Named("vcov") = vcov,
-                                      Rcpp::Named("mean") = mean);
-  return res;
+  return Rcpp::List::create(Rcpp::Named("vcov") = vcov,
+                            Rcpp::Named("mean") = mean,
+                            Rcpp::Named("minuslogl") = 0.0);
 }
 
 Rcpp::List calc_kalman_bucy_filter_time_homogeneous(
@@ -228,9 +247,9 @@ Rcpp::List calc_kalman_bucy_filter_time_homogeneous(
     vcov.slice(i) = tmp_vcov;
   }
 
-  Rcpp::List res = Rcpp::List::create(Rcpp::Named("vcov") = vcov,
-                                      Rcpp::Named("mean") = mean);
-  return res;
+  return Rcpp::List::create(Rcpp::Named("vcov") = vcov,
+                            Rcpp::Named("mean") = mean,
+                            Rcpp::Named("minuslogl") = 0.0);
 }
 
 // [[Rcpp::export]]
@@ -239,12 +258,13 @@ Rcpp::List calc_kalman_bucy_filter_cpp(
     arma::cube ob_dr_sl, arma::mat ob_dr_in, arma::cube inv_sq_ob_diff,
     arma::mat vcov_init, arma::vec mean_init, double delta, arma::mat deltaY,
     bool use_are, bool is_explicit, bool is_time_homogeneous,
-    int upsump_rate = 1) {
+    bool calc_minuslogl, int drop_terms, int upsump_rate = 1) {
   int d_un = un_dr_sl.n_rows;  // the number of observed variables
   int d_ob = ob_dr_sl.n_rows;  // the number of unobserved variables
-
+  // int drop_terms = 0;
   arma::cube vcov;
   arma::mat mean;
+  double minuslogl;
   if (use_are) {
     // coefficients of SDE are independent of time.
     // So n_slices of coefficients should be 1.
@@ -263,23 +283,30 @@ Rcpp::List calc_kalman_bucy_filter_cpp(
 
     // calc mean
     if (is_explicit) {
-      mean = calc_filter_mean_explicit(
+      std::tie(mean, minuslogl) = calc_filter_mean_explicit(
           un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
-          inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY);
+          inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY,
+          calc_minuslogl, drop_terms);
     } else {
-      mean = calc_filter_mean_time_homogeneous_with_vcov_are(
-          un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
-          inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY);
+      std::tie(mean, minuslogl) =
+          calc_filter_mean_time_homogeneous_with_vcov_are(
+              un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
+              inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY,
+              calc_minuslogl, drop_terms);
     }
 
     // make a cube of vcov for consistency
     vcov = arma::cube(vcov_slice.n_rows, vcov_slice.n_cols, 1);
     vcov.slice(0) = vcov_slice;
 
-    Rcpp::List res = Rcpp::List::create(Rcpp::Named("vcov") = vcov,
-                                        Rcpp::Named("mean") = mean);
-    return res;
+    return Rcpp::List::create(Rcpp::Named("vcov") = vcov,
+                              Rcpp::Named("mean") = mean,
+                              Rcpp::Named("minuslogl") = minuslogl);
+
   } else {
+    if (calc_minuslogl) {
+      Rcpp::warning("minuslogl is not yet implemented for are=FALSE.");
+    }
     if (is_time_homogeneous) {
       // coefficients of SDE are independent of time.
       // So n_slices of coefficients should be 1.

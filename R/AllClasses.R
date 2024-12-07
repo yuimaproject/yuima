@@ -233,7 +233,8 @@ setClass(
     mean.init = "numeric",
     vcov.init = "matrix",
     delta = "numeric",
-    data = "yuima.data"
+    data = "yuima.data",
+    minuslogl = "numeric"
   )
 )
 

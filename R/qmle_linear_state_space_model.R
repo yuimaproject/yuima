@@ -392,7 +392,7 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
 # filter_mean_init: estimated value for X_0
 # env: env to evaluate drift and diffusion
 
-minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, inv.squared.observed.diffusion, theta2, filter_mean_init, env, explicit, rcpp = FALSE, drop_terms, h) {
+minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, inv.squared.observed.diffusion, theta2, filter_mean_init, env, explicit, drop_terms, h) {
   is.observed <- yuima@model@is.observed
 
   # define env for eval
@@ -405,55 +405,14 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
 
   # calculate `m` (estimation of `x`) using filter
   are <- TRUE # NOTE: Estimation using are=FALSE is not implemented yet.
-  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta2, inv.squared.observed.diffusion = inv.squared.observed.diffusion, mean_init = filter_mean_init, are = are, explicit = explicit, env = tmp.env)
-  m <- filter_res@mean
+  filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta2, inv.squared.observed.diffusion = inv.squared.observed.diffusion, mean_init = filter_mean_init, are = are, explicit = explicit, minuslogl = TRUE, drop_terms = drop_terms, env = tmp.env)
 
-  # calculate observed drift
-  if (are) {
-    # observed.drift.slope and observed.drift.intercept is independent of t
-    observed.drift.slope.expr <- yuima@model@drift_slope[is.observed]
-    observed.drift.intercept.expr <- yuima@model@drift_intercept[is.observed]
-    eval_exp <- function(expr) {
-      env <- tmp.env
-      nrow <- length(expr)
-      ncol <- length(expr[[1]])
-      res <- matrix(nrow = nrow, ncol = ncol)
-      for (r in 1:nrow) {
-        for (c in 1:ncol) {
-          res[r, c] <- eval(expr[[r]][c], envir = tmp.env)
-        }
-      }
-      return(res)
-    }
-    observed.drift.slope <- eval_exp(observed.drift.slope.expr)
-    observed.drift.intercept <- eval_exp(observed.drift.intercept.expr)
-    observed.drift <- t(linearDriftTermCpp(observed.drift.slope, observed.drift.intercept, m))
-  } else {
-    # NOTE: Future expansion. If are=FALSE, slope and intercept can depend on t.
-    observed.drift.expr <- yuima@model@drift[is.observed]
-    unobserved.variables <- yuima@model@state.variable[!is.observed]
-    observed.drift <- t(driftTermCpp(observed.drift.expr, unobserved.variables, m, tmp.env))
-  }
-
-  # calculate likelihood
-  QL <- 0
-  if (rcpp) {
-    QL <- minusloglcpp_linear_state_space_theta2(observed.drift, inv.squared.observed.diffusion, delta.observed.variable, h, drop_terms)
-  } else {
-    n <- dim(delta.observed.variable)[2] # the humber of observations - 1
-    for (j in (drop_terms + 1):n) {
-      tmp <- (observed.drift[, j] * h - delta.observed.variable[, j])
-      pn <- t(tmp) %*% inv.squared.observed.diffusion %*% tmp
-      QL <- QL + pn
-    }
-    QL <- -QL / 2 / h
-  }
-  return(-drop(QL))
+  return(filter_res@minuslogl)
 }
 
 # estimate theta2
 estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir = globalenv(),
-                                        lower, upper, theta2, theta1.est, delta.observed.variable, filter_mean_init, explicit, rcpp, drop_terms, ...) {
+                                        lower, upper, theta2, theta1.est, delta.observed.variable, filter_mean_init, explicit, drop_terms, ...) {
   if (missing(yuima)) {
     yuima.stop("yuima object is missing.")
   }
@@ -501,7 +460,7 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   f <- function(p) {
     theta2.values <- as.list(p)
     names(theta2.values) <- nm[idx.theta2]
-    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, inv.squared.observed.diffusion = inv.squared.observed.diffusion, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, rcpp = rcpp, drop_terms = drop_terms, h = h))
+    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, inv.squared.observed.diffusion = inv.squared.observed.diffusion, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, drop_terms = drop_terms, h = h))
   }
 
   call <- match.call()
