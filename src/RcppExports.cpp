@@ -324,19 +324,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// linearDriftTermCpp
-arma::mat linearDriftTermCpp(arma::mat slope, arma::vec intercept, arma::mat data);
-RcppExport SEXP _yuima_linearDriftTermCpp(SEXP slopeSEXP, SEXP interceptSEXP, SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type slope(slopeSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type intercept(interceptSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(linearDriftTermCpp(slope, intercept, data));
-    return rcpp_result_gen;
-END_RCPP
-}
 // diffusionTermCpp
 NumericVector diffusionTermCpp(List diffusion, CharacterVector modelstate, arma::mat data, Environment env);
 RcppExport SEXP _yuima_diffusionTermCpp(SEXP diffusionSEXP, SEXP modelstateSEXP, SEXP dataSEXP, SEXP envSEXP) {

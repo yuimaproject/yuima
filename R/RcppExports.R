@@ -85,10 +85,6 @@ driftTermCpp <- function(drift, modelstate, data, env) {
     .Call('_yuima_driftTermCpp', PACKAGE = 'yuima', drift, modelstate, data, env)
 }
 
-linearDriftTermCpp <- function(slope, intercept, data) {
-    .Call('_yuima_linearDriftTermCpp', PACKAGE = 'yuima', slope, intercept, data)
-}
-
 diffusionTermCpp <- function(diffusion, modelstate, data, env) {
     .Call('_yuima_diffusionTermCpp', PACKAGE = 'yuima', diffusion, modelstate, data, env)
 }

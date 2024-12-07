@@ -53,7 +53,6 @@ extern SEXP Cycle_Carma(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SE
 extern SEXP euler(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP pseudoLoglik_COGARCH1(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_driftTermCpp(SEXP, SEXP, SEXP, SEXP);
-extern SEXP _yuima_linearDriftTermCpp(SEXP, SEXP, SEXP);
 extern SEXP _yuima_diffusionTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_measureTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP,SEXP,SEXP,SEXP, SEXP);
@@ -109,7 +108,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"euler",                                  (DL_FUNC) &euler,                                        11},
     {"pseudoLoglik_COGARCH1",                  (DL_FUNC) &pseudoLoglik_COGARCH1,                        14},
     {"_yuima_driftTermCpp",                           (DL_FUNC) &_yuima_driftTermCpp,                                  4},
-    {"_yuima_linearDriftTermCpp",                     (DL_FUNC) &_yuima_linearDriftTermCpp,                            3},
     {"_yuima_diffusionTermCpp",                       (DL_FUNC) &_yuima_diffusionTermCpp,                              4},
     {"_yuima_measureTermCpp",                         (DL_FUNC) &_yuima_measureTermCpp,                                4},
     {"_yuima_minusloglcpp_linear_state_space_theta1", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta1, 5},
