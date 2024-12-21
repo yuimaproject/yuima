@@ -207,21 +207,21 @@ BEGIN_RCPP
 END_RCPP
 }
 // calc_kalman_bucy_filter_cpp
-Rcpp::List calc_kalman_bucy_filter_cpp(arma::cube un_dr_sl, arma::mat un_dr_in, arma::cube un_diff, arma::cube ob_dr_sl, arma::mat ob_dr_in, arma::cube inv_sq_ob_diff, arma::mat vcov_init, arma::vec mean_init, double delta, arma::mat deltaY, bool use_are, bool is_explicit, bool is_time_homogeneous, bool calc_minuslogl, int drop_terms, int upsump_rate);
+Rcpp::List calc_kalman_bucy_filter_cpp(arma::cube& un_dr_sl, arma::mat& un_dr_in, arma::cube& un_diff, arma::cube& ob_dr_sl, arma::mat& ob_dr_in, arma::cube& inv_sq_ob_diff, arma::mat& vcov_init, arma::vec& mean_init, double delta, arma::mat& deltaY, bool use_are, bool is_explicit, bool is_time_homogeneous, bool calc_minuslogl, int drop_terms, int upsump_rate);
 RcppExport SEXP _yuima_calc_kalman_bucy_filter_cpp(SEXP un_dr_slSEXP, SEXP un_dr_inSEXP, SEXP un_diffSEXP, SEXP ob_dr_slSEXP, SEXP ob_dr_inSEXP, SEXP inv_sq_ob_diffSEXP, SEXP vcov_initSEXP, SEXP mean_initSEXP, SEXP deltaSEXP, SEXP deltaYSEXP, SEXP use_areSEXP, SEXP is_explicitSEXP, SEXP is_time_homogeneousSEXP, SEXP calc_minusloglSEXP, SEXP drop_termsSEXP, SEXP upsump_rateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::cube >::type un_dr_sl(un_dr_slSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type un_dr_in(un_dr_inSEXP);
-    Rcpp::traits::input_parameter< arma::cube >::type un_diff(un_diffSEXP);
-    Rcpp::traits::input_parameter< arma::cube >::type ob_dr_sl(ob_dr_slSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type ob_dr_in(ob_dr_inSEXP);
-    Rcpp::traits::input_parameter< arma::cube >::type inv_sq_ob_diff(inv_sq_ob_diffSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type vcov_init(vcov_initSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mean_init(mean_initSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type un_dr_sl(un_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type un_dr_in(un_dr_inSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type un_diff(un_diffSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type ob_dr_sl(ob_dr_slSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type ob_dr_in(ob_dr_inSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type inv_sq_ob_diff(inv_sq_ob_diffSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type vcov_init(vcov_initSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type mean_init(mean_initSEXP);
     Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type deltaY(deltaYSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type deltaY(deltaYSEXP);
     Rcpp::traits::input_parameter< bool >::type use_are(use_areSEXP);
     Rcpp::traits::input_parameter< bool >::type is_explicit(is_explicitSEXP);
     Rcpp::traits::input_parameter< bool >::type is_time_homogeneous(is_time_homogeneousSEXP);
