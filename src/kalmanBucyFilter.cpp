@@ -5,16 +5,16 @@ arma::mat calc_filter_vcov_are(const arma::mat& un_dr_sl,
                                const arma::mat& un_diff,
                                const arma::mat& ob_dr_sl,
                                const arma::mat& inv_sq_ob_diff) {
-  unsigned int m = un_dr_sl.n_cols;
-  unsigned int n = un_dr_sl.n_rows;
+  int d_un = un_dr_sl.n_cols;  // the number of unobserved variables
+  int d_qz = 2 * d_un;         // dimension for QZ decomposition
 
   arma::mat H = arma::join_vert(
       arma::join_horiz(-un_dr_sl.t(), ob_dr_sl.t() * inv_sq_ob_diff * ob_dr_sl),
       arma::join_horiz(un_diff * un_diff.t(), un_dr_sl));
 
   // QZ decomposition
-  arma::mat B(H.n_rows, H.n_cols, arma::fill::eye);
-  arma::mat AA, BB, Q, Z;
+  arma::mat B = arma::eye(d_qz, d_qz);
+  arma::mat AA(d_qz, d_qz), BB(d_qz, d_qz), Q(d_qz, d_qz), Z(d_qz, d_qz);
 
   bool qz_res = arma::qz(AA, BB, Q, Z, H, B, "rhp");
   if (!qz_res) {
@@ -23,49 +23,57 @@ arma::mat calc_filter_vcov_are(const arma::mat& un_dr_sl,
 
   arma::mat generalized_eigenvec_mat = Q.t();
 
-  arma::mat upper_right_q = generalized_eigenvec_mat.submat(0, 0, n - 1, n - 1);
+  arma::mat upper_right_q =
+      generalized_eigenvec_mat.submat(0, 0, d_un - 1, d_un - 1);
   arma::mat lower_right_q =
-      generalized_eigenvec_mat.submat(m, 0, m + n - 1, n - 1);
+      generalized_eigenvec_mat.submat(d_un, 0, d_qz - 1, d_un - 1);
 
-  arma::mat gamma = lower_right_q * arma::inv(upper_right_q);
-
+  arma::mat gamma = arma::solve(upper_right_q.t(), lower_right_q.t()).t();
   return gamma;
 }
 
-std::tuple<arma::mat, double> calc_filter_mean_time_homogeneous_with_vcov_are(
-    arma::mat& un_dr_sl, arma::vec& un_dr_in, arma::mat& ob_dr_sl,
-    arma::vec& ob_dr_in, arma::mat& inv_sq_ob_diff, arma::mat& vcov,
-    arma::vec& init, double delta, arma::mat& deltaY, bool calc_minuslogl,
+double calc_filter_mean_time_homogeneous_with_vcov_are(
+    arma::mat& mean, const arma::mat& un_dr_sl, const arma::vec& un_dr_in,
+    const arma::mat& ob_dr_sl, const arma::vec& ob_dr_in,
+    const arma::mat& inv_sq_ob_diff, const arma::mat& vcov,
+    const arma::vec& init, double delta, arma::mat& deltaY, bool calc_minuslogl,
     int drop_terms) {
-  int d_un = un_dr_sl.n_rows;  // the number of unobserved variables
-  int d_ob = ob_dr_sl.n_rows;  // the number of observed variables
-  int n = deltaY.n_cols + 1;   // the number of observations
+  int d_un = un_dr_sl.n_rows;    // the number of unobserved variables
+  int d_ob = ob_dr_sl.n_rows;    // the number of observed variables
+  int n_deltaY = deltaY.n_cols;  // the number of observations - 1
 
-  // initialize mean with suitable size, no value
-  arma::mat mean(d_un, n, arma::fill::none);
   mean.col(0) = init;
-
   double minuslogl = 0.0;
 
   arma::mat deltaY_coef = vcov * ob_dr_sl.t() * inv_sq_ob_diff;
+  arma::mat deltaY_term = deltaY_coef * deltaY;
   arma::mat mean_prev_coef =
       arma::eye(d_un, d_un) + (un_dr_sl - deltaY_coef * ob_dr_sl) * delta;
   arma::vec intercept = (un_dr_in - deltaY_coef * ob_dr_in) * delta;
-  for (int i = 1; i < n; i++) {
-    arma::vec deltaY_col(&deltaY(0, i - 1), d_ob, false, true);
-    arma::vec mean_prev(&mean(0, i - 1), d_un, false, true);
-    mean.col(i) =
-        mean_prev_coef * mean_prev + deltaY_coef * deltaY_col + intercept;
-    if (calc_minuslogl) {
-      if (drop_terms < i) {
+
+  if (calc_minuslogl) {
+    for (int i = 0; i < n_deltaY; i++) {
+      arma::vec deltaY_term_col(&deltaY_term(0, i), d_un, false, true);
+      arma::vec mean_prev(&mean(0, i), d_un, false, true);
+      mean.col(i + 1) =
+          mean_prev_coef * mean_prev + deltaY_term_col + intercept;
+      if (i > drop_terms) {
+        arma::vec deltaY_col(&deltaY(0, i), d_ob, false, true);
         arma::vec tmp = (ob_dr_sl * mean_prev + ob_dr_in) * delta - deltaY_col;
-        minuslogl += arma::as_scalar(tmp.t() * inv_sq_ob_diff * tmp);
+        minuslogl += arma::dot(tmp.t(), inv_sq_ob_diff * tmp);
       }
     }
+    minuslogl = minuslogl * 0.5 / delta;
+  } else {
+    for (int i = 0; i < n_deltaY; i++) {
+      arma::vec deltaY_term_col(&deltaY_term(0, i), d_un, false, true);
+      arma::vec mean_prev(&mean(0, i), d_un, false, true);
+      mean.col(i + 1) =
+          mean_prev_coef * mean_prev + deltaY_term_col + intercept;
+    }
   }
-  minuslogl = minuslogl / 2 / delta;
 
-  return std::forward_as_tuple(mean, minuslogl);
+  return minuslogl;
 }
 
 double calc_filter_mean_explicit(arma::mat& mean, const arma::mat& un_dr_sl,
@@ -92,8 +100,6 @@ double calc_filter_mean_explicit(arma::mat& mean, const arma::mat& un_dr_sl,
   int d_ob = ob_dr_sl.n_rows;    // the number of observed variables
   int n_deltaY = deltaY.n_cols;  // the number of observations - 1
 
-  // initialize mean with suitable size, no value
-  // arma::mat mean = arma::mat(d_un, n_deltaY + 1, arma::fill::none);
   mean.col(0) = init;
   double minuslogl = 0.0;
 
@@ -106,20 +112,18 @@ double calc_filter_mean_explicit(arma::mat& mean, const arma::mat& un_dr_sl,
       (exp_alpha_h * un_dr_in + deltaY_coeff * ob_dr_in) * delta;
 
   if (calc_minuslogl) {
-    for (int i = 0; i < drop_terms; i++) {
+    for (int i = 0; i < n_deltaY; i++) {
       arma::vec mean_prev(&mean(0, i), d_un, false, true);
       arma::vec deltaY_term_col(&deltaY_term(0, i), d_un, false, true);
       mean.col(i + 1) = exp_alpha_h * mean_prev + deltaY_term_col + intercept;
+
+      if (i > drop_terms) {
+        arma::vec deltaY_col(&deltaY(0, i), d_ob, false, true);
+        arma::vec tmp = (ob_dr_sl * mean_prev + ob_dr_in) * delta - deltaY_col;
+        minuslogl += arma::dot(tmp.t(), inv_sq_ob_diff * tmp);
+      }
     }
-    for (int i = drop_terms; i < n_deltaY; i++) {
-      arma::vec mean_prev(&mean(0, i), d_un, false, true);
-      arma::vec deltaY_col(&deltaY(0, i), d_ob, false, true);
-      arma::vec deltaY_term_col(&deltaY_term(0, i), d_un, false, true);
-      mean.col(i + 1) = exp_alpha_h * mean_prev + deltaY_term_col + intercept;
-      arma::vec tmp = (ob_dr_sl * mean_prev + ob_dr_in) * delta - deltaY_col;
-      minuslogl += arma::as_scalar(tmp.t() * inv_sq_ob_diff * tmp);
-    }
-    minuslogl = minuslogl / (2 * delta);
+    minuslogl = minuslogl * 0.5 / delta;
   } else {
     for (int i = 0; i < n_deltaY; i++) {
       arma::vec mean_prev(&mean(0, i), d_un, false, true);
@@ -293,11 +297,10 @@ Rcpp::List calc_kalman_bucy_filter_cpp(
           inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY,
           calc_minuslogl, drop_terms);
     } else {
-      std::tie(mean, minuslogl) =
-          calc_filter_mean_time_homogeneous_with_vcov_are(
-              un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
-              inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY,
-              calc_minuslogl, drop_terms);
+      minuslogl = calc_filter_mean_time_homogeneous_with_vcov_are(
+          mean, un_dr_sl_slice, un_dr_in_col, ob_dr_sl_slice, ob_dr_in_col,
+          inv_sq_ob_diff_slice, vcov_slice, mean_init, delta, deltaY,
+          calc_minuslogl, drop_terms);
     }
 
     // make a cube of vcov for consistency
