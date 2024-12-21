@@ -199,11 +199,11 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
 
   # calculate likelihood
   if (rcpp) {
-    QL <- minusloglcpp_linear_state_space_theta1(logdet.sq.observed.diffusion, inv.sq.observed.diffusion, delta.observed.variable, h, drop_terms)
+    QL <- minusloglcpp_linear_state_space_theta1(logdet.sq.observed.diffusion, inv.sq.observed.diffusion, delta.observed.variable, h)
   } else {
     QL <- 0
     n <- yuima@sampling@n[[1]] # the number of observations - 1
-    for (j in (drop_terms + 1):n) {
+    for (j in 1:n) {
       pn <- -0.5 * logdet.sq.observed.diffusion + (-1 / (2 * h)) * t(delta.observed.variable[, j]) %*% inv.sq.observed.diffusion %*% delta.observed.variable[, j]
       QL <- QL + pn
     }

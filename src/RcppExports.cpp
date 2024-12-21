@@ -285,17 +285,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // minusloglcpp_linear_state_space_theta1
-double minusloglcpp_linear_state_space_theta1(double logdet_sq_observed_diffusion, arma::mat inv_sq_observed_diffusion, arma::mat dx, double h, int drop_terms);
-RcppExport SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP logdet_sq_observed_diffusionSEXP, SEXP inv_sq_observed_diffusionSEXP, SEXP dxSEXP, SEXP hSEXP, SEXP drop_termsSEXP) {
+double minusloglcpp_linear_state_space_theta1(double logdet_sq_ob_diff, arma::mat& inv_sq_ob_diff, arma::mat& deltaY, double delta);
+RcppExport SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP logdet_sq_ob_diffSEXP, SEXP inv_sq_ob_diffSEXP, SEXP deltaYSEXP, SEXP deltaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type logdet_sq_observed_diffusion(logdet_sq_observed_diffusionSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type inv_sq_observed_diffusion(inv_sq_observed_diffusionSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type dx(dxSEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
-    Rcpp::traits::input_parameter< int >::type drop_terms(drop_termsSEXP);
-    rcpp_result_gen = Rcpp::wrap(minusloglcpp_linear_state_space_theta1(logdet_sq_observed_diffusion, inv_sq_observed_diffusion, dx, h, drop_terms));
+    Rcpp::traits::input_parameter< double >::type logdet_sq_ob_diff(logdet_sq_ob_diffSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type inv_sq_ob_diff(inv_sq_ob_diffSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type deltaY(deltaYSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    rcpp_result_gen = Rcpp::wrap(minusloglcpp_linear_state_space_theta1(logdet_sq_ob_diff, inv_sq_ob_diff, deltaY, delta));
     return rcpp_result_gen;
 END_RCPP
 }

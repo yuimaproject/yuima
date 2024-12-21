@@ -4,24 +4,21 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-double minusloglcpp_linear_state_space_theta1(
-    double logdet_sq_observed_diffusion, arma::mat inv_sq_observed_diffusion,
-    arma::mat dx, double h, int drop_terms) {
-  // observed_diffusion : 2-dim array of evaluated observed diffusion
-  // coefficients dx : 2-dim matrix of delta of observerd variables in each time
-  // point h : interval of observations
-  int d_ob = dx.n_rows;
-  int n_dx = dx.n_cols;
+double minusloglcpp_linear_state_space_theta1(double logdet_sq_ob_diff,
+                                              arma::mat& inv_sq_ob_diff,
+                                              arma::mat& deltaY, double delta) {
+  // (sq_ob_diff : 2-dim array of evaluated observed diffusion matrix)
+  // logdet_sq_ob_diff : log determinant of sq_ob_diff
+  // inv_sq_ob_diff : 2-dim array of inverse of sq_ob_diff
+  // deltaY : 2-dim matrix of delta of observed variables in each time point
+  // delta : interval of observations
+
+  int n_deltaY = deltaY.n_cols;  // the number of observations - 1
 
   // calculate quasi-log-likelihood
-  double QL1 = 0;
-  double QL2 = 0;
-  for (int i = drop_terms; i < n_dx; i++) {
-    arma::vec dx_col(&dx(0, i), d_ob, false, true);
-    QL1 += logdet_sq_observed_diffusion;
-    QL2 += arma::as_scalar(dx_col.t() * inv_sq_observed_diffusion * dx_col);
-  }
-  return -(QL1 + QL2 / h) / 2;
+  double ql = logdet_sq_ob_diff * n_deltaY;
+  ql += arma::trace(inv_sq_ob_diff * deltaY * deltaY.t()) / delta;
+  return -ql * 0.5;
 }
 
 // [[Rcpp::export]]

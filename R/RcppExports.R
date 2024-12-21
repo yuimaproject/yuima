@@ -73,8 +73,8 @@ Irregular_PseudoLoglik_COG <- function(lengthObs, B, Btilde, InvBtilde, a0, bq, 
     .Call('_yuima_Irregular_PseudoLoglik_COG', PACKAGE = 'yuima', lengthObs, B, Btilde, InvBtilde, a0, bq, a1, V, PseudologLik, ta, state, stateMean, e, DeltaG2, Deltat)
 }
 
-minusloglcpp_linear_state_space_theta1 <- function(logdet_sq_observed_diffusion, inv_sq_observed_diffusion, dx, h, drop_terms) {
-    .Call('_yuima_minusloglcpp_linear_state_space_theta1', PACKAGE = 'yuima', logdet_sq_observed_diffusion, inv_sq_observed_diffusion, dx, h, drop_terms)
+minusloglcpp_linear_state_space_theta1 <- function(logdet_sq_ob_diff, inv_sq_ob_diff, deltaY, delta) {
+    .Call('_yuima_minusloglcpp_linear_state_space_theta1', PACKAGE = 'yuima', logdet_sq_ob_diff, inv_sq_ob_diff, deltaY, delta)
 }
 
 calc_inverce_square <- function(cube) {
