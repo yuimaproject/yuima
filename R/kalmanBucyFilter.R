@@ -37,7 +37,7 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
     n <- yuima@sampling@n[1] * K
     time.points <- as.matrix((0:n) * delta)
     observed.diffusion <- kalman_bucy_filter_eval_exp(observed.diffusion.expr, tmp.env, yuima@model@time.variable, time.points)
-    inv.squared.observed.diffusion <- calc_inverce_square(observed.diffusion)
+    inv.squared.observed.diffusion <- calc_inverse_square(observed.diffusion)
   }
   return(kalmanBucyFilter.inner(yuima, delta.observed.variable, params, inv.squared.observed.diffusion, mean_init, vcov_init, delta.vcov.solve, are, explicit, time_homogeneous, minuslogl, env))
 }

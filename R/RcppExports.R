@@ -77,8 +77,8 @@ minusloglcpp_linear_state_space_theta1 <- function(logdet_sq_ob_diff, inv_sq_ob_
     .Call('_yuima_minusloglcpp_linear_state_space_theta1', PACKAGE = 'yuima', logdet_sq_ob_diff, inv_sq_ob_diff, deltaY, delta)
 }
 
-calc_inverce_square <- function(cube) {
-    .Call('_yuima_calc_inverce_square', PACKAGE = 'yuima', cube)
+calc_inverse_square <- function(cube) {
+    .Call('_yuima_calc_inverse_square', PACKAGE = 'yuima', cube)
 }
 
 driftTermCpp <- function(drift, modelstate, data, env) {

@@ -22,7 +22,7 @@ double minusloglcpp_linear_state_space_theta1(double logdet_sq_ob_diff,
 }
 
 // [[Rcpp::export]]
-arma::cube calc_inverce_square(arma::cube cube) {
+arma::cube calc_inverse_square(arma::cube cube) {
   // calculate (AA^T)^(-1) for each slice.
   arma::cube res(cube.n_rows, cube.n_rows, cube.n_slices);
   int slices = cube.n_slices;

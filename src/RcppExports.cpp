@@ -298,14 +298,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// calc_inverce_square
-arma::cube calc_inverce_square(arma::cube cube);
-RcppExport SEXP _yuima_calc_inverce_square(SEXP cubeSEXP) {
+// calc_inverse_square
+arma::cube calc_inverse_square(arma::cube cube);
+RcppExport SEXP _yuima_calc_inverse_square(SEXP cubeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::cube >::type cube(cubeSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_inverce_square(cube));
+    rcpp_result_gen = Rcpp::wrap(calc_inverse_square(cube));
     return rcpp_result_gen;
 END_RCPP
 }

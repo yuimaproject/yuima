@@ -387,7 +387,7 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
 
 # function to calculate minus quasi-log likelihood for theta2 estimation
 # yuima: yuima objects
-# inv.squared.observed.diffusion: inverce of squared observed diffusion coef
+# inv.squared.observed.diffusion: inverse of squared observed diffusion coef
 # theta2: params in drift or unobserved diffusion
 # filter_mean_init: estimated value for X_0
 # env: env to evaluate drift and diffusion
