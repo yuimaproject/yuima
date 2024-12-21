@@ -50,27 +50,33 @@ double calc_filter_mean_time_homogeneous_with_vcov_are(
   arma::mat mean_prev_coef =
       arma::eye(d_un, d_un) + (un_dr_sl - deltaY_coef * ob_dr_sl) * delta;
   arma::vec intercept = (un_dr_in - deltaY_coef * ob_dr_in) * delta;
+  arma::mat deltaY_term_plus_intercept =
+      deltaY_term.each_col() + (un_dr_in - deltaY_coef * ob_dr_in) * delta;
+  ;
 
+  for (int i = 0; i < n_deltaY; i++) {
+    arma::vec deltaY_term_plus_intercept_col(&deltaY_term_plus_intercept(0, i),
+                                             d_un, false, true);
+    arma::vec mean_prev(&mean(0, i), d_un, false, true);
+    mean.col(i + 1) =
+        mean_prev_coef * mean_prev + deltaY_term_plus_intercept_col;
+  }
+  // calc minuslogl
+  // simultaneous calculation of minuslogl
   if (calc_minuslogl) {
-    for (int i = 0; i < n_deltaY; i++) {
-      arma::vec deltaY_term_col(&deltaY_term(0, i), d_un, false, true);
-      arma::vec mean_prev(&mean(0, i), d_un, false, true);
-      mean.col(i + 1) =
-          mean_prev_coef * mean_prev + deltaY_term_col + intercept;
-      if (i > drop_terms) {
-        arma::vec deltaY_col(&deltaY(0, i), d_ob, false, true);
-        arma::vec tmp = (ob_dr_sl * mean_prev + ob_dr_in) * delta - deltaY_col;
-        minuslogl += arma::dot(tmp.t(), inv_sq_ob_diff * tmp);
-      }
+    arma::mat tmp(d_ob, n_deltaY);
+    if (drop_terms > 0) {
+      tmp = (ob_dr_sl * mean.submat(0, drop_terms, d_un - 1, n_deltaY - 1) +
+             ob_dr_in * arma::ones(1, n_deltaY - drop_terms)) *
+                delta -
+            deltaY.submat(0, drop_terms, d_ob - 1, n_deltaY - 1);
+    } else {
+      tmp = (ob_dr_sl * mean.submat(0, 0, d_un - 1, n_deltaY - 1) +
+             ob_dr_in * arma::ones(1, n_deltaY)) *
+                delta -
+            deltaY;
     }
-    minuslogl = minuslogl * 0.5 / delta;
-  } else {
-    for (int i = 0; i < n_deltaY; i++) {
-      arma::vec deltaY_term_col(&deltaY_term(0, i), d_un, false, true);
-      arma::vec mean_prev(&mean(0, i), d_un, false, true);
-      mean.col(i + 1) =
-          mean_prev_coef * mean_prev + deltaY_term_col + intercept;
-    }
+    minuslogl = arma::trace(inv_sq_ob_diff * tmp * tmp.t()) * 0.5 / delta;
   }
 
   return minuslogl;
@@ -108,13 +114,15 @@ double calc_filter_mean_explicit(arma::mat& mean, const arma::mat& un_dr_sl,
       arma::expmat((un_dr_sl - intermed * ob_dr_sl) * delta);
   arma::mat deltaY_coeff = exp_alpha_h * intermed;
   arma::mat deltaY_term = deltaY_coeff * deltaY;
-  arma::mat intercept =
+  arma::mat deltaY_term_plus_intercept =
+      deltaY_term.each_col() +
       (exp_alpha_h * un_dr_in + deltaY_coeff * ob_dr_in) * delta;
 
   for (int i = 0; i < n_deltaY; i++) {
     arma::vec mean_prev(&mean(0, i), d_un, false, true);
-    arma::vec deltaY_term_col(&deltaY_term(0, i), d_un, false, true);
-    mean.col(i + 1) = exp_alpha_h * mean_prev + deltaY_term_col + intercept;
+    arma::vec deltaY_term_plus_intercept_col(&deltaY_term_plus_intercept(0, i),
+                                             d_un, false, true);
+    mean.col(i + 1) = exp_alpha_h * mean_prev + deltaY_term_plus_intercept_col;
   }
 
   // calc minuslogl
