@@ -1,8 +1,24 @@
-kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, time_homogeneous = FALSE, minuslogl = FALSE, env = globalenv()) {
+kalmanBucyFilter <- function(yuima,
+                             params,
+                             mean_init,
+                             vcov_init = NULL,
+                             delta.vcov.solve = 0.001,
+                             are = FALSE,
+                             explicit = FALSE,
+                             time_homogeneous = FALSE,
+                             minuslogl = FALSE,
+                             drop_terms = 0,
+                             env = globalenv()) {
   # calculate diff of observed variables
   is.observed.equation <- yuima@model@is.observed
   observed.variables <- yuima@model@state.variable[is.observed.equation]
-  delta.observed.variable <- array(dim = c(length(observed.variables), length(yuima@data@zoo.data[[1]]) - 1), dimnames = list(observed.variables))
+  delta.observed.variable <- array(
+    dim = c(
+      length(observed.variables),
+      length(yuima@data@zoo.data[[1]]) - 1
+    ),
+    dimnames = list(observed.variables)
+  )
   for (variable in observed.variables) {
     delta.observed.variable[variable, ] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable == variable)]]))
   }
@@ -12,14 +28,28 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
   is.observed.column <- rep(TRUE, col_num)
   is.unobserved.column <- rep(TRUE, col_num)
   for (i in 1:col_num) {
-    is.observed.column[i] <- all(yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i]) == "(0)"))
-    is.unobserved.column[i] <- all(!yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i]) == "(0)"))
+    is.observed.column[i] <- all(
+      yuima@model@is.observed |
+        sapply(yuima@model@diffusion, function(row) {
+          as.character(row[i]) == "(0)"
+        })
+    )
+    is.unobserved.column[i] <- all(
+      !yuima@model@is.observed |
+        sapply(yuima@model@diffusion, function(row) {
+          as.character(row[i]) == "(0)"
+        })
+    )
   }
   if (!all(is.observed.column | is.unobserved.column)) {
     yuima.stop("Invalid diffusion matrix. Cannnot divide columns to observed/unobserved.")
   }
-  observed.diffusion.expr <- lapply(yuima@model@diffusion[is.observed.equation], function(x) x[is.observed.column])
-  unobserved.diffusion.expr <- lapply(yuima@model@diffusion[!is.observed.equation], function(x) x[is.unobserved.column])
+  observed.diffusion.expr <- lapply(yuima@model@diffusion[is.observed.equation], function(x) {
+    x[is.observed.column]
+  })
+  unobserved.diffusion.expr <- lapply(yuima@model@diffusion[!is.observed.equation], function(x) {
+    x[is.unobserved.column]
+  })
 
   # evaluate observed.diffusion.expr
   tmp.env <- new.env(parent = env)
@@ -36,13 +66,46 @@ kalmanBucyFilter <- function(yuima, params, mean_init, vcov_init = NULL, delta.v
     delta <- yuima@sampling@delta / K
     n <- yuima@sampling@n[1] * K
     time.points <- as.matrix((0:n) * delta)
-    observed.diffusion <- kalman_bucy_filter_eval_exp(observed.diffusion.expr, tmp.env, yuima@model@time.variable, time.points)
+    observed.diffusion <- kalman_bucy_filter_eval_exp(
+      observed.diffusion.expr,
+      tmp.env,
+      yuima@model@time.variable,
+      time.points
+    )
     inv.squared.observed.diffusion <- calc_inverse_square(observed.diffusion)
   }
-  return(kalmanBucyFilter.inner(yuima, delta.observed.variable, params, inv.squared.observed.diffusion, mean_init, vcov_init, delta.vcov.solve, are, explicit, time_homogeneous, minuslogl, env))
+  return(
+    kalmanBucyFilter.inner(
+      yuima,
+      delta.observed.variable,
+      params,
+      inv.squared.observed.diffusion,
+      mean_init,
+      vcov_init,
+      delta.vcov.solve,
+      are,
+      explicit,
+      time_homogeneous,
+      minuslogl,
+      drop_terms,
+      env
+    )
+  )
 }
 
-kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.squared.observed.diffusion, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001, are = FALSE, explicit = FALSE, time_homogeneous = FALSE, minuslogl = FALSE, drop_terms = 0, env = globalenv()) {
+kalmanBucyFilter.inner <- function(yuima,
+                                   delta.observed.variable,
+                                   params,
+                                   inv.squared.observed.diffusion,
+                                   mean_init,
+                                   vcov_init = NULL,
+                                   delta.vcov.solve = 0.001,
+                                   are = FALSE,
+                                   explicit = FALSE,
+                                   time_homogeneous = FALSE,
+                                   minuslogl = FALSE,
+                                   drop_terms = 0,
+                                   env = globalenv()) {
   # are : flag if use algebraic Riccati equation or not
   # Calculation of `delta.observed.variable` is relatively slow and it can be a bottle neck in parameter estimation. So users can pass the values of delta.observed.variable.
   # Calculation of `inv_sq_ob_diff` is relatively slow and it can be a bottle neck in parameter estimation. So users can pass the values of inv.squared.observed.diffusion.
@@ -68,18 +131,26 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
     ## if length of observed.variables is 1 and numeric of length 1 is given to vcov_init, convert vcov_init to matrix.
     if (inherits(vcov_init, "numeric")) {
       if (length(vcov_init) != 1) {
-        yuima.stop("Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) or numeric of length 1.")
+        yuima.stop(
+          "Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) or numeric of length 1."
+        )
       }
       if (length(unobserved.variables) > 1) {
-        yuima.stop("Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) when length(observed.variables) > 1.")
+        yuima.stop(
+          "Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) when length(observed.variables) > 1."
+        )
       }
       vcov_init <- matrix(vcov_init)
     } else if (inherits(vcov_init, "matrix")) {
       if (!all(dim(vcov_init) == length(unobserved.variables))) {
-        yuima.stop("Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) or numeric of length 1.")
+        yuima.stop(
+          "Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variables) * length(unobserved.variables) or numeric of length 1."
+        )
       }
     } else {
-      yuima.stop("Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variable) * length(unobserved.variable) or numeric of length 1.")
+      yuima.stop(
+        "Invalid value for 'vcov_init', must be square matrix of size length(unobserved.variable) * length(unobserved.variable) or numeric of length 1."
+      )
     }
   }
 
@@ -88,14 +159,28 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
   is.observed.column <- rep(TRUE, col_num)
   is.unobserved.column <- rep(TRUE, col_num)
   for (i in 1:col_num) {
-    is.observed.column[i] <- all(yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i]) == "(0)"))
-    is.unobserved.column[i] <- all(!yuima@model@is.observed | sapply(yuima@model@diffusion, function(row) as.character(row[i]) == "(0)"))
+    is.observed.column[i] <- all(
+      yuima@model@is.observed |
+        sapply(yuima@model@diffusion, function(row) {
+          as.character(row[i]) == "(0)"
+        })
+    )
+    is.unobserved.column[i] <- all(
+      !yuima@model@is.observed |
+        sapply(yuima@model@diffusion, function(row) {
+          as.character(row[i]) == "(0)"
+        })
+    )
   }
   if (!all(is.observed.column | is.unobserved.column)) {
     yuima.stop("Invalid diffusion matrix. Cannnot divide columns to observed/unobserved.")
   }
-  observed.diffusion.expr <- lapply(yuima@model@diffusion[is.observed.equation], function(x) x[is.observed.column])
-  unobserved.diffusion.expr <- lapply(yuima@model@diffusion[!is.observed.equation], function(x) x[is.unobserved.column])
+  observed.diffusion.expr <- lapply(yuima@model@diffusion[is.observed.equation], function(x) {
+    x[is.observed.column]
+  })
+  unobserved.diffusion.expr <- lapply(yuima@model@diffusion[!is.observed.equation], function(x) {
+    x[is.unobserved.column]
+  })
 
   # get coefficient matrix of drift term of observed/unobserved variables
   observed.drift.slope.expr <- yuima@model@drift_slope[is.observed.equation]
@@ -137,11 +222,36 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
       subsamp_n <- yuima@sampling@n[1] * subsamp_rate + 1
       time.points <- as.matrix((0:(subsamp_n - 1)) * subsamp_delta)
 
-      unobserved.drift.slope <- kalman_bucy_filter_eval_exp(unobserved.drift.slope.expr, tmp.env, yuima@model@time.variable, time.points)
-      unobserved.drift.intercept <- kalman_bucy_filter_eval_exp(unobserved.drift.intercept.expr, tmp.env, yuima@model@time.variable, time.points)
-      unobserved.diffusion <- kalman_bucy_filter_eval_exp(unobserved.diffusion.expr, tmp.env, yuima@model@time.variable, time.points)
-      observed.drift.slope <- kalman_bucy_filter_eval_exp(observed.drift.slope.expr, tmp.env, yuima@model@time.variable, time.points)
-      observed.drift.intercept <- kalman_bucy_filter_eval_exp(observed.drift.intercept.expr, tmp.env, yuima@model@time.variable, time.points)
+      unobserved.drift.slope <- kalman_bucy_filter_eval_exp(
+        unobserved.drift.slope.expr,
+        tmp.env,
+        yuima@model@time.variable,
+        time.points
+      )
+      unobserved.drift.intercept <- kalman_bucy_filter_eval_exp(
+        unobserved.drift.intercept.expr,
+        tmp.env,
+        yuima@model@time.variable,
+        time.points
+      )
+      unobserved.diffusion <- kalman_bucy_filter_eval_exp(
+        unobserved.diffusion.expr,
+        tmp.env,
+        yuima@model@time.variable,
+        time.points
+      )
+      observed.drift.slope <- kalman_bucy_filter_eval_exp(
+        observed.drift.slope.expr,
+        tmp.env,
+        yuima@model@time.variable,
+        time.points
+      )
+      observed.drift.intercept <- kalman_bucy_filter_eval_exp(
+        observed.drift.intercept.expr,
+        tmp.env,
+        yuima@model@time.variable,
+        time.points
+      )
     }
   }
   dim(unobserved.drift.intercept) <- dim(unobserved.drift.intercept)[c(1, 3)]
@@ -168,7 +278,11 @@ kalmanBucyFilter.inner <- function(yuima, delta.observed.variable, params, inv.s
   mean <- filter_res$mean
   minuslogl <- filter_res$minuslogl
   rownames(mean) <- unobserved.variables
-  ts.mean <- ts(t(mean), start = start(yuima@data@zoo.data[[1]]), frequency = frequency(yuima@data@zoo.data[[1]]))
+  ts.mean <- ts(
+    t(mean),
+    start = start(yuima@data@zoo.data[[1]]),
+    frequency = frequency(yuima@data@zoo.data[[1]])
+  )
   res <- new(
     "yuima.kalmanBucyFilter",
     model = yuima@model,
