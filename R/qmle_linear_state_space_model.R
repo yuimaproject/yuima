@@ -259,6 +259,7 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
   observed.diffusion <- lapply(yuima@model@diffusion[yuima@model@is.observed], function(x) x[is.observed.column])[[1]]
   if (sum(yuima@model@is.observed) == 1 && sum(is.observed.column) == 1) {
     n <- yuima@sampling@n[[1]]
+    h <- yuima@sampling@delta
     param_name <- yuima@model@parameter@diffusion[!attr(yuima@model@parameter@diffusion, "unobserved")]
     if (as.character(observed.diffusion) == paste("(", param_name, ")", sep = "")) {
       dX <- delta.observed.variable
