@@ -1,7 +1,7 @@
 # QMLE for linear state space model
 
 # main function
-qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "L-BFGS-B", fixed = list(), envir = globalenv(), filter_mean_init, explicit = FALSE, rcpp = FALSE, drop_terms = 0, ...) {
+qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "L-BFGS-B", fixed = list(), envir = globalenv(), filter_mean_init, explicit = FALSE, drop_terms = 0, ...) {
   # validation
   if (drop_terms >= yuima@sampling@n[[1]] + 1) {
     yuima.stop("`drop_terms` must be smaller than the number of observations (=`yuima@sampleing@n[1] + 1`)")
@@ -63,7 +63,7 @@ qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "
       start = new.start,
       method = method, fixed = list(),
       envir = envir, lower = new.lower, upper = new.upper,
-      filter_mean_init = filter_mean_init, explicit = explicit, rcpp = rcpp,
+      filter_mean_init = filter_mean_init, explicit = explicit,
       drop_terms = drop_terms, ...
     )
 
@@ -93,7 +93,7 @@ qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "
     estimate_theta1_res <- NULL
     theta1_coef <- NULL
   } else {
-    estimate_theta1_res <- estimate.state_space.theta1(yuima, start = start, lower = lower, upper = upper, theta1 = theta1, delta.observed.variable = delta.observed.variable, method = method, envir = envir, rcpp = rcpp, drop_terms = drop_terms, ...)
+    estimate_theta1_res <- estimate.state_space.theta1(yuima, start = start, lower = lower, upper = upper, theta1 = theta1, delta.observed.variable = delta.observed.variable, method = method, envir = envir, drop_terms = drop_terms, ...)
     theta1_coef <- estimate_theta1_res@coef
   }
 
@@ -102,7 +102,7 @@ qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "
   if (length(theta2) == 0) {
     estimate_theta2_res <- NULL
   } else {
-    estimate_theta2_res <- estimate.state_space.theta2(yuima, start = start, lower = lower, upper = upper, theta2 = theta2, theta1.est = theta1_coef, filter_mean_init = filter_mean_init, delta.observed.variable = delta.observed.variable, explicit = explicit, method = method, envir = envir, rcpp = rcpp, drop_terms = drop_terms, ...)
+    estimate_theta2_res <- estimate.state_space.theta2(yuima, start = start, lower = lower, upper = upper, theta2 = theta2, theta1.est = theta1_coef, filter_mean_init = filter_mean_init, delta.observed.variable = delta.observed.variable, explicit = explicit, method = method, envir = envir, drop_terms = drop_terms, ...)
   }
 
   # align object to return
@@ -175,9 +175,8 @@ qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "
 # yuima: yuima objects
 # theta1: values of parameters
 # env: must contain objects below
-# rcpp: whether to use Rcpp for acceleration or not
 # drop_terms: losses for first given terms will be ingnored on calculation
-minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE, drop_terms, delta.observed.variable, h) {
+minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, drop_terms, delta.observed.variable, h) {
   # evaluate the diffusion of the observation equation
   tmp.env <- new.env(parent = env)
   for (i in 1:length(theta1)) {
@@ -198,22 +197,13 @@ minuslogl.linear_state_space.theta1 <- function(yuima, theta1, env, rcpp = FALSE
   logdet.sq.observed.diffusion <- log(det(sq.observed.diffusion))
 
   # calculate likelihood
-  if (rcpp) {
-    QL <- minusloglcpp_linear_state_space_theta1(logdet.sq.observed.diffusion, inv.sq.observed.diffusion, delta.observed.variable, h)
-  } else {
-    QL <- 0
-    n <- yuima@sampling@n[[1]] # the number of observations - 1
-    for (j in 1:n) {
-      pn <- -0.5 * logdet.sq.observed.diffusion + (-1 / (2 * h)) * t(delta.observed.variable[, j]) %*% inv.sq.observed.diffusion %*% delta.observed.variable[, j]
-      QL <- QL + pn
-    }
-  }
+  QL <- minusloglcpp_linear_state_space_theta1(logdet.sq.observed.diffusion, inv.sq.observed.diffusion, delta.observed.variable, h)
   return(-drop(QL))
 }
 
 # estimate theta1
 estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(),
-                                        lower, upper, theta1, delta.observed.variable, rcpp, drop_terms, ...) {
+                                        lower, upper, theta1, delta.observed.variable, drop_terms, ...) {
   # validate arguments
   if (missing(yuima)) {
     yuima.stop("yuima object is missing.")
@@ -295,7 +285,7 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
   f <- function(p) {
     mycoef <- as.list(p)
     names(mycoef) <- nm[idx.diff]
-    return(minuslogl.linear_state_space.theta1(yuima, mycoef, envir, rcpp = rcpp, drop_terms = drop_terms, delta.observed.variable, h))
+    return(minuslogl.linear_state_space.theta1(yuima, mycoef, envir, drop_terms = drop_terms, delta.observed.variable, h))
   }
 
   ## args for optim
@@ -311,7 +301,6 @@ estimate.state_space.theta1 <- function(yuima, start, method, envir = globalenv(
   mydots$envir <- NULL
   mydots$theta1 <- NULL
   mydots$delta.observed.variable <- NULL
-  mydots$rcpp <- NULL
   mydots$drop_terms <- NULL
 
   # optimization
@@ -489,7 +478,6 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   mydots$filter_mean_init <- NULL
   mydots$delta.observed.variable <- NULL
   mydots$explicit <- NULL
-  mydots$rcpp <- NULL
   mydots$drop_terms <- NULL
 
   # optimization
