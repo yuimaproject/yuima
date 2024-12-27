@@ -11,19 +11,25 @@ Estimates values of unobserved variables from observed variables in a Linear Sta
 \usage{
 kalmanBucyFilter(
   yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001,
-  are = FALSE, explicit = FALSE, env = globalenv()
+  are = FALSE, explicit = FALSE, time_homogeneous = FALSE,
+  minuslogl = FALSE, drop_terms = 0, env = globalenv()
 )
 }
 \arguments{
-  \item{yuima}{A yuima object. The class of \code{yuima@model} must be \code{yuima.linear_state_space_model}.}
-  \item{params}{A list of numeric values representing the names and values of parameters.}
-  \item{mean_init}{A numeric value representing the initial value of unobserved variables.}
-  \item{vcov_init}{A matrix representing the initial variance-covariance value of unobserved variables. 
-    This is required if \code{are = FALSE}. It can be a numeric of length 1 if the number of observed variables is 1.}
-  \item{delta.vcov.solve}{A numeric value representing the step size in solving the mean squared error of the estimator.}
-  \item{are}{A logical value. If \code{TRUE}, solve the algebraic Riccati equation.}
-  \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filtering equation. The formula is available only if coefficients are time-independent.}
-  \item{env}{An environment. The environment in which the model coefficients are evaluated.}
+  \item{yuima}{A \code{yuima} object. The class of \code{yuima@model} must be \code{yuima.linear_state_space_model}.}
+  \item{params}{A list of numeric values specifying the names and values of the model parameters.}
+  \item{mean_init}{A numeric value specifying the initial value of the unobserved variables.}
+  \item{vcov_init}{A matrix specifying the initial variance-covariance of the unobserved variables.
+    This argument is required if \code{are = FALSE}. If there is only one observed variable, it can be a single numeric value of length 1.}
+  \item{delta.vcov.solve}{A numeric value specifying the step size used to solve the mean squared error of the estimator.}
+  \item{are}{A logical value. If \code{TRUE}, the algebraic Riccati equation is solved.}
+  \item{explicit}{A logical value. If \code{TRUE}, the filtering equation is solved using the explicit formula.
+    The formula is available only if the coefficients are time-independent.}
+  \item{time_homogeneous}{A logical value. If \code{TRUE}, calculations are performed under the assumption that the model coefficients are independent of time,
+    reducing computational effort. This flag is used only if \code{are = FALSE}.}
+  \item{minuslogl}{A logical value. If \code{TRUE}, the quasi-likelihood is calculated and stored in the slot \code{minuslogl}.}
+  \item{drop_terms}{A numeric value indicating how many initial terms to ignore in the calculation of the quasi-likelihood.}
+  \item{env}{An environment object specifying the environment in which the model coefficients are evaluated.}
 }
 \value{
 A \code{yuima.kalmanBucyFilter} object.
@@ -34,6 +40,7 @@ A \code{yuima.kalmanBucyFilter} object.
 \item{vcov.init}{A matrix representing the initial mean squared error of the estimator of unobserved variables.}
 \item{delta}{A numeric value representing the time step of observations.}
 \item{data}{A \code{yuima.data} object.}
+\item{minuslogl}{A numeric value representing the quasi minus log-likelihood. When the argument \code{minuslogl=FALSE}, this slot is always 0.}
 }
 \references{
 Liptser, R. S., & Shiryaev, A. N. (2001). \emph{Statistics of Random Processes: General Theory}. Springer.
