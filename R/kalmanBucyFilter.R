@@ -6,8 +6,6 @@ kalmanBucyFilter <- function(yuima,
                              are = FALSE,
                              explicit = FALSE,
                              time_homogeneous = FALSE,
-                             minuslogl = FALSE,
-                             drop_terms = 0,
                              env = globalenv()) {
   # calculate diff of observed variables
   is.observed.equation <- yuima@model@is.observed
@@ -86,10 +84,10 @@ kalmanBucyFilter <- function(yuima,
       are,
       explicit,
       time_homogeneous,
-      minuslogl,
-      drop_terms,
+      minuslogl = FALSE,
+      drop_terms = 0,
       env
-    )
+    )$filter_res
   )
 }
 
@@ -283,7 +281,7 @@ kalmanBucyFilter.inner <- function(yuima,
     start = start(yuima@data@zoo.data[[1]]),
     frequency = frequency(yuima@data@zoo.data[[1]])
   )
-  res <- new(
+  filter_res <- new(
     "yuima.kalmanBucyFilter",
     model = yuima@model,
     mean = ts.mean,
@@ -291,10 +289,9 @@ kalmanBucyFilter.inner <- function(yuima,
     mean.init = mean_init,
     vcov.init = vcov_init,
     delta = yuima@sampling@delta,
-    data = yuima@data,
-    minuslogl = minuslogl
+    data = yuima@data
   )
-  return(res)
+  return(list(filter_res = filter_res, minuslogl = minuslogl))
 }
 
 # evaluate coefficients

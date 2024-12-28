@@ -397,7 +397,7 @@ minuslogl.linear_state_space.theta2 <- function(yuima, delta.observed.variable, 
   are <- TRUE # NOTE: Estimation using are=FALSE is not implemented yet.
   filter_res <- kalmanBucyFilter.inner(yuima, delta.observed.variable = delta.observed.variable, params = theta2, inv.squared.observed.diffusion = inv.squared.observed.diffusion, mean_init = filter_mean_init, are = are, explicit = explicit, minuslogl = TRUE, drop_terms = drop_terms, env = tmp.env)
 
-  return(filter_res@minuslogl)
+  return(filter_res$minuslogl)
 }
 
 # estimate theta2

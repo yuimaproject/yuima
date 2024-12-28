@@ -12,7 +12,7 @@ Estimates values of unobserved variables from observed variables in a Linear Sta
 kalmanBucyFilter(
   yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001,
   are = FALSE, explicit = FALSE, time_homogeneous = FALSE,
-  minuslogl = FALSE, drop_terms = 0, env = globalenv()
+  env = globalenv()
 )
 }
 \arguments{
@@ -27,8 +27,6 @@ kalmanBucyFilter(
     The formula is available only if the coefficients are time-independent.}
   \item{time_homogeneous}{A logical value. If \code{TRUE}, calculations are performed under the assumption that the model coefficients are independent of time,
     reducing computational effort. This flag is used only if \code{are = FALSE}.}
-  \item{minuslogl}{A logical value. If \code{TRUE}, the quasi-likelihood is calculated and stored in the slot \code{minuslogl}.}
-  \item{drop_terms}{A numeric value indicating how many initial terms to ignore in the calculation of the quasi-likelihood.}
   \item{env}{An environment object specifying the environment in which the model coefficients are evaluated.}
 }
 \value{
@@ -40,7 +38,6 @@ A \code{yuima.kalmanBucyFilter} object.
 \item{vcov.init}{A matrix representing the initial mean squared error of the estimator of unobserved variables.}
 \item{delta}{A numeric value representing the time step of observations.}
 \item{data}{A \code{yuima.data} object.}
-\item{minuslogl}{A numeric value representing the quasi minus log-likelihood. When the argument \code{minuslogl=FALSE}, this slot is always 0.}
 }
 \references{
 Liptser, R. S., & Shiryaev, A. N. (2001). \emph{Statistics of Random Processes: General Theory}. Springer.
