@@ -52,7 +52,7 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">qmle.linear_state_space_model</span><span class="op">(</span></span>
 <span>  <span class="va">yuima</span>, <span class="va">start</span>, <span class="va">lower</span>, <span class="va">upper</span>, method <span class="op">=</span> <span class="st">"L-BFGS-B"</span>, fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">globalenv</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">filter_mean_init</span>, explicit <span class="op">=</span> <span class="cn">FALSE</span>, rcpp <span class="op">=</span> <span class="cn">FALSE</span>, drop_terms <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">globalenv</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">filter_mean_init</span>, explicit <span class="op">=</span> <span class="cn">FALSE</span>, drop_terms <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -86,9 +86,6 @@
 
   <dt id="arg-explicit">explicit<a class="anchor" aria-label="anchor" href="#arg-explicit"></a></dt>
 <dd><p>A logical value. If <code>TRUE</code>, use the explicit formula to solve the filitering equation.</p></dd>
-
-  <dt id="arg-rcpp">rcpp<a class="anchor" aria-label="anchor" href="#arg-rcpp"></a></dt>
-<dd><p>A logical value. If <code>TRUE</code>, use Rcpp to calculate minus log quasi-likelihood.</p></dd>
 
   <dt id="arg-drop-terms">drop_terms<a class="anchor" aria-label="anchor" href="#arg-drop-terms"></a></dt>
 <dd><p>A numeric value. The specified number of initial terms in the filtering result will be excluded from the quasi-likelihood function calculation.</p></dd>
@@ -189,7 +186,7 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">qmle.linear_state_space_model</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">yuima</span>, start <span class="op">=</span> <span class="va">start.par</span>, upper <span class="op">=</span> <span class="va">upper.par</span>, lower <span class="op">=</span> <span class="va">lower.par</span>, </span></span>
-<span class="r-in"><span>  filter_mean_init <span class="op">=</span> <span class="va">filter_mean_init</span>, rcpp <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  filter_mean_init <span class="op">=</span> <span class="va">filter_mean_init</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>

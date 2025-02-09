@@ -52,7 +52,8 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">kalmanBucyFilter</span><span class="op">(</span></span>
 <span>  <span class="va">yuima</span>, <span class="va">params</span>, <span class="va">mean_init</span>, vcov_init <span class="op">=</span> <span class="cn">NULL</span>, delta.vcov.solve <span class="op">=</span> <span class="fl">0.001</span>,</span>
-<span>  are <span class="op">=</span> <span class="cn">FALSE</span>, explicit <span class="op">=</span> <span class="cn">FALSE</span>, env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">globalenv</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  are <span class="op">=</span> <span class="cn">FALSE</span>, explicit <span class="op">=</span> <span class="cn">FALSE</span>, time_homogeneous <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">globalenv</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -60,29 +61,34 @@
     <h2>Arguments</h2>
     <p></p>
 <dl><dt id="arg-yuima">yuima<a class="anchor" aria-label="anchor" href="#arg-yuima"></a></dt>
-<dd><p>A yuima object. The class of <code>yuima@model</code> must be <code>yuima.linear_state_space_model</code>.</p></dd>
+<dd><p>A <code>yuima</code> object. The class of <code>yuima@model</code> must be <code>yuima.linear_state_space_model</code>.</p></dd>
 
   <dt id="arg-params">params<a class="anchor" aria-label="anchor" href="#arg-params"></a></dt>
-<dd><p>A list of numeric values representing the names and values of parameters.</p></dd>
+<dd><p>A list of numeric values specifying the names and values of the model parameters.</p></dd>
 
   <dt id="arg-mean-init">mean_init<a class="anchor" aria-label="anchor" href="#arg-mean-init"></a></dt>
-<dd><p>A numeric value representing the initial value of unobserved variables.</p></dd>
+<dd><p>A numeric value specifying the initial value of the unobserved variables.</p></dd>
 
   <dt id="arg-vcov-init">vcov_init<a class="anchor" aria-label="anchor" href="#arg-vcov-init"></a></dt>
-<dd><p>A matrix representing the initial variance-covariance value of unobserved variables.
-    This is required if <code>are = FALSE</code>. It can be a numeric of length 1 if the number of observed variables is 1.</p></dd>
+<dd><p>A matrix specifying the initial variance-covariance of the unobserved variables.
+    This argument is required if <code>are = FALSE</code>. If there is only one observed variable, it can be a single numeric value of length 1.</p></dd>
 
   <dt id="arg-delta-vcov-solve">delta.vcov.solve<a class="anchor" aria-label="anchor" href="#arg-delta-vcov-solve"></a></dt>
-<dd><p>A numeric value representing the step size in solving the mean squared error of the estimator.</p></dd>
+<dd><p>A numeric value specifying the step size used to solve the mean squared error of the estimator.</p></dd>
 
   <dt id="arg-are">are<a class="anchor" aria-label="anchor" href="#arg-are"></a></dt>
-<dd><p>A logical value. If <code>TRUE</code>, solve the algebraic Riccati equation.</p></dd>
+<dd><p>A logical value. If <code>TRUE</code>, the algebraic Riccati equation is solved.</p></dd>
 
   <dt id="arg-explicit">explicit<a class="anchor" aria-label="anchor" href="#arg-explicit"></a></dt>
-<dd><p>A logical value. If <code>TRUE</code>, use the explicit formula to solve the filtering equation. The formula is available only if coefficients are time-independent.</p></dd>
+<dd><p>A logical value. If <code>TRUE</code>, the filtering equation is solved using the explicit formula.
+    The formula is available only if the coefficients are time-independent.</p></dd>
+
+  <dt id="arg-time-homogeneous">time_homogeneous<a class="anchor" aria-label="anchor" href="#arg-time-homogeneous"></a></dt>
+<dd><p>A logical value. If <code>TRUE</code>, calculations are performed under the assumption that the model coefficients are independent of time,
+    reducing computational effort. This flag is used only if <code>are = FALSE</code>.</p></dd>
 
   <dt id="arg-env">env<a class="anchor" aria-label="anchor" href="#arg-env"></a></dt>
-<dd><p>An environment. The environment in which the model coefficients are evaluated.</p></dd>
+<dd><p>An environment object specifying the environment in which the model coefficients are evaluated.</p></dd>
 
 </dl></div>
     <div id="value">
