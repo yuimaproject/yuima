@@ -134,3 +134,8 @@ v. 1.15.20 2022/12/19
 
 v. 1.15.22 2022/12/20
 * fixed wrong URL on README.md
+
+v. 1.15.28 2025/02/13
+* added kalmanBucyFilter and qmle.linear_state_space_model
+* updated setYuima and setModel
+* added yuima.linear_state_space_model-class, yuima.state_space_model-class and yuima.kalmanBucyFilter-class
