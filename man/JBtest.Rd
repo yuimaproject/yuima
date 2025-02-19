@@ -29,7 +29,7 @@ This function removes large increments which are regarded as jumps based on the 
 \item{Removed}{Removed jumps and jump times}
 \item{OGQMLE}{Gaussian quasi maximum likelihood estimator before jump removal}
 \item{JRGQMLE}{Gaussian quasi maximum likelihood estimator after jump removal}
-\item{Figures}{For visualization, the jump points are presented. In addition, the histgram of the jump removed self-normalized residuals, transition of the estimators and the logarithm of Jarque-Bera statistics are given as figures}
+\item{Figures}{For visualization, the jump points are presented. In addition, the histogram of the jump removed self-normalized residuals, transition of the estimators and the logarithm of Jarque-Bera statistics are given as figures}
 }
 
 \references{
