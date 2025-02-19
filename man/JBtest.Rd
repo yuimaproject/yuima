@@ -16,7 +16,7 @@ JBtest(yuima,start,lower,upper,alpha,skewness=TRUE,kurtosis=TRUE,withdrift=FALSE
   \item{yuima}{a yuima object (diffusion with compound Poisson jumps).}
   \item{lower}{a named list for specifying lower bounds of parameters.}
   \item{upper}{a named list for specifying upper bounds of parameters.}
-  \item{alpha}{Insert Description Here.}
+  \item{alpha}{significance level of Jarque-Bera normality test.}
   \item{start}{initial values to be passed to the optimizer.}
   \item{skewness}{use third moment information ? by default, skewness=TRUE}
   \item{kurtosis}{use fourth moment information ? by default, kurtosis=TRUE}
@@ -34,14 +34,15 @@ This function removes large increments which are regarded as jumps based on the 
 
 \references{
 Masuda, H. (2013). Asymptotics for functionals of self-normalized residuals of discretely observed stochastic processes. 
-                   Stochastic Processes and their Applications 123 (2013), 2752--2778
+                   Stochastic Processes and their Applications 123 (2013), 2752--2778.
 
-Masuda, H and Uehara, Y. (2018) Estimating Diffusion With Compound Poisson Jumps Based On Self-normalized Residuals, arXiv:1802.03945
+Masuda, H. and Uehara, Y. (2021). Estimating Diffusion With Compound Poisson Jumps Based On Self-normalized Residuals.
+                                 Journal of Statistical Planning and Inference., 215, 158--183.
 }
 \author{
 The YUIMA Project Team
 
-Contacts: Yuma Uehara \email{y-uehara@ism.ac.jp}
+Contacts: Yuma Uehara \email{y-uehara@kansai-u.ac.jp}
 }
 
 
