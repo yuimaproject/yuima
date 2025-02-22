@@ -1,10 +1,23 @@
 # QMLE for linear state space model
 
 # main function
-qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "L-BFGS-B", fixed = list(), envir = globalenv(), filter_mean_init, explicit = FALSE, drop_terms = 0, ...) {
+qmle.linear_state_space_model <- function(yuima, start, lower = NULL, upper = NULL, method = "L-BFGS-B", fixed = list(), envir = globalenv(), filter_mean_init, explicit = FALSE, drop_terms = 0, ...) {
   # validation
   if (drop_terms >= yuima@sampling@n[[1]] + 1) {
     yuima.stop("`drop_terms` must be smaller than the number of observations (=`yuima@sampleing@n[1] + 1`)")
+  }
+
+  ## if num of pars == 1, upper and lower is required (in this case, method is ignored and `optimize` is used).
+  ## else if method == "L-BFGS-B" or "Brent", upper and lower is required.
+  ## else, upper and lower is not required.
+  if (length(yuima@model@parameter@all) == 1) {
+    if (missing(upper) || missing(lower)) {
+      yuima.stop("upper and lower are required when the number of parameters is 1.")
+    }
+  } else if (method == "L-BFGS-B" | method == "Brent") {
+    if (missing(upper) || missing(lower)) {
+      yuima.stop("upper and lower are required when the method is L-BFGS-B or Brent.")
+    }
   }
 
   #### fixed
