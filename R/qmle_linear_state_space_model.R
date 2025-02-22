@@ -1,7 +1,7 @@
 # QMLE for linear state space model
 
 # main function
-qmle.linear_state_space_model <- function(yuima, start, lower, upper, method = "L-BFGS-B", fixed = list(), envir = globalenv(), filter_mean_init, explicit = FALSE, drop_terms = 0, ...) {
+qmle.linear_state_space_model <- function(yuima, start, lower = NULL, upper = NULL, method = "L-BFGS-B", fixed = list(), envir = globalenv(), filter_mean_init, explicit = FALSE, drop_terms = 0, ...) {
   # validation
   if (drop_terms >= yuima@sampling@n[[1]] + 1) {
     yuima.stop("`drop_terms` must be smaller than the number of observations (=`yuima@sampleing@n[1] + 1`)")
