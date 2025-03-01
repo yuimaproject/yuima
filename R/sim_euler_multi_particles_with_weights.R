@@ -1,17 +1,16 @@
-euler_multi_particles_with_weights <- function(xinits, yuima, dW,
-    env) {
-    sdeModel <- yuima@model
+euler_multi_particles_with_weights <- function(xinits, model, sampling,
+    dW, env) {
 
-    modelstate <- sdeModel@solve.variable
-    modeltime <- sdeModel@time.variable
-    V0 <- sdeModel@drift
-    V <- sdeModel@diffusion
-    r.size <- sdeModel@noise.number
-    Initial <- yuima@sampling@Initial[1]
-    n <- yuima@sampling@n[1]
+    modelstate <- model@solve.variable
+    modeltime <- model@time.variable
+    V0 <- model@drift
+    V <- model@diffusion
+    r.size <- model@noise.number
+    Initial <- sampling@Initial[1]
+    n <- sampling@n[1]
 
     ## :: set time step
-    delta <- yuima@sampling@delta
+    delta <- sampling@delta
 
     ## :: using Euler-Maruyama method
     partial_evaled_drift <- partial.eval(V0, env)
