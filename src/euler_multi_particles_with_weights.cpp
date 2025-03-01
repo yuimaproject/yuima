@@ -40,7 +40,7 @@ arma::cube euler_multi_particles_with_weights(
       for (int j = 0; j < d; j++) {
         double temp = X(k, j, i) + drift_values[j] * dt;
         for (int l = 0; l < r; l++) {
-          temp += diffusion_values[l + j * r] * dW[l + i * r];
+          temp += diffusion_values[l + j * r] * dW[l + i * r + k * n * r];
         }
         X(k, j, i + 1) = temp;
       }

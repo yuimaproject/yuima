@@ -88,8 +88,7 @@ simulate_multi_particles_with_weights <- function(yuima, nsim, seed, xinits, tru
 
     ## :: using Euler-Maruyama method
     delta <- (Terminal - Initial)/n
-    dW <- rnorm(n * r.size, 0, sqrt(delta))
-    dW <- matrix(dW, ncol = n, nrow = r.size, byrow = TRUE)
+    dW <- rnorm(nsim * n * r.size, 0, sqrt(delta))
 
     data <- euler_multi_particles_with_weights(xinits, yuima, dW, yuimaEnv)
 
