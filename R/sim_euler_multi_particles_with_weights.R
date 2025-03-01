@@ -1,24 +1,22 @@
 euler_multi_particles_with_weights <- function(xinits, model, sampling,
     dW, env) {
-
+    # args for euler method
     modelstate <- model@solve.variable
     modeltime <- model@time.variable
-    V0 <- model@drift
-    V <- model@diffusion
-    r.size <- model@noise.number
-    Initial <- sampling@Initial[1]
+    drift <- model@drift
+    diffusion <- model@diffusion
+    r_size <- model@noise.number
+    initial_time <- sampling@Initial[1]
     n <- sampling@n[1]
-
-    ## :: set time step
     delta <- sampling@delta
 
-    ## :: using Euler-Maruyama method
-    partial_evaled_drift <- partial.eval(V0, env)
+    # partially evaluate drift and diffusion with parameter values
     # TODO: is it possible env contains variable values, not just parameters?
-    partial_evaled_diffusion <- partial.eval(unlist(V), env)
+    partial_evaled_drift <- partial.eval(drift, env)
+    partial_evaled_diffusion <- partial.eval(unlist(diffusion), env)
 
-    X_cube <- .Call("_yuima_euler_multi_particles_with_weights",
-        xinits, Initial, r.size, delta, n, dW, modeltime, modelstate,
+    X_cube <- .Call("_yuima_euler_multi_particles_with_weights", xinits,
+        initial_time, r_size, delta, n, dW, modeltime, modelstate,
         partial_evaled_drift, partial_evaled_diffusion, env, new.env(),
         PACKAGE = "yuima")
 

@@ -1,5 +1,5 @@
-simulate_multi_particles_with_weights <- function(yuima, xinits, true_parameter,
-    method, sampling, seed) {
+simulate_multi_particles_with_weights <- function(yuima, xinits, params, method,
+    sampling, seed) {
     ## :: errors checks
 
     ## :1: error on yuima model
@@ -51,23 +51,23 @@ simulate_multi_particles_with_weights <- function(yuima, xinits, true_parameter,
 
     all_parameters <- model@parameter@all
     npar <- length(all_parameters)
-    if (missing(true_parameter) & npar > 0) {
-        true_parameter <- vector(npar, mode = "list")
+    if (missing(params) & npar > 0) {
+        params <- vector(npar, mode = "list")
         for (i in 1:npar) {
-            true_parameter[[i]] <- 0
+            params[[i]] <- 0
         }
-        names(true_parameter) <- all_parameters
+        names(params) <- all_parameters
     }
 
-    yuimaEnv <- new.env()
+    env <- new.env()
 
     if (npar > 0) {
         for (i in 1:npar) {
             par_name <- all_parameters[i]
 
-            for (j in 1:length(true_parameter)) {
-                if (par_name == names(true_parameter)[j]) {
-                  assign(par_name, true_parameter[[j]], yuimaEnv)
+            for (j in 1:length(params)) {
+                if (par_name == names(params)[j]) {
+                  assign(par_name, params[[j]], env)
                 }
             }
         }
@@ -77,16 +77,15 @@ simulate_multi_particles_with_weights <- function(yuima, xinits, true_parameter,
     delta <- sampling@delta
     nsim <- nrow(xinits)
     n <- sampling@n[1]
-    r.size <- model@noise.number
+    r_size <- model@noise.number
 
     if (!missing(seed)) {
         set.seed(seed)
     }
-    dW <- rnorm(nsim * n * r.size, 0, sqrt(delta))
+    dW <- rnorm(nsim * n * r_size, 0, sqrt(delta))
 
     ## simulate using Euler-Maruyama method
-    data <- euler_multi_particles_with_weights(xinits, model, sampling, dW,
-        yuimaEnv)
+    data <- euler_multi_particles_with_weights(xinits, model, sampling, dW, env)
 
     return(data)
 }
