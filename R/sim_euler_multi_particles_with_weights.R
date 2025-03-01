@@ -1,7 +1,9 @@
-euler_multi_particles_with_weights <- function(xinits, model, sampling,
+euler_multi_particles_with_weights <- function(xinits, weight_init, model, sampling,
     dW, env) {
     # args for euler method
+    is_observed <- model@is.observed
     modelstate <- model@solve.variable
+    modelstate <- c(modelstate[is_observed], modelstate[!is_observed])  # order observed first
     modeltime <- model@time.variable
     drift <- model@drift
     diffusion <- model@diffusion
@@ -13,12 +15,18 @@ euler_multi_particles_with_weights <- function(xinits, model, sampling,
     # partially evaluate drift and diffusion with parameter values
     # TODO: is it possible env contains variable values, not just parameters?
     partial_evaled_drift <- partial.eval(drift, env)
-    partial_evaled_diffusion <- partial.eval(unlist(diffusion), env)
+    observed_partial_evaled_drift <- partial_evaled_drift[is_observed]
+    unobserved_partial_evaled_drift <- partial_evaled_drift[!is_observed]
 
-    X_cube <- .Call("_yuima_euler_multi_particles_with_weights", xinits,
-        initial_time, r_size, delta, n, dW, modeltime, modelstate,
-        partial_evaled_drift, partial_evaled_diffusion, env, new.env(),
-        PACKAGE = "yuima")
+    observed_partial_evaled_diffusion <- partial.eval(unlist(diffusion[is_observed]),
+        env)
+    unobserved_partial_evaled_diffusion <- partial.eval(unlist(diffusion[!is_observed]),
+        env)
+
+    X_cube <- .Call("_yuima_euler_multi_particles_with_weights", xinits, weight_init,
+        initial_time, r_size, delta, n, dW, modeltime, modelstate, observed_partial_evaled_drift,
+        unobserved_partial_evaled_drift, observed_partial_evaled_diffusion, unobserved_partial_evaled_diffusion,
+        env, new.env(), PACKAGE = "yuima")
 
     return(X_cube)  # TODO: consider the type of return value
 }

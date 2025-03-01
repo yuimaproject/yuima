@@ -85,7 +85,9 @@ simulate_multi_particles_with_weights <- function(yuima, xinits, params, method,
     dW <- rnorm(nsim * n * r_size, 0, sqrt(delta))
 
     ## simulate using Euler-Maruyama method
-    data <- euler_multi_particles_with_weights(xinits, model, sampling, dW, env)
+    weight_init <- rep(1/nsim, nsim)
+    data <- euler_multi_particles_with_weights(xinits, weight_init, model,
+        sampling, dW, env)
 
     return(data)
 }

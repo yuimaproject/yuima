@@ -3,17 +3,23 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 arma::cube euler_multi_particles_with_weights(
-    arma::mat x0s, double t0, int r, double dt, int n, arma::vec dW,
-    std::string modeltime, CharacterVector modelstate, ExpressionVector drift,
-    ExpressionVector diffusion, Environment env, Environment rho) {
-  int nsim = x0s.n_rows;  // number of particles
-  int d = x0s.n_cols;     // number of dimensions
+    arma::mat x0s, arma::vec weight_init, double t0, int r, double dt, int n,
+    arma::vec dW, std::string modeltime, CharacterVector modelstate,
+    ExpressionVector observed_drift, ExpressionVector unobserved_drift,
+    ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion,
+    Environment env, Environment rho) {
+  int nsim = x0s.n_rows;                  // number of particles
+  int d_obs = observed_drift.size();      // number of observed dimensions
+  int d_unobs = unobserved_drift.size();  // number of unobserved dimensions
+  int d = x0s.n_cols;                     // number of dimensions
 
-  // Create a d x (n+1) matrix to hold the solution trajectory
+  // Create a matrix of (nsim, d, n+1) to hold the solution trajectory
   arma::cube X(nsim, d, n + 1);
-  // debug: print the dimensions of the cube
   X.slice(0) = x0s;
-  // Initialize time parameter vector
+
+  arma::mat weights(nsim, n + 1);
+  weights.col(0) = weight_init;
+
   double t = t0;
 
   // Time stepping loop
@@ -28,12 +34,20 @@ arma::cube euler_multi_particles_with_weights(
 
       // Evaluate the drift and diffusion expressions
       NumericVector drift_values(d);
-      for (int j = 0; j < d; j++) {
-        drift_values[j] = as<double>(Rf_eval(drift[j], rho));
-      }
       NumericVector diffusion_values(d * r);
-      for (int j = 0; j < d * r; j++) {
-        diffusion_values[j] = as<double>(Rf_eval(diffusion[j], rho));
+      for (int j = 0; j < d_obs; j++) {
+        drift_values[j] = as<double>(Rf_eval(observed_drift[j], rho));
+        for (int l = 0; l < r; l++) {
+          diffusion_values[l + j * r] =
+              as<double>(Rf_eval(observed_diffusion[l + j * r], rho));
+        }
+      }
+      for (int j = 0; j < d_unobs; j++) {
+        drift_values[j + d_obs] = as<double>(Rf_eval(unobserved_drift[j], rho));
+        for (int l = 0; l < r; l++) {
+          diffusion_values[l + (j + d_obs) * r] =
+              as<double>(Rf_eval(unobserved_diffusion[l + j * r], rho));
+        }
       }
 
       // Euler update: x(t+dt) = x(t) + drift*dt + diffusion*dW
@@ -45,6 +59,8 @@ arma::cube euler_multi_particles_with_weights(
         X(k, j, i + 1) = temp;
       }
     }
+
+    // Update weights
 
     // Update time parameter
     t += dt;
