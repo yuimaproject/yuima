@@ -8,7 +8,7 @@ euler_multi_particles_with_weights <- function(xinits, yuima, dW,
     V <- sdeModel@diffusion
     r.size <- sdeModel@noise.number
     Initial <- yuima@sampling@Initial[1]
-    n <- yuima@sampling@n
+    n <- yuima@sampling@n[1]
 
     ## :: set time step
     delta <- yuima@sampling@delta

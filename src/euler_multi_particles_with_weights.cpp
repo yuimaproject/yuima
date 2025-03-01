@@ -2,12 +2,10 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-arma::cube euler_multi_particles_with_weights(arma::mat x0s, double t0, int r,
-                                             double dt, int n, arma::vec dW,
-                                             std::string modeltime,
-                                             CharacterVector modelstate,
-                                             SEXP drift, SEXP diffusion,
-                                             Environment env, Environment rho) {
+arma::cube euler_multi_particles_with_weights(
+    arma::mat x0s, double t0, int r, double dt, int n, arma::vec dW,
+    std::string modeltime, CharacterVector modelstate, ExpressionVector drift,
+    ExpressionVector diffusion, Environment env, Environment rho) {
   int nsim = x0s.n_rows;  // number of particles
   int d = x0s.n_cols;     // number of dimensions
 
@@ -29,13 +27,20 @@ arma::cube euler_multi_particles_with_weights(arma::mat x0s, double t0, int r,
       }
 
       // Evaluate the drift and diffusion expressions
-      NumericVector b0 = as<NumericVector>(Rf_eval(VECTOR_ELT(drift, 0), rho));
-      NumericVector sigma0 = as<NumericVector>(Rf_eval(VECTOR_ELT(diffusion, 0), rho));
+      NumericVector drift_values(d);
+      for (int j = 0; j < d; j++) {
+        drift_values[j] = as<double>(Rf_eval(drift[j], rho));
+      }
+      NumericVector diffusion_values(d * r);
+      for (int j = 0; j < d * r; j++) {
+        diffusion_values[j] = as<double>(Rf_eval(diffusion[j], rho));
+      }
+
       // Euler update: x(t+dt) = x(t) + drift*dt + diffusion*dW
       for (int j = 0; j < d; j++) {
-        double temp = X(k, j, i) + b0[j] * dt;
+        double temp = X(k, j, i) + drift_values[j] * dt;
         for (int l = 0; l < r; l++) {
-          temp += sigma0[l + j * r] * dW[l + i * r];
+          temp += diffusion_values[l + j * r] * dW[l + i * r];
         }
         X(k, j, i + 1) = temp;
       }
