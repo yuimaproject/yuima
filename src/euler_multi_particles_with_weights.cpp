@@ -2,12 +2,12 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-arma::cube euler_multi_particles_with_weights(
+Rcpp::List euler_multi_particles_with_weights(
     arma::mat x0s, arma::vec weight_init, double t0, int r, double dt, int n,
     arma::vec dW, std::string modeltime, CharacterVector modelstate,
     ExpressionVector observed_drift, ExpressionVector unobserved_drift,
     ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion,
-    Environment env, Environment rho) {
+    arma::mat deltaY, Environment env, Environment rho) {
   int nsim = x0s.n_rows;                  // number of particles
   int d_obs = observed_drift.size();      // number of observed dimensions
   int d_unobs = unobserved_drift.size();  // number of unobserved dimensions
@@ -33,38 +33,50 @@ arma::cube euler_multi_particles_with_weights(
       }
 
       // Evaluate the drift and diffusion expressions
-      NumericVector drift_values(d);
-      NumericVector diffusion_values(d * r);
+      arma::vec drift_values(d);
+      arma::mat diffusion_values(d, r);
       for (int j = 0; j < d_obs; j++) {
-        drift_values[j] = as<double>(Rf_eval(observed_drift[j], rho));
+        drift_values(j) = as<double>(Rf_eval(observed_drift[j], rho));
         for (int l = 0; l < r; l++) {
-          diffusion_values[l + j * r] =
+          diffusion_values(j, l) =
               as<double>(Rf_eval(observed_diffusion[l + j * r], rho));
         }
       }
       for (int j = 0; j < d_unobs; j++) {
         drift_values[j + d_obs] = as<double>(Rf_eval(unobserved_drift[j], rho));
         for (int l = 0; l < r; l++) {
-          diffusion_values[l + (j + d_obs) * r] =
+          diffusion_values(j + d_obs, l) =
               as<double>(Rf_eval(unobserved_diffusion[l + j * r], rho));
         }
       }
 
       // Euler update: x(t+dt) = x(t) + drift*dt + diffusion*dW
       for (int j = 0; j < d; j++) {
-        double temp = X(k, j, i) + drift_values[j] * dt;
+        double temp = X(k, j, i) + drift_values(j) * dt;
         for (int l = 0; l < r; l++) {
-          temp += diffusion_values[l + j * r] * dW[l + i * r + k * n * r];
+          temp += diffusion_values(j, l) * dW[l + i * r + k * n * r];
         }
         X(k, j, i + 1) = temp;
       }
+
+      // Update weights
+      // first n_obs items of drift_values are the observed drift
+      arma::vec observed_drift_vec = drift_values.subvec(0, d_obs - 1);
+      // first n_obs rows of diffusion_values are the observed diffusion
+      arma::mat observed_diffusion_mat =
+          diffusion_values.submat(0, 0, d_obs - 1, r - 1);
+      weights(k, i + 1) =
+          weights(k, i) +
+          weights(k, i) *
+              arma::as_scalar(observed_drift_vec.t() *
+                              arma::inv_sympd(observed_diffusion_mat *
+                                              observed_diffusion_mat.t()) *
+                              deltaY.col(i));
     }
-
-    // Update weights
-
     // Update time parameter
     t += dt;
   }
 
-  return X;
+  return Rcpp::List::create(Rcpp::Named("values") = X,
+                            Rcpp::Named("weights") = weights);
 }

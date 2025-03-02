@@ -1,5 +1,5 @@
 euler_multi_particles_with_weights <- function(xinits, weight_init, model, sampling,
-    dW, env) {
+    dW, deltaY, env) {
     # args for euler method
     is_observed <- model@is.observed
     modelstate <- model@solve.variable
@@ -26,7 +26,6 @@ euler_multi_particles_with_weights <- function(xinits, weight_init, model, sampl
     X_cube <- .Call("_yuima_euler_multi_particles_with_weights", xinits, weight_init,
         initial_time, r_size, delta, n, dW, modeltime, modelstate, observed_partial_evaled_drift,
         unobserved_partial_evaled_drift, observed_partial_evaled_diffusion, unobserved_partial_evaled_diffusion,
-        env, new.env(), PACKAGE = "yuima")
-
+        deltaY, env, new.env(), PACKAGE = "yuima")
     return(X_cube)  # TODO: consider the type of return value
 }

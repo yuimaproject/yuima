@@ -1,5 +1,5 @@
-simulate_multi_particles_with_weights <- function(yuima, xinits, params, method,
-    sampling, seed) {
+simulate_multi_particles_with_weights <- function(yuima, xinits, params,
+    method, sampling, seed) {
     ## :: errors checks
 
     ## :1: error on yuima model
@@ -84,10 +84,19 @@ simulate_multi_particles_with_weights <- function(yuima, xinits, params, method,
     }
     dW <- rnorm(nsim * n * r_size, 0, sqrt(delta))
 
+    modelstate <- model@state.variable
+    observed_variables <- modelstate[model@is.observed]
+    zoodata <- yuima@data@zoo.data
+    deltaY <- array(dim = c(length(observed_variables), length(zoodata[[1]]) -
+        1), dimnames = list(observed_variables))
+    for (variable in observed_variables) {
+        deltaY[variable, ] <- diff(matrix(zoodata[[which(modelstate ==
+            variable)]]))
+    }
     ## simulate using Euler-Maruyama method
     weight_init <- rep(1/nsim, nsim)
     data <- euler_multi_particles_with_weights(xinits, weight_init, model,
-        sampling, dW, env)
+        sampling, dW, deltaY, env)
 
     return(data)
 }
