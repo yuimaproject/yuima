@@ -23,9 +23,6 @@ Rcpp::List euler_multi_particles_with_weights(
 
   double t = t0;
 
-  double total_eval_time_drift = 0;
-  double total_eval_time_diffusion = 0;
-
   // Time stepping loop
   for (int i = 0; i < n; i++) {
     // assign the current time variable to the environment
@@ -36,16 +33,11 @@ Rcpp::List euler_multi_particles_with_weights(
         rho.assign(as<std::string>(modelstate[j]), X(k, j, i));
       }
 
-      clock_t start_drift = clock();
       // Evaluate the drift and diffusion expressions
       arma::vec observed_drift_values =
           as<arma::vec>(Rf_eval(observed_drift[0], rho));
       arma::vec unobserved_drift_values =
           as<arma::vec>(Rf_eval(unobserved_drift[0], rho));
-      clock_t end_drift = clock();
-      total_eval_time_drift +=
-          (double)(end_drift - start_drift) / CLOCKS_PER_SEC;
-      clock_t start_diffusion = clock();
       NumericVector vec_observed_diffusion_values_sexp =
           Rf_eval(observed_diffusion[0], rho);
       arma::mat t_observed_diffusion_values(
@@ -54,9 +46,6 @@ Rcpp::List euler_multi_particles_with_weights(
           Rf_eval(unobserved_diffusion[0], rho);
       arma::mat t_unobserved_diffusion_values(
           vec_unobserved_diffusion_values_sexp.begin(), r, d_unobs, false);
-      clock_t end_diffusion = clock();
-      total_eval_time_diffusion +=
-          (double)(end_diffusion - start_diffusion) / CLOCKS_PER_SEC;
 
       // Euler update: x(t+dt) = x(t) + drift*dt + diffusion*dW
       for (int j = 0; j < d_unobs; j++) {
@@ -80,12 +69,6 @@ Rcpp::List euler_multi_particles_with_weights(
     // Update time parameter
     t += dt;
   }
-
-  Rcout << "Total drift evaluation time: " << total_eval_time_drift
-        << std::endl;
-  Rcout << "Total diffusion evaluation time: " << total_eval_time_diffusion
-        << std::endl;
-
   return Rcpp::List::create(Rcpp::Named("values") = X,
                             Rcpp::Named("weights") = weights);
 }
