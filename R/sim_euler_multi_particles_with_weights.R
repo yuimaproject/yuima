@@ -2,8 +2,7 @@ euler_multi_particles_with_weights <- function(xinits, weight_init, model, sampl
     dW, deltaY, env) {
     # args for euler method
     is_observed <- model@is.observed
-    modelstate <- model@solve.variable
-    modelstate <- c(modelstate[is_observed], modelstate[!is_observed])  # order observed first
+    modelstate <- model@solve.variable[!is_observed]
     modeltime <- model@time.variable
     drift <- model@drift
     diffusion <- model@diffusion
@@ -17,11 +16,20 @@ euler_multi_particles_with_weights <- function(xinits, weight_init, model, sampl
     partial_evaled_drift <- partial.eval(drift, env)
     observed_partial_evaled_drift <- partial_evaled_drift[is_observed]
     unobserved_partial_evaled_drift <- partial_evaled_drift[!is_observed]
-
     observed_partial_evaled_diffusion <- partial.eval(unlist(diffusion[is_observed]),
         env)
     unobserved_partial_evaled_diffusion <- partial.eval(unlist(diffusion[!is_observed]),
         env)
+
+    # convert expressions to length 1
+    observed_partial_evaled_drift <- parse(text = paste("c(", paste(as.character(observed_partial_evaled_drift),
+        collapse = ","), ")"))
+    unobserved_partial_evaled_drift <- parse(text = paste("c(", paste(as.character(unobserved_partial_evaled_drift),
+        collapse = ","), ")"))
+    observed_partial_evaled_diffusion <- parse(text = paste("matrix(c(", paste(as.character(observed_partial_evaled_diffusion),
+        collapse = ","), "), ncol = ", r_size, ", byrow = TRUE)"))
+    unobserved_partial_evaled_diffusion <- parse(text = paste("matrix(c(", paste(as.character(unobserved_partial_evaled_diffusion),
+        collapse = ","), "), ncol = ", r_size, ", byrow = TRUE)"))
 
     X_cube <- .Call("_yuima_euler_multi_particles_with_weights", xinits, weight_init,
         initial_time, r_size, delta, n, dW, modeltime, modelstate, observed_partial_evaled_drift,
