@@ -2,7 +2,7 @@
 \docType{class}
 \alias{carmaHawkes.info-class}
 
-\title{Class for information on the Hawkes process with a CARMA(p,q) intensity}
+\title{Class for Information on the Hawkes Process with a CARMA(p,q) Intensity}
 
 \description{
   The \code{carmaHawkes.info-class} is a class of the  \pkg{yuima} package.  

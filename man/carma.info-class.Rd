@@ -3,7 +3,7 @@
 \docType{class}
 \alias{carma.info-class}
 
-\title{Class for information about CARMA(p,q) model}
+\title{Class for nformation about CARMA(p,q) model}
 \description{
   The \code{carma.info-class} is a class of the  \pkg{yuima} package.  
 }

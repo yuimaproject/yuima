@@ -2,7 +2,7 @@
 \alias{setModel}
 
 \title{
-  Basic description of stochastic differential equations (SDE)
+  Basic Description of Stochastic Differential Equations (SDE)
 }
 
 \description{

@@ -1,7 +1,7 @@
 \name{adaBayes}
 \alias{adaBayes}
 \alias{adaBayes,yuima-method}
-\title{Adaptive Bayes estimator for the parameters in sde model}
+\title{Adaptive Bayes Estimator for the Parameters in SDE Model}
 \description{
   The \code{adabayes.mcmc} class is a class of the  \pkg{yuima} package that extends the \code{mle-class}.}
 \usage{
