@@ -322,3 +322,64 @@ setMethod("mean", "yuima.kalmanBucyFilter", function(x) x@mean )
 
 setGeneric("vcov")
 setMethod("vcov", "yuima.kalmanBucyFilter", function(object) object@vcov )
+
+setMethod("plot", "yuima.kalmanBucyFilter",
+          function(x) {
+            orig_par <- par(no.readonly = TRUE)
+            # config
+            mar=c(4, 4, 0, 2)
+            oma=c(1,1,1,1)
+            mgp=c(2.5, 1, 0)
+            cols <- c("black", "blue")
+            ltys <- c(1, 2)
+            
+            # spitting screen
+            unobserved_variables = x@model@state.variable[!x@model@is.observed] 
+            
+            n_screen <- length(unobserved_variables)
+            split.screen(figs = c(n_screen, 1))
+            
+            
+            for (i in 1:n_screen) {
+              screen(i)
+              par(mar = mar, oma =oma, mgp=mgp)
+              var_name = unobserved_variables[i]
+              orig_index = match(var_name, x@model@state.variable)
+              # create frame
+              true.x.data <- as.vector(x@data@zoo.data[[orig_index]])
+              est.x.data <- x@mean[,var_name]
+              ylim <- c(
+                min(true.x.data, est.x.data) * 1.2,
+                max(true.x.data, est.x.data) * 1.5
+              )
+              time.data <- as.vector(time(x@mean))
+              xlim <- c(
+                min(time.data),
+                max(time.data)
+              )
+              plot(
+                0, 0, type = "n", xlim = xlim, xlab = "Time", ylim = ylim,
+                ylab = paste(var_name),
+                cex.lab = 1.5, cex.axis = 1.2
+              )
+              
+              # draw true X line
+              lines(
+                as.vector(time(x@mean)),
+                true.x.data, col = cols[1], lty = ltys[1]
+              )
+              
+              # draw calculated line
+              lines(
+                as.vector(time(x@mean)),
+                est.x.data, col = cols[2], lty = ltys[2]
+              )
+              
+              # legend
+              legends <- c(paste("ture", var_name), "Kalman-Bucy filter")
+              legend("top", legend = legends, col = cols, lty = ltys)
+            }
+            close.screen(all = TRUE)
+            par(orig_par)
+          }
+)
