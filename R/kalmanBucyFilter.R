@@ -316,3 +316,9 @@ kalman_bucy_filter_eval_exp_time_homogeneous <- function(expr, env) {
 
   return(res)
 }
+
+setGeneric("mean")
+setMethod("mean", "yuima.kalmanBucyFilter", function(x) x@mean )
+
+setGeneric("vcov")
+setMethod("vcov", "yuima.kalmanBucyFilter", function(object) object@vcov )
