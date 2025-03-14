@@ -896,9 +896,9 @@ setMethod(
 
     fulcoef <- unlist(mycoef)
 
-    new("yuima.adabayes", mcmc = mcmc, accept_rate = accept_rate, coef = fulcoef, call = call, vcov = vcov, fullcoef = fulcoef, fixed = numeric(0))
+    new("adabayes", mcmc = mcmc, accept_rate = accept_rate, coef = fulcoef, call = call, vcov = vcov, fullcoef = fulcoef, fixed = numeric(0))
   }
 )
 
 setGeneric("coef")
-setMethod("coef", "yuima.adabayes", function(object) object@fullcoef)
+setMethod("coef", "adabayes", function(object) object@fullcoef)
