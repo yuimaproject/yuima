@@ -349,7 +349,7 @@ setMethod("plot", "yuima.kalmanBucyFilter",
               est.x.data <- x@mean[,var_name]
               ylim <- c(
                 min(est.x.data) * 1.2,
-                max(est.x.data) * 1.5
+                max(est.x.data) * 1.2
               )
               if (plot_data) {
                 orig_index = match(var_name, x@model@state.variable)
@@ -359,7 +359,7 @@ setMethod("plot", "yuima.kalmanBucyFilter",
                 }
                 ylim <- c(
                   min(ylim[1], (true.x.data * 1.2)),
-                  max(ylim[2], (true.x.data * 1.5))
+                  max(ylim[2] * 1.25, (true.x.data * 1.5)) # 1.25 times wider than without true data for legends
                 )  
               }
               time.data <- as.vector(time(x@mean))
@@ -379,12 +379,15 @@ setMethod("plot", "yuima.kalmanBucyFilter",
                   as.vector(time(x@mean)),
                   true.x.data, col = cols[1], lty = ltys[1]
                 )
+                estimation_line_style_index = 2
+              } else {
+                estimation_line_style_index = 1
               }
 
-              # draw calculated line
+              # draw estimation line
               lines(
                 as.vector(time(x@mean)),
-                est.x.data, col = cols[2], lty = ltys[2]
+                est.x.data, col = cols[estimation_line_style_index], lty = ltys[estimation_line_style_index]
               )
               
               # legend
