@@ -325,14 +325,19 @@ setMethod("vcov", "yuima.kalmanBucyFilter", function(object) object@vcov )
 
 setMethod("plot", "yuima.kalmanBucyFilter",
           function(x, plot_data = FALSE, confidence = 0) {
-            # TODO: implement confidence
             orig_par <- par(no.readonly = TRUE)
             # config
             mar=c(4, 4, 0, 2)
             oma=c(1,1,1,1)
             mgp=c(2.5, 1, 0)
-            cols <- c("black", "blue")
-            ltys <- c(1, 2)
+            cols <- c("black", "blue", "lightblue")
+            ltys <- c(1, 2, 2)
+            
+            print_confidence_interval = 0 < confidence && confidence < 1
+            upper_margin_coef = 1.2
+            if (print_confidence_interval || plot_data) {
+              upper_margin_coef = 1.5
+            }
             
             # spitting screen
             unobserved_variables = x@model@state.variable[!x@model@is.observed] 
@@ -347,10 +352,22 @@ setMethod("plot", "yuima.kalmanBucyFilter",
               var_name = unobserved_variables[i]
               # create frame
               est.x.data <- x@mean[,var_name]
-              ylim <- c(
-                min(est.x.data) * 1.2,
-                max(est.x.data) * 1.2
-              )
+              mean_value = mean(est.x.data)
+              if(print_confidence_interval) {
+                lower_coef = qnorm((1 - confidence) / 2)
+                upper_coef = qnorm(1 - (1 - confidence) / 2)
+                lower_bound = est.x.data + lower_coef * sqrt(x@vcov[i, i, ])
+                upper_bound = est.x.data + upper_coef * sqrt(x@vcov[i, i, ])
+                ylim <- c(
+                  (min(lower_bound) - mean_value) * 1.2 + mean_value,
+                  (max(upper_bound) - mean_value) * upper_margin_coef + mean_value
+                )
+              } else {
+                ylim <- c(
+                  (min(est.x.data) - mean_value) * 1.2 + mean_value,
+                  (max(est.x.data) - mean_value) * upper_margin_coef + mean_value
+                )
+              }
               if (plot_data) {
                 orig_index = match(var_name, x@model@state.variable)
                 true.x.data <- as.vector(x@data@zoo.data[[orig_index]])
@@ -359,7 +376,7 @@ setMethod("plot", "yuima.kalmanBucyFilter",
                 }
                 ylim <- c(
                   min(ylim[1], (true.x.data * 1.2)),
-                  max(ylim[2] * 1.25, (true.x.data * 1.5)) # 1.25 times wider than without true data for legends
+                  max(ylim[2], (true.x.data * upper_margin_coef))
                 )  
               }
               time.data <- as.vector(time(x@mean))
@@ -390,10 +407,28 @@ setMethod("plot", "yuima.kalmanBucyFilter",
                 est.x.data, col = cols[estimation_line_style_index], lty = ltys[estimation_line_style_index]
               )
               
+              if(print_confidence_interval) {
+                lines(
+                  as.vector(time(x@mean)),
+                  lower_bound, col = cols[3], lty = ltys[3]
+                )
+                lines(
+                  as.vector(time(x@mean)),
+                  upper_bound, col = cols[3], lty = ltys[3]
+                )
+              }
+              
               # legend
               if (plot_data) {
-                legends <- c(paste("ture", var_name), "Kalman-Bucy filter")
+                if (print_confidence_interval) {
+                  legends <- c(paste("ture", var_name), "Kalman-Bucy filter", paste0(100*confidence, "% confidence interval"))
+                } else {
+                  legends <- c(paste("ture", var_name), "Kalman-Bucy filter")
+                }
                 legend("top", legend = legends, col = cols, lty = ltys)
+              } else if (print_confidence_interval) {
+                legends <- c("Kalman-Bucy filter", paste0(100*confidence, "% confidence interval"))
+                legend("top", legend = legends, col = cols[c(1,3)], lty = ltys[c(1,3)])
               }
             }
             close.screen(all = TRUE)
