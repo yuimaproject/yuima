@@ -14,3 +14,4 @@ URL: https://yuimaproject.com
 BugReports: https://github.com/yuimaproject/yuima/issues
 LinkingTo: Rcpp, RcppArmadillo
 NeedsCompilation: yes
+RoxygenNote: 7.3.2
