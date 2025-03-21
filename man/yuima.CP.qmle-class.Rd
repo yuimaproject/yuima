@@ -6,7 +6,7 @@
 \alias{qmle.CP}
 \alias{CP.qmle}
 
-\title{Class for Quasi Maximum Likelihood Estimation of Compound Poisson-based and SDE  odels}
+\title{Class for Quasi Maximum Likelihood Estimation of Compound Poisson-based and SDE Models}
 \description{
   The \code{yuima.CP.qmle} class is a class of the  \pkg{yuima} package that extends the \code{mle-class} of the \pkg{stats4} package.
 }

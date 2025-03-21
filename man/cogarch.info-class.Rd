@@ -2,7 +2,7 @@
 \docType{class}
 \alias{cogarch.info-class}
 
-\title{Class for Information about CoGarch(p,q)}
+\title{Class for Information about COGARCH(p,q)}
 \description{
   The \code{cogarch.info-class} is a class of the  \pkg{yuima} package
 }
