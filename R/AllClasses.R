@@ -264,3 +264,18 @@ setMethod(
 setMethod("summary", "yuima.kalmanBucyFilter", function(object) {
   print(object)
 })
+
+# adaBayes related
+setClass(
+  "adabayes",
+  #contains = "mle",
+  slots = c(
+    mcmc = "list",
+    accept_rate = "list",
+    coef = "numeric",
+    call = "call",
+    vcov = "matrix",
+    fullcoef = "numeric",
+    fixed = "numeric"
+  )
+)

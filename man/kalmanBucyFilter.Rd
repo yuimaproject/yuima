@@ -11,19 +11,23 @@ Estimates values of unobserved variables from observed variables in a Linear Sta
 \usage{
 kalmanBucyFilter(
   yuima, params, mean_init, vcov_init = NULL, delta.vcov.solve = 0.001,
-  are = FALSE, explicit = FALSE, env = globalenv()
+  are = FALSE, explicit = FALSE, time_homogeneous = FALSE,
+  env = globalenv()
 )
 }
 \arguments{
-  \item{yuima}{A yuima object. The class of \code{yuima@model} must be \code{yuima.linear_state_space_model}.}
-  \item{params}{A list of numeric values representing the names and values of parameters.}
-  \item{mean_init}{A numeric value representing the initial value of unobserved variables.}
-  \item{vcov_init}{A matrix representing the initial variance-covariance value of unobserved variables. 
-    This is required if \code{are = FALSE}. It can be a numeric of length 1 if the number of observed variables is 1.}
-  \item{delta.vcov.solve}{A numeric value representing the step size in solving the mean squared error of the estimator.}
-  \item{are}{A logical value. If \code{TRUE}, solve the algebraic Riccati equation.}
-  \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filtering equation. The formula is available only if coefficients are time-independent.}
-  \item{env}{An environment. The environment in which the model coefficients are evaluated.}
+  \item{yuima}{A \code{yuima} object. The class of \code{yuima@model} must be \code{yuima.linear_state_space_model}.}
+  \item{params}{A list of numeric values specifying the names and values of the model parameters.}
+  \item{mean_init}{A numeric value specifying the initial value of the unobserved variables.}
+  \item{vcov_init}{A matrix specifying the initial variance-covariance of the unobserved variables.
+    This argument is required if \code{are = FALSE}. If there is only one observed variable, it can be a single numeric value of length 1.}
+  \item{delta.vcov.solve}{A numeric value specifying the step size used to solve the mean squared error of the estimator.}
+  \item{are}{A logical value. If \code{TRUE}, the algebraic Riccati equation is solved.}
+  \item{explicit}{A logical value. If \code{TRUE}, the filtering equation is solved using the explicit formula.
+    The formula is available only if the coefficients are time-independent.}
+  \item{time_homogeneous}{A logical value. If \code{TRUE}, calculations are performed under the assumption that the model coefficients are independent of time,
+    reducing computational effort. This flag is used only if \code{are = FALSE}.}
+  \item{env}{An environment object specifying the environment in which the model coefficients are evaluated.}
 }
 \value{
 A \code{yuima.kalmanBucyFilter} object.

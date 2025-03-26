@@ -116,7 +116,7 @@ function(x, sampling=sampling){
 	  Data[[i]] <- zoo(newData, order.by=tmpgrid[[i]])	 
 	  tmpsamp@Terminal[i] <- end(Data[[i]])	 
 	  tmpsamp@Initial[i] <- start(Data[[i]])	 
-	  tmpsamp@n[i] <- length(Data[[i]])	 	 
+	  tmpsamp@n[i] <- length(Data[[i]]) - 1	 	 
 	 }
 	 
 

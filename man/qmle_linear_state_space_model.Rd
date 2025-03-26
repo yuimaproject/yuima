@@ -11,7 +11,7 @@ A function for the quasi-maximum likelihood estimation of linear state space mod
 \usage{
 qmle.linear_state_space_model(
   yuima, start, lower, upper, method = "L-BFGS-B", fixed = list(),
-  envir = globalenv(), filter_mean_init, explicit = FALSE, rcpp = FALSE, drop_terms = 0,
+  envir = globalenv(), filter_mean_init, explicit = FALSE, drop_terms = 0,
   ...
 )
 }
@@ -25,7 +25,6 @@ qmle.linear_state_space_model(
   \item{envir}{An environment in which the model coefficients are evaluated.}
   \item{filter_mean_init}{Initial values of unobserved variables for the filter calculation.}
   \item{explicit}{A logical value. If \code{TRUE}, use the explicit formula to solve the filitering equation.}
-  \item{rcpp}{A logical value. If \code{TRUE}, use Rcpp to calculate minus log quasi-likelihood.}
   \item{drop_terms}{A numeric value. The specified number of initial terms in the filtering result will be excluded from the quasi-likelihood function calculation.}
   \item{...}{Additional arguments to be passed to the \code{\link{optim}} method. See Examples.}
 }
@@ -103,6 +102,6 @@ filter_mean_init <- 0
 
 res <- qmle.linear_state_space_model(
   yuima, start = start.par, upper = upper.par, lower = lower.par, 
-  filter_mean_init = filter_mean_init, rcpp = TRUE
+  filter_mean_init = filter_mean_init
 )
 }
