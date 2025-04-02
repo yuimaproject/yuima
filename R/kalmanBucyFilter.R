@@ -279,9 +279,10 @@ setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, leve
     mar = c(4, 4, 0, 2)
     oma = c(1, 1, 1, 1)
     mgp = c(2.5, 1, 0)
-    cols <- c("black", "blue", "lightblue")
-    ltys <- c(1, 2, 2)
-
+    cols <- c("black", "blue", rgb(173, 216, 230, maxColorValue = 255, alpha=100))
+    ltys <- c(1, 2, 1)
+    lwd <- c(1, 1, 8)
+    
     print_level_interval = 0 < level && level < 1
     upper_margin_coef = 1.2
     if (print_level_interval || plot_truth) {
@@ -325,6 +326,12 @@ setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, leve
         xlim <- c(min(time.data), max(time.data))
         plot(0, 0, type = "n", xlim = xlim, xlab = "Time", ylim = ylim, ylab = paste(var_name), cex.lab = 1.5,
             cex.axis = 1.2)
+        
+        if (print_level_interval) {
+          #lines(time.data, lower_bound, col = cols[3], lty = ltys[3])
+          #lines(time.data, upper_bound, col = cols[3], lty = ltys[3])
+          polygon(c(time.data, rev(time.data)), c(lower_bound, rev(upper_bound)), col = cols[3], border = NA)
+        }
 
         if (plot_truth) {
             # draw true X line
@@ -337,11 +344,6 @@ setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, leve
         # draw estimation line
         lines(as.vector(time(x@mean)), est.x.data, col = cols[estimation_line_style_index], lty = ltys[estimation_line_style_index])
 
-        if (print_level_interval) {
-            lines(as.vector(time(x@mean)), lower_bound, col = cols[3], lty = ltys[3])
-            lines(as.vector(time(x@mean)), upper_bound, col = cols[3], lty = ltys[3])
-        }
-
         # legend
         if (plot_truth) {
             if (print_level_interval) {
@@ -349,7 +351,7 @@ setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, leve
             } else {
                 legends <- c(paste("ture", var_name), "Kalman-Bucy filter")
             }
-            legend("top", legend = legends, col = cols, lty = ltys)
+            legend("top", legend = legends, col = cols, lty = ltys, lwd = lwd)
         } else if (print_level_interval) {
             legends <- c("Kalman-Bucy filter", paste0(100 * level, "% confidence interval"))
             legend("top", legend = legends, col = cols[c(1, 3)], lty = ltys[c(1, 3)])
