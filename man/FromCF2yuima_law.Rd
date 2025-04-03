@@ -2,7 +2,7 @@
 \alias{FromCF2yuima_law}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-From a Characteristic Function to an  \code{yuima.law-object}.
+From a Characteristic Function to an  \code{yuima.law-object}
 }
 \description{This function returns an object of \code{\link{yuima.law-class}} and requires the characteristic function as the only input. Density, Random Number Generator, Cumulative Distribution Function and quantile function are internally constructed}
 \usage{

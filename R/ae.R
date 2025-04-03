@@ -1,4 +1,4 @@
-#' Class for the asymptotic expansion of diffusion processes
+#' Class for the Asymptotic Expansion of Diffusion Processes
 #' 
 #' The \code{yuima.ae} class is used to describe the output of the functions \code{\link{ae}} and \code{\link{aeMarginal}}.
 #' 
@@ -141,8 +141,8 @@ setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1
 #' @author 
 #' Emanuele Guidotti <emanuele.guidotti@unine.ch>
 #' 
-#' @examples 
-#' 
+#' @examples
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -164,7 +164,7 @@ setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1
 #' lines(x, aeDensity(x = x, ae = approx, order = 2), col = 3)
 #' lines(x, aeDensity(x = x, ae = approx, order = 3), col = 4)
 #' lines(x, aeDensity(x = x, ae = approx, order = 4), col = 5)
-#' 
+#' }
 #' @importFrom calculus %dot%
 #' @importFrom calculus %inner%
 #' @importFrom calculus %mx%
@@ -831,8 +831,8 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
 #' 
 #' @return Probability density function evaluated on the given grid.
 #' 
-#' @examples 
-#' 
+#' @examples
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -866,7 +866,7 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
 #' 
 #' # compare
 #' plot(x = exact, y = density, xlab = "Exact", ylab = "Approximated")
-#' 
+#' }
 #' @export
 #' 
 aeDensity <- function(..., ae, eps = 1, order = NULL){
@@ -895,7 +895,7 @@ aeDensity <- function(..., ae, eps = 1, order = NULL){
 #' @return An object of \code{\link{yuima.ae-class}}
 #' 
 #' @examples
-#' 
+#' \dontrun{
 #' # multidimensional model
 #' gbm <- setModel(drift = c('mu*x1','mu*x2'), 
 #'                 diffusion = matrix(c('sigma1*x1',0,0,'sigma2*x2'), nrow = 2), 
@@ -925,6 +925,7 @@ aeDensity <- function(..., ae, eps = 1, order = NULL){
 #' plot(x2, exact, type = 'p', ylab = "Density")
 #' lines(x2, aeDensity(x2 = x2, ae = margin2, order = 3), col = 2)
 #' 
+#' }
 #' @export
 #' 
 aeMarginal <- function(ae, var){
@@ -983,7 +984,7 @@ aeMarginal <- function(ae, var){
 #' @return return value of \code{\link[cubature]{cubintegrate}}. The expectation of the functional provided. 
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -1000,7 +1001,7 @@ aeMarginal <- function(ae, var){
 #' 
 #' # compare with the mean computed by differentiation of the characteristic function
 #' aeMean(approx)
-#' 
+#' }
 #' @export
 #' 
 aeExpectation <- function(f, bounds, ae, eps = 1, order = NULL, ...){
@@ -1038,7 +1039,7 @@ aeExpectation <- function(f, bounds, ae, eps = 1, order = NULL, ...){
 #' @return Characteristic function evaluated on the given grid.
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -1067,7 +1068,7 @@ aeExpectation <- function(f, bounds, ae, eps = 1, order = NULL, ...){
 #' # 4) list
 #' lst <- list(u1 = seq(0, 1, by = 0.1))
 #' psi <- aeCharacteristic(lst, ae = approx, order = 4)
-#' 
+#' }
 #' @export
 #' 
 aeCharacteristic <- function(..., ae, eps = 1, order = NULL){
@@ -1098,7 +1099,7 @@ aeCharacteristic <- function(..., ae, eps = 1, order = NULL){
 #' @return numeric.
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -1121,7 +1122,7 @@ aeCharacteristic <- function(..., ae, eps = 1, order = NULL){
 #' 
 #' # second moment, expansion order 1
 #' aeMoment(ae = approx, m = 2, order = 1)
-#' 
+#' }
 #' @export
 #' 
 aeMoment <- function(ae, m = 1, eps = 1, order = NULL){
@@ -1148,7 +1149,7 @@ aeMoment <- function(ae, m = 1, eps = 1, order = NULL){
 #' @return numeric.
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -1165,7 +1166,7 @@ aeMoment <- function(ae, m = 1, eps = 1, order = NULL){
 #' 
 #' # expansion order 1
 #' aeMean(ae = approx, order = 1)
-#' 
+#' }
 #' @export
 #' 
 aeMean <- function(ae, eps = 1, order = NULL){
@@ -1183,7 +1184,7 @@ aeMean <- function(ae, eps = 1, order = NULL){
 #' @return numeric.
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -1200,7 +1201,7 @@ aeMean <- function(ae, eps = 1, order = NULL){
 #' 
 #' # expansion order 1
 #' aeSd(ae = approx, order = 1)
-#' 
+#' }
 #' @export
 #' 
 aeSd <- function(ae, eps = 1, order = NULL){
@@ -1221,7 +1222,7 @@ aeSd <- function(ae, eps = 1, order = NULL){
 #' @return numeric.
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -1238,7 +1239,7 @@ aeSd <- function(ae, eps = 1, order = NULL){
 #' 
 #' # expansion order 1
 #' aeSkewness(ae = approx, order = 1)
-#' 
+#' }
 #' @export
 #' 
 aeSkewness <- function(ae, eps = 1, order = NULL){
@@ -1259,8 +1260,8 @@ aeSkewness <- function(ae, eps = 1, order = NULL){
 #' 
 #' @return numeric.
 #' 
-#' @examples 
-#' 
+#' @examples
+#' \dontrun{
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -1277,7 +1278,7 @@ aeSkewness <- function(ae, eps = 1, order = NULL){
 #' 
 #' # expansion order 1
 #' aeKurtosis(ae = approx, order = 1)
-#' 
+#' }
 #' @export
 #' 
 aeKurtosis <- function(ae, eps = 1, order = NULL){
