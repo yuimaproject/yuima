@@ -2,7 +2,7 @@
 \alias{setCharacteristic}
 %% \alias{setSampling,ANY-method}
 \title{
-  Set Characteristic Information and Create a `characteristic' Object.
+  Set Characteristic Information and Create a `characteristic' Object
 }
 \description{
   \code{setCharacteristic} is a constructor for \code{characteristic} class.

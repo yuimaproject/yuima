@@ -3,7 +3,7 @@
 \alias{dconst}
 \title{
 Fictitious RNG for the Constant Random Variable Used to Generate and Describe
-Poisson Jumps.
+Poisson Jumps
 }
 \description{
 Fictitious rng for the constant random variable used to generate and describe

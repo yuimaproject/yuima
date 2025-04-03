@@ -9,7 +9,7 @@
 \alias{quant,yuima.law-method}
 \alias{char,yuima.law-method}
 
-\title{\code{yuima law-class}: A Mathematical Description for the Noise.}
+\title{\code{yuima law-class}: A Mathematical Description for the Noise}
 
 \description{A yuima class that contains all information on the noise. This class is a  bridge between a \code{\link{yuima.model-class}} and a noise constructed by users.}
 

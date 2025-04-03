@@ -6,7 +6,7 @@
 \alias{cbind.yuima}
 
 \title{
-Set and Access Data of an Object of Type "yuima.data" or "yuima".
+Set and Access Data of an Object of Type "yuima.data" or "yuima"
 }
 \description{
 \code{setData} constructs an object of \code{\link{yuima.data-class}}.

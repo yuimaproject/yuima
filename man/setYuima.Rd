@@ -2,7 +2,7 @@
 \alias{setYuima}
 \title{
 Creates a "yuima" Object by Combining "model", "data", "sampling", "characteristic" 
-and "functional" Slots.
+and "functional" Slots
 }
 \description{
   \code{setYuima} constructs an object of  \code{\link{yuima-class}}.

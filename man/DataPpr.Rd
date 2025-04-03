@@ -1,7 +1,7 @@
 \name{DataPPR}
 \alias{DataPPR}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{From \code{zoo} Data to \code{yuima.PPR}.}
+\title{From \code{zoo} Data to \code{yuima.PPR}}
 \description{The function converts an object of class \code{zoo} to an object of class \code{\link{yuima.PPR}}.}
 \usage{
 DataPPR(CountVar, yuimaPPR, samp)

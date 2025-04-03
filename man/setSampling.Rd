@@ -2,7 +2,7 @@
 \alias{setSampling}
 %% \alias{setSampling,ANY-method}
 \title{
-Set Sampling Information and Create a `sampling' Object.
+Set Sampling Information and Create a `sampling' Object
 }
 \description{
   \code{setSampling} is a constructor for \code{\link{yuima.sampling-class}}.

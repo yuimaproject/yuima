@@ -7,7 +7,7 @@
 %\alias{est.yuima Cog}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Method of Moments for COGARCH(P,Q).
+Method of Moments for COGARCH(P,Q)
 }
 \description{
 The function returns the estimated parameters of a COGARCH(P,Q) model. The parameters are abtained by matching theoretical vs empirical autocorrelation function. The theoretical autocorrelation function is computed according the methodology developed in Chadraa (2009).

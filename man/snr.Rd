@@ -3,7 +3,7 @@
 \alias{snr}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Calculating Self-normalized Residuals for SDEs.
+Calculating Self-normalized Residuals for SDEs
 }
 \description{
 Calculate self-normalized residuals based on the Gaussian quasi-likelihood estimator.
