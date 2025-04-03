@@ -22,7 +22,7 @@ phi.test(yuima, H0, H1, phi, print=FALSE,...)
   Phi-divergence statistic corresponds to the likelihood ratio test statistic.
 }
 \value{
-  \item{ans}{an obkect of class \code{phitest}.}
+  \item{ans}{an object of class \code{phitest}.}
 }
 \author{The YUIMA Project Team}
 \examples{

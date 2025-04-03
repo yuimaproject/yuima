@@ -31,13 +31,13 @@ llag(x, from = -Inf, to = Inf, division = FALSE, verbose = (ci || ccor),
 
 \item{ci}{logical. If \code{TRUE}, (pointwise) confidence intervals of the estimated cross-correlation functions and p-values for the significance of the correlations at the estimated lead-lag parameters are calculated. Note that the confidence intervals are only plotted when \code{plot=TRUE}.}
 
-\item{alpha}{a posive number indicating the significance level of the confidence intervals for the cross-correlation functions.}
+\item{alpha}{a positive number indicating the significance level of the confidence intervals for the cross-correlation functions.}
 
 \item{fisher}{logical. If \code{TRUE}, the p-values and the confidence intervals for the cross-correlation functions is evaluated after applying the Fisher z transformation. This argument is only meaningful if \code{pval = "corr"}.}
 
 \item{bw}{bandwidth parameter to compute the asymptotic variances. See 'Details' and \code{\link{hyavar}} for details.}
 
-\item{tol}{tolelance parameter to avoid numerical errors in comparison of time stamps. All time stamps are divided by \code{tol} and rounded to integers. Note that the values of \code{grid} are also divided by \code{tol} and rounded to integers. A reasonable choice of \code{tol} is the minimum unit of time stamps. The default value \code{1e-6} supposes that the minimum unit of time stamps is greater or equal to 1 micro-second.}
+\item{tol}{tolerance parameter to avoid numerical errors in comparison of time stamps. All time stamps are divided by \code{tol} and rounded to integers. Note that the values of \code{grid} are also divided by \code{tol} and rounded to integers. A reasonable choice of \code{tol} is the minimum unit of time stamps. The default value \code{1e-6} supposes that the minimum unit of time stamps is greater or equal to 1 micro-second.}
 }
 
 \details{
@@ -57,7 +57,7 @@ The estimated lead-lag parameters are returned as the skew-symmetric matrix \eqn
 
 If \code{plot} is \code{TRUE}, the computed cross-correlation functions are plotted sequentially.
 
-If \code{ci} is \code{TRUE}, the asymptotic variances of the cross-correlations are calculated at each point of the grid by using the naive kernel approach descrived in Section 8.2 of Hayashi and Yoshida (2011). The implementation is the same as that of \code{\link{hyavar}} and more detailed description is found there.
+If \code{ci} is \code{TRUE}, the asymptotic variances of the cross-correlations are calculated at each point of the grid by using the naive kernel approach described in Section 8.2 of Hayashi and Yoshida (2011). The implementation is the same as that of \code{\link{hyavar}} and more detailed description is found there.
 }
 
 \value{
