@@ -2,6 +2,8 @@
 \alias{kalmanBucyFilter}
 \alias{kalmanBucyFilter,yuima-method}
 \alias{yuima.kalmanBucyFilter-class}
+\alias{mean,yuima.kalmanBucyFilter-method}
+\alias{vcov,yuima.kalmanBucyFilter-method}
 \title{
 Kalman-Bucy Filter
 }
@@ -67,4 +69,8 @@ res <- kalmanBucyFilter(
   yuima, trueparam, mean_init, vcov_init, 0.001,
   are = FALSE, env = globalenv()
 )
+
+# vcov and mean slots are accesible by mean and vcov method
+mean(res)
+vcov(res)
 }
