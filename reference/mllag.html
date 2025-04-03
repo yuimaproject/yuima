@@ -89,7 +89,7 @@ logical. If <code>TRUE</code>, the estimated cross-correlation functions and the
 
   <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{alpha} here~~ -->
-a posive number indicating the significance level of the confidence intervals for the cross-correlation functions.</p></dd>
+a positive number indicating the significance level of the confidence intervals for the cross-correlation functions.</p></dd>
 
   <dt id="arg-fisher">fisher<a class="anchor" aria-label="anchor" href="#arg-fisher"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{fisher} here~~ -->
@@ -103,7 +103,7 @@ passed to <code><a href="llag.html">llag</a></code>.</p></dd>
     <div id="details">
     <h2>Details</h2>
     <p><!-- %%  ~~ If necessary, more details than the description above ~~ -->
-The computation method of cross-correlation functions and confidence intervals is the same as the one used in <code><a href="llag.html">llag</a></code>. The exception between this function and <code><a href="llag.html">llag</a></code> is how to detect the lead-lag parameters. While <code><a href="llag.html">llag</a></code> only returns the maximizer of the absolute value of the cross-correlations following the theory of Hoffmann et al. (2013),  this function returns all the time shifts at which the cross-correlations exceed (so there is also the possiblity that <em>no</em> lead-lag is returned). Note that this approach is mathematically debetable because there would be a multiple testing problem (see also 'Note' of <code><a href="llag.html">llag</a></code>), so the interpretation of the result from this function should carefully be addressed. In particular, the significance level <code>alpha</code> probably does not give the "correct" level.</p>
+The computation method of cross-correlation functions and confidence intervals is the same as the one used in <code><a href="llag.html">llag</a></code>. The exception between this function and <code><a href="llag.html">llag</a></code> is how to detect the lead-lag parameters. While <code><a href="llag.html">llag</a></code> only returns the maximizer of the absolute value of the cross-correlations following the theory of Hoffmann et al. (2013),  this function returns all the time shifts at which the cross-correlations exceed (so there is also the possibility that <em>no</em> lead-lag is returned). Note that this approach is mathematically debatable because there would be a multiple testing problem (see also 'Note' of <code><a href="llag.html">llag</a></code>), so the interpretation of the result from this function should carefully be addressed. In particular, the significance level <code>alpha</code> probably does not give the "correct" level.</p>
     </div>
     <div id="value">
     <h2>Value</h2>

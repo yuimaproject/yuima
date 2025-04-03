@@ -68,7 +68,7 @@ a positive number indicating the exponent of the (truncated) power variation to 
 
   <dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{threshold} here~~ -->
-a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in <code>threshold</code> are recycled if there are two few elements in <code>threshold</code>.</p>
+a numeric vector or list indicating the threshold parameter(s). Each of its components indicates the threshold parameter or process to be used for estimating the corresponding component. If it is a numeric vector, the elements in <code>threshold</code> are recycled if there are too few elements in <code>threshold</code>.</p>
 <p>Alternatively, you can specify either <code>"PZ"</code> or <code>"local"</code> to automatically select a (hopefully) appropriate threshold. When <code>threshold="PZ"</code>, selection is performed following Section 5.1 in Podolskij and Ziggel (2010). When <code>threshold="local"</code>, selection is performed following Section 5.1 in Koike (2014). The default is <code>threshold="local"</code>.</p></dd>
 
   <dt id="arg-tau">tau<a class="anchor" aria-label="anchor" href="#arg-tau"></a></dt>

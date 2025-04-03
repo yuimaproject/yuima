@@ -101,7 +101,7 @@
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
-<dd><p>a posive number indicating the significance level of the confidence intervals for the cross-correlation functions.</p></dd>
+<dd><p>a positive number indicating the significance level of the confidence intervals for the cross-correlation functions.</p></dd>
 
 
 <dt id="arg-fisher">fisher<a class="anchor" aria-label="anchor" href="#arg-fisher"></a></dt>
@@ -113,7 +113,7 @@
 
 
 <dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
-<dd><p>tolelance parameter to avoid numerical errors in comparison of time stamps. All time stamps are divided by <code>tol</code> and rounded to integers. Note that the values of <code>grid</code> are also divided by <code>tol</code> and rounded to integers. A reasonable choice of <code>tol</code> is the minimum unit of time stamps. The default value <code>1e-6</code> supposes that the minimum unit of time stamps is greater or equal to 1 micro-second.</p></dd>
+<dd><p>tolerance parameter to avoid numerical errors in comparison of time stamps. All time stamps are divided by <code>tol</code> and rounded to integers. Note that the values of <code>grid</code> are also divided by <code>tol</code> and rounded to integers. A reasonable choice of <code>tol</code> is the minimum unit of time stamps. The default value <code>1e-6</code> supposes that the minimum unit of time stamps is greater or equal to 1 micro-second.</p></dd>
 
 </dl></div>
     <div id="details">
@@ -127,7 +127,7 @@ $$a, a+(b-a)/(N-1), \dots, a+(N-2)(b-a)/(N-1), b,$$
 where \(a,b\) and \(N\) are the \((d(i-1)-(i-1)i/2+(j-i))\)-th components of <code>from</code>, <code>to</code> and <code>division</code> respectively.  If the corresponding component of <code>from</code> (resp. <code>to</code>) is <code>-Inf</code> (resp. <code>Inf</code>), \(a=-(t^j_{n(j)}-t^i_{0})\) (resp. \(b=t^i_{n(i)}-t^j_{0}\)) is used, while if the corresponding component of <code>division</code> is <code>FALSE</code>, \(N=round(2max(n(i),n(j)))+1\) is used. Missing components are filled with <code>-Inf</code> (resp. <code>Inf</code>, <code>FALSE</code>). The default value <code>-Inf</code> (resp. <code>Inf</code>, <code>FALSE</code>) means that all components are <code>-Inf</code> (resp. <code>Inf</code>, <code>FALSE</code>). Next, if <code>grid</code> is a numeric vector, \(G_{ij}\) is given by <code>grid</code>. If <code>grid</code> is a list of numeric vectors, \(G_{ij}\) is given by the \((d(i-1)-(i-1)i/2+(j-i))\)-th component of <code>grid</code>.</p>
 <p>The estimated lead-lag parameters are returned as the skew-symmetric matrix \((\theta_{ij})_{i,j=1,\dots,d}\). If <code>verbose</code> is <code>TRUE</code>, the covariance matrix \((U_{ij}(\theta_{ij}))_{i,j=1,\dots,d}\) corresponding to the estimated lead-lag parameters, the corresponding correlation matrix and the computed contrast functions are also returned. If further <code>ccor</code> is <code>TRUE</code>,the computed cross-correlation functions are returned as a list with the length \(d(d-1)/2\). For \(i&lt;j\), the \((d(i-1)-(i-1)i/2+(j-i))\)-th component of the list consists of an object \(U_{ij}(\theta)/sqrt(U_{ii}(\theta)*U_{jj}(\theta))\) of class zoo indexed by \(G_{ij}\).</p>
 <p>If <code>plot</code> is <code>TRUE</code>, the computed cross-correlation functions are plotted sequentially.</p>
-<p>If <code>ci</code> is <code>TRUE</code>, the asymptotic variances of the cross-correlations are calculated at each point of the grid by using the naive kernel approach descrived in Section 8.2 of Hayashi and Yoshida (2011). The implementation is the same as that of <code><a href="hyavar.html">hyavar</a></code> and more detailed description is found there.</p>
+<p>If <code>ci</code> is <code>TRUE</code>, the asymptotic variances of the cross-correlations are calculated at each point of the grid by using the naive kernel approach described in Section 8.2 of Hayashi and Yoshida (2011). The implementation is the same as that of <code><a href="hyavar.html">hyavar</a></code> and more detailed description is found there.</p>
     </div>
     <div id="value">
     <h2>Value</h2>
