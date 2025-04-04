@@ -228,7 +228,7 @@ Yuta Koike with YUIMA project Team
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{cce}}, \code{\link{lmm}}, \code{\link{glassoFast}}
+\code{\link{cce}}, \code{\link{lmm}}, \code{\link[glassoFast]{glassoFast}}
 }
 \examples{
 \dontrun{

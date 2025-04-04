@@ -68,7 +68,7 @@ The slot \code{functional} contains information on
     \item{get.data}{\code{signature(x = "yuima")}: returns the content of the
 	  slot \code{data}.}
     \item{plot}{\code{signature(x = "yuima", \dots)}: calls
-	 \code{\link{plot}} from the \code{\link{zoo}} package with argument
+	 \code{\link{plot}} from the \code{\link[zoo]{zoo}} package with argument
 	 \code{x@data@zoo.data}. Additional arguments \code{\dots} are passed
 	 as is to the \code{\link{plot}} function.}
 	\item{dim}{\code{signature(x = "yuima")}: the number of SDEs in the

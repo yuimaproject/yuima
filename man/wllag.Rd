@@ -17,11 +17,11 @@ wllag(x, y, J = 8, N = 10, tau = 1e-3, from = -to, to = 100,
 \arguments{
   \item{x}{
 %%     ~~Describe \code{x} here~~
-a \code{\link{zoo}} object for observation data of the first process. 
+a \code{\link[zoo]{zoo}} object for observation data of the first process. 
 }
   \item{y}{
 %%     ~~Describe \code{y} here~~
-a \code{\link{zoo}} object for observation data of the second process.
+a \code{\link[zoo]{zoo}} object for observation data of the second process.
 }
   \item{J}{
 %%     ~~Describe \code{J} here~~
@@ -67,10 +67,10 @@ If \code{verbose} is \code{FALSE}, a numeric vector with length \code{J}, corres
 Otherwise, an object of class \code{"yuima.wllag"}, which is a list with the following components, is returned:
 \item{lagtheta}{the estimated scale-by-scale lead-lag parameters. The \eqn{j} th component corresponds to the estimate at the level \eqn{j}. A positive value indicates that the first process leads the second process.}
 \item{obj.values}{the values of the objective functions evaluated at the estimated lead-lag parameters.}
-\item{obj.fun}{a list of values of the objective functions. The \eqn{j} th component of the list corresponds to a \code{\link{zoo}} object for values of the signed objective function at the level \eqn{j} indexed by the search grid.}
+\item{obj.fun}{a list of values of the objective functions. The \eqn{j} th component of the list corresponds to a \code{\link[zoo]{zoo}} object for values of the signed objective function at the level \eqn{j} indexed by the search grid.}
 \item{theta.hry}{the lead-lag parameter estimate in the sense of Hoffmann, Rosenbaum and Yoshida (2013).}
 \item{cor.hry}{the correltion coefficient in the sense of Hoffmann, Rosenbaum and Yoshida (2013), evaluated at the estimated lead-lag parameter.}
-\item{ccor.hry}{a \code{\link{zoo}} object for values of the cross correltion function in the sense of Hoffmann, Rosenbaum and Yoshida (2013) indexed by the search grid.}
+\item{ccor.hry}{a \code{\link[zoo]{zoo}} object for values of the cross correltion function in the sense of Hoffmann, Rosenbaum and Yoshida (2013) indexed by the search grid.}
 %%  ~Describe the value returned
 %%  If it is a LIST, use
 %%  \item{comp1 }{Description of 'comp1'}

@@ -42,15 +42,15 @@ a single positive integer indicating the number of bootstrap replicates.
 }
   \item{parallel}{
 %%     ~~Describe \code{parallel} here~~
-passed to \code{\link{boot}}.
+passed to \code{\link[boot]{boot}}.
 }
   \item{ncpus}{
 %%     ~~Describe \code{ncpus} here~~
-passed to \code{\link{boot}}.
+passed to \code{\link[boot]{boot}}.
 }
   \item{cl}{
 %%     ~~Describe \code{cl} here~~
-passed to \code{\link{boot}}.
+passed to \code{\link[boot]{boot}}.
 }
   \item{tol}{
 %%     ~~Describe \code{tol} here~~

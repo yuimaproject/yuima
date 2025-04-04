@@ -85,6 +85,10 @@ importFrom(calculus,"%sum%")
 importFrom(Matrix, "bdiag")
 importFrom(calculus, "derivative")
 
+# added by Masahiro Kurisaki on Apr. 4, 2025 
+importFrom("grDevices", "rgb")
+importFrom("graphics", "close.screen", "legend", "polygon", "screen", "split.screen")
+
 exportClasses("yuima",
 "yuima.data",
 "yuima.law",
