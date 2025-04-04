@@ -444,6 +444,7 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   }
   inv.squared.observed.diffusion <- solve(tcrossprod(observed.diffusion.matrix))
   dim(inv.squared.observed.diffusion) <- c(dim(inv.squared.observed.diffusion), 1)
+  h <- yuima@sampling@delta
 
   # set args for optim
   ## define objective function

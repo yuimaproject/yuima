@@ -49,13 +49,13 @@ Objects in this class contain two slots described here.
    It is intended for backup purposes.}
   \item{\code{zoo.data}:}{When a new object of this class is created or 
    initialized using the \code{original.data}, the package tries to convert 
-   \code{original.data} into an object of class \code{\link{zoo}}. Once 
-   coerced to \code{\link{zoo}}, the data are stored in the slot \code{zoo.data}.
+   \code{original.data} into an object of class \code{\link[zoo]{zoo}}. Once 
+   coerced to \code{\link[zoo]{zoo}}, the data are stored in the slot \code{zoo.data}.
 
    If the conversion fails, the initialization or creation of the object fails.
 
    Internally, the \pkg{yuima} package stores and operates on  
-   \code{\link{zoo}}-type objects.}
+   \code{\link[zoo]{zoo}}-type objects.}
 }
 If data are obtained by simulation, the \code{original.data} slot 
 is usually empty.
@@ -70,19 +70,19 @@ is usually empty.
     \item{initialize}{\code{signature(x = "yuima.data", original.data)}: makes
 	a copy of \code{original.data} into the slot \code{original.data} of 
 	\code{x} and tries to coerce \code{original.data} into an object of class
-	\code{\link{zoo}}. The result is put in the slot  \code{zoo.data} of 
+	\code{\link[zoo]{zoo}}. The result is put in the slot  \code{zoo.data} of 
 	\code{x}. If coercion fails, the \code{intialize} method fails as well.}
     \item{get.zoo.data}{\code{signature(x = "yuima.data")}: returns the content
 	of the slot \code{zoo.data} of \code{x}.}
     \item{plot}{\code{signature(x = "yuima.data",  \dots)}: calls  
-	 \code{\link{plot}} from the \code{\link{zoo}} package with argument
+	 \code{\link{plot}} from the \code{\link[zoo]{zoo}} package with argument
 	 \code{x@zoo.data}. Additional arguments \code{\dots} are passed
 	 as is to the \code{\link{plot}} function.}
     \item{dim}{\code{signature(x = "yuima.data")}: calls  
-	 \code{\link{dim}} from the \code{\link{zoo}} package with argument
+	 \code{\link{dim}} from the \code{\link[zoo]{zoo}} package with argument
 	 \code{x@zoo.data}.}
     \item{length}{\code{signature(x = "yuima.data")}: calls  
-	 \code{\link{length}} from the \code{\link{zoo}} package with argument
+	 \code{\link{length}} from the \code{\link[zoo]{zoo}} package with argument
 	 \code{x@zoo.data}.}
     \item{cce}{\code{signature(x = "yuima.data")}: calculates asyncronous
 	 covariance estimator on the data contained in \code{x@zoo.data}. 

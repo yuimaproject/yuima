@@ -3,28 +3,10 @@
 \docType{class}
 \name{yuima.ae-class}
 \alias{yuima.ae-class}
-\alias{initialize,yuima.ae-method}
-\alias{plot,yuima.ae,ANY-method}
 \title{Class for the Asymptotic Expansion of Diffusion Processes}
-\usage{
-\S4method{initialize}{yuima.ae}(
-  .Object,
-  order,
-  var,
-  u.var,
-  eps.var,
-  characteristic,
-  Z0,
-  Mu,
-  Sigma,
-  c.gamma,
-  verbose
-)
-
-\S4method{plot}{yuima.ae,ANY}(x, grids = list(), eps = 1, order = NULL, ...)
-}
 \description{
 The \code{yuima.ae} class is used to describe the output of the functions \code{\link{ae}} and \code{\link{aeMarginal}}.
+Two generic methods are provided for the class: \code{\link{initialize,yuima.ae-method}} and \code{\link{plot,yuima.ae-method}}.
 }
 \section{Slots}{
 

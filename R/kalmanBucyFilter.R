@@ -357,6 +357,6 @@ setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, leve
             legend("top", legend = legends, col = cols[c(1, 3)], lty = ltys[c(1, 3)])
         }
     }
-    close.screen(all = TRUE)
+    close.screen(all.screens = TRUE)
     par(orig_par)
 })
