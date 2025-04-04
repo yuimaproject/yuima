@@ -59,7 +59,7 @@ cbind.yuima bind yuima.data object."><!-- mathjax --><script src="https://cdnjs.
     <p><code>setData</code> constructs an object of <code><a href="yuima.data-class.html">yuima.data-class</a></code>.</p>
 <p><code>get.zoo.data</code> returns the content of the <code>zoo.data</code> slot of a
 <code><a href="yuima.data-class.html">yuima.data-class</a></code> object. (Note: value is a <code>list</code> of
-<code>zoo</code> objects).</p>
+<code><a href="https://rdrr.io/pkg/zoo/man/zoo.html" class="external-link">zoo</a></code> objects).</p>
 <p><code>plot</code> plot method for object of <code><a href="yuima.data-class.html">yuima.data-class</a></code> or
 <code><a href="yuima-class.html">yuima-class</a></code>.</p>
 <p><code>dim</code> returns the <code>dim</code> of the <code>zoo.data</code> slot of a
@@ -80,7 +80,7 @@ cbind.yuima bind yuima.data object."><!-- mathjax --><script src="https://cdnjs.
 <dl><dt id="arg-original-data">original.data<a class="anchor" aria-label="anchor" href="#arg-original-data"></a></dt>
 <dd><p>some type of data, usually some sort of time series.
   The function always tries to convert to the input data into an object of
-   <code>zoo</code>-type. See Details.</p></dd>
+   <code><a href="https://rdrr.io/pkg/zoo/man/zoo.html" class="external-link">zoo</a></code>-type. See Details.</p></dd>
 
   <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>an object of type <code><a href="yuima.data-class.html">yuima.data-class</a></code> or
@@ -102,11 +102,11 @@ cbind.yuima bind yuima.data object."><!-- mathjax --><script src="https://cdnjs.
 
   <dt><code>zoo.data</code>:</dt>
 <dd><p>the function <code>setData</code> tries to convert
-   <code>original.data</code> into an object of class <code>zoo</code>. The
-   coerced <code>zoo</code> data are stored in the slot <code>zoo.data</code>.
+   <code>original.data</code> into an object of class <code><a href="https://rdrr.io/pkg/zoo/man/zoo.html" class="external-link">zoo</a></code>. The
+   coerced <code><a href="https://rdrr.io/pkg/zoo/man/zoo.html" class="external-link">zoo</a></code> data are stored in the slot <code>zoo.data</code>.
    If the conversion fails the function exits with an error.
    Internally, the <span class="pkg">yuima</span> package stores and operates on
-   <code>zoo</code>-type objects.</p></dd>
+   <code><a href="https://rdrr.io/pkg/zoo/man/zoo.html" class="external-link">zoo</a></code>-type objects.</p></dd>
 
 
 </dl><p>The function <code>get.zoo.data</code>

@@ -53,7 +53,7 @@
     <div id="slots">
     <h2>Slots</h2>
     <p></p><dl><dt><code>Incr.Lev</code>:</dt>
-<dd><p>is an object of class <code>zoo</code> that contains the estimated increments of the noise obtained using <code><a href="cogarchNoise.html">cogarchNoise</a></code>.</p></dd>
+<dd><p>is an object of class <code><a href="https://rdrr.io/pkg/zoo/man/zoo.html" class="external-link">zoo</a></code> that contains the estimated increments of the noise obtained using <code><a href="cogarchNoise.html">cogarchNoise</a></code>.</p></dd>
 
     <dt><code>yuima</code>:</dt>
 <dd><p>is an object of of <code><a href="yuima-class.html">yuima-class</a></code>.</p></dd>

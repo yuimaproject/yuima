@@ -42,6 +42,7 @@
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/info.Map.html</loc></url>
 <url><loc>/reference/info.Ppr.html</loc></url>
+<url><loc>/reference/initialize-yuima.ae-method.html</loc></url>
 <url><loc>/reference/kalmanBucyFilter.html</loc></url>
 <url><loc>/reference/lambdaFromData.html</loc></url>
 <url><loc>/reference/lasso.html</loc></url>
@@ -58,6 +59,7 @@
 <url><loc>/reference/ntv.html</loc></url>
 <url><loc>/reference/param.Map.html</loc></url>
 <url><loc>/reference/phi.test.html</loc></url>
+<url><loc>/reference/plot-yuima.ae-ANY-method.html</loc></url>
 <url><loc>/reference/plot-yuima.kalmanBucyFilter-ANY-method.html</loc></url>
 <url><loc>/reference/poisson.random.sampling.html</loc></url>
 <url><loc>/reference/pz.test.html</loc></url>
