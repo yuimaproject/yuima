@@ -6,8 +6,13 @@ Depends: R(>= 2.10.0), methods, zoo, stats4, utils, expm, cubature,
         mvtnorm
 Imports: Rcpp (>= 0.12.1), boot (>= 1.3-2), glassoFast, coda, calculus
         (>= 0.2.0), statmod, Matrix
-Author: YUIMA Project Team
-Maintainer: Stefano M. Iacus <siacus@iq.harvard.edu>
+Authors@R: c(person(given = c("YUIMA", "Project"),
+                       family = "Team",
+                       role = "aut"),
+                person(given = c("Stefano", "M."),
+                       family = "Iacus",
+                       role = "cre",
+                       email = "siacus@iq.harvard.edu"))
 Description: Simulation and Inference for SDEs and Other Stochastic Processes.
 License: GPL-2
 URL: https://yuimaproject.com
