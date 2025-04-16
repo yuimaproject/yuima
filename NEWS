@@ -142,4 +142,7 @@ v. 1.15.28 2025/02/13
 
 v. 1.15.29 2025/04/03
 * added plot method and improved show and summary method for yuima.kalmanBucyFilter-class
-* other small fixes
+* Fixed CRAN check warnings.
+
+v. 1.15.30 2025/04/16
+* Updated DESCRIPTION and CITATION for CRAN policy compliance.
