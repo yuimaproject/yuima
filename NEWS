@@ -140,7 +140,7 @@ v. 1.15.28 2025/02/13
 * updated setYuima and setModel
 * added yuima.linear_state_space_model-class, yuima.state_space_model-class and yuima.kalmanBucyFilter-class
 
-v. 1.15.29 2025/04/16
+v. 1.15.30 2025/04/16
 * added plot method and improved show and summary method for yuima.kalmanBucyFilter-class
 * Fixed CRAN check warnings.
 * Updated DESCRIPTION and CITATION for CRAN policy compliance.
