@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">The YUIMA Project</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.29</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.30</span>
       </span>
     </div>
 
