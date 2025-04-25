@@ -240,27 +240,78 @@ setClass(
 setMethod(
   "show", "yuima.kalmanBucyFilter",
   function(object) {
-    cat("mean:\n")
-    if (dim(object@mean)[1] <= 6) {
-      print(object@mean)
+    start <- start(object@mean)[1]
+    end <- end(object@mean)[1]
+    freq <- frequency(object@mean)
+    time_points <- seq(start, end, by = 1/freq)
+    cat("Kalman-Bucy Filter\n")
+    if (dim(object@mean)[2] == 1) {
+      cat("Mean and variance values:\n")
+      var_name <- colnames(object@mean)
+      mean_variance_mat <- cbind(as.matrix(object@mean), as.matrix(object@vcov))
+      colnames(mean_variance_mat) <- paste(c("Mean of", "Variance of"), var_name)
+      rownames(mean_variance_mat) <- time_points
+      n <- dim(mean_variance_mat)[1]
+      if (n <= 12) {
+        print(mean_variance_mat)
+      } else {
+        print(rbind(head(mean_variance_mat), "...", tail(mean_variance_mat)), quote = FALSE)
+      }
     } else {
-      cat("Time Series:\n")
-      cat("Start = ", start(object@mean)[1], "\n")
-      cat("End = ", end(object@mean)[1], "\n")
-      cat("Frequency = ", frequency(object@mean), "\n")
-      print(object@mean[1:6, , drop = FALSE])
-      cat("...")
-    }
-    cat("\n\nvcov:\n")
-    if (dim(object@vcov)[3] <= 6) {
-      print(object@vcov)
-    } else {
-      print(object@vcov[, , 1:6, drop = FALSE])
-      cat("...")
+      cat("Mean values:\n")
+      n <- dim(object@mean)[1]
+      if (n <= 12) {
+        print(object@mean)
+      } else {
+        mean_mat <- as.matrix(object@mean)
+        rownames(mean_mat) <- time_points
+        print(rbind(head(mean_mat), "...", tail(mean_mat)), quote = FALSE)
+      }
+      cat("Variance-covariance matrices\n")
+      if (n < 12) {
+        print(object@vcov)
+      } else {
+        for (i in 1:6) {
+          cat("\n, , ", i, "\n", sep = "") 
+          print(object@vcov[, , i], quote = TRUE) 
+        }
+        cat("...")
+        for (i in (dim(object@vcov)[3]-5):dim(object@vcov)[3]) {
+          cat("\n, , ", i, "\n", sep = "") 
+          print(object@vcov[, , i], quote = TRUE) 
+        }
+      }
     }
   }
 )
 
 setMethod("summary", "yuima.kalmanBucyFilter", function(object) {
-  print(object)
-})
+    cat("Summary of estimation by Kalman-Bucy Filter\n")
+    cat("Model:\n")
+    cat("  A linear state space model.\n")
+    cat("  State Variables:", object@model@state.variable[!object@model@is.observed], "\n")
+    cat("Mean:\n")
+    cat("  A ts object of", dim(object@mean)[2], "variables.\n")
+    cat("  Start:      ", start(object@mean)[1], "\n")
+    cat("  End:        ", end(object@mean)[1], "\n")
+    cat("  Frequency:  ", frequency(object@mean), "\n")
+    cat("  Time points:", dim(object@mean)[1], "\n")
+    cat("Variance-Covariance Matrix:\n")
+    cat(paste0("  A 3D array of (", dim(object@vcov)[1], ", ", dim(object@vcov)[2], ", ", dim(object@vcov)[3], ").\n"))
+  }
+)
+
+# adaBayes related
+setClass(
+  "adabayes",
+  #contains = "mle",
+  slots = c(
+    mcmc = "list",
+    accept_rate = "list",
+    coef = "numeric",
+    call = "call",
+    vcov = "matrix",
+    fullcoef = "numeric",
+    fixed = "numeric"
+  )
+)

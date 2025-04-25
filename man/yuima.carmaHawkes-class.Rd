@@ -5,7 +5,7 @@
 \alias{initialize,carmaHawkes.info-method}
 
 
-\title{Class for the mathematical description of a Hawkes process with a CARMA(p,q) intensity}
+\title{Class for the Mathematical Description of a Hawkes Process with a CARMA(p,q) Intensity}
 \description{
   The \code{yuima.carmaHawkes} class is a class of the  \pkg{yuima} package that extends the \code{\link{yuima.model-class}}.  
 }

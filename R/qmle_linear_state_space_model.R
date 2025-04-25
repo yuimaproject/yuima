@@ -7,19 +7,6 @@ qmle.linear_state_space_model <- function(yuima, start, lower = NULL, upper = NU
     yuima.stop("`drop_terms` must be smaller than the number of observations (=`yuima@sampleing@n[1] + 1`)")
   }
 
-  ## if num of pars == 1, upper and lower is required (in this case, method is ignored and `optimize` is used).
-  ## else if method == "L-BFGS-B" or "Brent", upper and lower is required.
-  ## else, upper and lower is not required.
-  if (length(yuima@model@parameter@all) == 1) {
-    if (missing(upper) || missing(lower)) {
-      yuima.stop("upper and lower are required when the number of parameters is 1.")
-    }
-  } else if (method == "L-BFGS-B" | method == "Brent") {
-    if (missing(upper) || missing(lower)) {
-      yuima.stop("upper and lower are required when the method is L-BFGS-B or Brent.")
-    }
-  }
-
   #### fixed
   if (length(fixed) > 0 && !is.Poisson(yuima) && !is.CARMA(yuima) && !is.COGARCH(yuima)) {
     fixed_env <- new.env()
@@ -457,6 +444,7 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   }
   inv.squared.observed.diffusion <- solve(tcrossprod(observed.diffusion.matrix))
   dim(inv.squared.observed.diffusion) <- c(dim(inv.squared.observed.diffusion), 1)
+  h <- yuima@sampling@delta
 
   # set args for optim
   ## define objective function

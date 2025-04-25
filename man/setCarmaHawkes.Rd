@@ -4,7 +4,7 @@
 \alias{setCarmaHawkes}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Hawkes Process with a Continuous Autoregressive Moving Average(p, q) intensity
+Hawkes Process with a Continuous Autoregressive Moving Average(p, q) Intensity
 }
 \description{
 'setCarmaHawkes' describes a self-exciting Hawkes process where the intensity is a CARMA(p,q) process. The model admits the Hawkes process with exponential kernel as a special case but it is able to reproduce a more complex time-dependence structure

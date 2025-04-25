@@ -2,7 +2,7 @@
 \docType{class}
 \alias{yuima.adabayes-class}
 
-\title{Class for adaptive Bayes estimation of stochastic differential equations}
+\title{Class for Adaptive Bayes Estimation of Stochastic Differential Equations}
 
 \description{
     The \code{yuima.adabayes} class is used to describe the output of the functions \code{\link{adaBayes}}.

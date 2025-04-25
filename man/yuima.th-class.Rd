@@ -11,7 +11,7 @@
 \alias{char,yuima.th-method}
 
 
-\title{\code{yuima.th-class}: A mathematical description for the t-Levy process.}
+\title{\code{yuima.th-class}: A Mathematical Description for the t-Levy Process}
 
 \description{A yuima class that contains all information on the noise for t-Levy process. This class extends \code{\link{yuima.law-class}} and contains info on the numerical method used for the inversion of the characteristic function. Three inversion methods are available: \code{cos}, \code{Laguerre} and \code{FFT}.
 

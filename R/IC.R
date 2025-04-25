@@ -135,7 +135,7 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
     if(ergodic == TRUE){
       for(i in 1:length(diff)){
         for(j in 1:length(drif)){
-          names(Esti)[(length(drif)*(i-1)+j)] <- paste("diffusion_", i, " & drift_", j, sep = "") 
+          names(Esti)[(length(drif)*(i-1)+j)] <- paste("scale_", i, " & drift_", j, sep = "") 
         }
       }
       
