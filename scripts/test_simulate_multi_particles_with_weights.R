@@ -12,8 +12,8 @@ ymodel = setModel(
 )
 
 ### set data
-T <- 5
-N <- 500
+T <- 10
+N <- 5000
 n <- N
 h <- T/N
 
@@ -42,8 +42,23 @@ res <- simulate_multi_particles_with_weights(yuima, xinits=xinits, params = true
 
 filter_res <- kalmanBucyFilter(yuima,true.par,mean_init = 0,vcov_init = 0)
 
-
+# plot weights against values
 plot(res$values[,1,N+1],res$weights[,N+1])
+
+# histogram of weights
+bins <- hist(res$values[,1,N+1], plot = FALSE, breaks = 20)$breaks
+grp <- cut(res$values[,1,N+1], breaks = bins, include.lowest = TRUE)
+sum_w <- tapply(res$weights[,N+1], grp, sum)
+labels <- names(sum_w)
+barplot(
+  sum_w,
+  names.arg = labels,
+  las = 2,
+  xlab = "values",
+  ylab = "sum of weights",
+  main = "sum of weights",
+  border = NA
+)
 
 #filter mean
 filter_res@mean[N+1]
