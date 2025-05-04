@@ -19,7 +19,7 @@ arma::cube euler_multi_particles(
   X.slice(0) = xinits;
 
   for (int i = 0; i < steps; i++) { 
-    eval_env.assign(time_var, t0 + (i + 1) * dt);
+    eval_env.assign(time_var, t0 + i * dt);
     for (int p = 0; p< num_particles; p++) {
       // assign
       for (int v = 0; v < d_unob; v++) {
@@ -48,57 +48,61 @@ arma::cube euler_multi_particles(
 // TODO: standardize the function names and arguments.
 // [[Rcpp::export]]
 Rcpp::List euler_multi_particles_with_weights(
-    arma::mat x0s, arma::vec weight_init, double t0, int r, double dt, int n,
-    arma::vec dW, std::string modeltime, CharacterVector modelstate,
+    arma::mat xinits, arma::vec weight_init, double t0, int r, double dt, int steps,
+    arma::vec dW, std::string time_var, CharacterVector unobserved_vars,
     ExpressionVector observed_drift, ExpressionVector unobserved_drift,
     ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion,
-    arma::mat deltaY, Environment env, Environment rho) {
-  int nsim = x0s.n_rows;              // number of particles
-  int d_obs = observed_drift.size();  // number of observed dimensions
-  int d_unobs = x0s.n_cols;           // number of unobserved dimensions
+    arma::mat deltaY, Environment eval_env) {
+  int num_particles = xinits.n_rows;              // number of particles
+  int d_ob = observed_drift.size();  // number of observed dimensions
+  int d_unob = xinits.n_cols;           // number of unobserved dimensions
   
-  arma::mat weights(nsim, n + 1);
+  arma::mat weights(num_particles, steps + 1);
   weights.col(0) = weight_init;
 
-  double t = t0;
-  
   // simulate the unobserved process
   arma::cube X = euler_multi_particles(
-    x0s, t0, dt, 1, n, r, dW,
-    modeltime, modelstate,
+    xinits, t0, dt, 1, steps, r, dW,
+    time_var, unobserved_vars,
     unobserved_drift, unobserved_diffusion,
-    env);
+    eval_env);
 
   // update weights through time
   // Time stepping loop
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < steps; i++) {
     // assign the current time variable to the environment
-    rho.assign(modeltime, t);
-    for (int k = 0; k < nsim; k++) {
+    eval_env.assign(time_var, t0 + i * dt);
+    for (int p = 0; p < num_particles; p++) {
+      // if the weight is zero, set the next weight to zero
+      if (weights(p, i) == 0) {
+        weights(p, i + 1) = 0;
+        continue;
+      }
+      
       // assign the current state for each dimension to the environment
-      for (int j = 0; j < d_unobs; j++) {
-        rho.assign(as<std::string>(modelstate[j]), X(k, j, i));
+      for (int v = 0; v < d_unob; v++) {
+        eval_env.assign(as<std::string>(unobserved_vars[v]), X(p, v, i));
       }
 
       // Evaluate the drift and diffusion expressions
       arma::vec observed_drift_values =
-          as<arma::vec>(Rf_eval(observed_drift[0], rho));
+          as<arma::vec>(Rf_eval(observed_drift[0], eval_env));
       NumericVector vec_observed_diffusion_values_sexp =
-          Rf_eval(observed_diffusion[0], rho);
+          Rf_eval(observed_diffusion[0], eval_env);
       arma::mat t_observed_diffusion_values(
-          vec_observed_diffusion_values_sexp.begin(), r, d_obs, false);
+          vec_observed_diffusion_values_sexp.begin(), r, d_ob, false);
 
       // Update weights
-      weights(k, i + 1) =
-          weights(k, i) +
-          weights(k, i) *
-              arma::as_scalar(observed_drift_values.t() *
-                              arma::inv_sympd(t_observed_diffusion_values.t() *
-                                              t_observed_diffusion_values) *
-                              deltaY.col(i));
+      double coeff = 1.0 + arma::as_scalar(observed_drift_values.t() *
+                                           arma::inv_sympd(t_observed_diffusion_values.t() *
+                                           t_observed_diffusion_values) *
+                                           deltaY.col(i));
+      weights(p, i + 1) = weights(p, i) * coeff;
+
+      if (weights(p, i + 1) < 0) {
+        weights(p, i + 1) = 0;
+      }
     }
-    // Update time parameter
-    t += dt;
   }
   return Rcpp::List::create(Rcpp::Named("values") = X,
                             Rcpp::Named("weights") = weights);

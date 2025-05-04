@@ -207,28 +207,27 @@ BEGIN_RCPP
 END_RCPP
 }
 // euler_multi_particles_with_weights
-Rcpp::List euler_multi_particles_with_weights(arma::mat x0s, arma::vec weight_init, double t0, int r, double dt, int n, arma::vec dW, std::string modeltime, CharacterVector modelstate, ExpressionVector observed_drift, ExpressionVector unobserved_drift, ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion, arma::mat deltaY, Environment env, Environment rho);
-RcppExport SEXP _yuima_euler_multi_particles_with_weights(SEXP x0sSEXP, SEXP weight_initSEXP, SEXP t0SEXP, SEXP rSEXP, SEXP dtSEXP, SEXP nSEXP, SEXP dWSEXP, SEXP modeltimeSEXP, SEXP modelstateSEXP, SEXP observed_driftSEXP, SEXP unobserved_driftSEXP, SEXP observed_diffusionSEXP, SEXP unobserved_diffusionSEXP, SEXP deltaYSEXP, SEXP envSEXP, SEXP rhoSEXP) {
+Rcpp::List euler_multi_particles_with_weights(arma::mat xinits, arma::vec weight_init, double t0, int r, double dt, int steps, arma::vec dW, std::string time_var, CharacterVector unobserved_vars, ExpressionVector observed_drift, ExpressionVector unobserved_drift, ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion, arma::mat deltaY, Environment eval_env);
+RcppExport SEXP _yuima_euler_multi_particles_with_weights(SEXP xinitsSEXP, SEXP weight_initSEXP, SEXP t0SEXP, SEXP rSEXP, SEXP dtSEXP, SEXP stepsSEXP, SEXP dWSEXP, SEXP time_varSEXP, SEXP unobserved_varsSEXP, SEXP observed_driftSEXP, SEXP unobserved_driftSEXP, SEXP observed_diffusionSEXP, SEXP unobserved_diffusionSEXP, SEXP deltaYSEXP, SEXP eval_envSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x0s(x0sSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xinits(xinitsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type weight_init(weight_initSEXP);
     Rcpp::traits::input_parameter< double >::type t0(t0SEXP);
     Rcpp::traits::input_parameter< int >::type r(rSEXP);
     Rcpp::traits::input_parameter< double >::type dt(dtSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type steps(stepsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type dW(dWSEXP);
-    Rcpp::traits::input_parameter< std::string >::type modeltime(modeltimeSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type modelstate(modelstateSEXP);
+    Rcpp::traits::input_parameter< std::string >::type time_var(time_varSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type unobserved_vars(unobserved_varsSEXP);
     Rcpp::traits::input_parameter< ExpressionVector >::type observed_drift(observed_driftSEXP);
     Rcpp::traits::input_parameter< ExpressionVector >::type unobserved_drift(unobserved_driftSEXP);
     Rcpp::traits::input_parameter< ExpressionVector >::type observed_diffusion(observed_diffusionSEXP);
     Rcpp::traits::input_parameter< ExpressionVector >::type unobserved_diffusion(unobserved_diffusionSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type deltaY(deltaYSEXP);
-    Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
-    Rcpp::traits::input_parameter< Environment >::type rho(rhoSEXP);
-    rcpp_result_gen = Rcpp::wrap(euler_multi_particles_with_weights(x0s, weight_init, t0, r, dt, n, dW, modeltime, modelstate, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, env, rho));
+    Rcpp::traits::input_parameter< Environment >::type eval_env(eval_envSEXP);
+    rcpp_result_gen = Rcpp::wrap(euler_multi_particles_with_weights(xinits, weight_init, t0, r, dt, steps, dW, time_var, unobserved_vars, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env));
     return rcpp_result_gen;
 END_RCPP
 }
