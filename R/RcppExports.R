@@ -57,8 +57,8 @@ cpp_ito <- function(K_set, dZ, Z_K, d, r) {
     .Call('_yuima_cpp_ito', PACKAGE = 'yuima', K_set, dZ, Z_K, d, r)
 }
 
-euler_multi_particles_with_weights <- function(xinits, weight_init, t0, r, dt, steps, dW, time_var, unobserved_vars, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env) {
-    .Call('_yuima_euler_multi_particles_with_weights', PACKAGE = 'yuima', xinits, weight_init, t0, r, dt, steps, dW, time_var, unobserved_vars, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env)
+euler_multi_particles_with_weights <- function(xinits, weight_init, t0, r, dt, steps, dW, time_var, unobserved_vars, simulations_per_weight_update, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env) {
+    .Call('_yuima_euler_multi_particles_with_weights', PACKAGE = 'yuima', xinits, weight_init, t0, r, dt, steps, dW, time_var, unobserved_vars, simulations_per_weight_update, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env)
 }
 
 calc_kalman_bucy_filter_cpp <- function(un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov_init, mean_init, delta, deltaY, use_are, is_explicit, is_time_homogeneous, calc_minuslogl, drop_terms, upsump_rate = 1L) {

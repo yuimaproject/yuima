@@ -127,7 +127,7 @@ simulate_multi_particles_with_weights <- function(yuima, xinits, init, steps, pa
     if (!missing(seed)) {
         set.seed(seed)
     }
-    dW <- rnorm(nsim * steps * r_size * d_unob_size, 0, sqrt(delta))
+    dW <- rnorm(nsim * steps * r_size * d_unob_size * simulations_per_weight_update, 0, sqrt(delta))
 
     modelstate <- model@state.variable
     observed_variables <- modelstate[model@is.observed]
@@ -175,7 +175,8 @@ simulate_multi_particles_with_weights <- function(yuima, xinits, init, steps, pa
     unobserved_partial_evaled_diffusion <- parse(text = paste("c(", paste(as.character(unobserved_partial_evaled_diffusion),
                                                                           collapse = ","), ")"))
     data <- .Call("_yuima_euler_multi_particles_with_weights", xinits, weight_init,
-                    initial_time, r_size, delta, steps, dW, time_variable, unobserved_variables, observed_partial_evaled_drift,
+                    initial_time, r_size, delta, steps, dW, time_variable, unobserved_variables, simulations_per_weight_update,
+                    observed_partial_evaled_drift,
                     unobserved_partial_evaled_drift, observed_partial_evaled_diffusion, unobserved_partial_evaled_diffusion,
                     deltaY, env, PACKAGE = "yuima")
     return(data)
