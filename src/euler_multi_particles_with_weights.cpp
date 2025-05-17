@@ -137,3 +137,51 @@ Rcpp::List euler_multi_particles_with_weights(
   return Rcpp::List::create(Rcpp::Named("values") = X,
                             Rcpp::Named("weights") = weights);
 }
+
+// [[Rcpp::export]]
+arma::vec branch_particles(arma::vec weights) {
+  const int num_particles = weights.n_elem;
+  if (num_particles <= 1) {
+    warning("number of particles should be greater than 1");
+    return arma::ones(num_particles);
+  }
+  
+  // normalize weights to make the sum of weights equal to 1
+  double sum_weights = arma::sum(weights);
+  if (sum_weights == 0) {
+    warning("sum of weights is zero");
+    return arma::ones(num_particles);
+  }
+  weights /= sum_weights;
+  
+  arma::vec us = Rcpp::runif(num_particles);
+  double g = static_cast<double>(num_particles);
+  int    h = num_particles;
+  arma::vec numbers(num_particles);
+  
+  for (int i = 0; i < num_particles - 1; ++i) {
+    double g_int = std::floor(g);
+    double g_dec = g - g_int;
+    double nw    = weights(i) * num_particles;
+    double nw_int = std::floor(nw);
+    double nw_dec = nw - nw_int;
+    double u     = us(i);
+    int o;
+    if (nw_dec <= g_dec) {
+      if (g_dec > 0.0 && u <= nw_dec / g_dec)
+        o = static_cast<int>(nw_int + h - g_int);
+      else
+        o = static_cast<int>(nw_int);
+    } else {
+      if ((1.0 - g_dec) > 0.0 && u <= (1.0 - nw_dec) / (1.0 - g_dec))
+        o = static_cast<int>(nw_int + h - g_int);
+      else
+        o = static_cast<int>(nw_int + 1);
+    }
+    numbers(i) = o;
+    g -= nw;
+    h -= o;
+  }
+  numbers(num_particles - 1) = h;
+  return numbers;
+}
