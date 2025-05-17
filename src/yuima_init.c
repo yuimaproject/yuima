@@ -57,7 +57,7 @@ extern SEXP _yuima_diffusionTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_measureTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP,SEXP,SEXP,SEXP);
 extern SEXP _yuima_calc_inverse_square(SEXP);
-extern SEXP _yuima_calc_kalman_bucy_filter_cpp(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+extern SEXP _yuima_calc_kalman_bucy_filter_cpp(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP _yuima_euler_multi_particles_with_weights(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP _yuima_branch_particles(SEXP);
 
@@ -114,7 +114,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_yuima_minusloglcpp_linear_state_space_theta1", (DL_FUNC) &_yuima_minusloglcpp_linear_state_space_theta1,        4},
     {"_yuima_calc_inverse_square",                    (DL_FUNC) &_yuima_calc_inverse_square,                           1},
     {"_yuima_calc_kalman_bucy_filter_cpp",            (DL_FUNC) &_yuima_calc_kalman_bucy_filter_cpp,                  16},
-    {"_yuima_euler_multi_particles_with_weights",     (DL_FUNC) &_yuima_euler_multi_particles_with_weights,           16},
+    {"_yuima_euler_multi_particles_with_weights",     (DL_FUNC) &_yuima_euler_multi_particles_with_weights,           15},
     {"_yuima_branch_particles",                     (DL_FUNC) &_yuima_branch_particles,                           1},
     {NULL, NULL, 0}
 };

@@ -4,15 +4,14 @@
 using namespace Rcpp;
 
 arma::cube euler_multi_particles(arma::mat xinits, double t0, double dt,
-                                 int step0, int steps, int d_random,
-                                 arma::vec dW, std::string time_var,
+                                 int steps, int d_random,
+                                 std::string time_var,
                                  CharacterVector unobserved_vars,
                                  ExpressionVector unobserved_drift,
                                  ExpressionVector unobserved_diffusion,
                                  Environment eval_env) {
   int num_particles = xinits.n_rows;
   int d_unob = xinits.n_cols;
-  int random_index_offset = (step0 - 1) * num_particles * d_random;
 
   arma::cube X(num_particles, d_unob, steps + 1);
   X.slice(0) = xinits;
@@ -35,18 +34,7 @@ arma::cube euler_multi_particles(arma::mat xinits, double t0, double dt,
           false);  // TODO: consider transpose
 
       // simulate next step
-      // debug begin
-      const arma::uword need =
-        static_cast<arma::uword>(step0 - 1) * num_particles * d_random +
-        static_cast<arma::uword>(steps)  * num_particles * d_random;
-      
-      if (dW.n_elem < need)
-        Rcpp::stop("dW length (%d) < required (%d).", dW.n_elem, need);  // Rcpp::stop
-      // debug end
-      
-      arma::uword start_index = static_cast<arma::uword>(
-          random_index_offset + (i * num_particles + p) * d_random);
-      arma::vec random_vec(dW.memptr() + start_index, d_random, false);
+      arma::vec random_vec = Rcpp::rnorm(d_random, 0, sqrt(dt));
       X.slice(i + 1).row(p) = X.slice(i).row(p) + unobserved_drift_values * dt +
                               t_unobserved_diffusion_values.t() * random_vec;
     }
@@ -116,7 +104,7 @@ arma::mat update_weights(
 // [[Rcpp::export]]
 Rcpp::List euler_multi_particles_with_weights(
     arma::mat xinits, arma::vec weight_init, double t0, int r, double dt,
-    int steps, arma::vec dW, std::string time_var,
+    int steps, std::string time_var,
     CharacterVector unobserved_vars, int simulations_per_weight_update,
     ExpressionVector observed_drift, ExpressionVector unobserved_drift,
     ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion,
@@ -124,8 +112,8 @@ Rcpp::List euler_multi_particles_with_weights(
   
   // simulate the unobserved process
   arma::cube X = euler_multi_particles(
-      xinits, t0, dt / simulations_per_weight_update, 1,
-      steps * simulations_per_weight_update, r, dW, time_var, unobserved_vars,
+      xinits, t0, dt / simulations_per_weight_update,
+      steps * simulations_per_weight_update, r, time_var, unobserved_vars,
       unobserved_drift, unobserved_diffusion, eval_env);
 
   // update weights through time

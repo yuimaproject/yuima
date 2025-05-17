@@ -16,7 +16,7 @@ T <- 1
 N <- 500
 n <- N
 h <- T/N
-simulations_per_weight_update <- 10
+simulations_per_weight_update <- 1
 
 true.par = list(
   a = -1.5,
