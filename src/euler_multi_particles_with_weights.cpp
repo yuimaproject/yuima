@@ -94,7 +94,7 @@ arma::mat update_weights(arma::cube X, int r, arma::vec weights_init,
   return weights;
 }
 
-// TODO: call simulate, update_weights, resample in a signle gateway function.
+// TODO: call simulate, update_weights, branch in a signle gateway function.
 // TODO: standardize the function names and arguments.
 // [[Rcpp::export]]
 Rcpp::List euler_multi_particles_with_weights(
@@ -166,4 +166,63 @@ arma::vec branch_particles(arma::vec weights) {
   }
   numbers(num_particles - 1) = h;
   return numbers;
+}
+
+// [[Rcpp::export]]
+Rcpp::List euler_multi_particles_with_weights_and_branching(
+    arma::mat xinits, arma::vec weight_init, double t0, int r, double dt,
+    int steps, std::string time_var, CharacterVector unobserved_vars,
+    int simulations_per_weight_update, int weight_update_per_branching,
+    ExpressionVector observed_drift, ExpressionVector unobserved_drift,
+    ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion,
+    arma::mat deltaY, Environment eval_env) {
+  arma::cube all_values(xinits.n_rows, xinits.n_cols,
+                        steps * simulations_per_weight_update + 1);
+  all_values.slice(0) = xinits;
+  arma::mat all_weights(weight_init.n_rows, steps + 1);
+  all_weights.col(0) = weight_init;
+
+  int num_particles = all_weights.n_rows;
+
+  for (int i = 0; i < steps; i++) {
+    // simulate the unobserved process
+    arma::cube X = euler_multi_particles(
+        all_values.slice(i * simulations_per_weight_update), t0 + i * dt,
+        dt / simulations_per_weight_update, simulations_per_weight_update, r,
+        time_var, unobserved_vars, unobserved_drift, unobserved_diffusion,
+        eval_env);
+    // std::cout << "debug: " << X.n_slices << "==" <<
+    // simulations_per_weight_update + 1 << "?" << std::endl;
+    all_values.slices(i * simulations_per_weight_update,
+                      (i + 1) * simulations_per_weight_update) = X;
+
+    // update weights through time
+    arma::mat weights = update_weights(
+        X, r, all_weights.col(i), time_var, t0 + i * dt, dt, unobserved_vars,
+        simulations_per_weight_update, 1, observed_drift, observed_diffusion,
+        deltaY.cols(i, i), eval_env);
+    all_weights.col(i + 1) = weights.col(1);
+    // branch particles
+    if (i % weight_update_per_branching == weight_update_per_branching - 1) {
+      arma::vec numbers = branch_particles(all_weights.col(i + 1));
+      int current_num_particles = 0;
+      for (int j = 0; j < num_particles; ++j) {
+        int o = static_cast<int>(numbers(j));
+        if (o == 0) {
+          continue;
+        }
+        for (int k = 0; k < o; ++k) {
+          all_values.slice((i + 1) * simulations_per_weight_update)
+              .row(current_num_particles) =
+              all_values.slice(i * simulations_per_weight_update).row(j);
+          all_weights.col(i + 1).row(current_num_particles) =
+              1.0 / num_particles;
+          current_num_particles++;
+        }
+      }
+      std::cout << "debug: branched!" << std::endl;
+    }
+  }
+  return Rcpp::List::create(Rcpp::Named("values") = all_values,
+                            Rcpp::Named("weights") = all_weights);
 }

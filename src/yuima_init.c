@@ -60,6 +60,7 @@ extern SEXP _yuima_calc_inverse_square(SEXP);
 extern SEXP _yuima_calc_kalman_bucy_filter_cpp(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP _yuima_euler_multi_particles_with_weights(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP _yuima_branch_particles(SEXP);
+extern SEXP _yuima_euler_multi_particles_with_weights_and_branching(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 
 static const R_CMethodDef CEntries[] = {
     {"bibsynchro",         (DL_FUNC) &bibsynchro,          9},
@@ -116,6 +117,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_yuima_calc_kalman_bucy_filter_cpp",            (DL_FUNC) &_yuima_calc_kalman_bucy_filter_cpp,                  16},
     {"_yuima_euler_multi_particles_with_weights",     (DL_FUNC) &_yuima_euler_multi_particles_with_weights,           15},
     {"_yuima_branch_particles",                     (DL_FUNC) &_yuima_branch_particles,                           1},
+    {"_yuima_euler_multi_particles_with_weights_and_branching", (DL_FUNC) &_yuima_euler_multi_particles_with_weights_and_branching, 16},
     {NULL, NULL, 0}
 };
 

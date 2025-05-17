@@ -6,7 +6,9 @@
 # simulations_per_weight_update: number of simulations per weight update
 # seed: seed for random number generation
 simulate_multi_particles_with_weights <- function(yuima, xinits, init, steps, params,
-    simulations_per_weight_update, seed) {
+    simulations_per_weight_update, 
+    weight_updates_per_branching = 100,
+    seed) {
     # errors checks
 
     ## :1: error on yuima model
@@ -172,8 +174,9 @@ simulate_multi_particles_with_weights <- function(yuima, xinits, init, steps, pa
                                                                         collapse = ","), ")"))
     unobserved_partial_evaled_diffusion <- parse(text = paste("c(", paste(as.character(unobserved_partial_evaled_diffusion),
                                                                           collapse = ","), ")"))
-    data <- .Call("_yuima_euler_multi_particles_with_weights", xinits, weight_init,
+    data <- .Call("_yuima_euler_multi_particles_with_weights_and_branching", xinits, weight_init,
                     initial_time, r_size, delta, steps, time_variable, unobserved_variables, simulations_per_weight_update,
+                    weight_updates_per_branching,
                     observed_partial_evaled_drift,
                     unobserved_partial_evaled_drift, observed_partial_evaled_diffusion, unobserved_partial_evaled_diffusion,
                     deltaY, env, PACKAGE = "yuima")

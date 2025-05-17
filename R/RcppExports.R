@@ -65,6 +65,10 @@ branch_particles <- function(weights) {
     .Call('_yuima_branch_particles', PACKAGE = 'yuima', weights)
 }
 
+euler_multi_particles_with_weights_and_branching <- function(xinits, weight_init, t0, r, dt, steps, time_var, unobserved_vars, simulations_per_weight_update, weight_update_per_branching, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env) {
+    .Call('_yuima_euler_multi_particles_with_weights_and_branching', PACKAGE = 'yuima', xinits, weight_init, t0, r, dt, steps, time_var, unobserved_vars, simulations_per_weight_update, weight_update_per_branching, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env)
+}
+
 calc_kalman_bucy_filter_cpp <- function(un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov_init, mean_init, delta, deltaY, use_are, is_explicit, is_time_homogeneous, calc_minuslogl, drop_terms, upsump_rate = 1L) {
     .Call('_yuima_calc_kalman_bucy_filter_cpp', PACKAGE = 'yuima', un_dr_sl, un_dr_in, un_diff, ob_dr_sl, ob_dr_in, inv_sq_ob_diff, vcov_init, mean_init, delta, deltaY, use_are, is_explicit, is_time_homogeneous, calc_minuslogl, drop_terms, upsump_rate)
 }
