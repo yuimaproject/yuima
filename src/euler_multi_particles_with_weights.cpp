@@ -54,7 +54,6 @@ arma::vec update_weights(arma::cube X, int r, arma::vec weights_init,
 
   eval_env.assign(time_var, t0 * dt);
   for (int p = 0; p < weights_init.n_rows; p++) {
-
     // if the weight is zero, set the next weight to zero
     if (weights_init(p) == 0) {
       updated_weights(p) = 0;
@@ -79,8 +78,7 @@ arma::vec update_weights(arma::cube X, int r, arma::vec weights_init,
                                           t_observed_diffusion_values);
     // Update weights
     double coeff = std::exp(
-        arma::as_scalar(observed_drift_values.t() * inv_sigma *
-                            deltaY -
+        arma::as_scalar(observed_drift_values.t() * inv_sigma * deltaY -
                         0.5 * observed_drift_values.t() * inv_sigma *
                             observed_drift_values.t() * dt));
     updated_weights(p) = weights_init(p) * coeff;
