@@ -3,11 +3,11 @@
 
 using namespace Rcpp;
 
-arma::cube euler_multi_particles(arma::mat xinits, double t0, double dt,
-                                 int steps, int d_random, std::string time_var,
-                                 CharacterVector unobserved_vars,
-                                 ExpressionVector unobserved_drift,
-                                 ExpressionVector unobserved_diffusion,
+arma::cube euler_multi_particles(const arma::mat& xinits, double t0, double dt,
+                                 int steps, int d_random, const std::string& time_var,
+                                 const CharacterVector& unobserved_vars,
+                                 const ExpressionVector& unobserved_drift,
+                                 const ExpressionVector& unobserved_diffusion,
                                  Environment eval_env) {
   int num_particles = xinits.n_rows;
   int d_unob = xinits.n_cols;
@@ -41,12 +41,12 @@ arma::cube euler_multi_particles(arma::mat xinits, double t0, double dt,
   return X;
 }
 
-arma::vec update_weights(arma::cube X, int r, arma::vec weights_init,
-                         std::string time_var, double t0, double dt,
-                         CharacterVector unobserved_vars,
+arma::vec update_weights(const arma::cube& X, int r, const arma::vec& weights_init,
+                         const std::string& time_var, double t0, double dt,
+                         const CharacterVector& unobserved_vars,
                          int simulations_per_weight_update,
-                         ExpressionVector observed_drift,
-                         ExpressionVector observed_diffusion, arma::vec deltaY,
+                         const ExpressionVector& observed_drift,
+                         const ExpressionVector& observed_diffusion, const arma::vec& deltaY,
                          Environment eval_env) {
   int d_ob = observed_drift.size();  // number of observed dimensions
   int d_unob = X.n_cols;
@@ -92,7 +92,7 @@ arma::vec update_weights(arma::cube X, int r, arma::vec weights_init,
   return updated_weights;
 }
 
-arma::vec branch_particles(arma::vec weights) {
+arma::vec branch_particles(const arma::vec& weights) {
   const int num_particles = weights.n_elem;
   if (num_particles <= 1) {
     warning("number of particles should be greater than 1");
@@ -105,7 +105,7 @@ arma::vec branch_particles(arma::vec weights) {
     warning("sum of weights is zero");
     return arma::ones(num_particles);
   }
-  weights /= sum_weights;
+  arma::vec normalized_weights = weights / sum_weights;
 
   arma::vec us = Rcpp::runif(num_particles);
   double g = static_cast<double>(num_particles);
@@ -115,7 +115,7 @@ arma::vec branch_particles(arma::vec weights) {
   for (int i = 0; i < num_particles - 1; ++i) {
     double g_int = std::floor(g);
     double g_dec = g - g_int;
-    double nw = weights(i) * num_particles;
+    double nw = normalized_weights(i) * num_particles;
     double nw_int = std::floor(nw);
     double nw_dec = nw - nw_int;
     double u = us(i);
@@ -141,12 +141,12 @@ arma::vec branch_particles(arma::vec weights) {
 
 // [[Rcpp::export]]
 Rcpp::List euler_multi_particles_with_weights_and_branching(
-    arma::mat xinits, arma::vec weight_init, double t0, int r, double dt,
-    int steps, std::string time_var, CharacterVector unobserved_vars,
+    const arma::mat& xinits, const arma::vec& weight_init, double t0, int r, double dt,
+    int steps, const std::string& time_var, const CharacterVector& unobserved_vars,
     int simulations_per_weight_update, int weight_update_per_branching,
-    ExpressionVector observed_drift, ExpressionVector unobserved_drift,
-    ExpressionVector observed_diffusion, ExpressionVector unobserved_diffusion,
-    arma::mat deltaY, Environment eval_env) {
+    const ExpressionVector& observed_drift, const ExpressionVector& unobserved_drift,
+    const ExpressionVector& observed_diffusion, const ExpressionVector& unobserved_diffusion,
+    const arma::mat& deltaY, Environment eval_env) {
   arma::cube all_values(xinits.n_rows, xinits.n_cols,
                         steps * simulations_per_weight_update + 1);
   all_values.slice(0) = xinits;
