@@ -1,5 +1,4 @@
 #include <RcppArmadillo.h>
-// #include <time.h>
 
 using namespace Rcpp;
 
@@ -8,7 +7,8 @@ arma::cube euler_multi_particles(const arma::mat& xinits, double t0, double dt,
                                  const CharacterVector& unobserved_vars,
                                  const ExpressionVector& unobserved_drift,
                                  const ExpressionVector& unobserved_diffusion,
-                                 Environment eval_env) {
+                                 Environment eval_env,
+                                 const arma::cube& noises) {
   int num_particles = xinits.n_rows;
   int d_unob = xinits.n_cols;
 
@@ -33,9 +33,8 @@ arma::cube euler_multi_particles(const arma::mat& xinits, double t0, double dt,
           false);  // TODO: consider transpose
 
       // simulate next step
-      arma::vec random_vec = Rcpp::rnorm(d_random, 0, sqrt(dt));
       X.slice(i + 1).row(p) = X.slice(i).row(p) + unobserved_drift_values * dt +
-                              t_unobserved_diffusion_values.t() * random_vec;
+                              t_unobserved_diffusion_values.t() * noises.slice(i).col(p);
     }
   }
   return X;
@@ -155,15 +154,18 @@ Rcpp::List euler_multi_particles_with_weights_and_branching(
 
   int num_particles = all_weights.n_rows;
 
+  arma::cube all_noises(r, xinits.n_rows, steps * simulations_per_weight_update);
+  all_noises.randn();
+  all_noises *= std::sqrt(dt / simulations_per_weight_update);
+
   for (int i = 0; i < steps; i++) {
     // simulate the unobserved process
+    arma::cube noises = all_noises.slices(i * simulations_per_weight_update, (i + 1) * simulations_per_weight_update - 1);
     arma::cube X = euler_multi_particles(
         all_values.slice(i * simulations_per_weight_update), t0 + i * dt,
         dt / simulations_per_weight_update, simulations_per_weight_update, r,
         time_var, unobserved_vars, unobserved_drift, unobserved_diffusion,
-        eval_env);
-    // std::cout << "debug: " << X.n_slices << "==" <<
-    // simulations_per_weight_update + 1 << "?" << std::endl;
+        eval_env, noises);
     all_values.slices(i * simulations_per_weight_update,
                       (i + 1) * simulations_per_weight_update) = X;
 
@@ -173,6 +175,7 @@ Rcpp::List euler_multi_particles_with_weights_and_branching(
         simulations_per_weight_update, observed_drift, observed_diffusion,
         deltaY.cols(i, i), eval_env);
     all_weights.col(i + 1) = new_weights;
+    
     // branch particles
     if (i % weight_update_per_branching == weight_update_per_branching - 1) {
       arma::vec numbers = branch_particles(new_weights);
