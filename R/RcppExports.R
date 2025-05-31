@@ -57,14 +57,6 @@ cpp_ito <- function(K_set, dZ, Z_K, d, r) {
     .Call('_yuima_cpp_ito', PACKAGE = 'yuima', K_set, dZ, Z_K, d, r)
 }
 
-euler_multi_particles_with_weights <- function(xinits, weight_init, t0, r, dt, steps, time_var, unobserved_vars, simulations_per_weight_update, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env) {
-    .Call('_yuima_euler_multi_particles_with_weights', PACKAGE = 'yuima', xinits, weight_init, t0, r, dt, steps, time_var, unobserved_vars, simulations_per_weight_update, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env)
-}
-
-branch_particles <- function(weights) {
-    .Call('_yuima_branch_particles', PACKAGE = 'yuima', weights)
-}
-
 euler_multi_particles_with_weights_and_branching <- function(xinits, weight_init, t0, r, dt, steps, time_var, unobserved_vars, simulations_per_weight_update, weight_update_per_branching, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env) {
     .Call('_yuima_euler_multi_particles_with_weights_and_branching', PACKAGE = 'yuima', xinits, weight_init, t0, r, dt, steps, time_var, unobserved_vars, simulations_per_weight_update, weight_update_per_branching, observed_drift, unobserved_drift, observed_diffusion, unobserved_diffusion, deltaY, eval_env)
 }

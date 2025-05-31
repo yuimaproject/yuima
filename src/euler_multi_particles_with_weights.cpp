@@ -41,87 +41,59 @@ arma::cube euler_multi_particles(arma::mat xinits, double t0, double dt,
   return X;
 }
 
-arma::mat update_weights(arma::cube X, int r, arma::vec weights_init,
+arma::vec update_weights(arma::cube X, int r, arma::vec weights_init,
                          std::string time_var, double t0, double dt,
                          CharacterVector unobserved_vars,
-                         int simulations_per_weight_update, int steps,
+                         int simulations_per_weight_update,
                          ExpressionVector observed_drift,
-                         ExpressionVector observed_diffusion, arma::mat deltaY,
+                         ExpressionVector observed_diffusion, arma::vec deltaY,
                          Environment eval_env) {
   int d_ob = observed_drift.size();  // number of observed dimensions
   int d_unob = X.n_cols;
-  arma::mat weights(weights_init.n_rows, steps + 1);
-  weights.col(0) = weights_init;
+  arma::vec updated_weights(weights_init.n_rows);
 
-  for (int i = 0; i < steps; i++) {
-    eval_env.assign(time_var, t0 + i * dt);
-    for (int p = 0; p < weights_init.n_rows; p++) {
-      // if the weight is zero, set the next weight to zero
-      if (weights(p, i) == 0) {
-        weights(p, i + 1) = 0;
-        continue;
-      }
+  eval_env.assign(time_var, t0 * dt);
+  for (int p = 0; p < weights_init.n_rows; p++) {
 
-      // assign the current state for each dimension to the environment
-      for (int v = 0; v < d_unob; v++) {
-        eval_env.assign(as<std::string>(unobserved_vars[v]),
-                        X(p, v, i * simulations_per_weight_update));
-      }
+    // if the weight is zero, set the next weight to zero
+    if (weights_init(p) == 0) {
+      updated_weights(p) = 0;
+      continue;
+    }
 
-      // Evaluate the drift and diffusion expressions
-      arma::vec observed_drift_values =
-          as<arma::vec>(Rf_eval(observed_drift[0], eval_env));
-      NumericVector vec_observed_diffusion_values_sexp =
-          Rf_eval(observed_diffusion[0], eval_env);
-      arma::mat t_observed_diffusion_values(
-          vec_observed_diffusion_values_sexp.begin(), r, d_ob, false);
+    // assign the current state for each dimension to the environment
+    for (int v = 0; v < d_unob; v++) {
+      eval_env.assign(as<std::string>(unobserved_vars[v]),
+                      X(p, v, simulations_per_weight_update));
+    }
 
-      arma::mat inv_sigma = arma::inv_sympd(t_observed_diffusion_values.t() *
-                                            t_observed_diffusion_values);
-      // Update weights
-      double coeff = std::exp(arma::as_scalar(
-          observed_drift_values.t() * inv_sigma * deltaY.col(i) -
-          0.5 * observed_drift_values.t() * inv_sigma *
-              observed_drift_values.t() * dt));
-      weights(p, i + 1) = weights(p, i) * coeff;
+    // Evaluate the drift and diffusion expressions
+    arma::vec observed_drift_values =
+        as<arma::vec>(Rf_eval(observed_drift[0], eval_env));
+    NumericVector vec_observed_diffusion_values_sexp =
+        Rf_eval(observed_diffusion[0], eval_env);
+    arma::mat t_observed_diffusion_values(
+        vec_observed_diffusion_values_sexp.begin(), r, d_ob, false);
 
-      // clip negative weights to zero
-      if (weights(p, i + 1) < 0) {
-        weights(p, i + 1) = 0;
-      }
+    arma::mat inv_sigma = arma::inv_sympd(t_observed_diffusion_values.t() *
+                                          t_observed_diffusion_values);
+    // Update weights
+    double coeff = std::exp(
+        arma::as_scalar(observed_drift_values.t() * inv_sigma *
+                            deltaY -
+                        0.5 * observed_drift_values.t() * inv_sigma *
+                            observed_drift_values.t() * dt));
+    updated_weights(p) = weights_init(p) * coeff;
+
+    // clip negative weights to zero
+    if (updated_weights(p) < 0) {
+      updated_weights(p) = 0;
     }
   }
 
-  return weights;
+  return updated_weights;
 }
 
-// TODO: call simulate, update_weights, branch in a signle gateway function.
-// TODO: standardize the function names and arguments.
-// [[Rcpp::export]]
-Rcpp::List euler_multi_particles_with_weights(
-    arma::mat xinits, arma::vec weight_init, double t0, int r, double dt,
-    int steps, std::string time_var, CharacterVector unobserved_vars,
-    int simulations_per_weight_update, ExpressionVector observed_drift,
-    ExpressionVector unobserved_drift, ExpressionVector observed_diffusion,
-    ExpressionVector unobserved_diffusion, arma::mat deltaY,
-    Environment eval_env) {
-  // simulate the unobserved process
-  arma::cube X = euler_multi_particles(
-      xinits, t0, dt / simulations_per_weight_update,
-      steps * simulations_per_weight_update, r, time_var, unobserved_vars,
-      unobserved_drift, unobserved_diffusion, eval_env);
-
-  // update weights through time
-  arma::mat weights =
-      update_weights(X, r, weight_init, time_var, t0, dt, unobserved_vars,
-                     simulations_per_weight_update, steps, observed_drift,
-                     observed_diffusion, deltaY, eval_env);
-
-  return Rcpp::List::create(Rcpp::Named("values") = X,
-                            Rcpp::Named("weights") = weights);
-}
-
-// [[Rcpp::export]]
 arma::vec branch_particles(arma::vec weights) {
   const int num_particles = weights.n_elem;
   if (num_particles <= 1) {
@@ -198,14 +170,14 @@ Rcpp::List euler_multi_particles_with_weights_and_branching(
                       (i + 1) * simulations_per_weight_update) = X;
 
     // update weights through time
-    arma::mat weights = update_weights(
+    arma::vec new_weights = update_weights(
         X, r, all_weights.col(i), time_var, t0 + i * dt, dt, unobserved_vars,
-        simulations_per_weight_update, 1, observed_drift, observed_diffusion,
+        simulations_per_weight_update, observed_drift, observed_diffusion,
         deltaY.cols(i, i), eval_env);
-    all_weights.col(i + 1) = weights.col(1);
+    all_weights.col(i + 1) = new_weights;
     // branch particles
     if (i % weight_update_per_branching == weight_update_per_branching - 1) {
-      arma::vec numbers = branch_particles(all_weights.col(i + 1));
+      arma::vec numbers = branch_particles(new_weights);
       int current_num_particles = 0;
       for (int j = 0; j < num_particles; ++j) {
         int o = static_cast<int>(numbers(j));
