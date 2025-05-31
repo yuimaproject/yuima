@@ -76,12 +76,13 @@ arma::mat update_weights(arma::cube X, int r, arma::vec weights_init,
       arma::mat t_observed_diffusion_values(
           vec_observed_diffusion_values_sexp.begin(), r, d_ob, false);
 
+      arma::mat inv_sigma = arma::inv_sympd(t_observed_diffusion_values.t() *
+                                            t_observed_diffusion_values);
       // Update weights
-      double coeff = 1.0 + arma::as_scalar(
-                               observed_drift_values.t() *
-                               arma::inv_sympd(t_observed_diffusion_values.t() *
-                                               t_observed_diffusion_values) *
-                               deltaY.col(i));
+      double coeff = std::exp(arma::as_scalar(
+          observed_drift_values.t() * inv_sigma * deltaY.col(i) -
+          0.5 * observed_drift_values.t() * inv_sigma *
+              observed_drift_values.t() * dt));
       weights(p, i + 1) = weights(p, i) * coeff;
 
       // clip negative weights to zero
@@ -220,7 +221,6 @@ Rcpp::List euler_multi_particles_with_weights_and_branching(
           current_num_particles++;
         }
       }
-      std::cout << "debug: branched!" << std::endl;
     }
   }
   return Rcpp::List::create(Rcpp::Named("values") = all_values,
