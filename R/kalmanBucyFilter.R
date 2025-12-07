@@ -241,6 +241,12 @@ setMethod("vcov", "yuima.kalmanBucyFilter", function(object) object@vcov)
 #' @param x A \code{\link{yuima.kalmanBucyFilter-class}} object.
 #' @param plot_truth Logical. If \code{TRUE}, plot true values of state variables.
 #' @param level Numeric. If 0 < \code{level} < 1, plot confidence interval of \code{level}.
+#' @param legend Logical. If \code{TRUE}, a legend is added to the plot. 
+#' @param legend_position Character. Position of the legend, passed to 
+#' \code{\link[graphics]{legend}} (e.g., \code{"topright"}, \code{"bottom"},
+#' \code{"top"}, \code{"left"}, or \code{"none"}). 
+#' @param legend_cex Numeric. Scaling factor for the legend text size, 
+#' corresponding to the \code{cex} argument in \code{\link[graphics]{legend}}. 
 #' 
 #' @return NULL (plot is drawn)
 #' 
@@ -273,7 +279,7 @@ setMethod("vcov", "yuima.kalmanBucyFilter", function(object) object@vcov)
 #' ### visualize
 #' plot(res, plot_truth = TRUE, level = 0.95)
 #' }
-setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, level = 0) {
+setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, level = 0, legend = TRUE, legend_position = "top", legend_cex = 1) {
     orig_par <- par(no.readonly = TRUE)
     # config
     mar = c(4, 4, 0, 2)
@@ -345,17 +351,20 @@ setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, leve
         lines(as.vector(time(x@mean)), est.x.data, col = cols[estimation_line_style_index], lty = ltys[estimation_line_style_index])
 
         # legend
-        if (plot_truth) {
+        if (legend == TRUE){
+          if (plot_truth) {
             if (print_level_interval) {
-                legends <- c(paste("ture", var_name), "Kalman-Bucy filter", paste0(100 * level, "% confidence interval"))
+              legends <- c(paste("true", var_name), "Kalman-Bucy filter", paste0(100 * level, "% confidence interval"))
             } else {
-                legends <- c(paste("ture", var_name), "Kalman-Bucy filter")
+              legends <- c(paste("true", var_name), "Kalman-Bucy filter")
             }
-            legend("top", legend = legends, col = cols, lty = ltys, lwd = lwd)
-        } else if (print_level_interval) {
+            legend(legend_position, legend = legends, col = cols, lty = ltys, lwd = lwd, cex = legend_cex)
+          } else if (print_level_interval) {
             legends <- c("Kalman-Bucy filter", paste0(100 * level, "% confidence interval"))
-            legend("top", legend = legends, col = cols[c(1, 3)], lty = ltys[c(1, 3)])
+            legend(legend_position, legend = legends, col = cols[c(1, 3)], lty = ltys[c(1, 3)], cex = legend_cex)
+          }
         }
+        
     }
     close.screen(all.screens = TRUE)
     par(orig_par)
