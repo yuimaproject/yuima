@@ -81,6 +81,13 @@ importFrom(calculus,"%outer%")
 importFrom(calculus,"%prod%")
 importFrom(calculus,"%sum%")
 
+# added by Kosuke Kito on Jul. 27, 2024
+importFrom(Matrix, "bdiag")
+importFrom(calculus, "derivative")
+
+# added by Masahiro Kurisaki on Apr. 4, 2025 
+importFrom("grDevices", "rgb")
+importFrom("graphics", "close.screen", "legend", "polygon", "screen", "split.screen")
 
 exportClasses("yuima",
 "yuima.data",
@@ -115,7 +122,9 @@ exportClasses("yuima",
 "yuima.PPR.qmle",
 "yuima.LevyRM",
 "yuima.snr",
-"yuima.ae"  # added by EG on Dec. 15, 2021
+"yuima.ae",  # added by EG on Dec. 15, 2021
+"yuima.state_space_model",
+"yuima.linear_state_space_model"
 )
 
 exportMethods(
@@ -186,7 +195,7 @@ export(plot)
 
 export(simulate) # simulates couple of processes
 export(setLRM)
-export(estimation_RLM)
+export(estimation_LRM)
 export(subsampling)
 export(cce)
 export(llag)
@@ -245,6 +254,9 @@ export(snr)
 export(JBtest)
 export(DataPPR)
 export(qmleDegenerate) # added by YK
+export(kalmanBucyFilter)
+export(qmle.linear_state_space_model)
+
 
 export(Intensity.PPR)
 

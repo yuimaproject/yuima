@@ -135,7 +135,7 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
     if(ergodic == TRUE){
       for(i in 1:length(diff)){
         for(j in 1:length(drif)){
-          names(Esti)[(length(drif)*(i-1)+j)] <- paste("diffusion_", i, " & drift_", j, sep = "") 
+          names(Esti)[(length(drif)*(i-1)+j)] <- paste("scale_", i, " & drift_", j, sep = "") 
         }
       }
       
@@ -647,13 +647,13 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
     qbic.selected.coeff <- list(drift = drif[[QBIC.opt2]], scale = diff[[QBIC.opt1]])
     aic.selected.coeff <- list(drift = drif[[AIC.opt2]], scale = diff[[AIC.opt1]])
     if(is.matrix(data) == FALSE && Levy == TRUE){
-      ic.selected <- list(BIC = NULL, QBIC = qbic.selected.coeff, AIC = aic.selected.coeff)
+      ic.selected <- list(BIC = NULL, QBIC = bic.selected.coeff, AIC = aic.selected.coeff)
     }else{
       ic.selected <- list(BIC = bic.selected.coeff, QBIC = qbic.selected.coeff, AIC = aic.selected.coeff)
     }
     if(weight == TRUE){
       if(is.matrix(data) == FALSE && Levy == TRUE){
-        ak.weight <- list(BIC = NULL, QBIC = QBIC.weight.full, AIC = AIC.weight.full)
+        ak.weight <- list(BIC = NULL, QBIC = BIC.weight.full, AIC = AIC.weight.full)
       }else{
         ak.weight <- list(BIC = BIC.weight.full, QBIC = QBIC.weight.full, AIC = AIC.weight.full)
       }
@@ -661,7 +661,7 @@ IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Termina
       ak.weight <- NULL
     }
     if(is.matrix(data) == FALSE && Levy == TRUE){
-      final_res <- list(call = call, model = model.coef, par = Esti, BIC = NULL, QBIC = QBIC, AIC = AIC, weight = ak.weight, selected = ic.selected)
+      final_res <- list(call = call, model = model.coef, par = Esti, BIC = NULL, QBIC = BIC, AIC = AIC, weight = ak.weight, selected = ic.selected)
     }else{
       final_res <- list(call = call, model = model.coef, par = Esti, BIC = BIC, QBIC = QBIC, AIC = AIC, weight = ak.weight, selected = ic.selected)
     }

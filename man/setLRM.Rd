@@ -2,7 +2,7 @@
 \alias{setLRM}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-A constructor of a t-Student Regression Model.
+A Constructor of a t-Student Regression Model
 }
 \description{
 This function returns an object of \code{\link{yuima.LevyRM-class}}

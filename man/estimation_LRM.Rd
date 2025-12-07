@@ -1,11 +1,11 @@
-\name{estimation_RLM}
-\alias{estimation_RLM}
+\name{estimation_LRM}
+\alias{estimation_LRM}
 \alias{Estimation of t-Levy Regression Model}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Estimation of the t-Levy Regression Model}
 \description{The function estimates a t-Levy Regression Model}
 \usage{
-estimation_RLM(start, model, data, upper, lower, PT = 500, n_obs1 = NULL)
+estimation_LRM(start, model, data, upper, lower, PT = 500, n_obs1 = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

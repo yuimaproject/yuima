@@ -169,9 +169,9 @@ aux.setMaps <- function(func, yuima, out.var = "",
   Cond<-(mod@parameter@all %in% paramfunc)
   common <- c(common,mod@parameter@all[Cond])
   Cond <- (paramfunc %in% mod@solve.variable)
-  if(sum(Cond)==0){
-    yuima.warn("function does not depend on solve.variable")
-  }
+  # if(sum(Cond)==0){
+  #   yuima.warn("function does not depend on solve.variable")
+  # } LM (2024/09/10)
   paramfunc<-paramfunc[!Cond]
 
   Cond <- (paramfunc %in% mod@time.variable)
@@ -265,16 +265,16 @@ aux.setIntegral <- function(yuima, integrand, var.dx,
   common <- c(common,mod@parameter@all[Cond])
   # solve variable
   Cond <- (paramIntegrand %in% mod@solve.variable)
-  if(sum(Cond)==0){
-    yuima.warn("Integrand fuction does not depend on solve.variable")
-  }
+  # if(sum(Cond)==0){
+  #   yuima.warn("Integrand fuction does not depend on solve.variable")
+  # } LM (2024/09/10)
 
   paramIntegrand <- paramIntegrand[!Cond]
   # state variable
   Cond <- (paramIntegrand %in% mod@state.variable)
-  if(sum(Cond)==0){
-    yuima.warn("Integrand fuction does not depend on state.variable")
-  }
+  # if(sum(Cond)==0){
+  #   yuima.warn("Integrand fuction does not depend on state.variable")
+  # } LM(2024/09/10)
   
   paramIntegrand <- paramIntegrand[!Cond]
   # time variable

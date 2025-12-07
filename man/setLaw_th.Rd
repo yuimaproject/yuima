@@ -2,7 +2,7 @@
 \alias{setLaw_th}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Constructior of a t-Levy process.
+Constructior of a t-Levy Process
 }
 \description{
 \code{setLaw_th} constructs an object of class \code{\link{yuima.th-class}}.
