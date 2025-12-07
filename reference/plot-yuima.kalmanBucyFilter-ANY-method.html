@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">The YUIMA Project</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.30</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.31</span>
       </span>
     </div>
 
@@ -51,7 +51,14 @@
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S4 method for class 'yuima.kalmanBucyFilter,ANY'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, plot_truth <span class="op">=</span> <span class="cn">FALSE</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  plot_truth <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  legend_position <span class="op">=</span> <span class="st">"top"</span>,</span>
+<span>  legend_cex <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -68,6 +75,21 @@
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
 <dd><p>Numeric. If 0 &lt; <code>level</code> &lt; 1, plot confidence interval of <code>level</code>.</p></dd>
+
+
+<dt id="arg-legend">legend<a class="anchor" aria-label="anchor" href="#arg-legend"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, a legend is added to the plot.</p></dd>
+
+
+<dt id="arg-legend-position">legend_position<a class="anchor" aria-label="anchor" href="#arg-legend-position"></a></dt>
+<dd><p>Character. Position of the legend, passed to
+<code><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></code> (e.g., <code>"topright"</code>, <code>"bottom"</code>,
+<code>"top"</code>, <code>"left"</code>, or <code>"none"</code>).</p></dd>
+
+
+<dt id="arg-legend-cex">legend_cex<a class="anchor" aria-label="anchor" href="#arg-legend-cex"></a></dt>
+<dd><p>Numeric. Scaling factor for the legend text size,
+corresponding to the <code>cex</code> argument in <code><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></code>.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -127,7 +149,7 @@ Also, it can plot confidence interval of <code>level</code> if 0 &lt; <code>leve
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer></div>

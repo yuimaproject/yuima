@@ -26,7 +26,7 @@ All functions relying on the yuima
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">The YUIMA Project</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.30</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.31</span>
       </span>
     </div>
 
@@ -83,8 +83,8 @@ All functions relying on the yuima
     <code>drift=NULL</code>).</p></dd>
 
   <dt id="arg-diffusion">diffusion<a class="anchor" aria-label="anchor" href="#arg-diffusion"></a></dt>
-<dd><p>a matrix of <code>expression</code>s (the default value is 0 when
-   <code>diffusion=NULL</code>).</p></dd>
+<dd><p>a matrix or vector of <code>expression</code>s (the default value is 0 when
+   <code>diffusion=NULL</code>). If a vector is provided, it is interpreted as a diagonal matrix.</p></dd>
 
   <dt id="arg-hurst">hurst<a class="anchor" aria-label="anchor" href="#arg-hurst"></a></dt>
 <dd><p>the Hurst parameter of the gaussian noise. If <code>h=0.5</code>, the default,
@@ -271,7 +271,7 @@ Please contribute with suggestions and fixings.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ state.variable : chr "x"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ jump.variable  : chr(0) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ time.variable  : chr "t"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ noise.number   : num 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ noise.number   : int 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ equation.number: int 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ dimension      : int [1:6] 0 0 0 0 0 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ solve.variable : chr "x"</span>
@@ -352,7 +352,7 @@ Please contribute with suggestions and fixings.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ state.variable : chr "x"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ jump.variable  : chr "z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ time.variable  : chr "t"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ noise.number   : num 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ noise.number   : int 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ equation.number: int 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ dimension      : int [1:6] 2 0 1 1 0 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ solve.variable : chr "x"</span>
@@ -388,7 +388,7 @@ Please contribute with suggestions and fixings.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ state.variable : chr "x"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ jump.variable  : chr "z"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ time.variable  : chr "t"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ noise.number   : num 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ noise.number   : int 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ equation.number: int 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ dimension      : int [1:6] 2 0 1 1 0 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ..@ solve.variable : chr "x"</span>
@@ -475,6 +475,7 @@ Please contribute with suggestions and fixings.</p>
 <span class="r-in"><span><span class="co"># Yt = Xt + dVt (observed)</span></span></span>
 <span class="r-in"><span><span class="va">drift</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-theta*x"</span>, <span class="st">"1"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">diffusion</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sigma"</span>, <span class="st">"0"</span>, <span class="st">"0"</span>, <span class="st">"1"</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co">#diffusion &lt;- c("sigma", "1") #alternative</span></span></span>
 <span class="r-in"><span><span class="va">mod7</span> <span class="op">&lt;-</span> <span class="fu">setModel</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  drift<span class="op">=</span><span class="va">drift</span>, diffusion<span class="op">=</span><span class="va">diffusion</span>, solve.variable<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  state.variable<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>, observed.variable<span class="op">=</span><span class="st">"y"</span></span></span>
@@ -493,7 +494,7 @@ Please contribute with suggestions and fixings.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer></div>
