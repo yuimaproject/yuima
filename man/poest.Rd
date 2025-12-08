@@ -130,7 +130,8 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
     yuima = yuima, start = start.par, 
     lower = lower.par, upper = upper.par, rcpp = TRUE
     )
-  # when penalty or any element of penalty is not given, following values will be used for elements not given.
+  # when penalty or any element of penalty is not given, 
+  # the following values will be used for elements not given.
   # list(
   #   drift     = list(q = 1, gamma = 1, r = (3 - q + gamma) / 2),
   #   diffusion = list(q = 1, gamma = 1, r = (3 - q + gamma) / 2),
