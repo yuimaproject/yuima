@@ -4,7 +4,10 @@
 \title{P-O Estimator}
 \description{P-O(penalized method to ordinary method) estimator using QMLE or adaBayes and \eqn{L^q} penalty.}
 \usage{
-poest(yuima, estimator = "qmle", start, prior=NULL, lower, upper, penalty, method = "L-BFGS-B", ...)
+poest(
+  yuima, estimator = "qmle", start, prior=NULL, 
+  lower, upper, penalty, method = "L-BFGS-B", ...
+  )
 }
 \arguments{
   \item{yuima}{A 'yuima' object.}
@@ -78,7 +81,11 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   method = "L-BFGS-B"
 
   # estimation
-  res.po <- poest(yuima = yuima, start = start.par, lower = lower.par, upper = upper.par, penalty = penalty, rcpp = TRUE)
+  res.po <- poest(
+    yuima = yuima, start = start.par, 
+    lower = lower.par, upper = upper.par, 
+    penalty = penalty, rcpp = TRUE
+    )
 
   # show results
   print(res.po)
@@ -119,7 +126,10 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   method = "L-BFGS-B"
 
   # estimation
-  res.po <- poest(yuima = yuima, start = start.par, lower = lower.par, upper = upper.par, rcpp = TRUE)
+  res.po <- poest(
+    yuima = yuima, start = start.par, 
+    lower = lower.par, upper = upper.par, rcpp = TRUE
+    )
   # when penalty or any element of penalty is not given, following values will be used for elements not given.
   # list(
   #   drift     = list(q = 1, gamma = 1, r = (3 - q + gamma) / 2),
@@ -176,7 +186,11 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   path <- TRUE
 
   # estimation
-  res.po <- poest(yuima = yuima, estimator = estimator, start = start.par, prior = prior, lower = lower.par, upper = upper.par, penalty = penalty, method = method, mcmc = mcmc, path = path, rcpp = TRUE)
+  res.po <- poest(
+    yuima = yuima, estimator = estimator, prior = prior, 
+    start = start.par, lower = lower.par, upper = upper.par, 
+    penalty = penalty, method = method, 
+    mcmc = mcmc, path = path, rcpp = TRUE)
 
   # show results
   print(res.po)
