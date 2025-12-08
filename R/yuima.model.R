@@ -997,6 +997,14 @@ setModel <- function(drift = NULL,
                      model.class = NULL,
                      observed.variable = NULL,
                      unobserved.variable = NULL) {
+  ## if diffusion is given as a vector, transform it into a diagonal matrix
+  if(!is.matrix(diffusion) & is.character(diffusion)){
+    diffusion_vec <- diffusion
+    diffusion_size <- length(diffusion_vec)
+    diffusion <- matrix("0", diffusion_size, diffusion_size)
+    diag(diffusion) <- diffusion_vec
+  }
+  
   ## if model.class is NULL, decide model.class automatically
   if (is.null(model.class)) {
     if (!is.null(observed.variable) || !is.null(unobserved.variable)) {
@@ -1031,10 +1039,8 @@ setModel <- function(drift = NULL,
         model.class <- "stateSpaceModel"
       }
       # check that any of unobserved.variable is not in diffusion
-      for (i in 1:length(model@diffusion)) {
-        if (any(params_in_expr(params = unobserved.variable, expr = model@diffusion[[i]]))) {
-          model.class <- "stateSpaceModel"
-        }
+      if (any(params_in_expr(params = unobserved.variable, expr = model@diffusion))){
+        model.class <- "stateSpaceModel"
       }
     } else {
       model.class <- "model"
@@ -1077,6 +1083,18 @@ setModel <- function(drift = NULL,
       observed.variable = observed.variable,
       unobserved.variable = unobserved.variable
     )
+    unobserved.variable <- model@state.variable[!model@is.observed]
+    ## check if the model is linear
+    drift.is.linear.with.unobserved <- tryCatch(
+      is.linear(model@drift, unobserved.variable),
+      warning = function(w) {
+        return(TRUE)
+      }
+    )
+    if (!drift.is.linear.with.unobserved | 
+        any(params_in_expr(params = unobserved.variable, expr = model@diffusion))) {
+      yuima.warn("The model may not be linear, or its linearity could not be verified automatically.")
+    }
     return(model)
   } else if (model.class == "model") {
     # normal model case

@@ -6,6 +6,18 @@ qmle.linear_state_space_model <- function(yuima, start, lower = NULL, upper = NU
   if (drop_terms >= yuima@sampling@n[[1]] + 1) {
     yuima.stop("`drop_terms` must be smaller than the number of observations (=`yuima@sampleing@n[1] + 1`)")
   }
+  
+  time.vairable <- yuima@model@time.variable
+  if (any(params_in_expr(params = time.vairable, expr = yuima@model@drift))||
+      any(params_in_expr(params = time.vairable, expr = yuima@model@diffusion))){
+    yuima.stop("Currently, the model must be time-homogeneous.")
+  }
+  
+  observed.variables <- yuima@model@state.variable[yuima@model@is.observed]
+  if (any(params_in_expr(params = observed.variables, expr = yuima@model@drift))||
+      any(params_in_expr(params = observed.variables, expr = yuima@model@diffusion))){
+    yuima.stop("Currently, the model must not include observed variables.")
+  }
 
   #### fixed
   if (length(fixed) > 0 && !is.Poisson(yuima) && !is.CARMA(yuima) && !is.COGARCH(yuima)) {
@@ -78,7 +90,6 @@ qmle.linear_state_space_model <- function(yuima, start, lower = NULL, upper = NU
   }
 
   # compute delta of observed data
-  observed.variables <- yuima@model@state.variable[yuima@model@is.observed]
   delta.observed.variable <- array(dim = c(length(observed.variables), yuima@sampling@n[[1]]), dimnames = list(observed.variables))
   for (variable in observed.variables) {
     delta.observed.variable[variable, ] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable == variable)]]))

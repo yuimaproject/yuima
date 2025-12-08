@@ -9,3 +9,4 @@
 ^LICENSE$
 ^doc$
 ^Meta$
+^\.vs($|/)
