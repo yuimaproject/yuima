@@ -2,7 +2,7 @@
 \alias{qmleDegenerate}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Quasi-likelihood estimation for degenerate diffusion processes
+Quasi-likelihood Estimation for Degenerate Diffusion Processes
 }
 \description{
 Calculate a quasi maximum likelihood type estimator for the parameters of a degenerate diffusion process based on discrete observation data.
