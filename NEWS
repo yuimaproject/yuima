@@ -149,3 +149,6 @@ v. 1.15.31 2025/11/13
 * Updated the plot method for the yuima.kalmanBucyFilter class.
 * Updated the setModel method to allow vectors to be used as diffusion matrices.
 * Made minor modifications to the state-space model components.
+
+v. 1.15.32 2025/12/08
+* Added poest method for sparse estimation.
