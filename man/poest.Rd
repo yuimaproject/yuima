@@ -78,7 +78,7 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   method = "L-BFGS-B"
 
   # estimation
-  res.po <- poest(yuima = yuima, start = start.par, lower = lower.par, upper = upper.par, penalty = penalty)
+  res.po <- poest(yuima = yuima, start = start.par, lower = lower.par, upper = upper.par, penalty = penalty, rcpp = TRUE)
 
   # show results
   print(res.po)
@@ -119,7 +119,7 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   method = "L-BFGS-B"
 
   # estimation
-  res.po <- poest(yuima = yuima, start = start.par, lower = lower.par, upper = upper.par)
+  res.po <- poest(yuima = yuima, start = start.par, lower = lower.par, upper = upper.par, rcpp = TRUE)
   # when penalty or any element of penalty is not given, following values will be used for elements not given.
   # list(
   #   drift     = list(q = 1, gamma = 1, r = (3 - q + gamma) / 2),
@@ -176,7 +176,7 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   path <- TRUE
 
   # estimation
-  res.po <- poest(yuima = yuima, estimator = estimator, start = start.par, prior = prior, lower = lower.par, upper = upper.par, penalty = penalty, method = method, mcmc = mcmc, path = path)
+  res.po <- poest(yuima = yuima, estimator = estimator, start = start.par, prior = prior, lower = lower.par, upper = upper.par, penalty = penalty, method = method, mcmc = mcmc, path = path, rcpp = TRUE)
 
   # show results
   print(res.po)
