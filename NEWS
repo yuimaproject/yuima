@@ -151,4 +151,7 @@ v. 1.15.31 2025/11/13
 * Made minor modifications to the state-space model components.
 
 v. 1.15.32 2025/12/08
-* Added poest method for sparse estimation.
+* added qmleDegenerate() to calculate a QMLE type estimator for degenerate diffusions.
+
+v. 1.15.33 2025/12/08
+* added poest method for sparse estimation.
