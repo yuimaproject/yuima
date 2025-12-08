@@ -256,6 +256,7 @@ export(DataPPR)
 export(qmleDegenerate) # added by YK
 export(kalmanBucyFilter)
 export(qmle.linear_state_space_model)
+export(poest)
 
 
 export(Intensity.PPR)

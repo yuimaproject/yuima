@@ -315,3 +315,70 @@ setClass(
     fixed = "numeric"
   )
 )
+
+setClass("yuima.poest",
+         representation(
+           initial_estimator="ANY",
+           final_estimator="ANY",
+           model="yuima.model",
+           estimator = "character",
+           call="call",
+           coef="numeric",
+           vcov="matrix",
+           selected_coef="character"
+         )
+)
+
+setMethod("show", "yuima.poest", function(object){
+  cat("\nCall:\n")
+  print(object@call)
+  cat("\nCoefficients:\n")
+  print(object@coef)
+})
+
+setClass("summary.yuima.poest",
+         representation(
+           initial_estimator="matrix",
+           final_estimator="matrix",
+           model = "yuima.model",
+           estimator="character",
+           call="call",
+           selected_coef="character"
+         )
+)
+
+setMethod("summary", "yuima.poest",
+          function (object, ...)
+          {
+            cmat.init <- cbind(Estimate = object@initial_estimator@coef, `Std. Error` = sqrt(diag(object@initial_estimator@vcov)))
+            
+            final.std_error <- sqrt(diag(object@final_estimator@vcov))
+            final.estimate <- object@final_estimator@coef
+            for(param in names(object@initial_estimator@coef)[!is.element(names(object@initial_estimator@coef), names(object@final_estimator@coef))]) {
+              final.std_error[param] <- 0
+              final.estimate[param]<- 0
+            }
+            
+            cmat.fin <- cbind(Estimate = final.estimate, `Std. Error` = final.std_error)
+            tmp <- new("summary.yuima.poest",
+                       initial_estimator = cmat.init,
+                       final_estimator = cmat.fin,
+                       model = object@model,
+                       estimator = object@estimator,
+                       call = object@call,
+                       selected_coef=object@selected_coef
+            )
+            tmp
+          }
+)
+
+setMethod("show", "summary.yuima.poest", function(object){
+  cat("P-O Estimator\n\nCall:\n")
+  print(object@call)
+  cat("\nEstimator:\n")
+  print(object@estimator)
+  cat("\nInitial Estimator:\n")
+  print(object@initial_estimator)
+  cat("\nFinal Estimator:\n")
+  print(object@final_estimator)
+})

@@ -150,5 +150,8 @@ v. 1.15.31 2025/11/13
 * Updated the setModel method to allow vectors to be used as diffusion matrices.
 * Made minor modifications to the state-space model components.
 
-v. 1.15.32 2025/12/8
-* added qmleDegenerate() to calculate a QMLE type estimator for degenerate diffusions
+v. 1.15.32 2025/12/08
+* added qmleDegenerate() to calculate a QMLE type estimator for degenerate diffusions.
+
+v. 1.15.33 2025/12/08
+* added poest method for sparse estimation.
