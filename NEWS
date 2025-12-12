@@ -155,3 +155,8 @@ v. 1.15.32 2025/12/08
 
 v. 1.15.33 2025/12/08
 * added poest method for sparse estimation.
+
+v. 1.15.43 2025/12/09
+* fixed length method for yuima and yuima.data object to return a scalar value.
+* added lentghs method for yuima and yuima.data object.
+* added summary method for yuima object.

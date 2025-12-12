@@ -114,21 +114,27 @@ setMethod("plot",signature(x="yuima.data"),
 
 setMethod("length", signature(x= "yuima.data"),
           function(x){
-		  #  if(is.null(dim(x@zoo.data)))
-	      #    return(length(x@zoo.data))
-	      #  else
-          #    return(dim(x@zoo.data)[1])
-		    result <- numeric()
-		    for(i in 1:(length(x@zoo.data))) result <- c(result,length(x@zoo.data[[i]]))
-		    return(result)
+      # scalar value for length      
+            z <- x@zoo.data
+            if (is.null(z) || length(z) == 0L) return(0L)
+            return(length(z[[1L]]))  
           }
           )
+
+setMethod("lengths", signature(x= "yuima.data"),
+          function(x){
+            result <- numeric()
+            for(i in 1:(length(x@zoo.data))) result <- c(result,length(x@zoo.data[[i]]))
+            return(result)
+          }
+)
 
 setMethod("dim", signature(x = "yuima.data"),
           function(x){
             return(length(x@zoo.data))
           }
           )
+
 
 
 # same methods for 'yuima'. Depend on same methods for 'data'
@@ -140,11 +146,57 @@ setMethod("length", "yuima",
           function(x){
             return(length(x@data))
           })
+setMethod("lengths", "yuima",
+          function(x){
+            return(lengths(x@data))
+          })
 setMethod("dim", "yuima",
           function(x){
            return(dim(x@data))
           })
 
+
+
+setMethod(
+  "summary",
+  signature(object = "yuima"),
+  function(object, ...) {
+    
+    zdata <- object@data@zoo.data
+    
+    if (is.null(zdata)) {
+      lens <- numeric(0)
+    } else {
+      lens <- vapply(zdata, length, integer(1L))
+    }
+    
+    res <- list(
+      yuima.class = class(object)[1L],
+      length     = lens
+    )
+    
+    class(res) <- "summary.yuima"
+    
+    return(res)
+  }
+)
+
+print.summary.yuima <- function(x, ...) {
+  cat("Summary of yuima object\n")
+  cat("  Class   : ", x$class, "\n", sep = "")
+  
+  cat("  Series  : ")
+  if (!is.null(names(x$lengths))) {
+    cat(paste(names(x$lengths), collapse = ", "), "\n")
+  } else {
+    cat(length(x$length), "series\n")
+  }
+  
+  cat("  Lengths :\n")
+  print(x$length)
+  
+  invisible(x)
+}
 
 setMethod("plot","yuima",
           function(x,y,xlab=x@model@time.variable,ylab=x@model@solve.variable,...){
