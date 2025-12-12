@@ -18,7 +18,7 @@ This function simulates increments of bivariate Brownian motions with multi-scal
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">The YUIMA Project</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.34</span>
       </span>
     </div>
 
@@ -221,11 +221,13 @@ There are typos in the first and second displayed equations in page 1221 of Haya
 <span class="r-in"><span><span class="va">yuima</span> <span class="op">&lt;-</span> <span class="fu"><a href="setYuima.html">setYuima</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">mod</span>, sampling <span class="op">=</span> <span class="va">samp</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># simulation</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="simulate.html">simulate</a></span><span class="op">(</span><span class="va">yuima</span>, increment.W <span class="op">=</span> <span class="va">dW</span>,</span></span>
 <span class="r-in"><span>                   true.parameter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kappa <span class="op">=</span> <span class="fl">5</span>, eta <span class="op">=</span> <span class="fl">0.04</span>, xi <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="simBmllag-3.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -236,7 +238,7 @@ There are typos in the first and second displayed equations in page 1221 of Haya
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by YUIMA Project Team, Stefano M. Iacus.</p>
+  <p></p><p>Developed by YUIMA Project Team, Yuta Koike.</p>
 </div>
 
 <div class="pkgdown">

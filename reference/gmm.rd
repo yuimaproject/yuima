@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">The YUIMA Project</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.34</span>
       </span>
     </div>
 
@@ -151,7 +151,7 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by YUIMA Project Team, Stefano M. Iacus.</p>
+  <p></p><p>Developed by YUIMA Project Team, Yuta Koike.</p>
 </div>
 
 <div class="pkgdown">

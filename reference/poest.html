@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">The YUIMA Project</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.33</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.15.34</span>
       </span>
     </div>
 
@@ -174,11 +174,13 @@
 <span class="r-in"><span>  <span class="va">method</span> <span class="op">=</span> <span class="st">"L-BFGS-B"</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># estimation</span></span></span>
+<span class="r-in"><span>  <span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span>  <span class="va">res.po</span> <span class="op">&lt;-</span> <span class="fu">poest</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    yuima <span class="op">=</span> <span class="va">yuima</span>, start <span class="op">=</span> <span class="va">start.par</span>, </span></span>
 <span class="r-in"><span>    lower <span class="op">=</span> <span class="va">lower.par</span>, upper <span class="op">=</span> <span class="va">upper.par</span>, </span></span>
 <span class="r-in"><span>    penalty <span class="op">=</span> <span class="va">penalty</span>, rcpp <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span>  </span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># show results</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res.po</span><span class="op">)</span></span></span>
@@ -215,6 +217,8 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta3  0.0000000 0.00000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta4  0.0000000 0.00000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta5  0.0000000 0.00000000</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co">### example2 not giving penalty</span></span></span>
@@ -253,6 +257,7 @@
 <span class="r-in"><span>  <span class="va">method</span> <span class="op">=</span> <span class="st">"L-BFGS-B"</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># estimation</span></span></span>
+<span class="r-in"><span>  <span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span>  <span class="va">res.po</span> <span class="op">&lt;-</span> <span class="fu">poest</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    yuima <span class="op">=</span> <span class="va">yuima</span>, start <span class="op">=</span> <span class="va">start.par</span>, </span></span>
 <span class="r-in"><span>    lower <span class="op">=</span> <span class="va">lower.par</span>, upper <span class="op">=</span> <span class="va">upper.par</span>, rcpp <span class="op">=</span> <span class="cn">TRUE</span></span></span>
@@ -299,6 +304,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta3  0.09341208  0.2011910</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta4  0.19724258  0.2233795</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta5 -0.15075081  0.1794885</span>
+<span class="r-in"><span>  <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co">### example3 use adaBayes</span></span></span>
 <span class="r-in"><span>  <span class="co"># model definition</span></span></span>
@@ -348,6 +354,7 @@
 <span class="r-in"><span>  <span class="va">path</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># estimation</span></span></span>
+<span class="r-in"><span>  <span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span>  <span class="va">res.po</span> <span class="op">&lt;-</span> <span class="fu">poest</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    yuima <span class="op">=</span> <span class="va">yuima</span>, estimator <span class="op">=</span> <span class="va">estimator</span>, prior <span class="op">=</span> <span class="va">prior</span>, </span></span>
 <span class="r-in"><span>    start <span class="op">=</span> <span class="va">start.par</span>, lower <span class="op">=</span> <span class="va">lower.par</span>, upper <span class="op">=</span> <span class="va">upper.par</span>, </span></span>
@@ -391,6 +398,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta4  0.1335011 0.15288843</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta3  0.0000000 0.00000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> theta5  0.0000000 0.00000000</span>
+<span class="r-in"><span>  <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -401,7 +409,7 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by YUIMA Project Team, Stefano M. Iacus.</p>
+  <p></p><p>Developed by YUIMA Project Team, Yuta Koike.</p>
 </div>
 
 <div class="pkgdown">
