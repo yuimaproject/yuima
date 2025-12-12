@@ -81,15 +81,19 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   method = "L-BFGS-B"
 
   # estimation
+  \donttest{
   res.po <- poest(
     yuima = yuima, start = start.par, 
     lower = lower.par, upper = upper.par, 
     penalty = penalty, rcpp = TRUE
     )
+  
 
   # show results
   print(res.po)
   summary(res.po)
+
+  }
 
 
   ### example2 not giving penalty
@@ -126,6 +130,7 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   method = "L-BFGS-B"
 
   # estimation
+  \donttest{
   res.po <- poest(
     yuima = yuima, start = start.par, 
     lower = lower.par, upper = upper.par, rcpp = TRUE
@@ -140,6 +145,7 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   # show results
   print(res.po)
   summary(res.po)
+  }
 
   ### example3 use adaBayes
   # model definition
@@ -187,6 +193,7 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   path <- TRUE
 
   # estimation
+  \donttest{
   res.po <- poest(
     yuima = yuima, estimator = estimator, prior = prior, 
     start = start.par, lower = lower.par, upper = upper.par, 
@@ -196,4 +203,5 @@ Huang, J., Horowitz, J. and Ma, S., 2008. Asymptotic properties of bridge estima
   # show results
   print(res.po)
   summary(res.po)
+  }
 }
