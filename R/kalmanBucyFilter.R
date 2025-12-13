@@ -277,9 +277,9 @@ setMethod("vcov", "yuima.kalmanBucyFilter", function(object) object@vcov)
 #' )
 #' 
 #' ### visualize
-#' plot(res, plot_truth = TRUE, level = 0.95)
+#' plot(res)
 #' }
-setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = FALSE, level = 0, legend = TRUE, legend_position = "top", legend_cex = 1) {
+setMethod("plot", "yuima.kalmanBucyFilter", function(x, plot_truth = TRUE, level = 0.95, legend = TRUE, legend_position = "top", legend_cex = 1) {
     orig_par <- par(no.readonly = TRUE)
     # config
     mar = c(4, 4, 0, 2)
