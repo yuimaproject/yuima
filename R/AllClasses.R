@@ -240,10 +240,7 @@ setClass(
 setMethod(
   "show", "yuima.kalmanBucyFilter",
   function(object) {
-    start <- start(object@mean)[1]
-    end <- end(object@mean)[1]
-    freq <- frequency(object@mean)
-    time_points <- seq(start, end, by = 1/freq)
+    time_points <- time(object@mean)
     cat("Kalman-Bucy Filter\n")
     if (dim(object@mean)[2] == 1) {
       cat("Mean and variance values:\n")
@@ -252,11 +249,12 @@ setMethod(
       colnames(mean_variance_mat) <- paste(c("Mean of", "Variance of"), var_name)
       rownames(mean_variance_mat) <- time_points
       n <- dim(mean_variance_mat)[1]
-      if (n <= 12) {
-        print(mean_variance_mat)
-      } else {
-        print(rbind(head(mean_variance_mat), "...", tail(mean_variance_mat)), quote = FALSE)
-      }
+      if (n <= 12) { 
+        print(mean_variance_mat) } 
+      else { 
+        mvm <- rbind(head(mean_variance_mat), "...", tail(mean_variance_mat))
+        rownames(mvm) <- c(head(as.character(time_points)), "...", tail(as.character(time_points)))
+        print(mvm, quote = FALSE) }
     } else {
       cat("Mean values:\n")
       n <- dim(object@mean)[1]
@@ -264,20 +262,21 @@ setMethod(
         print(object@mean)
       } else {
         mean_mat <- as.matrix(object@mean)
-        rownames(mean_mat) <- time_points
-        print(rbind(head(mean_mat), "...", tail(mean_mat)), quote = FALSE)
+        mean_mat <- rbind(head(mean_mat), "...", tail(mean_mat))
+        rownames(mean_mat) <- c(head(as.character(time_points)), "...", tail(as.character(time_points)))
+        print(mean_mat, quote = FALSE)
       }
-      cat("Variance-covariance matrices\n")
+      cat("\nVariance-covariance matrices\n")
       if (n < 12) {
         print(object@vcov)
       } else {
         for (i in 1:6) {
-          cat("\n, , ", i, "\n", sep = "") 
+          cat("\nt = ", time_points[i], "\n", sep = "") 
           print(object@vcov[, , i], quote = TRUE) 
         }
-        cat("...")
+        cat("\n...\n")
         for (i in (dim(object@vcov)[3]-5):dim(object@vcov)[3]) {
-          cat("\n, , ", i, "\n", sep = "") 
+          cat("\nt = ", time_points[i], "\n", sep = "") 
           print(object@vcov[, , i], quote = TRUE) 
         }
       }
