@@ -53,8 +53,8 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S4 method for class 'yuima.kalmanBucyFilter,ANY'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  plot_truth <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  level <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  plot_truth <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  legend_position <span class="op">=</span> <span class="st">"top"</span>,</span>
 <span>  legend_cex <span class="op">=</span> <span class="fl">1</span></span>
@@ -133,7 +133,7 @@ Also, it can plot confidence interval of <code>level</code> if 0 &lt; <code>leve
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### visualize</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, plot_truth <span class="op">=</span> <span class="cn">TRUE</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
