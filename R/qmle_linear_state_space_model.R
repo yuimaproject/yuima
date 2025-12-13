@@ -462,7 +462,7 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   f <- function(p) {
     theta2.values <- as.list(p)
     names(theta2.values) <- nm[idx.theta2]
-    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, inv.squared.observed.diffusion = inv.squared.observed.diffusion, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, drop_terms = drop_terms, h = h))
+    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, inv.squared.observed.diffusion = inv.squared.observed.diffusion, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = tmp.env, explicit = explicit, drop_terms = drop_terms, h = h))
   }
 
   call <- match.call()
@@ -574,7 +574,8 @@ split_parameters_into_theta1_and_theta2 <- function(yuima) {
   theta2 <- unique(c(yuima@model@parameter@drift, yuima@model@parameter@diffusion[attr(yuima@model@parameter@diffusion, "unobserved")]))
 
   if (any(duplicated(c(theta1, theta2)))) {
-    yuima.stop("Cannot split parameters into theta1 and theta2.")
+    #yuima.stop("Cannot split parameters into theta1 and theta2.")
+    theta2 <- theta2[!is.element(theta2,theta1)]
   }
   return(list(theta1 = theta1, theta2 = theta2))
 }
