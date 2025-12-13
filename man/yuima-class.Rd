@@ -73,8 +73,10 @@ The slot \code{functional} contains information on
 	 as is to the \code{\link{plot}} function.}
 	\item{dim}{\code{signature(x = "yuima")}: the number of SDEs in the
 	  \code{yuima} object.}
-    \item{length}{\code{signature(x = "yuima")}: a vector of length of
-	  each SDE described in the \code{yuima} object.}
+    \item{length}{\code{signature(x = "yuima")}: the number of observations of
+	  the first time series in the \code{data} slot.}
+	\item{lengths}{\code{signature(x = "yuima")}: a vector giving the number of observations of
+	  each time series in the \code{data} slot.}
     \item{cce}{\code{signature(x = "yuima")}: calculates the asyncronous
 	 covariance estimator on the data contained in \code{x@data@zoo.data}.
 	 For more details see \code{\link{cce}}.}
