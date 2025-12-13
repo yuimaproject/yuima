@@ -6,8 +6,8 @@
 \usage{
 \S4method{plot}{yuima.kalmanBucyFilter,ANY}(
   x,
-  plot_truth = TRUE,
-  level = 0.95,
+  plot_truth = FALSE,
+  level = 0,
   legend = TRUE,
   legend_position = "top",
   legend_cex = 1
@@ -65,7 +65,7 @@ res <- kalmanBucyFilter(
 )
 
 ### visualize
-plot(res)
+plot(res, plot_truth = TRUE, level = 0.95)
 }
 }
 \author{
