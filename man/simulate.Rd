@@ -10,7 +10,7 @@ simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = F
 \arguments{
   \item{object}{an \code{\link{yuima-class}}, 
     \code{\link{yuima.model-class}} or \code{\link{yuima.carma-class}}  object.}
-  \item{xinit}{initial value vector of state variables.}
+  \item{xinit}{initial value vector of state variables. The default value is 0.}
   \item{true.parameter}{named list of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
 	Maruyama method.}
