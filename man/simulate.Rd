@@ -53,6 +53,9 @@ For a COGARCH(p,q) process setting \code{method=mixed} implies that the simulati
 \author{The YUIMA Project Team}
 \note{
 In the simulation of multi-variate Levy processes, the values of parameters have to be defined outside of \code{simulate} function in advance (see examples below).
+
+When \code{measure.type = "code"}, it is assumed that \code{jump.coefficient} does not include \code{jump.variable}. 
+Otherwise, the simulation may generate incorrect sample paths.
 }
 \examples{
 set.seed(123)
