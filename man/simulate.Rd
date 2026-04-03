@@ -10,7 +10,7 @@ simulate(object, nsim=1, seed=NULL, xinit, true.parameter, space.discretized = F
 \arguments{
   \item{object}{an \code{\link{yuima-class}}, 
     \code{\link{yuima.model-class}} or \code{\link{yuima.carma-class}}  object.}
-  \item{xinit}{initial value vector of state variables.}
+  \item{xinit}{initial value vector of state variables. The default value is 0.}
   \item{true.parameter}{named list of parameters.}
   \item{space.discretized}{flag to switch to space-discretized Euler
 	Maruyama method.}
@@ -53,6 +53,9 @@ For a COGARCH(p,q) process setting \code{method=mixed} implies that the simulati
 \author{The YUIMA Project Team}
 \note{
 In the simulation of multi-variate Levy processes, the values of parameters have to be defined outside of \code{simulate} function in advance (see examples below).
+
+When \code{measure.type = "code"}, it is assumed that \code{jump.coefficient} does not include \code{jump.variable}. 
+Otherwise, the simulation may generate incorrect sample paths.
 }
 \examples{
 set.seed(123)
