@@ -63,7 +63,7 @@
     <code><a href="yuima.model-class.html">yuima.model-class</a></code> or <code><a href="yuima.carma-class.html">yuima.carma-class</a></code>  object.</p></dd>
 
   <dt id="arg-xinit">xinit<a class="anchor" aria-label="anchor" href="#arg-xinit"></a></dt>
-<dd><p>initial value vector of state variables.</p></dd>
+<dd><p>initial value vector of state variables. The default value is 0.</p></dd>
 
   <dt id="arg-true-parameter">true.parameter<a class="anchor" aria-label="anchor" href="#arg-true-parameter"></a></dt>
 <dd><p>named list of parameters.</p></dd>
@@ -137,6 +137,8 @@ arguments).</p>
     <div id="note">
     <h2>Note</h2>
     <p>In the simulation of multi-variate Levy processes, the values of parameters have to be defined outside of <code>simulate</code> function in advance (see examples below).</p>
+<p>When <code>measure.type = "code"</code>, it is assumed that <code>jump.coefficient</code> does not include <code>jump.variable</code>.
+Otherwise, the simulation may generate incorrect sample paths.</p>
     </div>
 
     <div id="ref-examples">
