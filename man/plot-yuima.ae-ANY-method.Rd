@@ -12,7 +12,7 @@
 
 \item{grids}{list. A named list of vectors specifying the grid to evaluate the density. The names must match the state variables.}
 
-\item{eps}{numeric. The intensity of the perturbation.}
+\item{eps}{numeric. The intensity of the perturbation. See \code{\link{ae}}.}
 
 \item{order}{integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.}
 

@@ -13,7 +13,7 @@ aeExpectation(f, bounds, ae, eps = 1, order = NULL, ...)
 
 \item{ae}{an object of class \code{\link{yuima.ae-class}}.}
 
-\item{eps}{numeric. The intensity of the perturbation.}
+\item{eps}{numeric. The intensity of the perturbation. See \code{\link{ae}}.}
 
 \item{order}{integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.}
 

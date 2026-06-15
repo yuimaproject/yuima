@@ -11,7 +11,7 @@ aeMoment(ae, m = 1, eps = 1, order = NULL)
 
 \item{m}{integer. The moment order. In case of multidimensional processes, it is possible to compute cross-moments by providing a vector of the same length as the state variables.}
 
-\item{eps}{numeric. The intensity of the perturbation.}
+\item{eps}{numeric. The intensity of the perturbation. See \code{\link{ae}}.}
 
 \item{order}{integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.}
 }

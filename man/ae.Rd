@@ -26,7 +26,7 @@ ae(
 
 \item{sampling}{a \code{\link{yuima.sampling-class}} object.}
 
-\item{eps.var}{character. The perturbation variable.}
+\item{eps.var}{character. The perturbation variable. See details.}
 
 \item{solver}{the solver for ordinary differential equations. One of \code{"rk4"} (more accurate) or \code{"euler"} (faster).}
 
@@ -41,10 +41,15 @@ Asymptotic expansion of uni-dimensional and multi-dimensional diffusion processe
 \details{
 If \code{sampling} is not provided, then \code{model} must be an object of \code{\link{yuima-class}} with non-empty \code{sampling}.
 
-if \code{eps.var} does not appear in the model specification, then it is internally added in front of the diffusion matrix to apply the asymptotic expansion scheme.
+if \code{eps.var} does not appear in the model specification, then it is internally added in front of the diffusion matrix to apply the asymptotic expansion scheme. 
+By default, the code expands the model
+\deqn{dX_t = \mu(X_t,\theta)dt + \epsilon \sigma(X_t,\theta_t)dW_t}
+where \eqn{\epsilon} is \code{eps.var}. All other asymptotic expansion function, such as \code{\link{aeDensity}} are evaluated in 
+\eqn{\epsilon=1} by default. See examples.
 }
 \examples{
 \dontrun{
+## Example 1: default expansion with implicit perturbation
 # model
 gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 
@@ -54,11 +59,18 @@ par <- list(mu = 0.01, sigma = 0.2)
 sampling <- setSampling(Initial = 0, Terminal = 1, n = 1000)
 
 # asymptotic expansion
-approx <- ae(model = gbm, sampling = sampling, order = 4, true.parameter = par, xinit = xinit)
+approx <- ae(
+  model = gbm, 
+  sampling = sampling, 
+  order = 4, 
+  true.parameter = par, 
+  xinit = xinit)
 
 # exact density
 x <- seq(50, 200, by = 0.1)
-exact <- dlnorm(x = x, meanlog = log(xinit)+(par$mu-0.5*par$sigma^2)*1, sdlog = par$sigma*sqrt(1))
+meanlog <- log(xinit) + (par$mu - 0.5*par$sigma^2)
+sdlog <- par$sigma
+exact <- dlnorm(x = x, meanlog = meanlog, sdlog = sdlog)
 
 # compare
 plot(x, exact, type = 'l', ylab = "Density")
@@ -66,8 +78,39 @@ lines(x, aeDensity(x = x, ae = approx, order = 1), col = 2)
 lines(x, aeDensity(x = x, ae = approx, order = 2), col = 3)
 lines(x, aeDensity(x = x, ae = approx, order = 3), col = 4)
 lines(x, aeDensity(x = x, ae = approx, order = 4), col = 5)
+
+## Example 2: custom expansion with explicit perturbation
+# model
+gbm <- setModel(drift = 'mu*x', diffusion = 'eps*sigma*x', solve.variable = 'x')
+
+# settings
+xinit <- 100
+par <- list(mu = 0.01, sigma = 0.2)
+sampling <- setSampling(Initial = 0, Terminal = 1, n = 1000)
+
+# asymptotic expansion
+approx <- ae(
+  model = gbm, 
+  sampling = sampling, 
+   order = 4, 
+   true.parameter = par, 
+   xinit = xinit, 
+   eps.var = 'eps')
+
+# exact density in eps = 0.5
+x <- seq(50, 200, by = 0.1)
+meanlog <- log(xinit) + (par$mu - 0.5*(par$sigma/2)^2)
+sdlog <- par$sigma / 2
+exact <- dlnorm(x = x, meanlog = meanlog, sdlog = sdlog)
+
+# evaluate the density in eps = 0.5 and compare
+plot(x, exact, type = 'l', ylab = "Density")
+lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 1), col = 2)
+lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 2), col = 3)
+lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 3), col = 4)
+lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 4), col = 5)
 }
 }
 \author{
-Emanuele Guidotti <emanuele.guidotti@unine.ch>
+Emanuele Guidotti <emanuele.guidotti@usi.ch>
 }
