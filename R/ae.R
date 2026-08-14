@@ -124,7 +124,7 @@ setMethod("initialize", "yuima.ae", function(.Object, order, var, u.var, eps.var
 #' 
 #' @param x an object of class \code{\link{yuima.ae-class}}.
 #' @param grids list. A named list of vectors specifying the grid to evaluate the density. The names must match the state variables.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' @param ... additional arguments passed to the plot function.
 #' 
@@ -156,7 +156,7 @@ setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1
 #' @param order integer. The asymptotic expansion order. Higher orders lead to better approximations but longer computational times.
 #' @param true.parameter named list of parameters.
 #' @param sampling a \code{\link{yuima.sampling-class}} object.
-#' @param eps.var character. The perturbation variable.
+#' @param eps.var character. The perturbation variable. See details.
 #' @param solver the solver for ordinary differential equations. One of \code{"rk4"} (more accurate) or \code{"euler"} (faster).
 #' @param verbose logical. Print on progress? Default \code{FALSE}.
 #' 
@@ -165,13 +165,18 @@ setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1
 #' @details 
 #' If \code{sampling} is not provided, then \code{model} must be an object of \code{\link{yuima-class}} with non-empty \code{sampling}.
 #' 
-#' if \code{eps.var} does not appear in the model specification, then it is internally added in front of the diffusion matrix to apply the asymptotic expansion scheme.
+#' if \code{eps.var} does not appear in the model specification, then it is internally added in front of the diffusion matrix to apply the asymptotic expansion scheme. 
+#' By default, the code expands the model
+#' \deqn{dX_t = \mu(X_t,\theta)dt + \epsilon \sigma(X_t,\theta_t)dW_t}
+#' where \eqn{\epsilon} is \code{eps.var}. All other asymptotic expansion function, such as \code{\link{aeDensity}} are evaluated in 
+#' \eqn{\epsilon=1} by default. See examples.
 #' 
 #' @author 
-#' Emanuele Guidotti <emanuele.guidotti@unine.ch>
+#' Emanuele Guidotti <emanuele.guidotti@usi.ch>
 #' 
 #' @examples
 #' \dontrun{
+#' ## Example 1: default expansion with implicit perturbation
 #' # model
 #' gbm <- setModel(drift = 'mu*x', diffusion = 'sigma*x', solve.variable = 'x')
 #' 
@@ -181,11 +186,18 @@ setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1
 #' sampling <- setSampling(Initial = 0, Terminal = 1, n = 1000)
 #' 
 #' # asymptotic expansion
-#' approx <- ae(model = gbm, sampling = sampling, order = 4, true.parameter = par, xinit = xinit)
+#' approx <- ae(
+#'   model = gbm, 
+#'   sampling = sampling, 
+#'   order = 4, 
+#'   true.parameter = par, 
+#'   xinit = xinit)
 #' 
 #' # exact density
 #' x <- seq(50, 200, by = 0.1)
-#' exact <- dlnorm(x = x, meanlog = log(xinit)+(par$mu-0.5*par$sigma^2)*1, sdlog = par$sigma*sqrt(1))
+#' meanlog <- log(xinit) + (par$mu - 0.5*par$sigma^2)
+#' sdlog <- par$sigma
+#' exact <- dlnorm(x = x, meanlog = meanlog, sdlog = sdlog)
 #' 
 #' # compare
 #' plot(x, exact, type = 'l', ylab = "Density")
@@ -193,6 +205,37 @@ setMethod("plot", signature(x = "yuima.ae"), function(x, grids = list(), eps = 1
 #' lines(x, aeDensity(x = x, ae = approx, order = 2), col = 3)
 #' lines(x, aeDensity(x = x, ae = approx, order = 3), col = 4)
 #' lines(x, aeDensity(x = x, ae = approx, order = 4), col = 5)
+#' 
+#' ## Example 2: custom expansion with explicit perturbation
+#' # model
+#' gbm <- setModel(drift = 'mu*x', diffusion = 'eps*sigma*x', solve.variable = 'x')
+#' 
+#' # settings
+#' xinit <- 100
+#' par <- list(mu = 0.01, sigma = 0.2)
+#' sampling <- setSampling(Initial = 0, Terminal = 1, n = 1000)
+#' 
+#' # asymptotic expansion
+#' approx <- ae(
+#'   model = gbm, 
+#'   sampling = sampling, 
+#'    order = 4, 
+#'    true.parameter = par, 
+#'    xinit = xinit, 
+#'    eps.var = 'eps')
+#' 
+#' # exact density in eps = 0.5
+#' x <- seq(50, 200, by = 0.1)
+#' meanlog <- log(xinit) + (par$mu - 0.5*(par$sigma/2)^2)
+#' sdlog <- par$sigma / 2
+#' exact <- dlnorm(x = x, meanlog = meanlog, sdlog = sdlog)
+#' 
+#' # evaluate the density in eps = 0.5 and compare
+#' plot(x, exact, type = 'l', ylab = "Density")
+#' lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 1), col = 2)
+#' lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 2), col = 3)
+#' lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 3), col = 4)
+#' lines(x, aeDensity(x = x, ae = approx, eps = 0.5, order = 4), col = 5)
 #' }
 #' @importFrom calculus %dot%
 #' @importFrom calculus %inner%
@@ -855,7 +898,7 @@ ae <- function(model, xinit, order = 1L, true.parameter = list(), sampling = NUL
 #' 
 #' @param ... named argument, data.frame, list, or environment specifying the grid to evaluate the density. See examples.
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' 
 #' @return Probability density function evaluated on the given grid.
@@ -1006,7 +1049,7 @@ aeMarginal <- function(ae, var){
 #' @param f character. The functional.
 #' @param bounds named list of integration bounds in the form \code{list(x = c(xmin, xmax), y = c(ymin, ymax), ...)} 
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' @param ... additional arguments passed to \code{\link[cubature]{cubintegrate}}.
 #' 
@@ -1062,7 +1105,7 @@ aeExpectation <- function(f, bounds, ae, eps = 1, order = NULL, ...){
 #' 
 #' @param ... named argument, data.frame, list, or environment specifying the grid to evaluate the characteristic function. See examples.
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' 
 #' @return Characteristic function evaluated on the given grid.
@@ -1122,7 +1165,7 @@ aeCharacteristic <- function(..., ae, eps = 1, order = NULL){
 #' 
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
 #' @param m integer. The moment order. In case of multidimensional processes, it is possible to compute cross-moments by providing a vector of the same length as the state variables.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' 
 #' @return numeric.
@@ -1172,7 +1215,7 @@ aeMoment <- function(ae, m = 1, eps = 1, order = NULL){
 #' Asymptotic Expansion - Mean
 #' 
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' 
 #' @return numeric.
@@ -1207,7 +1250,7 @@ aeMean <- function(ae, eps = 1, order = NULL){
 #' Asymptotic Expansion - Standard Deviation
 #' 
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' 
 #' @return numeric.
@@ -1245,7 +1288,7 @@ aeSd <- function(ae, eps = 1, order = NULL){
 #' Asymptotic Expansion - Skewness
 #' 
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' 
 #' @return numeric.
@@ -1284,7 +1327,7 @@ aeSkewness <- function(ae, eps = 1, order = NULL){
 #' Asymptotic Expansion - Kurtosis
 #' 
 #' @param ae an object of class \code{\link{yuima.ae-class}}.
-#' @param eps numeric. The intensity of the perturbation.
+#' @param eps numeric. The intensity of the perturbation. See \code{\link{ae}}.
 #' @param order integer. The expansion order. If \code{NULL} (default), it uses the maximum order used in \code{ae}.
 #' 
 #' @return numeric.

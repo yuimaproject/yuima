@@ -380,6 +380,7 @@ aux.simulate<-function(object, nsim, seed, xinit, true.parameter,
     for(i in 1:par.len)
       true.parameter[[i]] <- 0
     names(true.parameter) <-   sdeModel@parameter@all
+    yuima.warn("All parameter values are set to 0.")
   }
 
   yuimaEnv <- new.env()
