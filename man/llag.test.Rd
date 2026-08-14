@@ -7,7 +7,7 @@ Wild Bootstrap Test for the Absence of Lead-Lag Effects
 }
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
-Tests the absence of lead-lag effects (time-lagged correlations) by the wild bootstrap procedure proposed in Koike (2017) for each pair of components.
+Tests the absence of lead-lag effects (time-lagged correlations) by the wild bootstrap procedure proposed in Koike (2019) for each pair of components.
 }
 \usage{
 llag.test(x, from = -Inf, to = Inf, division = FALSE, grid, R = 999,
@@ -59,7 +59,7 @@ tolelance parameter to avoid numerical errors in comparison of time stamps. All 
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
-For each pair of components, this function performs the wild bootstrap procedure proposed in Koike (2017) to test whether there is a (possibly) time-lagged correlation. The null hypothesis of the test is that there is no time-lagged correlation and the alternative is its negative. The test regects the null hypothesis if the maximum of the absolute values of cross-covariances is too large. The critical region is constructed by a wild bootstrap procedure with Rademacher variables as the multiplier variables.  
+For each pair of components, this function performs the wild bootstrap procedure proposed in Koike (2019) to test whether there is a (possibly) time-lagged correlation. The null hypothesis of the test is that there is no time-lagged correlation and the alternative is its negative. The test regects the null hypothesis if the maximum of the absolute values of cross-covariances is too large. The critical region is constructed by a wild bootstrap procedure with Rademacher variables as the multiplier variables.  
 }
 \value{
 %%  ~Describe the value returned

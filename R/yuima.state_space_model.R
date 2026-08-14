@@ -198,8 +198,8 @@ setLinearStateSpaceModel <- function(drift = NULL,
   ## distingish each params in observed/unobserved
   attr(model@parameter@drift, "observed") <- params_in_expr(model@parameter@drift, model@drift[model@is.observed])
   attr(model@parameter@drift, "unobserved") <- params_in_expr(model@parameter@drift, model@drift[!model@is.observed])
-  attr(model@parameter@diffusion, "observed") <- params_in_exprs(model@parameter@diffusion, model@diffusion[model@is.observed])
-  attr(model@parameter@diffusion, "unobserved") <- params_in_exprs(model@parameter@diffusion, model@diffusion[!model@is.observed])
+  attr(model@parameter@diffusion, "observed") <- params_in_expr(model@parameter@diffusion, model@diffusion[model@is.observed])
+  attr(model@parameter@diffusion, "unobserved") <- params_in_expr(model@parameter@diffusion, model@diffusion[!model@is.observed])
 
   # set coefficient matrix of drift term
   tmp.env <- new.env()

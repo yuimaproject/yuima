@@ -45,7 +45,7 @@ Bini, D., Iannazzo, B., & Meini, B. (2012). Numerical Solution of Algebraic Ricc
 \examples{
 ### Set model
 drift <- c("a*X", "X")
-diffusion <- matrix(c("b", "0", "0", "sigma"), nrow = 2)
+diffusion <- c("b", "sigma")
 # Use `model.class="linearStateSpaceModel"` implicitly.
 ymodel <- setModel(
     drift = drift, 

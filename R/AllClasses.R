@@ -240,10 +240,7 @@ setClass(
 setMethod(
   "show", "yuima.kalmanBucyFilter",
   function(object) {
-    start <- start(object@mean)[1]
-    end <- end(object@mean)[1]
-    freq <- frequency(object@mean)
-    time_points <- seq(start, end, by = 1/freq)
+    time_points <- time(object@mean)
     cat("Kalman-Bucy Filter\n")
     if (dim(object@mean)[2] == 1) {
       cat("Mean and variance values:\n")
@@ -253,10 +250,11 @@ setMethod(
       rownames(mean_variance_mat) <- time_points
       n <- dim(mean_variance_mat)[1]
       if (n <= 12) {
-        print(mean_variance_mat)
-      } else {
-        print(rbind(head(mean_variance_mat), "...", tail(mean_variance_mat)), quote = FALSE)
-      }
+        print(mean_variance_mat) }
+      else {
+        mvm <- rbind(head(mean_variance_mat), "...", tail(mean_variance_mat))
+        rownames(mvm) <- c(head(as.character(time_points)), "...", tail(as.character(time_points)))
+        print(mvm, quote = FALSE) }
     } else {
       cat("Mean values:\n")
       n <- dim(object@mean)[1]
@@ -264,21 +262,22 @@ setMethod(
         print(object@mean)
       } else {
         mean_mat <- as.matrix(object@mean)
-        rownames(mean_mat) <- time_points
-        print(rbind(head(mean_mat), "...", tail(mean_mat)), quote = FALSE)
+        mean_mat <- rbind(head(mean_mat), "...", tail(mean_mat))
+        rownames(mean_mat) <- c(head(as.character(time_points)), "...", tail(as.character(time_points)))
+        print(mean_mat, quote = FALSE)
       }
-      cat("Variance-covariance matrices\n")
+      cat("\nVariance-covariance matrices\n")
       if (n < 12) {
         print(object@vcov)
       } else {
         for (i in 1:6) {
-          cat("\n, , ", i, "\n", sep = "") 
-          print(object@vcov[, , i], quote = TRUE) 
+          cat("\nt = ", time_points[i], "\n", sep = "")
+          print(object@vcov[, , i], quote = TRUE)
         }
-        cat("...")
+        cat("\n...\n")
         for (i in (dim(object@vcov)[3]-5):dim(object@vcov)[3]) {
-          cat("\n, , ", i, "\n", sep = "") 
-          print(object@vcov[, , i], quote = TRUE) 
+          cat("\nt = ", time_points[i], "\n", sep = "")
+          print(object@vcov[, , i], quote = TRUE)
         }
       }
     }
@@ -439,3 +438,69 @@ setClass(
     fixed = "numeric"
   )
 )
+setClass("yuima.poest",
+         representation(
+           initial_estimator="ANY",
+           final_estimator="ANY",
+           model="yuima.model",
+           estimator = "character",
+           call="call",
+           coef="numeric",
+           vcov="matrix",
+           selected_coef="character"
+         )
+)
+
+setMethod("show", "yuima.poest", function(object){
+  cat("\nCall:\n")
+  print(object@call)
+  cat("\nCoefficients:\n")
+  print(object@coef)
+})
+
+setClass("summary.yuima.poest",
+         representation(
+           initial_estimator="matrix",
+           final_estimator="matrix",
+           model = "yuima.model",
+           estimator="character",
+           call="call",
+           selected_coef="character"
+         )
+)
+
+setMethod("summary", "yuima.poest",
+          function (object, ...)
+          {
+            cmat.init <- cbind(Estimate = object@initial_estimator@coef, `Std. Error` = sqrt(diag(object@initial_estimator@vcov)))
+            
+            final.std_error <- sqrt(diag(object@final_estimator@vcov))
+            final.estimate <- object@final_estimator@coef
+            for(param in names(object@initial_estimator@coef)[!is.element(names(object@initial_estimator@coef), names(object@final_estimator@coef))]) {
+              final.std_error[param] <- 0
+              final.estimate[param]<- 0
+            }
+            
+            cmat.fin <- cbind(Estimate = final.estimate, `Std. Error` = final.std_error)
+            tmp <- new("summary.yuima.poest",
+                       initial_estimator = cmat.init,
+                       final_estimator = cmat.fin,
+                       model = object@model,
+                       estimator = object@estimator,
+                       call = object@call,
+                       selected_coef=object@selected_coef
+            )
+            tmp
+          }
+)
+
+setMethod("show", "summary.yuima.poest", function(object){
+  cat("P-O Estimator\n\nCall:\n")
+  print(object@call)
+  cat("\nEstimator:\n")
+  print(object@estimator)
+  cat("\nInitial Estimator:\n")
+  print(object@initial_estimator)
+  cat("\nFinal Estimator:\n")
+  print(object@final_estimator)
+})

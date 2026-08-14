@@ -6,6 +6,18 @@ qmle.linear_state_space_model <- function(yuima, start, lower = NULL, upper = NU
   if (drop_terms >= yuima@sampling@n[[1]] + 1) {
     yuima.stop("`drop_terms` must be smaller than the number of observations (=`yuima@sampleing@n[1] + 1`)")
   }
+  
+  time.vairable <- yuima@model@time.variable
+  if (any(params_in_expr(params = time.vairable, expr = yuima@model@drift))||
+      any(params_in_expr(params = time.vairable, expr = yuima@model@diffusion))){
+    yuima.stop("Currently, the model must be time-homogeneous.")
+  }
+  
+  observed.variables <- yuima@model@state.variable[yuima@model@is.observed]
+  if (any(params_in_expr(params = observed.variables, expr = yuima@model@drift))||
+      any(params_in_expr(params = observed.variables, expr = yuima@model@diffusion))){
+    yuima.stop("Currently, the model must not include observed variables.")
+  }
 
   #### fixed
   if (length(fixed) > 0 && !is.Poisson(yuima) && !is.CARMA(yuima) && !is.COGARCH(yuima)) {
@@ -78,7 +90,6 @@ qmle.linear_state_space_model <- function(yuima, start, lower = NULL, upper = NU
   }
 
   # compute delta of observed data
-  observed.variables <- yuima@model@state.variable[yuima@model@is.observed]
   delta.observed.variable <- array(dim = c(length(observed.variables), yuima@sampling@n[[1]]), dimnames = list(observed.variables))
   for (variable in observed.variables) {
     delta.observed.variable[variable, ] <- diff(matrix(yuima@data@zoo.data[[which(yuima@model@state.variable == variable)]]))
@@ -451,7 +462,7 @@ estimate.state_space.theta2 <- function(yuima, start, method = "L-BFGS-B", envir
   f <- function(p) {
     theta2.values <- as.list(p)
     names(theta2.values) <- nm[idx.theta2]
-    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, inv.squared.observed.diffusion = inv.squared.observed.diffusion, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = env, explicit = explicit, drop_terms = drop_terms, h = h))
+    return(minuslogl.linear_state_space.theta2(yuima, delta.observed.variable = delta.observed.variable, inv.squared.observed.diffusion = inv.squared.observed.diffusion, theta2 = theta2.values, filter_mean_init = filter_mean_init, env = tmp.env, explicit = explicit, drop_terms = drop_terms, h = h))
   }
 
   call <- match.call()
@@ -563,7 +574,8 @@ split_parameters_into_theta1_and_theta2 <- function(yuima) {
   theta2 <- unique(c(yuima@model@parameter@drift, yuima@model@parameter@diffusion[attr(yuima@model@parameter@diffusion, "unobserved")]))
 
   if (any(duplicated(c(theta1, theta2)))) {
-    yuima.stop("Cannot split parameters into theta1 and theta2.")
+    #yuima.stop("Cannot split parameters into theta1 and theta2.")
+    theta2 <- theta2[!is.element(theta2,theta1)]
   }
   return(list(theta1 = theta1, theta2 = theta2))
 }

@@ -9,5 +9,5 @@
 ^LICENSE$
 ^doc$
 ^Meta$
-^\.vs$
+^\.vs($|/)
 ^src/\.gitignore$

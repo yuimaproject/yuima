@@ -58,7 +58,7 @@ h <- 0.001
 
 trueparam <- list(a = a, b = b, c = c, sigma = sigma)
 mod <- setModel(drift = c("-a*X", "c*X"),
-                diffusion = matrix(c("b", "0", "0", "sigma"), 2, 2),
+                diffusion = c("b", "sigma"),
                 solve.variable = c("X", "Y"), state.variable = c("X", "Y"),
                 observed.variable = "Y")
 

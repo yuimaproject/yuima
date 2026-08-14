@@ -129,8 +129,7 @@ exportClasses("yuima",
 )
 
 exportMethods(
-"dim",
-"length",
+#"dim",
 ## "start",
 "plot",
 ## "time",
@@ -187,8 +186,7 @@ export(setMap)
 export(setIntegral)
 export(FromCF2yuima_law)
 export(setLaw_th)
-export(dim)
-export(length)
+#export(dim)
 #export(start)
 export(plot)
 #export(time)
@@ -254,8 +252,10 @@ export(IC)
 export(snr)
 export(JBtest)
 export(DataPPR)
+export(qmleDegenerate) # added by YK
 export(kalmanBucyFilter)
 export(qmle.linear_state_space_model)
+export(poest)
 
 
 export(Intensity.PPR)
@@ -317,6 +317,7 @@ S3method(cbind, yuima)
 S3method(plot, yuima.llag) # Oct. 10, 2015
 S3method(plot, yuima.mllag) # Oct. 10, 2015
 S3method(plot, yuima.wllag) # added by YK on Apr. 15, 2020
+S3method(print, summary.yuima)
 
 useDynLib(yuima)
 

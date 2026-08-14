@@ -144,3 +144,19 @@ v. 1.15.30 2025/04/16
 * added plot method and improved show and summary method for yuima.kalmanBucyFilter-class
 * Fixed CRAN check warnings.
 * Updated DESCRIPTION and CITATION for CRAN policy compliance.
+
+v. 1.15.31 2025/11/13
+* Updated the plot method for the yuima.kalmanBucyFilter class.
+* Updated the setModel method to allow vectors to be used as diffusion matrices.
+* Made minor modifications to the state-space model components.
+
+v. 1.15.32 2025/12/08
+* added qmleDegenerate() to calculate a QMLE type estimator for degenerate diffusions.
+
+v. 1.15.33 2025/12/08
+* added poest method for sparse estimation.
+
+v. 1.15.43 2025/12/09
+* fixed length method for yuima and yuima.data object to return a scalar value.
+* added lentghs method for yuima and yuima.data object.
+* added summary method for yuima object.

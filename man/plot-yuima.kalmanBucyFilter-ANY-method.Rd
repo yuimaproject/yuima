@@ -4,7 +4,14 @@
 \alias{plot,yuima.kalmanBucyFilter,ANY-method}
 \title{Plotting Method for Kalman-Bucy Filter}
 \usage{
-\S4method{plot}{yuima.kalmanBucyFilter,ANY}(x, plot_truth = FALSE, level = 0)
+\S4method{plot}{yuima.kalmanBucyFilter,ANY}(
+  x,
+  plot_truth = FALSE,
+  level = 0,
+  legend = TRUE,
+  legend_position = "top",
+  legend_cex = 1
+)
 }
 \arguments{
 \item{x}{A \code{\link{yuima.kalmanBucyFilter-class}} object.}
@@ -12,6 +19,15 @@
 \item{plot_truth}{Logical. If \code{TRUE}, plot true values of state variables.}
 
 \item{level}{Numeric. If 0 < \code{level} < 1, plot confidence interval of \code{level}.}
+
+\item{legend}{Logical. If \code{TRUE}, a legend is added to the plot.}
+
+\item{legend_position}{Character. Position of the legend, passed to 
+\code{\link[graphics]{legend}} (e.g., \code{"topright"}, \code{"bottom"},
+\code{"top"}, \code{"left"}, or \code{"none"}).}
+
+\item{legend_cex}{Numeric. Scaling factor for the legend text size, 
+corresponding to the \code{cex} argument in \code{\link[graphics]{legend}}.}
 }
 \value{
 NULL (plot is drawn)

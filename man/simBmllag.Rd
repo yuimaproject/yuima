@@ -164,10 +164,12 @@ samp <- setSampling(Terminal = n * delta, n = n)
 yuima <- setYuima(model = mod, sampling = samp)
 
 # simulation
+\donttest{
 result <- simulate(yuima, increment.W = dW,
                    true.parameter = list(kappa = 5, eta = 0.04, xi = 0.5))
 
 plot(result)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

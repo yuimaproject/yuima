@@ -31,8 +31,8 @@ model.class = NULL, observed.variable = NULL, unobserved.variable = NULL
 \arguments{
   \item{drift}{a vector of \code{expression}s (the default value is 0 when 
     \code{drift=NULL}).}
-  \item{diffusion}{a matrix of \code{expression}s (the default value is 0 when
-   \code{diffusion=NULL}).}
+  \item{diffusion}{a matrix or vector of \code{expression}s (the default value is 0 when
+   \code{diffusion=NULL}). If a vector is provided, it is interpreted as a diagonal matrix.}
   \item{hurst}{the Hurst parameter of the gaussian noise. If \code{h=0.5}, the default,
   the process is Wiener otherwise it is fractional Brownian motion with that precise value
    of the Hurst index. Can be set to \code{NA} for further specification.}
@@ -201,6 +201,7 @@ str(mod6)
 # Yt = Xt + dVt (observed)
 drift <- c("-theta*x", "1")
 diffusion <- matrix(c("sigma", "0", "0", "1"), 2, 2)
+#diffusion <- c("sigma", "1") #alternative
 mod7 <- setModel(
   drift=drift, diffusion=diffusion, solve.variable=c("x", "y"),
   state.variable=c("x", "y"), observed.variable="y"

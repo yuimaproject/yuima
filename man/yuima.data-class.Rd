@@ -81,9 +81,10 @@ is usually empty.
     \item{dim}{\code{signature(x = "yuima.data")}: calls  
 	 \code{\link{dim}} from the \code{\link[zoo]{zoo}} package with argument
 	 \code{x@zoo.data}.}
-    \item{length}{\code{signature(x = "yuima.data")}: calls  
-	 \code{\link{length}} from the \code{\link[zoo]{zoo}} package with argument
-	 \code{x@zoo.data}.}
+    \item{length}{\code{signature(x = "yuima")}: the number of observations of
+	  the first time series.}
+	\item{lengths}{\code{signature(x = "yuima")}: a vector giving the number of observations of
+	  each time series.}
     \item{cce}{\code{signature(x = "yuima.data")}: calculates asyncronous
 	 covariance estimator on the data contained in \code{x@zoo.data}. 
 	 For more details see \code{\link{cce}}.}

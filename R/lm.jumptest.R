@@ -5,7 +5,7 @@ lm.jumptest <- function(yuima, K){
   
   data <- get.zoo.data(yuima)
   d.size <- length(data)
-  n <- length(yuima) - 1
+  n <- lengths(yuima) - 1
   
   if(missing(K)) K <- pmin(floor(sqrt(252*n)), n)
   
