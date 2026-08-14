@@ -6,6 +6,7 @@ Depends: R(>= 2.10.0), methods, zoo, stats4, utils, expm, cubature,
         mvtnorm
 Imports: Rcpp (>= 0.12.1), boot (>= 1.3-2), glassoFast, coda, calculus
         (>= 0.2.0), statmod, Matrix
+Suggests: testthat (>= 3.0.0)
 Authors@R: c(person(given = c("YUIMA", "Project"),
                        family = "Team",
                        role = "aut"),
@@ -19,4 +20,5 @@ URL: https://yuimaproject.com
 BugReports: https://github.com/yuimaproject/yuima/issues
 LinkingTo: Rcpp, RcppArmadillo
 NeedsCompilation: yes
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3

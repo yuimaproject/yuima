@@ -301,6 +301,130 @@ setMethod("summary", "yuima.kalmanBucyFilter", function(object) {
   }
 )
 
+# particleFilter related
+setClass(
+  "yuima.particleFilter",
+  representation(
+    model = "yuima.state_space_model",
+    data = "yuima.data",
+    mean = "ts",
+    vcov = "array",
+    time = "numeric",
+    particles = "array",
+    weights = "matrix",
+    paths = "array",
+    ancestors = "matrix",
+    ess = "numeric",
+    branched = "logical",
+    intervals = "array",
+    interval.levels = "numeric",
+    logLik = "numeric",
+    logLik.increment = "numeric",
+    call = "call",
+    settings = "list"
+  )
+)
+
+setMethod(
+  "show", "yuima.particleFilter",
+  function(object) {
+    cat("Particle Filter\n")
+    state_variables <- object@model@state.variable[!object@model@is.observed]
+    n_time <- nrow(object@mean)
+    if (ncol(object@mean) == 1L) {
+      cat("Mean and variance values:\n")
+      variances <- vapply(
+        seq_len(n_time),
+        function(i) object@vcov[1L, 1L, i],
+        numeric(1)
+      )
+      mean_variance <- cbind(as.matrix(object@mean), variances)
+      colnames(mean_variance) <- paste(
+        c("Mean of", "Variance of"),
+        state_variables[[1L]]
+      )
+      rownames(mean_variance) <- object@time
+      if (n_time <= 12L) {
+        print(mean_variance)
+      } else {
+        print(
+          rbind(head(mean_variance), "...", tail(mean_variance)),
+          quote = FALSE
+        )
+      }
+    } else {
+      cat("Mean values:\n")
+      mean_matrix <- as.matrix(object@mean)
+      rownames(mean_matrix) <- object@time
+      if (n_time <= 12L) {
+        print(mean_matrix)
+      } else {
+        print(
+          rbind(head(mean_matrix), "...", tail(mean_matrix)),
+          quote = FALSE
+        )
+      }
+      cat("Variance-covariance matrices\n")
+      if (n_time <= 12L) {
+        print(object@vcov)
+      } else {
+        for (i in seq_len(6L)) {
+          cat("\n, , ", i, "\n", sep = "")
+          print(object@vcov[, , i], quote = TRUE)
+        }
+        cat("...")
+        for (i in seq.int(n_time - 5L, n_time)) {
+          cat("\n, , ", i, "\n", sep = "")
+          print(object@vcov[, , i], quote = TRUE)
+        }
+      }
+    }
+  }
+)
+
+setMethod("summary", "yuima.particleFilter", function(object) {
+  cat("Summary of estimation by Particle Filter\n")
+  cat("Model:\n")
+  cat("  A state space model.\n")
+  cat(
+    "  State Variables:",
+    object@model@state.variable[!object@model@is.observed],
+    "\n"
+  )
+  cat("Mean:\n")
+  cat("  A ts object of", ncol(object@mean), "variables.\n")
+  cat("  Start:      ", start(object@mean)[1L], "\n")
+  cat("  End:        ", end(object@mean)[1L], "\n")
+  cat("  Frequency:  ", frequency(object@mean), "\n")
+  cat("  Time points:", nrow(object@mean), "\n")
+  cat("Variance-Covariance Matrix:\n")
+  cat(
+    paste0(
+      "  A 3D array of (",
+      paste(dim(object@vcov), collapse = ", "),
+      ").\n"
+    )
+  )
+  cat("Particles:\n")
+  cat("  Storage mode:", object@settings$store_particles, "\n")
+  cat("  Number of particles:", object@settings$n_particles, "\n")
+  cat("Diagnostics:\n")
+  cat("  Branching events:", sum(object@branched), "\n")
+  cat("  Minimum ESS:", min(object@ess), "\n")
+  cat("  Median ESS:", stats::median(object@ess), "\n")
+  cat("  Log normalizing constant:", object@logLik, "\n")
+  if (length(object@interval.levels) > 0L) {
+    cat(
+      "Intervals:\n  Weighted particle intervals:",
+      paste0(100 * object@interval.levels, "%", collapse = ", "),
+      "\n"
+    )
+  } else {
+    cat("Intervals:\n  No weighted particle intervals stored.\n")
+  }
+  invisible(object)
+})
+
 # adaBayes related
 setClass(
   "adabayes",

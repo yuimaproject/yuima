@@ -9,3 +9,5 @@
 ^LICENSE$
 ^doc$
 ^Meta$
+^\.vs$
+^src/\.gitignore$
