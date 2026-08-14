@@ -156,7 +156,21 @@ v. 1.15.32 2025/12/08
 v. 1.15.33 2025/12/08
 * added poest method for sparse estimation.
 
-v. 1.15.43 2025/12/09
+v. 1.15.34 2025/12/09
 * fixed length method for yuima and yuima.data object to return a scalar value.
-* added lentghs method for yuima and yuima.data object.
+* added lengths method for yuima and yuima.data objects.
 * added summary method for yuima object.
+
+v. 1.15.35 2026/08/14
+* Added a continuous-time particle filter for yuima state-space models,
+  including multidimensional observations and minimal-variance branching.
+* Added configurable particle, path, weight, and ancestor storage together
+  with effective sample size, likelihood, covariance, and weighted interval
+  diagnostics.
+* Added show, summary, mean, vcov, and plot methods for particle-filter
+  results. The plot method supports stored weighted intervals and optional
+  latent-state truth without modifying global graphical parameters.
+* Added Gaussian, nonlinear multidimensional, and Lorenz-63 tests, including
+  an optional long-horizon validation test.
+* Added one-dimensional nonlinear and multidimensional Lorenz-63 examples and
+  documentation for the particle filter.

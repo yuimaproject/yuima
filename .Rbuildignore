@@ -11,3 +11,4 @@
 ^Meta$
 ^\.vs($|/)
 ^src/\.gitignore$
+^scripts$

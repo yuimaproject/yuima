@@ -57,7 +57,7 @@ extern SEXP _yuima_diffusionTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_measureTermCpp(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_minusloglcpp_linear_state_space_theta1(SEXP,SEXP,SEXP,SEXP);
 extern SEXP _yuima_calc_inverse_square(SEXP);
-extern SEXP _yuima_calc_kalman_bucy_filter_cpp(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+extern SEXP _yuima_calc_kalman_bucy_filter_cpp(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP _yuima_euler_multi_particles_with_weights_and_branching(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 
 static const R_CMethodDef CEntries[] = {
