@@ -49,6 +49,8 @@ extern SEXP _yuima_sqnorm(SEXP);
 extern SEXP _yuima_sub_f(SEXP, SEXP);
 extern SEXP _yuima_W1(SEXP, SEXP, SEXP, SEXP);
 extern SEXP _yuima_W2(SEXP, SEXP, SEXP);
+extern SEXP _yuima_adaEvalTermsCpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _yuima_adaContrastCpp(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Cycle_Carma(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP euler(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP pseudoLoglik_COGARCH1(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -104,6 +106,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_yuima_sub_f",                           (DL_FUNC) &_yuima_sub_f,                                  2},
     {"_yuima_W1",                              (DL_FUNC) &_yuima_W1,                                     4},
     {"_yuima_W2",                              (DL_FUNC) &_yuima_W2,                                     3},
+    {"_yuima_adaEvalTermsCpp",                 (DL_FUNC) &_yuima_adaEvalTermsCpp,                        6},
+    {"_yuima_adaContrastCpp",                  (DL_FUNC) &_yuima_adaContrastCpp,                         8},
     {"Cycle_Carma",                            (DL_FUNC) &Cycle_Carma,                                  12},
     {"euler",                                  (DL_FUNC) &euler,                                        11},
     {"pseudoLoglik_COGARCH1",                  (DL_FUNC) &pseudoLoglik_COGARCH1,                        14},

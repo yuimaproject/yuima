@@ -79,6 +79,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// adaEvalTermsCpp
+NumericMatrix adaEvalTermsCpp(ExpressionVector terms, CharacterVector state, const arma::mat& data, CharacterVector timeVariable, NumericVector time, Environment env);
+RcppExport SEXP _yuima_adaEvalTermsCpp(SEXP termsSEXP, SEXP stateSEXP, SEXP dataSEXP, SEXP timeVariableSEXP, SEXP timeSEXP, SEXP envSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< ExpressionVector >::type terms(termsSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type state(stateSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type timeVariable(timeVariableSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type time(timeSEXP);
+    Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
+    rcpp_result_gen = Rcpp::wrap(adaEvalTermsCpp(terms, state, data, timeVariable, time, env));
+    return rcpp_result_gen;
+END_RCPP
+}
+// adaContrastCpp
+double adaContrastCpp(const arma::mat& increments, const arma::mat& drift, const arma::mat& diffusion, List meanTerms, List momentTerms, double h, std::string contrast, int order);
+RcppExport SEXP _yuima_adaContrastCpp(SEXP incrementsSEXP, SEXP driftSEXP, SEXP diffusionSEXP, SEXP meanTermsSEXP, SEXP momentTermsSEXP, SEXP hSEXP, SEXP contrastSEXP, SEXP orderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type increments(incrementsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type drift(driftSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type diffusion(diffusionSEXP);
+    Rcpp::traits::input_parameter< List >::type meanTerms(meanTermsSEXP);
+    Rcpp::traits::input_parameter< List >::type momentTerms(momentTermsSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< std::string >::type contrast(contrastSEXP);
+    Rcpp::traits::input_parameter< int >::type order(orderSEXP);
+    rcpp_result_gen = Rcpp::wrap(adaContrastCpp(increments, drift, diffusion, meanTerms, momentTerms, h, contrast, order));
+    return rcpp_result_gen;
+END_RCPP
+}
 // is_zero
 bool is_zero(std::string const& x);
 RcppExport SEXP _yuima_is_zero(SEXP xSEXP) {

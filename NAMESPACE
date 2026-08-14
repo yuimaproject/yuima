@@ -238,6 +238,7 @@ export(asymptotic_term)
 export(lse)
 
 export(qmle)
+export(adaQmle)
 export(EstimCarmaHawkes)
 export(get.counting.data)
 export(quasilogl)

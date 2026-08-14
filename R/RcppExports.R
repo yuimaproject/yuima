@@ -17,6 +17,14 @@ makeprop <- function(mu, sample, low, up) {
     .Call('_yuima_makeprop', PACKAGE = 'yuima', mu, sample, low, up)
 }
 
+adaEvalTermsCpp <- function(terms, state, data, timeVariable, time, env) {
+    .Call('_yuima_adaEvalTermsCpp', PACKAGE = 'yuima', terms, state, data, timeVariable, time, env)
+}
+
+adaContrastCpp <- function(increments, drift, diffusion, meanTerms, momentTerms, h, contrast, order) {
+    .Call('_yuima_adaContrastCpp', PACKAGE = 'yuima', increments, drift, diffusion, meanTerms, momentTerms, h, contrast, order)
+}
+
 is_zero <- function(x) {
     .Call('_yuima_is_zero', PACKAGE = 'yuima', x)
 }
