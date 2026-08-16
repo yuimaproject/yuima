@@ -12,10 +12,10 @@ adaQmle(yuima, start, p, lower, upper, fixed = list(),
   refinement = "plugin",
   expansion = c("progressive", "terminal"),
   estimator = "optim", prior = NULL,
-  method = "L-BFGS-B", control = list(), envir = globalenv(),
+  method = "L-BFGS-B", envir = globalenv(),
   mcmc = 1000L, iteration = NULL, rate = 1,
   algorithm = c("randomwalk", "mpcn"), center = NULL,
-  sd = NULL, rho = 0.8, path = FALSE)
+  sd = NULL, rho = 0.8, path = FALSE, ...)
 }
 \arguments{
   \item{yuima}{A \code{yuima} object containing an observed diffusion.}
@@ -42,18 +42,23 @@ adaQmle(yuima, start, p, lower, upper, fixed = list(),
   \item{prior}{Named prior density specifications in the same code format as
   \code{adaBayes}. A missing prior gives a flat prior.}
   \item{method}{Optimization method passed to \code{optim}.}
-  \item{control}{Control list passed to \code{optim}.}
   \item{envir}{Parent environment used to evaluate model coefficients.}
   \item{mcmc}{Number of MCMC draws in a Bayes step.}
   \item{iteration}{Optional alias for \code{mcmc}, retained for
   \code{adaBayes} compatibility.}
-  \item{rate}{Exponent selecting the initial Bayes subsample, as in
-  \code{adaBayes}.}
+  \item{rate}{Initial Bayes sample exponent \eqn{G}, as in
+  \code{adaBayes}. The first \eqn{n_0=\lfloor n^G\rfloor} observations are
+  used in an initial Bayes step.}
   \item{algorithm}{\code{"randomwalk"} or \code{"mpcn"}.}
   \item{center}{Optional named centers for MpCN proposals.}
-  \item{sd}{Optional named proposal standard deviations.}
+  \item{sd}{Optional named proposal standard deviations for random walk. For
+  MpCN these are the diagonal preconditioning values used by
+  \code{adaBayes}.}
   \item{rho}{MpCN persistence parameter in \eqn{(0,1)}.}
   \item{path}{Whether MCMC paths are retained in the result details.}
+  \item{...}{Additional named arguments passed to \code{optim} at each
+  maximum-likelihood step, for example
+  \code{control = list(maxit = 300)}.}
 }
 \details{
 Write \eqn{\Delta_i X=X_{t_i}-X_{t_{i-1}}}, let \eqn{h} be the sampling
@@ -70,6 +75,22 @@ contrast. The corresponding least-squares contrasts are
 \deqn{W_{\alpha,0}=\sum_i\|h^{-1}\Delta_iX(\Delta_iX)^{\mathsf T}-a_i\|_F^2}
 and
 \deqn{W_{\beta,0}=\sum_i h^{-1}\|\Delta_iX-hb_i\|^2.}
+
+For an initial Bayes step, put \eqn{G=\code{rate}},
+\eqn{n_0=\lfloor n^G\rfloor}, and \eqn{q=\max(p,2/G)}. Since the implemented
+contrast \eqn{Q} is twice the negative quasi-log likelihood, the diffusion
+and drift log targets are respectively
+\deqn{-\frac{1}{2}n_0^{-(1-2/(qG))}Q_\alpha+\log\pi_1(\alpha)}
+and
+\deqn{-\frac{1}{2}(n_0h)^{-(1-2/(qG))}Q_\beta+\log\pi_2(\beta).}
+Thus the temperature multiplies the quasi-likelihood contribution only; the
+prior density is not tempered.
+
+With \code{algorithm="mpcn"}, the proposal follows the mixed preconditioned
+Crank--Nicolson kernel used by \code{adaBayes}. Conditional on the current
+value, a Gamma mixing precision is drawn from the quadratic radius about
+\code{center}, followed by a Crank--Nicolson Gaussian proposal. The
+Metropolis ratio includes the corresponding radial Hastings correction.
 
 For higher-order steps, let \eqn{\mu_i^{(r)}} and \eqn{C_i^{(r)}} denote the
 order-\eqn{r} expansions of the conditional mean of \eqn{\Delta_iX} and its
@@ -97,8 +118,9 @@ contrasts are generated symbolically with the \pkg{calculus} package.
 }
 \value{
 An object of class \code{yuima.qmle}. Its \code{details} slot contains the
-input \code{p}, the derived diffusion and drift orders, the actual contrast
-order of every step, \eqn{nh^p}, the normalized options, and stage results.
+input \code{p}, Bayes values \code{q}, \code{rate}, and \code{bayes.n0}, the
+derived diffusion and drift orders, the actual contrast order of every step,
+\eqn{nh^p}, the normalized options, and stage results.
 }
 \references{
 Uchida, M. and Yoshida, N. (2012). Adaptive estimation of an ergodic

@@ -217,6 +217,49 @@
   }
 }
 
+.adaQmle_bayes_temperature <- function(n0, h, p, rate) {
+  q <- max(p, 2 / rate)
+  exponent <- 2 / (q * rate) - 1
+  list(
+    q = q,
+    exponent = exponent,
+    diffusion = n0^exponent,
+    drift = (n0 * h)^exponent
+  )
+}
+
+.adaQmle_tempered_log_target <- function(contrast, logPrior, temperature) {
+  # The temperature normalizes the quasi-log likelihood only.  The prior is
+  # outside the exponential adjustment in the Bayes estimator definition.
+  -0.5 * temperature * contrast + logPrior
+}
+
+.adaQmle_mpcn_radius <- function(x, center, preconditioner) {
+  # This is the same diagonal quadratic radius used by adaBayes.  The lower
+  # bound keeps the Gamma mixing distribution well-defined at its centre.
+  radius <- sum(((as.numeric(x) - as.numeric(center)) * preconditioner)^2)
+  max(radius, 1e-7)
+}
+
+.adaQmle_mpcn_proposal <- function(current, center, preconditioner, rho) {
+  dimension <- length(current)
+  currentRadius <- .adaQmle_mpcn_radius(current, center, preconditioner)
+  mixingPrecision <- stats::rgamma(
+    1L, shape = 0.5 * dimension, scale = 2 / currentRadius
+  )
+  proposal <- as.numeric(center) + sqrt(rho) *
+    (as.numeric(current) - as.numeric(center)) +
+    stats::rnorm(dimension) * sqrt((1 - rho) / mixingPrecision)
+  names(proposal) <- names(current)
+  proposalRadius <- .adaQmle_mpcn_radius(proposal, center, preconditioner)
+  list(
+    par = proposal,
+    log.hastings = 0.5 * dimension *
+      (log(proposalRadius) - log(currentRadius)),
+    radius = proposalRadius
+  )
+}
+
 .adaQmle_mcmc <- function(start, objective, logPrior, lower, upper, mcmc,
                           algorithm, center, proposalSd, rho, temperature, path) {
   dimension <- length(start)
@@ -229,27 +272,21 @@
     if (!is.finite(priorValue)) return(-Inf)
     contrast <- objective(x)
     if (!is.finite(contrast)) return(-Inf)
-    -0.5 * temperature * contrast + priorValue
+    .adaQmle_tempered_log_target(contrast, priorValue, temperature)
   }
   currentTarget <- logTarget(current)
   if (!is.finite(currentTarget)) yuima.stop("The initial value has zero posterior density.")
   accepted <- 0L
   covariance <- diag(proposalSd^2, dimension)
-  sqrtRho <- sqrt(rho)
-  proposalCovariance <- (1 - rho) * covariance
 
   for (iteration in 2:mcmc) {
     if (algorithm == "randomwalk") {
       proposal <- current + as.numeric(mvtnorm::rmvnorm(1L, sigma = covariance))
       logHastings <- 0
     } else {
-      proposalMean <- center + sqrtRho * (current - center)
-      proposal <- as.numeric(mvtnorm::rmvnorm(1L, mean = proposalMean, sigma = proposalCovariance))
-      reverseMean <- center + sqrtRho * (proposal - center)
-      logHastings <- mvtnorm::dmvnorm(current, mean = reverseMean,
-                                      sigma = proposalCovariance, log = TRUE) -
-        mvtnorm::dmvnorm(proposal, mean = proposalMean,
-                         sigma = proposalCovariance, log = TRUE)
+      proposalStep <- .adaQmle_mpcn_proposal(current, center, proposalSd, rho)
+      proposal <- proposalStep$par
+      logHastings <- proposalStep$log.hastings
     }
     names(proposal) <- names(start)
     if (all(proposal >= lower) && all(proposal <= upper)) {
@@ -296,17 +333,20 @@
 #' @param estimator Per-step `"m"`/`"optim"` or `"b"`/`"bayes"` schedule.
 #' @param prior Prior specifications as accepted by `adaBayes`.
 #' @param method Optimization method passed to [stats::optim()].
-#' @param control Control list passed to [stats::optim()].
 #' @param envir Parent environment for model evaluation.
 #' @param mcmc Number of MCMC draws for a Bayes step.
 #' @param iteration Optional alias for `mcmc`, retained for `adaBayes`
 #'   compatibility.
-#' @param rate Initial Bayes sample exponent, as in `adaBayes`.
+#' @param rate Initial Bayes sample exponent `G`, as in `adaBayes`; the first
+#'   `n0=floor(n^G)` observations are used in an initial Bayes step.
 #' @param algorithm `"randomwalk"` or `"mpcn"`.
 #' @param center Optional named centers for MpCN.
-#' @param sd Optional named proposal standard deviations.
+#' @param sd Optional named proposal standard deviations for random walk. For
+#'   MpCN these are the diagonal preconditioning values used by `adaBayes`.
 #' @param rho MpCN persistence parameter.
 #' @param path Whether to retain MCMC paths in `details`.
+#' @param ... Additional named arguments passed to [stats::optim()] at each
+#'   maximum-likelihood step, for example `control = list(maxit = 300)`.
 #' @details
 #' Write `Delta_i X = X_{t_i} - X_{t_{i-1}}`, let `h` be the sampling
 #' interval, and put `a(x, alpha) = sigma(x, alpha) sigma(x, alpha)'`.
@@ -321,6 +361,21 @@
 #' \deqn{W_{alpha,0} = sum_i ||h^{-1} Delta_i X (Delta_i X)' - a_i||_F^2}
 #' and
 #' \deqn{W_{beta,0} = sum_i h^{-1} ||Delta_i X-h b_i||^2.}
+#'
+#' For an initial Bayes step, put `G=rate`, `n0=floor(n^G)` and
+#' `q=max(p,2/G)`. Since the implemented contrast `Q` is twice the negative
+#' quasi-log likelihood, the diffusion and drift log targets are respectively
+#' \deqn{-\frac{1}{2}n_0^{-(1-2/(qG))}Q_{alpha}+\log\pi_1(alpha)}
+#' and
+#' \deqn{-\frac{1}{2}(n_0h)^{-(1-2/(qG))}Q_{beta}+\log\pi_2(beta).}
+#' Thus the temperature multiplies the quasi-likelihood contribution only;
+#' the prior density is not tempered.
+#'
+#' With `algorithm="mpcn"`, the proposal follows the mixed preconditioned
+#' Crank--Nicolson kernel used by `adaBayes`. Conditional on the current value,
+#' a Gamma mixing precision is drawn from the quadratic radius about `center`,
+#' followed by a Crank--Nicolson Gaussian proposal. The Metropolis ratio
+#' includes the corresponding radial Hastings correction.
 #'
 #' For higher-order steps, let `mu_i^{(r)}` and `C_i^{(r)}` denote the
 #' order-`r` expansions of the conditional mean of `Delta_i X` and its
@@ -357,11 +412,25 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
                     refinement = "plugin",
                     expansion = c("progressive", "terminal"),
                     estimator = "optim", prior = NULL,
-                    method = "L-BFGS-B", control = list(),
+                    method = "L-BFGS-B",
                     envir = globalenv(), mcmc = 1000L, iteration = NULL, rate = 1,
                     algorithm = c("randomwalk", "mpcn"), center = NULL,
-                    sd = NULL, rho = 0.8, path = FALSE) {
+                    sd = NULL, rho = 0.8, path = FALSE, ...) {
   call <- match.call()
+  optimArguments <- list(...)
+  if (length(optimArguments) &&
+      (is.null(names(optimArguments)) || any(!nzchar(names(optimArguments))))) {
+    yuima.stop("Arguments in '...' must be named arguments for 'optim'.")
+  }
+  protectedOptimArguments <- intersect(
+    names(optimArguments), c("par", "fn", "method", "lower", "upper", "hessian")
+  )
+  if (length(protectedOptimArguments)) {
+    yuima.stop(paste0(
+      "The following 'optim' arguments are managed by 'adaQmle' and cannot be supplied in '...': ",
+      paste(protectedOptimArguments, collapse = ", "), "."
+    ))
+  }
   if (missing(yuima) || !is(yuima, "yuima")) yuima.stop("'yuima' must be a yuima object.")
   if (missing(start) || !is.list(start) || is.null(names(start))) {
     yuima.stop("'start' must be a named list.")
@@ -464,22 +533,45 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
   timeVariable <- model@time.variable
   if (!length(timeVariable)) timeVariable <- character(0)
 
-  evaluateTerms <- function(theta, observations = numberIncrements, corrections = TRUE) {
+  evaluateTerms <- function(theta, observations = numberIncrements,
+                            coefficients = TRUE, meanCount = 0L, momentCount = 0L) {
     evaluationEnvironment <- new.env(parent = envir)
     list2env(as.list(theta), envir = evaluationEnvironment)
     rows <- seq_len(observations)
-    drift <- adaEvalTermsCpp(symbolic$drift, state, stateData[rows, , drop = FALSE],
-                             timeVariable, stateTime[rows], evaluationEnvironment)
-    diffusion <- adaEvalTermsCpp(symbolic$diffusion, state, stateData[rows, , drop = FALSE],
-                                 timeVariable, stateTime[rows], evaluationEnvironment)
-    if (!corrections) return(list(drift = drift, diffusion = diffusion,
-                                  mean = list(), moment = list()))
-    meanTerms <- lapply(symbolic$mean, adaEvalTermsCpp, state = state,
-                        data = stateData[rows, , drop = FALSE], timeVariable = timeVariable,
-                        time = stateTime[rows], env = evaluationEnvironment)
-    momentTerms <- lapply(symbolic$moment, adaEvalTermsCpp, state = state,
-                          data = stateData[rows, , drop = FALSE], timeVariable = timeVariable,
-                          time = stateTime[rows], env = evaluationEnvironment)
+    evaluationData <- stateData[rows, , drop = FALSE]
+    evaluationTime <- stateTime[rows]
+    drift <- if (coefficients) {
+      adaEvalTermsCpp(symbolic$drift, state, evaluationData,
+                      timeVariable, evaluationTime, evaluationEnvironment)
+    } else {
+      NULL
+    }
+    diffusion <- if (coefficients) {
+      adaEvalTermsCpp(symbolic$diffusion, state, evaluationData,
+                      timeVariable, evaluationTime, evaluationEnvironment)
+    } else {
+      NULL
+    }
+    meanCount <- as.integer(meanCount)
+    momentCount <- as.integer(momentCount)
+    if (meanCount < 0L || meanCount > length(symbolic$mean) ||
+        momentCount < 0L || momentCount > length(symbolic$moment)) {
+      yuima.stop("Internal adaptive contrast order is inconsistent with the symbolic terms.")
+    }
+    meanTerms <- if (meanCount) {
+      lapply(symbolic$mean[seq_len(meanCount)], adaEvalTermsCpp, state = state,
+             data = evaluationData, timeVariable = timeVariable,
+             time = evaluationTime, env = evaluationEnvironment)
+    } else {
+      list()
+    }
+    momentTerms <- if (momentCount) {
+      lapply(symbolic$moment[seq_len(momentCount)], adaEvalTermsCpp, state = state,
+             data = evaluationData, timeVariable = timeVariable,
+             time = evaluationTime, env = evaluationEnvironment)
+    } else {
+      list()
+    }
     list(drift = drift, diffusion = diffusion, mean = meanTerms, moment = momentTerms)
   }
 
@@ -520,9 +612,23 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
     observations <- if (useBayesPilot) bayesInitialObservations else numberIncrements
     rows <- seq_len(observations)
     snapshot <- current
+    meanCount <- 0L
+    momentCount <- 0L
+    if (stage > 2L) {
+      if (refinement == "coupled") {
+        k <- stageOrder[[stage]] %/% 2L
+        meanCount <- max(0L, k - 1L)
+        momentCount <- k
+      } else if (target == "diffusion") {
+        momentCount <- (stageOrder[[stage]] + 1L) %/% 2L - 1L
+      } else {
+        meanCount <- stageOrder[[stage]] %/% 2L - 1L
+      }
+    }
     fixedCorrection <- NULL
     if (stage > 2L && refinement == "plugin") {
-      fixedCorrection <- evaluateTerms(snapshot, observations, corrections = TRUE)
+      fixedCorrection <- evaluateTerms(snapshot, observations, coefficients = FALSE,
+                                       meanCount = meanCount, momentCount = momentCount)
     }
 
     contrastName <- if (stage == 1L) {
@@ -538,7 +644,11 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
     objective <- function(candidate) {
       theta <- snapshot
       theta[parameters] <- as.numeric(candidate)
-      core <- evaluateTerms(theta, observations, corrections = refinement == "coupled" && stage > 2L)
+      core <- evaluateTerms(
+        theta, observations,
+        meanCount = if (refinement == "coupled") meanCount else 0L,
+        momentCount = if (refinement == "coupled") momentCount else 0L
+      )
       corrections <- if (!is.null(fixedCorrection)) fixedCorrection else core
       adaContrastCpp(increments[rows, , drop = FALSE], core$drift, core$diffusion,
                      corrections$mean, corrections$moment, h, contrastName,
@@ -549,9 +659,14 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
     stageUpper <- upperValues[parameters]
 
     if (schedule[[stage]] == "optim") {
-      fit <- stats::optim(initial, objective, method = method,
-                          lower = stageLower, upper = stageUpper,
-                          hessian = TRUE, control = control)
+      mydots <- optimArguments
+      mydots$par <- initial
+      mydots$fn <- objective
+      mydots$method <- method
+      mydots$lower <- stageLower
+      mydots$upper <- stageUpper
+      mydots$hessian <- TRUE
+      fit <- do.call(stats::optim, args = mydots)
       estimate <- setNames(fit$par, parameters)
       # The C++ kernels return twice the negative quasi-log likelihood, as in
       # the pilot implementation. Convert its Hessian to the nll scale.
@@ -568,7 +683,9 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
         logPriorAll(theta)
       }
       proposalSd <- if (is.null(sd)) {
-        pmax(abs(initial) * 0.05, 0.02)
+        if (algorithm == "mpcn") rep(1, length(initial)) else {
+          pmax(abs(initial) * 0.05, 0.02)
+        }
       } else {
         suppliedSd <- unlist(sd)
         if (is.null(names(suppliedSd)) || any(!parameters %in% names(suppliedSd)) ||
@@ -584,10 +701,13 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
         }
         suppliedCenter[parameters]
       }
+      temperatureSpecification <- .adaQmle_bayes_temperature(
+        observations + 1L, h, p, rate
+      )
       temperature <- if (stage == 1L) {
-        (observations + 1L)^(2 / (p * rate) - 1)
+        temperatureSpecification$diffusion
       } else if (stage == 2L) {
-        ((observations + 1L) * h)^(2 / (p * rate) - 1)
+        temperatureSpecification$drift
       } else 1
       fit <- .adaQmle_mcmc(initial, objective, stageLogPrior, stageLower, stageUpper,
                            mcmc, algorithm, stageCenter, proposalSd, rho, temperature, path)
@@ -596,6 +716,9 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
       stages[[stage]] <- list(stage = stage, target = target,
                               order = stageOrder[[stage]], contrast = contrastName,
                               estimator = "bayes", observations = observations,
+                              n0 = observations + 1L, rate = rate,
+                              q = temperatureSpecification$q,
+                              temperature.exponent = temperatureSpecification$exponent,
                               temperature = temperature, accept.rate = fit$accept.rate,
                               path = fit$path, value = objective(estimate))
     }
@@ -616,6 +739,9 @@ adaQmle <- function(yuima, start, p, lower, upper, fixed = list(),
   }
   details <- list(
     p = p,
+    q = max(p, 2 / rate),
+    rate = rate,
+    bayes.n0 = bayesInitialObservations + 1L,
     order = c(diffusion = symbolic$l0, drift = symbolic$k0),
     contrast.order = stageOrder,
     nhp = numberIncrements * h^p,
