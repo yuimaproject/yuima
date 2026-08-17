@@ -175,6 +175,6 @@ plot(lorenz_filter, plot_truth = TRUE, level = 0.9)
 
 }
 \references{
-Bain, A. and Crisan, D. (2009). *Fundamentals of Stochastic Filtering*.
+Bain, A. and Crisan, D. (2009). Fundamentals of Stochastic Filtering.
 Springer, Sections 9.2 and 9.6.
 }

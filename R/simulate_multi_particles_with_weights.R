@@ -47,7 +47,7 @@
 #' especially important for chaotic dynamics such as Lorenz-63.
 #'
 #' @references
-#' Bain, A. and Crisan, D. (2009). *Fundamentals of Stochastic Filtering*.
+#' Bain, A. and Crisan, D. (2009). Fundamentals of Stochastic Filtering.
 #' Springer, Sections 9.2 and 9.6.
 #'
 #' @examples
