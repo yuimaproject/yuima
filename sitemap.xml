@@ -58,9 +58,11 @@
 <url><loc>/reference/noisy.sampling.html</loc></url>
 <url><loc>/reference/ntv.html</loc></url>
 <url><loc>/reference/param.Map.html</loc></url>
+<url><loc>/reference/particleFilter.html</loc></url>
 <url><loc>/reference/phi.test.html</loc></url>
 <url><loc>/reference/plot-yuima.ae-ANY-method.html</loc></url>
 <url><loc>/reference/plot-yuima.kalmanBucyFilter-ANY-method.html</loc></url>
+<url><loc>/reference/plot-yuima.particleFilter-ANY-method.html</loc></url>
 <url><loc>/reference/poest.html</loc></url>
 <url><loc>/reference/poisson.random.sampling.html</loc></url>
 <url><loc>/reference/pz.test.html</loc></url>
@@ -117,6 +119,7 @@
 <url><loc>/reference/yuima.linear_state_space_model-class.html</loc></url>
 <url><loc>/reference/yuima.model-class.html</loc></url>
 <url><loc>/reference/yuima.multimodel.html</loc></url>
+<url><loc>/reference/yuima.particleFilter-class.html</loc></url>
 <url><loc>/reference/yuima.poisson-class.html</loc></url>
 <url><loc>/reference/yuima.qmleLevy.incr-class.html</loc></url>
 <url><loc>/reference/yuima.sampling-class.html</loc></url>
