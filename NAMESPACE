@@ -124,7 +124,8 @@ exportClasses("yuima",
 "yuima.snr",
 "yuima.ae",  # added by EG on Dec. 15, 2021
 "yuima.state_space_model",
-"yuima.linear_state_space_model"
+"yuima.linear_state_space_model",
+"yuima.particleFilter"
 )
 
 exportMethods(
@@ -291,6 +292,8 @@ export(mmfrac)
 
 export(simCIR)
 export(fitCIR)
+export(simulate_multi_particles_with_weights)
+export(particleFilter)
 
 #export(cbind.yuima)
 #export(rbind.yuima)
