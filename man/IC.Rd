@@ -12,7 +12,7 @@ Information criteria BIC, Quasi-BIC (QBIC) and CIC for the stochastic differenti
 \usage{
 IC(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Terminal = 1, 
    add.settings = list(), start, lower, upper, ergodic = TRUE,
-   stepwise = FALSE, weight = FALSE, rcpp = FALSE, ...)
+   stepwise = FALSE, weight = FALSE, rcpp = TRUE, ...)
 }
 
 \arguments{

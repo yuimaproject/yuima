@@ -1,6 +1,6 @@
 ## information criteria
 
-IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Terminal = 1, add.settings = list(), start, lower, upper, ergodic = TRUE, stepwise = FALSE, weight = FALSE, rcpp = FALSE, ...){ 
+IC <- function(drif = NULL, diff = NULL, jump.coeff = NULL, data = NULL, Terminal = 1, add.settings = list(), start, lower, upper, ergodic = TRUE, stepwise = FALSE, weight = FALSE, rcpp = TRUE, ...){ 
 
   Levy <- FALSE
   if(length(jump.coeff) > 0){
