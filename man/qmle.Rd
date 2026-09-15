@@ -21,7 +21,7 @@
 \usage{
 qmle(yuima, start, method = "L-BFGS-B", fixed = list(),
 print = FALSE, envir = globalenv(), lower, upper, joint = FALSE, Est.Incr ="NoIncr",
-aggregation = TRUE, threshold = NULL, rcpp =FALSE, ...)
+aggregation = TRUE, threshold = NULL, rcpp =TRUE, ...)
 
 quasilogl(yuima, param, print = FALSE, rcpp = FALSE)
 lse(yuima, start, lower, upper, method = "BFGS", ...)
