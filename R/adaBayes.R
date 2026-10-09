@@ -255,7 +255,7 @@ setMethod(
     # assign("X",  yuima@data@original.data[1:n_0,], envir=env)
     assign("X", as.matrix(onezoo(yuima)[1:n_0, ]), envir = env)
     assign("deltaX", matrix(0, n_0 - 1, d.size), envir = env)
-    assign("time", as.numeric(index(yuima@data@zoo.data[[1]])), envir = env)
+    assign("time", as.numeric(index(yuima@data@zoo.data[[1]]))[seq_len(n_0)], envir = env)
     # 20200601kaino
     if (is.CARMA(yuima)) {
       # 24/12 If we consider a carma model,

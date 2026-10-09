@@ -18,8 +18,11 @@ drift.term <- function(yuima, theta, env) {
     assign(names(theta)[i],theta[[i]], envir=tmp.env)
   }
   DRIFT <- yuima@model@drift
-  modelstate <- yuima@model@state.variable
-  data <- env$X
+  # Include observation times so the pointwise evaluator binds time as well as state.
+  modelstate <- c(yuima@model@state.variable, yuima@model@time.variable)
+  times <- env$time
+  if (is.null(times)) times <- as.numeric(index(yuima@data@zoo.data[[1]]))
+  data <- cbind(env$X, times)
   drift <- driftTermCpp(DRIFT, modelstate, data, tmp.env)
   drift
 }
@@ -31,10 +34,13 @@ diffusion.term <- function(yuima, theta, env) {
     assign(names(theta)[i],theta[[i]], envir=tmp.env)
   }
   DIFFUSION <- yuima@model@diffusion
-  modelstate <- yuima@model@state.variable
-  data <- env$X
+  # Include observation times so the pointwise evaluator binds time as well as state.
+  modelstate <- c(yuima@model@state.variable, yuima@model@time.variable)
+  times <- env$time
+  if (is.null(times)) times <- as.numeric(index(yuima@data@zoo.data[[1]]))
+  data <- cbind(env$X, times)
   diffusion.vector <- diffusionTermCpp(DIFFUSION, modelstate, data, tmp.env)
-  diffusion <- array(diffusion.vector, c(length(yuima@model@diffusion),length(yuima@model@diffusion[[1]]),length(yuima@data)[1]))
+  diffusion <- array(diffusion.vector, c(length(yuima@model@diffusion),length(yuima@model@diffusion[[1]]),nrow(data)))
   diffusion
 }
 
@@ -78,7 +84,7 @@ is.CARMA <- function(obj){
 }
 
 qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, envir=globalenv(), ##Kurisaki 4/4/2021
-                 lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL,rcpp=FALSE, ...){
+                 lower, upper, joint=FALSE, Est.Incr="NoIncr",aggregation=TRUE, threshold=NULL,rcpp=TRUE, ...){
   if(Est.Incr=="Carma.Inc"){
     Est.Incr<-"Incr"
   }
@@ -279,7 +285,7 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
     }
   }
   
-  if(length(common.par)>0){
+  if(length(common.par)>0 && is.CARMA(yuima)){
     JointOptim <- TRUE
     yuima.warn("Drift and diffusion parameters must be different. Doing
                joint estimation, asymptotic theory may not hold true.")
@@ -291,6 +297,8 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
     # 		     }
   }
   
+  # Shared parameters are estimated with diffusion and held fixed for drift.
+  if (!JointOptim) drift.par <- setdiff(drift.par, diff.par)
   # if(!is(yuima@model, "yuima.carma")){
   #    	if(length(jump.par)+yuima@model@measure.type == "CP")
   #    		yuima.stop("Cannot estimate the jump models, yet")
@@ -723,6 +731,8 @@ qmle <- function(yuima, start, method="L-BFGS-B", fixed = list(), print=FALSE, e
           oout <- list(par = theta1, value = opt1$objective)
         }
         theta1 <- oout$par
+        for (i in seq_along(theta1))
+          assign(names(theta1)[i], theta1[[i]], envir = env)
         
         fixed <- old.fixed
         start <- old.start
@@ -1795,7 +1805,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
   d.size <- yuima@model@equation.number
   
   
-  n <- length(yuima)[1]
+  n <- nrow(env$X)
   
   
   if (is.CARMA(yuima)){
@@ -1917,7 +1927,7 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
     #         yuima.warn("carma(p,q): the scale parameter is equal to 1. We will implemented as soon as possible")
     #         return(NULL)
     #     }
-  } else if (!rcpp) {
+  } else {
     if(!is.null(env$phase)) {#if env$phase == "diffusion"
       ### to be written
       drift <- matrix(0, nrow=n, ncol=d.size)
@@ -1926,105 +1936,53 @@ minusquasilogl <- function(yuima, param, print=FALSE, env,rcpp=FALSE){
       drift <- drift.term(yuima, param, env)
       diff <- diffusion.term(yuima, param, env)
     }
-    QL <- 0
-    
-    pn <- 0
-    
-    
-    vec <- env$deltaX-h*drift[-n,]
-    
-    K <- -0.5*d.size * log( (2*pi*h) )
-    
-    first_record <- diff[, , 1]
-    
-    if(length(first_record) == 1){  # one dimensional X and Wiener process
-      for(t in 1:(n-1)){
-        yB <- diff[, , t]^2
-        logdet <- log(yB)
-        pn <- Cn.r[t]*(K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB))
-        QL <- QL+pn
-        
-      }
-    } else {  # multidimensional X and Wiener process
-      for(t in 1:(n-1)){
-        record = diff[, , t, drop=FALSE] # extract the t-th slice of diff
-        dim(record) <- dim(record)[1:2] # drop the third dimension
-        yB <- record %*% t(record)
-        logdet <- log(det(yB))
-        if(is.infinite(logdet) ){ # should we return 1e10?
-          pn <- log(1)
-          yuima.warn("singular diffusion matrix")
-          return(1e10)
-        }else{
-          pn <- (K - 0.5*logdet +
-                   ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]))*Cn.r[t]
-          QL <- QL+pn
-        }
-      }
-    }
-  } else {
-    if(!is.null(env$phase)) {
-      drift_name <- as.expression(rep((0), d.size))
-      diffusion_name <- yuima@model@diffusion
+    if (rcpp) {
+      # Each row contains one observation; diffusion columns follow the
+      # column-major order of the state-by-noise coefficient matrix.
+      diffusion_set <- t(matrix(diff, nrow = prod(dim(diff)[1:2]), ncol = n))
+      QL <- -0.5 * likndim(env$deltaX, drift[-n, , drop = FALSE],
+                           diffusion_set[-n, , drop = FALSE], h) -
+        0.5 * (n-1) * d.size * log(2*pi*h)
     } else {
-      drift_name <- yuima@model@drift
-      diffusion_name <- yuima@model@diffusion
-    }
-    ####data <- yuima@data@original.data
-    data <- matrix(0,length(yuima@data@zoo.data[[1]]),d.size)
-    for(i in 1:d.size) data[,i] <- as.numeric(yuima@data@zoo.data[[i]])
-    env$data <- data  ##Kurisaki 5/29/2021
-    
-    thetadim <- length(yuima@model@parameter@all)
-    
-    noise_number <- yuima@model@noise.number
-    
-    assign(yuima@model@time.variable,env$time[-length(env$time)],envir = env) ##Kurisaki 5/29/2021
-    for(i in 1:d.size) assign(yuima@model@state.variable[i], data[-length(data[,1]),i],envir = env) ##Kurisaki 5/29/2021
-    for(i in 1:thetadim) assign(names(param)[i], param[[i]],envir = env) ##Kurisaki 5/29/2021
-    
-    d_b <- NULL
-    for(i in 1:d.size){
-      if(length(eval(drift_name[[i]],envir = env))==(length(data[,1])-1)){ ##Kurisaki 5/29/2021
-        d_b[[i]] <- drift_name[[i]] #this part of model includes "x"(state.variable)
-      }
-      else{
-        if(is.na(c(drift_name[[i]][2]))){ #ex. yuima@model@drift=expression(0) (we hope "expression((0))")
-          drift_name[[i]] <- parse(text=paste(sprintf("(%s)", drift_name[[i]])))[[1]]
+      QL <- 0
+
+      pn <- 0
+
+
+      vec <- env$deltaX-h*drift[-n,]
+
+      K <- -0.5*d.size * log( (2*pi*h) )
+
+      first_record <- diff[, , 1]
+
+      if(length(first_record) == 1){  # one dimensional X and Wiener process
+        for(t in 1:(n-1)){
+          yB <- diff[, , t]^2
+          logdet <- log(yB)
+          pn <- Cn.r[t]*(K - 0.5*logdet-0.5*vec[t, ]^2/(h*yB))
+          QL <- QL+pn
+
         }
-        d_b[[i]] <- parse(text=paste("(",drift_name[[i]][2],")*rep(1,length(data[,1])-1)",sep=""))
-        #vectorization
-      }
-    }
-    
-    v_a<-matrix(list(NULL),d.size,noise_number)
-    for(i in 1:d.size){
-      for(j in 1:noise_number){
-        if(length(eval(diffusion_name[[i]][[j]],envir = env))==(length(data[,1])-1)){ ##Kurisaki 5/29/2021
-          v_a[[i,j]] <- diffusion_name[[i]][[j]] #this part of model includes "x"(state.variable)
-        }
-        else{
-          if(is.na(c(diffusion_name[[i]][[j]][2]))){
-            diffusion_name[[i]][[j]] <- parse(text=paste(sprintf("(%s)", diffusion_name[[i]][[j]])))[[1]]
+      } else {  # multidimensional X and Wiener process
+        for(t in 1:(n-1)){
+          record = diff[, , t, drop=FALSE] # extract the t-th slice of diff
+          dim(record) <- dim(record)[1:2] # drop the third dimension
+          yB <- record %*% t(record)
+          logdet <- log(det(yB))
+          if(is.infinite(logdet) ){ # should we return 1e10?
+            pn <- log(1)
+            yuima.warn("singular diffusion matrix")
+            return(1e10)
+          }else{
+            pn <- (K - 0.5*logdet +
+                     ((-1/(2*h))*t(vec[t, ])%*%solve(yB)%*%vec[t, ]))*Cn.r[t]
+            QL <- QL+pn
           }
-          v_a[[i,j]] <- parse(text=paste("(",diffusion_name[[i]][[j]][2],")*rep(1,length(data[,1])-1)",sep=""))
-          #vectorization
         }
       }
     }
-    
-    #for(i in 1:d) assign(yuima@model@state.variable[i], data[-length(data[,1]),i])
-    dx_set <- as.matrix((data-rbind(numeric(d.size),as.matrix(data[-length(data[,1]),])))[-1,])
-    drift_set <- diffusion_set <- NULL
-    #for(i in 1:thetadim) assign(names(param)[i], param[[i]])
-    for(i in 1:d.size) drift_set <- cbind(drift_set,eval(d_b[[i]],envir = env)) ##Kurisaki 5/29/2021
-    for(i in 1:noise_number){
-      for(j in 1:d.size) diffusion_set <- cbind(diffusion_set,eval(v_a[[j,i]],envir = env)) ##Kurisaki 5/29/2021
-    }
-    QL <- (likndim(dx_set,drift_set,diffusion_set,env$h)*(-0.5) + (n-1)*(-0.5*d.size * log( (2*pi*env$h) )))
   }
-  
-  
+
   if(!is.finite(QL)){
     yuima.warn("quasi likelihood is too small to calculate.")
     return(1e10)
