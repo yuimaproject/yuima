@@ -101,6 +101,12 @@ Iacus S. M., Mercuri L. (2015) Implementation of Levy CARMA model in Yuima packa
   %The function ml.ql uses the function optim internally.
   The function qmle uses the function optim internally.
 
+  In two-stage estimation for non-CARMA models, parameters shared by the drift
+  and diffusion coefficients are estimated in the first stage (on the diffusion
+  side) and held fixed during the estimation of the remaining drift parameters.
+  For CARMA models, two-stage estimation is not supported if the drift and
+  diffusion coefficients share common parameters.
+
   The function qmle uses the function \code{\link{CarmaNoise}} internally for estimation of underlying Levy if the model is an object of \code{\link{yuima.carma-class}}.
 }
 
