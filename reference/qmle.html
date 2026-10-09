@@ -56,7 +56,7 @@
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">qmle</span><span class="op">(</span><span class="va">yuima</span>, <span class="va">start</span>, method <span class="op">=</span> <span class="st">"L-BFGS-B"</span>, fixed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>print <span class="op">=</span> <span class="cn">FALSE</span>, envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">globalenv</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">lower</span>, <span class="va">upper</span>, joint <span class="op">=</span> <span class="cn">FALSE</span>, Est.Incr <span class="op">=</span><span class="st">"NoIncr"</span>,</span>
-<span>aggregation <span class="op">=</span> <span class="cn">TRUE</span>, threshold <span class="op">=</span> <span class="cn">NULL</span>, rcpp <span class="op">=</span><span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span>aggregation <span class="op">=</span> <span class="cn">TRUE</span>, threshold <span class="op">=</span> <span class="cn">NULL</span>, rcpp <span class="op">=</span><span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">quasilogl</span><span class="op">(</span><span class="va">yuima</span>, <span class="va">param</span>, print <span class="op">=</span> <span class="cn">FALSE</span>, rcpp <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu">lse</span><span class="op">(</span><span class="va">yuima</span>, <span class="va">start</span>, <span class="va">lower</span>, <span class="va">upper</span>, method <span class="op">=</span> <span class="st">"BFGS"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -170,6 +170,11 @@
     <h2>Note</h2>
     <p><!-- %The function ml.ql uses the function optim internally. -->
   The function qmle uses the function optim internally.</p>
+<p>In two-stage estimation for non-CARMA models, parameters shared by the drift
+  and diffusion coefficients are estimated in the first stage (on the diffusion
+  side) and held fixed during the estimation of the remaining drift parameters.
+  For CARMA models, two-stage estimation is not supported if the drift and
+  diffusion coefficients share common parameters.</p>
 <p>The function qmle uses the function <code><a href="CarmaNoise.html">CarmaNoise</a></code> internally for estimation of underlying Levy if the model is an object of <code><a href="yuima.carma-class.html">yuima.carma-class</a></code>.</p>
     </div>
 
@@ -212,7 +217,7 @@
 <span class="r-in"><span> upper<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>theta1<span class="op">=</span><span class="fl">1</span>,theta2<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, method<span class="op">=</span><span class="st">"L-BFGS-B"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    user  system elapsed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.011   0.000   0.011 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.013   0.000   0.013 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nTrue param. theta1 = .3, theta2 = .1\n"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> True param. theta1 = .3, theta2 = .1</span>
@@ -230,7 +235,7 @@
 <span class="r-in"><span> upper<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>theta1<span class="op">=</span><span class="fl">1</span>,theta2<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, method<span class="op">=</span><span class="st">"L-BFGS-B"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    user  system elapsed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.012   0.000   0.011 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.012   0.000   0.013 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nTrue param. theta1 = .3, theta2 = .1\n"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> True param. theta1 = .3, theta2 = .1</span>
@@ -253,7 +258,7 @@
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> YUIMA: quasi likelihood is too small to calculate.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    user  system elapsed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.021   0.000   0.020 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.024   0.000   0.023 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nTrue param. theta1 = .3, theta2 = .1\n"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> True param. theta1 = .3, theta2 = .1</span>
@@ -267,7 +272,7 @@
 <span class="r-in"><span>upper<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>theta2<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,fixed<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>theta1<span class="op">=</span><span class="fl">0.3</span><span class="op">)</span>, method<span class="op">=</span><span class="st">"L-BFGS-B"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    user  system elapsed </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.027   0.000   0.027 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    0.03    0.00    0.03 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nTrue param. theta1 = .3, theta2 = .1\n"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> True param. theta1 = .3, theta2 = .1</span>
